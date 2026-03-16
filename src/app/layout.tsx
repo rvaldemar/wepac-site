@@ -1,0 +1,61 @@
+import type { Metadata } from "next";
+import { Barlow, Inter } from "next/font/google";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import "./globals.css";
+
+const barlow = Barlow({
+  variable: "--font-barlow",
+  subsets: ["latin"],
+  weight: ["700", "900"],
+  display: "swap",
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  weight: ["300", "400", "700"],
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  title: {
+    default: "WEPAC — Companhia de Artes",
+    template: "%s | WEPAC",
+  },
+  description:
+    "Unimos arte, formação e impacto social para valorizar o património e transformar vidas. Sons que inspiram.",
+  keywords: [
+    "WEPAC",
+    "companhia de artes",
+    "música",
+    "educação",
+    "impacto social",
+    "Braga",
+    "Easy Peasy",
+    "Arte à Capela",
+    "Wessex",
+  ],
+  openGraph: {
+    title: "WEPAC — Companhia de Artes",
+    description: "Sons que inspiram. Arte, formação e impacto social.",
+    type: "website",
+    locale: "pt_PT",
+  },
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="pt" className={`${barlow.variable} ${inter.variable}`}>
+      <body className="font-inter antialiased">
+        <Header />
+        <main>{children}</main>
+        <Footer />
+      </body>
+    </html>
+  );
+}

@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-wepac-black: #000000;
+  --color-wepac-white: #FFFFFF;
+  --color-wepac-gray: #DEE0DB;
+  --color-wepac-dark: #0A0A0A;
+  --font-barlow: "Barlow", sans-serif;
+  --font-inter: "Inter", sans-serif;
+}
+
+body {
+  background: var(--color-wepac-black);
+  color: var(--color-wepac-white);
+  font-family: var(--font-inter);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Scrollbar minimal */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #000;
+}
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
