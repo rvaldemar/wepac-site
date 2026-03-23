@@ -48,7 +48,7 @@ export default function MentorTasksPage() {
               onClick={() => setFilterStatus(s)}
               className={`rounded px-3 py-2 text-xs ${
                 filterStatus === s
-                  ? "bg-wepac-borgonha text-wepac-white"
+                  ? "bg-wepac-white text-wepac-black"
                   : "bg-wepac-card text-wepac-text-tertiary"
               }`}
             >
@@ -76,7 +76,7 @@ export default function MentorTasksPage() {
                   task.status === "done"
                     ? "bg-wepac-success-bg text-wepac-success"
                     : task.status === "in_progress"
-                      ? "bg-wepac-borgonha/20 text-wepac-borgonha"
+                      ? "bg-wepac-white/10 text-wepac-white"
                       : "bg-wepac-input text-wepac-text-tertiary"
                 }`}
               >

@@ -31,7 +31,7 @@ export default function AgreementPage() {
         <div className="mt-8 space-y-4">
           {COMMITMENTS.map((c, i) => (
             <div key={i} className="flex gap-3 border-l-2 border-wepac-border pl-4">
-              <span className="mt-0.5 text-xs text-wepac-borgonha">{i + 1}.</span>
+              <span className="mt-0.5 text-xs text-wepac-white">{i + 1}.</span>
               <p className="text-sm leading-relaxed text-wepac-text-secondary">
                 {c}
               </p>
@@ -45,7 +45,7 @@ export default function AgreementPage() {
               type="checkbox"
               checked={accepted}
               onChange={(e) => setAccepted(e.target.checked)}
-              className="mt-1 accent-wepac-borgonha"
+              className="mt-1 accent-wepac-white"
             />
             <span className="text-sm text-wepac-text-secondary">
               Li e aceito as condições de participação no Artista Alpha.
@@ -57,7 +57,7 @@ export default function AgreementPage() {
             onClick={(e) => !accepted && e.preventDefault()}
             className={`mt-6 inline-block rounded px-8 py-3 text-sm font-bold text-wepac-white transition-colors ${
               accepted
-                ? "bg-wepac-borgonha hover:bg-wepac-borgonha-light"
+                ? "bg-wepac-white hover:bg-wepac-accent-muted text-wepac-black"
                 : "cursor-not-allowed bg-wepac-input text-wepac-text-tertiary"
             }`}
           >

@@ -80,12 +80,12 @@ export function RadarChart({
         />
       )}
 
-      {/* Current values (borgonha, filled) */}
+      {/* Current values (white, filled) */}
       <polygon
         points={dataPolygon(currentValues)}
-        fill="#691515"
-        fillOpacity={0.2}
-        stroke="#691515"
+        fill="#FFFFFF"
+        fillOpacity={0.1}
+        stroke="#FFFFFF"
         strokeWidth="2"
       />
 
@@ -93,7 +93,7 @@ export function RadarChart({
       {AREAS.map((area, i) => {
         const r = (Math.min(currentValues[area], 5) / 5) * radius;
         const p = getPoint(i, r);
-        return <circle key={area} cx={p.x} cy={p.y} r="4" fill="#691515" />;
+        return <circle key={area} cx={p.x} cy={p.y} r="4" fill="#FFFFFF" />;
       })}
 
       {/* Labels + click targets */}
@@ -125,7 +125,7 @@ export function RadarChart({
               y={scoreP.y}
               textAnchor="middle"
               dominantBaseline="middle"
-              fill="#691515"
+              fill="#FFFFFF"
               fontSize={size > 280 ? "10" : "8"}
               fontWeight="bold"
               fontFamily="Inter, sans-serif"

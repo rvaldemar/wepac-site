@@ -22,8 +22,8 @@ export default function ProfilePage() {
       <div className="mt-8 max-w-lg space-y-6">
         {/* Avatar placeholder */}
         <div className="flex items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-wepac-borgonha/20">
-            <span className="font-barlow text-xl font-bold text-wepac-borgonha">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-wepac-white/10">
+            <span className="font-barlow text-xl font-bold text-wepac-white">
               {user.name.split(" ").map((n) => n[0]).join("")}
             </span>
           </div>
@@ -31,7 +31,7 @@ export default function ProfilePage() {
             <p className="text-sm font-medium text-wepac-white">{user.name}</p>
             <p className="text-xs text-wepac-text-tertiary">{user.email}</p>
             <div className="mt-1 flex gap-2">
-              <span className="rounded bg-wepac-borgonha/20 px-2 py-0.5 text-xs text-wepac-borgonha">
+              <span className="rounded bg-wepac-white/10 px-2 py-0.5 text-xs text-wepac-white">
                 {LEVEL_LABELS[user.level]}
               </span>
               <span className="rounded bg-wepac-input px-2 py-0.5 text-xs text-wepac-text-tertiary">
@@ -47,7 +47,7 @@ export default function ProfilePage() {
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="mt-1 w-full rounded bg-wepac-input px-4 py-3 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-borgonha"
+            className="mt-1 w-full rounded bg-wepac-input px-4 py-3 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
           />
         </div>
 
@@ -57,7 +57,7 @@ export default function ProfilePage() {
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             rows={4}
-            className="mt-1 w-full rounded bg-wepac-input px-4 py-3 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-borgonha"
+            className="mt-1 w-full rounded bg-wepac-input px-4 py-3 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
           />
         </div>
 
@@ -66,7 +66,7 @@ export default function ProfilePage() {
           <input
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="mt-1 w-full rounded bg-wepac-input px-4 py-3 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-borgonha"
+            className="mt-1 w-full rounded bg-wepac-input px-4 py-3 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
           />
         </div>
 
@@ -79,7 +79,7 @@ export default function ProfilePage() {
           />
         </div>
 
-        <button className="rounded bg-wepac-borgonha px-6 py-3 text-sm font-bold text-wepac-white transition-colors hover:bg-wepac-borgonha-light">
+        <button className="rounded bg-wepac-white px-6 py-3 text-sm font-bold text-wepac-black transition-colors hover:bg-wepac-accent-muted">
           Guardar alterações
         </button>
       </div>

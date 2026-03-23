@@ -37,7 +37,7 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded bg-wepac-input px-4 py-3 text-sm text-wepac-white placeholder-wepac-text-tertiary outline-none focus:ring-1 focus:ring-wepac-borgonha"
+              className="mt-1 w-full rounded bg-wepac-input px-4 py-3 text-sm text-wepac-white placeholder-wepac-text-tertiary outline-none focus:ring-1 focus:ring-wepac-white/50"
               placeholder="email@exemplo.com"
             />
           </div>
@@ -52,7 +52,7 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded bg-wepac-input px-4 py-3 text-sm text-wepac-white placeholder-wepac-text-tertiary outline-none focus:ring-1 focus:ring-wepac-borgonha"
+              className="mt-1 w-full rounded bg-wepac-input px-4 py-3 text-sm text-wepac-white placeholder-wepac-text-tertiary outline-none focus:ring-1 focus:ring-wepac-white/50"
               placeholder="••••••••"
             />
           </div>
@@ -63,13 +63,13 @@ export default function LoginPage() {
                 type="checkbox"
                 checked={remember}
                 onChange={(e) => setRemember(e.target.checked)}
-                className="accent-wepac-borgonha"
+                className="accent-wepac-white"
               />
               Manter sessão
             </label>
             <Link
               href="/artists/alpha/password/reset"
-              className="text-sm text-wepac-borgonha hover:underline"
+              className="text-sm text-wepac-white hover:underline"
             >
               Esqueci a password
             </Link>
@@ -77,7 +77,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full rounded bg-wepac-borgonha px-4 py-3 text-sm font-bold text-wepac-white transition-colors hover:bg-wepac-borgonha-light"
+            className="w-full rounded bg-wepac-white px-4 py-3 text-sm font-bold text-wepac-black transition-colors hover:bg-wepac-accent-muted"
           >
             Entrar
           </button>
@@ -85,7 +85,7 @@ export default function LoginPage() {
 
         <p className="mt-8 text-center text-xs text-wepac-text-tertiary">
           Acesso por convite. Não tens conta?{" "}
-          <a href="mailto:info@wepac.pt" className="text-wepac-borgonha hover:underline">
+          <a href="mailto:info@wepac.pt" className="text-wepac-white hover:underline">
             Contacta-nos
           </a>
         </p>

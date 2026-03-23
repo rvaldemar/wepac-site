@@ -74,7 +74,7 @@ export default function AdminSettingsPage() {
                 <input
                   value={settings.programName}
                   onChange={(e) => update("programName", e.target.value)}
-                  className="mt-1 w-full rounded bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-borgonha"
+                  className="mt-1 w-full rounded bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
                 />
               </div>
               <div>
@@ -92,7 +92,7 @@ export default function AdminSettingsPage() {
                   min={1}
                   value={settings.maxArtists}
                   onChange={(e) => update("maxArtists", parseInt(e.target.value) || 1)}
-                  className="mt-1 w-full rounded bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-borgonha"
+                  className="mt-1 w-full rounded bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
                 />
               </div>
               <div>
@@ -105,7 +105,7 @@ export default function AdminSettingsPage() {
                   step={15}
                   value={settings.sessionDurationMin}
                   onChange={(e) => update("sessionDurationMin", parseInt(e.target.value) || 60)}
-                  className="mt-1 w-full rounded bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-borgonha"
+                  className="mt-1 w-full rounded bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
                 />
               </div>
             </div>
@@ -123,7 +123,7 @@ export default function AdminSettingsPage() {
                   type="number"
                   value={settings.year}
                   onChange={(e) => update("year", parseInt(e.target.value) || 2026)}
-                  className="mt-1 w-full rounded bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-borgonha"
+                  className="mt-1 w-full rounded bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
                 />
               </div>
               <div>
@@ -131,7 +131,7 @@ export default function AdminSettingsPage() {
                 <select
                   value={settings.quarter}
                   onChange={(e) => update("quarter", parseInt(e.target.value))}
-                  className="mt-1 w-full rounded bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-borgonha"
+                  className="mt-1 w-full rounded bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
                 >
                   {[1, 2, 3, 4].map((q) => (
                     <option key={q} value={q}>
@@ -147,7 +147,7 @@ export default function AdminSettingsPage() {
                   key={idx}
                   className={`flex items-center gap-4 rounded border p-3 ${
                     settings.quarter === idx + 1
-                      ? "border-wepac-borgonha bg-wepac-borgonha/5"
+                      ? "border-wepac-white bg-wepac-white/5"
                       : "border-wepac-border"
                   }`}
                 >
@@ -174,7 +174,7 @@ export default function AdminSettingsPage() {
                     className="rounded bg-wepac-input px-2 py-1 text-xs text-wepac-white outline-none"
                   />
                   {settings.quarter === idx + 1 && (
-                    <span className="ml-auto text-xs font-medium text-wepac-borgonha-light">
+                    <span className="ml-auto text-xs font-medium text-wepac-accent-muted">
                       Ativo
                     </span>
                   )}
@@ -219,7 +219,7 @@ export default function AdminSettingsPage() {
           <div className="flex items-center gap-4">
             <button
               type="submit"
-              className="rounded bg-wepac-borgonha px-8 py-3 text-sm font-bold text-wepac-white"
+              className="rounded bg-wepac-white px-8 py-3 text-sm font-bold text-wepac-black"
             >
               Guardar Alterações
             </button>

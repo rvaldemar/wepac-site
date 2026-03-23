@@ -57,7 +57,7 @@ export default function EvaluatePage({
             onClick={() => setCurrentArea(i)}
             className={`rounded px-3 py-1 text-xs transition-colors ${
               i === currentArea
-                ? "bg-wepac-borgonha text-wepac-white"
+                ? "bg-wepac-white text-wepac-black"
                 : "bg-wepac-card text-wepac-text-tertiary"
             }`}
           >
@@ -86,7 +86,7 @@ export default function EvaluatePage({
                       onClick={() => setScores((prev) => ({ ...prev, [key]: score }))}
                       className={`flex h-10 w-10 items-center justify-center rounded text-sm transition-colors ${
                         scores[key] === score
-                          ? "bg-wepac-borgonha text-wepac-white"
+                          ? "bg-wepac-white text-wepac-black"
                           : "bg-wepac-input text-wepac-text-tertiary hover:bg-wepac-card"
                       }`}
                       title={SCORE_LABELS[score]}
@@ -99,7 +99,7 @@ export default function EvaluatePage({
                   placeholder="Notas (opcional)"
                   value={notes[key] ?? ""}
                   onChange={(e) => setNotes((prev) => ({ ...prev, [key]: e.target.value }))}
-                  className="mt-2 w-full rounded bg-wepac-dark px-3 py-2 text-xs text-wepac-text-secondary placeholder-wepac-text-tertiary outline-none focus:ring-1 focus:ring-wepac-borgonha"
+                  className="mt-2 w-full rounded bg-wepac-dark px-3 py-2 text-xs text-wepac-text-secondary placeholder-wepac-text-tertiary outline-none focus:ring-1 focus:ring-wepac-white/50"
                 />
               </div>
             );
@@ -119,12 +119,12 @@ export default function EvaluatePage({
         {currentArea < AREA_KEYS.length - 1 ? (
           <button
             onClick={() => setCurrentArea((prev) => prev + 1)}
-            className="rounded bg-wepac-borgonha px-6 py-2 text-sm font-bold text-wepac-white"
+            className="rounded bg-wepac-white px-6 py-2 text-sm font-bold text-wepac-black"
           >
             Seguinte
           </button>
         ) : (
-          <button className="rounded bg-wepac-borgonha px-6 py-2 text-sm font-bold text-wepac-white">
+          <button className="rounded bg-wepac-white px-6 py-2 text-sm font-bold text-wepac-black">
             Guardar Avaliação
           </button>
         )}

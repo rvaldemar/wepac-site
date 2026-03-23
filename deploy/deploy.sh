@@ -12,7 +12,7 @@ APP_DIR="/var/www/wepac"
 DOMAIN="wepac.pt"
 
 echo "=== Building WEPAC website ==="
-npm run build
+NEXT_PUBLIC_STRIP_MOCK=true npm run build
 
 echo ""
 echo "=== Preparing deploy package ==="

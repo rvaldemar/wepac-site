@@ -12,7 +12,7 @@ const STATUS_LABELS: Record<TaskStatus, string> = {
 
 const STATUS_COLORS: Record<TaskStatus, string> = {
   todo: "bg-wepac-input text-wepac-text-tertiary",
-  in_progress: "bg-wepac-borgonha/20 text-wepac-borgonha",
+  in_progress: "bg-wepac-white/10 text-wepac-white",
   done: "bg-wepac-success-bg text-wepac-success",
 };
 
@@ -53,7 +53,7 @@ export default function TasksPage() {
             onClick={() => setFilter(f)}
             className={`rounded px-3 py-1.5 text-xs transition-colors ${
               filter === f
-                ? "bg-wepac-borgonha text-wepac-white"
+                ? "bg-wepac-white text-wepac-black"
                 : "bg-wepac-card text-wepac-text-tertiary hover:text-wepac-text-secondary"
             }`}
           >

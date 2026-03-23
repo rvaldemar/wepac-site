@@ -35,7 +35,7 @@ export default function WelcomePage() {
 
         <Link
           href="/artists/alpha/agreement"
-          className="mt-10 inline-block rounded bg-wepac-borgonha px-8 py-3 text-sm font-bold text-wepac-white transition-colors hover:bg-wepac-borgonha-light"
+          className="mt-10 inline-block rounded bg-wepac-white px-8 py-3 text-sm font-bold text-wepac-black transition-colors hover:bg-wepac-accent-muted"
         >
           Continuar
         </Link>

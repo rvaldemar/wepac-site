@@ -52,7 +52,7 @@ export default function PPVPage() {
                 </div>
                 <button
                   onClick={() => setEditing(isEditing ? null : section.key)}
-                  className="text-xs text-wepac-borgonha hover:underline"
+                  className="text-xs text-wepac-white hover:underline"
                 >
                   {isEditing ? "Guardar" : "Editar"}
                 </button>
@@ -65,7 +65,7 @@ export default function PPVPage() {
                     setValues({ ...values, [section.key]: e.target.value })
                   }
                   rows={6}
-                  className="mt-4 w-full rounded bg-wepac-dark px-4 py-3 text-sm leading-relaxed text-wepac-text-secondary outline-none focus:ring-1 focus:ring-wepac-borgonha"
+                  className="mt-4 w-full rounded bg-wepac-dark px-4 py-3 text-sm leading-relaxed text-wepac-text-secondary outline-none focus:ring-1 focus:ring-wepac-white/50"
                 />
               ) : (
                 <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-wepac-text-secondary">

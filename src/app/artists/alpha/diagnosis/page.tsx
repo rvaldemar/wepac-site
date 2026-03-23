@@ -60,7 +60,7 @@ export default function DiagnosisPage() {
             onClick={() => setMoment(m)}
             className={`rounded px-4 py-2 text-sm transition-colors ${
               moment === m
-                ? "bg-wepac-borgonha text-wepac-white"
+                ? "bg-wepac-white text-wepac-black"
                 : "bg-wepac-card text-wepac-text-tertiary hover:text-wepac-text-secondary"
             }`}
           >
@@ -80,7 +80,7 @@ export default function DiagnosisPage() {
         />
         <div className="mt-4 flex justify-center gap-6 text-xs text-wepac-text-tertiary">
           <span className="flex items-center gap-1">
-            <span className="inline-block h-2 w-4 bg-wepac-borgonha/40" />
+            <span className="inline-block h-2 w-4 bg-wepac-white/20" />
             {MOMENT_LABELS[moment]}
           </span>
           {radarPrevious && (
@@ -110,7 +110,7 @@ export default function DiagnosisPage() {
                   <div className="mt-1 flex gap-4 text-xs text-wepac-text-tertiary">
                     <span>Auto: {areaScores.selfAvg}</span>
                     <span>Mentor: {areaScores.mentorAvg}</span>
-                    <span className="text-wepac-borgonha">
+                    <span className="text-wepac-white">
                       Composto: {areaScores.composite}
                     </span>
                   </div>
@@ -122,7 +122,7 @@ export default function DiagnosisPage() {
                         key={v}
                         className={`h-2 w-5 rounded-sm ${
                           v <= Math.round(areaScores.composite)
-                            ? "bg-wepac-borgonha"
+                            ? "bg-wepac-white"
                             : "bg-wepac-input"
                         }`}
                       />

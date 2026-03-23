@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Barlow, Inter, Cormorant_Garamond } from "next/font/google";
+import { Barlow, Inter } from "next/font/google";
 import "./globals.css";
 
 const barlow = Barlow({
@@ -13,13 +13,6 @@ const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
   weight: ["300", "400", "700"],
-  display: "swap",
-});
-
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
   display: "swap",
 });
 
@@ -55,7 +48,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt" className={`${barlow.variable} ${inter.variable} ${cormorant.variable}`}>
+    <html lang="pt" className={`${barlow.variable} ${inter.variable}`}>
       <body className="font-inter antialiased">
         {children}
       </body>

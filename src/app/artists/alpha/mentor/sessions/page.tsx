@@ -23,14 +23,14 @@ export default function MentorSessionsPage() {
         </div>
         <button
           onClick={() => setShowCreate(!showCreate)}
-          className="rounded bg-wepac-borgonha px-4 py-2 text-sm font-bold text-wepac-white"
+          className="rounded bg-wepac-white px-4 py-2 text-sm font-bold text-wepac-black"
         >
           + Nova Sessão
         </button>
       </div>
 
       {showCreate && (
-        <div className="mt-6 rounded border border-wepac-borgonha/30 bg-wepac-card p-6">
+        <div className="mt-6 rounded border border-wepac-white/20 bg-wepac-card p-6">
           <h3 className="text-sm font-bold text-wepac-white">Criar Sessão</h3>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
@@ -67,7 +67,7 @@ export default function MentorSessionsPage() {
             </div>
           </div>
           <div className="mt-4 flex gap-2">
-            <button className="rounded bg-wepac-borgonha px-4 py-2 text-sm font-bold text-wepac-white">
+            <button className="rounded bg-wepac-white px-4 py-2 text-sm font-bold text-wepac-black">
               Criar
             </button>
             <button
@@ -109,7 +109,7 @@ export default function MentorSessionsPage() {
                 <span
                   className={`rounded px-2 py-0.5 text-xs ${
                     session.status === "scheduled"
-                      ? "bg-wepac-borgonha/20 text-wepac-borgonha"
+                      ? "bg-wepac-white/10 text-wepac-white"
                       : session.status === "completed"
                         ? "bg-wepac-success-bg text-wepac-success"
                         : "bg-wepac-input text-wepac-text-tertiary"

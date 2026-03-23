@@ -42,7 +42,7 @@ export default function MessagesPage() {
                     {otherUser?.name ?? "Unknown"}
                   </span>
                   {hasUnread && (
-                    <span className="h-2 w-2 rounded-full bg-wepac-borgonha" />
+                    <span className="h-2 w-2 rounded-full bg-wepac-white" />
                   )}
                 </div>
                 {lastMsg && (
@@ -74,7 +74,7 @@ export default function MessagesPage() {
                       <div
                         className={`max-w-md rounded-lg px-4 py-3 ${
                           isOwn
-                            ? "bg-wepac-borgonha/20 text-wepac-text-secondary"
+                            ? "bg-wepac-white/10 text-wepac-text-secondary"
                             : "bg-wepac-card text-wepac-text-secondary"
                         }`}
                       >
@@ -109,11 +109,11 @@ export default function MessagesPage() {
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder="Escreve uma mensagem..."
-                  className="flex-1 rounded bg-wepac-input px-4 py-3 text-sm text-wepac-white placeholder-wepac-text-tertiary outline-none focus:ring-1 focus:ring-wepac-borgonha"
+                  className="flex-1 rounded bg-wepac-input px-4 py-3 text-sm text-wepac-white placeholder-wepac-text-tertiary outline-none focus:ring-1 focus:ring-wepac-white/50"
                 />
                 <button
                   type="submit"
-                  className="rounded bg-wepac-borgonha px-6 py-3 text-sm font-bold text-wepac-white transition-colors hover:bg-wepac-borgonha-light"
+                  className="rounded bg-wepac-white px-6 py-3 text-sm font-bold text-wepac-black transition-colors hover:bg-wepac-accent-muted"
                 >
                   Enviar
                 </button>

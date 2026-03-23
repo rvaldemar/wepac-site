@@ -33,7 +33,7 @@ export default function MentorDashboard() {
           <p className="text-xs text-wepac-text-tertiary">Sessões agendadas</p>
         </div>
         <div className="rounded border border-wepac-border bg-wepac-card p-4 text-center">
-          <p className="font-barlow text-2xl font-bold text-wepac-borgonha">{unreadMessages.length}</p>
+          <p className="font-barlow text-2xl font-bold text-wepac-white">{unreadMessages.length}</p>
           <p className="text-xs text-wepac-text-tertiary">Mensagens por ler</p>
         </div>
         <div className="rounded border border-wepac-border bg-wepac-card p-4 text-center">
@@ -75,11 +75,11 @@ export default function MentorDashboard() {
               <Link
                 key={artist.id}
                 href={`/artists/alpha/mentor/artists/${artist.id}`}
-                className="flex items-center justify-between rounded border border-wepac-border bg-wepac-card p-4 transition-colors hover:border-wepac-borgonha/30"
+                className="flex items-center justify-between rounded border border-wepac-border bg-wepac-card p-4 transition-colors hover:border-wepac-white/20"
               >
                 <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-wepac-borgonha/20">
-                    <span className="text-sm font-bold text-wepac-borgonha">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-wepac-white/10">
+                    <span className="text-sm font-bold text-wepac-white">
                       {artist.name.split(" ").map((n) => n[0]).join("")}
                     </span>
                   </div>

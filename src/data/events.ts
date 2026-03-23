@@ -9,7 +9,9 @@ export interface Event {
   image?: string;
 }
 
-export const events: Event[] = [
+const STRIP = process.env.NEXT_PUBLIC_STRIP_MOCK === "true";
+
+export const events: Event[] = STRIP ? [] : [
   {
     id: "1",
     title: "Concerto à Capela — Ensemble de Cordas",

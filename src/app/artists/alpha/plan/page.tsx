@@ -14,7 +14,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 const STATUS_COLORS: Record<string, string> = {
   not_started: "bg-wepac-input text-wepac-text-tertiary",
-  in_progress: "bg-wepac-borgonha/20 text-wepac-borgonha",
+  in_progress: "bg-wepac-white/10 text-wepac-white",
   completed: "bg-wepac-success-bg text-wepac-success",
   todo: "bg-wepac-input text-wepac-text-tertiary",
   done: "bg-wepac-success-bg text-wepac-success",
@@ -49,7 +49,7 @@ export default function PlanPage() {
             onClick={() => setActiveTab(tab.key)}
             className={`rounded px-4 py-2 text-sm whitespace-nowrap transition-colors ${
               activeTab === tab.key
-                ? "bg-wepac-borgonha text-wepac-white"
+                ? "bg-wepac-white text-wepac-black"
                 : "bg-wepac-card text-wepac-text-tertiary hover:text-wepac-text-secondary"
             }`}
           >
@@ -114,7 +114,7 @@ export default function PlanPage() {
                 {plan.focusAreas.map((a) => (
                   <span
                     key={a}
-                    className="rounded bg-wepac-borgonha/20 px-3 py-1 text-xs text-wepac-borgonha"
+                    className="rounded bg-wepac-white/10 px-3 py-1 text-xs text-wepac-white"
                   >
                     {AREA_LABELS[a]}
                   </span>

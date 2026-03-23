@@ -74,7 +74,7 @@ export function PlatformSidebar() {
                 onClick={() => setMobileOpen(false)}
                 className={`flex items-center gap-3 rounded px-4 py-3 text-sm transition-colors ${
                   pathname === item.href
-                    ? "bg-wepac-borgonha text-wepac-white"
+                    ? "bg-wepac-white text-wepac-black"
                     : "text-wepac-text-secondary hover:bg-wepac-card"
                 }`}
               >
@@ -125,7 +125,7 @@ export function PlatformSidebar() {
               href={item.href}
               className={`flex items-center gap-3 rounded px-3 py-2.5 text-sm transition-colors ${
                 pathname === item.href
-                  ? "bg-wepac-borgonha text-wepac-white"
+                  ? "bg-wepac-white text-wepac-black"
                   : "text-wepac-text-secondary hover:bg-wepac-card hover:text-wepac-white"
               }`}
             >

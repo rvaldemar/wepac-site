@@ -71,7 +71,7 @@ export default function DashboardPage() {
             {user.name}
           </h1>
           <div className="mt-1 flex items-center gap-3">
-            <span className="rounded bg-wepac-borgonha/20 px-2 py-0.5 text-xs font-bold text-wepac-borgonha">
+            <span className="rounded bg-wepac-white/10 px-2 py-0.5 text-xs font-bold text-wepac-white">
               {LEVEL_LABELS[user.level]}
             </span>
             <span className="text-xs text-wepac-text-tertiary">
@@ -90,7 +90,7 @@ export default function DashboardPage() {
           </h2>
           <div className="mt-1 flex gap-4 text-xs text-wepac-text-tertiary">
             <span className="flex items-center gap-1">
-              <span className="inline-block h-2 w-4 bg-wepac-borgonha/40" /> Actual
+              <span className="inline-block h-2 w-4 bg-wepac-white/20" /> Actual
             </span>
             <span className="flex items-center gap-1">
               <span className="inline-block h-2 w-4 border border-dashed border-wepac-border" /> Anterior
@@ -163,7 +163,7 @@ export default function DashboardPage() {
                         <div
                           key={v}
                           className={`h-2 w-4 rounded-sm ${
-                            v <= mockScore ? "bg-wepac-borgonha" : "bg-wepac-input"
+                            v <= mockScore ? "bg-wepac-white" : "bg-wepac-input"
                           }`}
                         />
                       ))}
@@ -191,9 +191,9 @@ export default function DashboardPage() {
               <div
                 className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold ${
                   i < currentPhaseIdx
-                    ? "bg-wepac-borgonha/20 text-wepac-borgonha"
+                    ? "bg-wepac-white/10 text-wepac-white"
                     : i === currentPhaseIdx
-                      ? "bg-wepac-borgonha text-wepac-white"
+                      ? "bg-wepac-white text-wepac-black"
                       : "bg-wepac-input text-wepac-text-tertiary"
                 }`}
               >
@@ -202,7 +202,7 @@ export default function DashboardPage() {
               {i < PHASES.length - 1 && (
                 <div
                   className={`mx-1 h-0.5 flex-1 ${
-                    i < currentPhaseIdx ? "bg-wepac-borgonha/40" : "bg-wepac-input"
+                    i < currentPhaseIdx ? "bg-wepac-white/20" : "bg-wepac-input"
                   }`}
                 />
               )}
@@ -228,7 +228,7 @@ export default function DashboardPage() {
             </h2>
             <Link
               href="/artists/alpha/tasks"
-              className="text-xs text-wepac-borgonha hover:underline"
+              className="text-xs text-wepac-white hover:underline"
             >
               Ver todas →
             </Link>
@@ -291,7 +291,7 @@ export default function DashboardPage() {
               </div>
               <Link
                 href="/artists/alpha/sessions"
-                className="mt-4 block text-xs text-wepac-borgonha hover:underline"
+                className="mt-4 block text-xs text-wepac-white hover:underline"
               >
                 Ver sessões →
               </Link>
@@ -317,13 +317,13 @@ export default function DashboardPage() {
                 {new Date(lastMessage.createdAt).toLocaleDateString("pt-PT")}
               </p>
               {!lastMessage.readAt && (
-                <span className="mt-2 inline-block rounded bg-wepac-borgonha/20 px-2 py-0.5 text-xs text-wepac-borgonha">
+                <span className="mt-2 inline-block rounded bg-wepac-white/10 px-2 py-0.5 text-xs text-wepac-white">
                   Nova
                 </span>
               )}
               <Link
                 href="/artists/alpha/messages"
-                className="mt-3 block text-xs text-wepac-borgonha hover:underline"
+                className="mt-3 block text-xs text-wepac-white hover:underline"
               >
                 Ver mensagens →
               </Link>

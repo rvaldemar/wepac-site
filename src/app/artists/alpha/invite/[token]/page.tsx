@@ -37,7 +37,7 @@ export default function InvitePage() {
               minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded bg-wepac-input px-4 py-3 text-sm text-wepac-white placeholder-wepac-text-tertiary outline-none focus:ring-1 focus:ring-wepac-borgonha"
+              className="mt-1 w-full rounded bg-wepac-input px-4 py-3 text-sm text-wepac-white placeholder-wepac-text-tertiary outline-none focus:ring-1 focus:ring-wepac-white/50"
               placeholder="Mínimo 8 caracteres"
             />
           </div>
@@ -52,14 +52,14 @@ export default function InvitePage() {
               required
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
-              className="mt-1 w-full rounded bg-wepac-input px-4 py-3 text-sm text-wepac-white placeholder-wepac-text-tertiary outline-none focus:ring-1 focus:ring-wepac-borgonha"
+              className="mt-1 w-full rounded bg-wepac-input px-4 py-3 text-sm text-wepac-white placeholder-wepac-text-tertiary outline-none focus:ring-1 focus:ring-wepac-white/50"
               placeholder="Repete a password"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full rounded bg-wepac-borgonha px-4 py-3 text-sm font-bold text-wepac-white transition-colors hover:bg-wepac-borgonha-light"
+            className="w-full rounded bg-wepac-white px-4 py-3 text-sm font-bold text-wepac-black transition-colors hover:bg-wepac-accent-muted"
           >
             Criar conta e continuar
           </button>

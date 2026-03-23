@@ -26,6 +26,7 @@ export default function ImpactoPage() {
       </section>
 
       {/* Numbers */}
+      {process.env.NEXT_PUBLIC_STRIP_MOCK !== "true" && (
       <section className="bg-wepac-gray px-6 py-24 lg:px-8 lg:py-32">
         <div className="mx-auto max-w-7xl">
           <div className="grid grid-cols-2 gap-12 md:grid-cols-4">
@@ -50,6 +51,7 @@ export default function ImpactoPage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Areas */}
       <section className="bg-wepac-black px-6 py-24 lg:px-8 lg:py-32">

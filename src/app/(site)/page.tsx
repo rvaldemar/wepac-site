@@ -68,6 +68,7 @@ export default function Home() {
       </section>
 
       {/* Impacto */}
+      {process.env.NEXT_PUBLIC_STRIP_MOCK !== "true" && (
       <section className="bg-wepac-black px-6 py-24 lg:px-8 lg:py-32">
         <div className="mx-auto max-w-7xl">
           <FadeIn>
@@ -100,6 +101,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Próximos Eventos */}
       <section className="bg-wepac-gray px-6 py-24 lg:px-8 lg:py-32">

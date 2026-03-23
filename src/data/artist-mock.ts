@@ -55,6 +55,8 @@ export const mockUsers: User[] = [
     id: "u4",
     name: "João Ferreira",
     email: "joao@example.com",
+    phone: "+351 912 345 678",
+    inviteToken: "jf-2026-abc",
     role: "artist",
     onboarded: false,
     level: "seed",

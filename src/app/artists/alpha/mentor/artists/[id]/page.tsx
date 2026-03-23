@@ -83,8 +83,8 @@ export default function MentorArtistView({
       </div>
 
       <div className="mt-4 flex items-center gap-4">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-wepac-borgonha/20">
-          <span className="font-barlow text-lg font-bold text-wepac-borgonha">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-wepac-white/10">
+          <span className="font-barlow text-lg font-bold text-wepac-white">
             {artist.name.split(" ").map((n) => n[0]).join("")}
           </span>
         </div>
@@ -93,7 +93,7 @@ export default function MentorArtistView({
             {artist.name}
           </h1>
           <div className="mt-1 flex gap-2">
-            <span className="rounded bg-wepac-borgonha/20 px-2 py-0.5 text-xs font-bold text-wepac-borgonha">
+            <span className="rounded bg-wepac-white/10 px-2 py-0.5 text-xs font-bold text-wepac-white">
               {LEVEL_LABELS[artist.level]}
             </span>
             <span className="text-xs text-wepac-text-tertiary">
@@ -112,7 +112,7 @@ export default function MentorArtistView({
             </h2>
             <Link
               href={`/artists/alpha/mentor/evaluate/${artist.id}`}
-              className="text-xs text-wepac-borgonha hover:underline"
+              className="text-xs text-wepac-white hover:underline"
             >
               Avaliar →
             </Link>
@@ -157,16 +157,16 @@ export default function MentorArtistView({
               <div
                 className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold ${
                   i < currentPhaseIdx
-                    ? "bg-wepac-borgonha/20 text-wepac-borgonha"
+                    ? "bg-wepac-white/10 text-wepac-white"
                     : i === currentPhaseIdx
-                      ? "bg-wepac-borgonha text-wepac-white"
+                      ? "bg-wepac-white text-wepac-black"
                       : "bg-wepac-input text-wepac-text-tertiary"
                 }`}
               >
                 {i < currentPhaseIdx ? "✓" : i + 1}
               </div>
               {i < PHASES.length - 1 && (
-                <div className={`mx-1 h-0.5 flex-1 ${i < currentPhaseIdx ? "bg-wepac-borgonha/40" : "bg-wepac-input"}`} />
+                <div className={`mx-1 h-0.5 flex-1 ${i < currentPhaseIdx ? "bg-wepac-white/20" : "bg-wepac-input"}`} />
               )}
             </div>
           ))}

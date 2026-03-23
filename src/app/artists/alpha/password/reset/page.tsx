@@ -26,7 +26,7 @@ export default function PasswordResetPage() {
             </p>
             <Link
               href="/artists/alpha/login"
-              className="mt-6 inline-block text-sm text-wepac-borgonha hover:underline"
+              className="mt-6 inline-block text-sm text-wepac-white hover:underline"
             >
               Voltar ao login
             </Link>
@@ -49,14 +49,14 @@ export default function PasswordResetPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 w-full rounded bg-wepac-input px-4 py-3 text-sm text-wepac-white placeholder-wepac-text-tertiary outline-none focus:ring-1 focus:ring-wepac-borgonha"
+                className="mt-1 w-full rounded bg-wepac-input px-4 py-3 text-sm text-wepac-white placeholder-wepac-text-tertiary outline-none focus:ring-1 focus:ring-wepac-white/50"
                 placeholder="email@exemplo.com"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full rounded bg-wepac-borgonha px-4 py-3 text-sm font-bold text-wepac-white transition-colors hover:bg-wepac-borgonha-light"
+              className="w-full rounded bg-wepac-white px-4 py-3 text-sm font-bold text-wepac-black transition-colors hover:bg-wepac-accent-muted"
             >
               Enviar link de recuperação
             </button>

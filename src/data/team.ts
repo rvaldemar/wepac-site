@@ -5,7 +5,9 @@ export interface TeamMember {
   image?: string;
 }
 
-export const team: TeamMember[] = [
+const STRIP = process.env.NEXT_PUBLIC_STRIP_MOCK === "true";
+
+export const team: TeamMember[] = STRIP ? [] : [
   {
     name: "Direção Artística",
     role: "Direção",

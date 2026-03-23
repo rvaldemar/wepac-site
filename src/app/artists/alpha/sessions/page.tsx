@@ -10,7 +10,7 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  scheduled: "bg-wepac-borgonha/20 text-wepac-borgonha",
+  scheduled: "bg-wepac-white/10 text-wepac-white",
   completed: "bg-wepac-success-bg text-wepac-success",
   cancelled: "bg-wepac-input text-wepac-text-tertiary",
   no_show: "bg-wepac-error-bg text-wepac-error",
@@ -44,7 +44,7 @@ export default function SessionsPage() {
             {upcoming.map((session) => {
               const mentor = mockUsers.find((u) => u.id === session.mentorId);
               return (
-                <div key={session.id} className="rounded border border-wepac-borgonha/30 bg-wepac-card p-5">
+                <div key={session.id} className="rounded border border-wepac-white/20 bg-wepac-card p-5">
                   <div className="flex items-start justify-between">
                     <div>
                       <p className="text-sm font-medium text-wepac-white">

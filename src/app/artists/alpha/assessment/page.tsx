@@ -40,8 +40,8 @@ export default function AssessmentPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-wepac-black px-6">
         <div className="w-full max-w-md text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-wepac-borgonha/20">
-            <span className="text-2xl text-wepac-borgonha">✓</span>
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-wepac-white/10">
+            <span className="text-2xl text-wepac-white">✓</span>
           </div>
           <h1 className="mt-6 font-barlow text-3xl font-bold text-wepac-white">
             Autoavaliação completa
@@ -52,7 +52,7 @@ export default function AssessmentPage() {
           </p>
           <Link
             href="/artists/alpha/dashboard"
-            className="mt-8 inline-block rounded bg-wepac-borgonha px-8 py-3 text-sm font-bold text-wepac-white transition-colors hover:bg-wepac-borgonha-light"
+            className="mt-8 inline-block rounded bg-wepac-white px-8 py-3 text-sm font-bold text-wepac-black transition-colors hover:bg-wepac-accent-muted"
           >
             Ir para o meu espaço
           </Link>
@@ -74,7 +74,7 @@ export default function AssessmentPage() {
           </div>
           <div className="mt-2 h-1 w-full bg-wepac-input">
             <div
-              className="h-1 bg-wepac-borgonha transition-all"
+              className="h-1 bg-wepac-white transition-all"
               style={{ width: `${((currentArea + 1) / totalAreas) * 100}%` }}
             />
           </div>
@@ -90,9 +90,9 @@ export default function AssessmentPage() {
                 onClick={() => setCurrentArea(i)}
                 className={`rounded px-3 py-1 text-xs transition-colors ${
                   i === currentArea
-                    ? "bg-wepac-borgonha text-wepac-white"
+                    ? "bg-wepac-white text-wepac-black"
                     : done
-                      ? "bg-wepac-card text-wepac-borgonha"
+                      ? "bg-wepac-card text-wepac-white"
                       : "bg-wepac-card text-wepac-text-tertiary"
                 }`}
               >
@@ -125,7 +125,7 @@ export default function AssessmentPage() {
                       onClick={() => handleScore(ind.key, score)}
                       className={`flex h-10 w-10 items-center justify-center rounded text-sm transition-colors ${
                         current === score
-                          ? "bg-wepac-borgonha text-wepac-white"
+                          ? "bg-wepac-white text-wepac-black"
                           : "bg-wepac-input text-wepac-text-tertiary hover:bg-wepac-card hover:text-wepac-text-secondary"
                       }`}
                       title={SCORE_LABELS[score]}
@@ -156,7 +156,7 @@ export default function AssessmentPage() {
           {currentArea < totalAreas - 1 ? (
             <button
               onClick={nextArea}
-              className="rounded bg-wepac-borgonha px-6 py-2 text-sm font-bold text-wepac-white transition-colors hover:bg-wepac-borgonha-light"
+              className="rounded bg-wepac-white px-6 py-2 text-sm font-bold text-wepac-black transition-colors hover:bg-wepac-accent-muted"
             >
               Seguinte
             </button>
@@ -164,7 +164,7 @@ export default function AssessmentPage() {
             <button
               onClick={nextArea}
               disabled={!allComplete}
-              className="rounded bg-wepac-borgonha px-6 py-2 text-sm font-bold text-wepac-white transition-colors hover:bg-wepac-borgonha-light disabled:opacity-30"
+              className="rounded bg-wepac-white px-6 py-2 text-sm font-bold text-wepac-black transition-colors hover:bg-wepac-accent-muted disabled:opacity-30"
             >
               Completar
             </button>
