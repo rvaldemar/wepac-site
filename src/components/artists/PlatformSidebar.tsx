@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { useSession, signOut } from "next-auth/react";
 
 const artistNav = [
   { label: "Dashboard", href: "/artists/alpha/dashboard", icon: "◆" },
@@ -30,6 +31,8 @@ const adminNav = [
 export function PlatformSidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { data: session } = useSession();
+  const role = session?.user?.role;
 
   const isMentor = pathname.includes("/mentor");
   const isAdmin = pathname.includes("/admin");
@@ -37,6 +40,9 @@ export function PlatformSidebar() {
   let nav = artistNav;
   if (isMentor) nav = mentorNav;
   if (isAdmin) nav = adminNav;
+
+  const canMentor = role === "mentor" || role === "admin";
+  const canAdmin = role === "admin";
 
   return (
     <>
@@ -83,7 +89,7 @@ export function PlatformSidebar() {
               </Link>
             ))}
             <div className="my-4 border-t border-wepac-border" />
-            {!isMentor && !isAdmin && (
+            {!isMentor && !isAdmin && canMentor && (
               <Link
                 href="/artists/alpha/mentor"
                 onClick={() => setMobileOpen(false)}
@@ -101,6 +107,12 @@ export function PlatformSidebar() {
                 ← Vista Artista
               </Link>
             )}
+            <button
+              onClick={() => signOut({ callbackUrl: "/artists/alpha/login" })}
+              className="mt-2 px-4 py-2 text-left text-xs text-wepac-text-tertiary hover:text-wepac-text-secondary"
+            >
+              Sair
+            </button>
           </nav>
         </div>
       )}
@@ -136,21 +148,21 @@ export function PlatformSidebar() {
         </nav>
 
         <div className="border-t border-wepac-border p-3">
-          {!isMentor && !isAdmin && (
-            <>
-              <Link
-                href="/artists/alpha/mentor"
-                className="block rounded px-3 py-2 text-xs text-wepac-text-tertiary transition-colors hover:text-wepac-text-secondary"
-              >
-                Vista Mentor →
-              </Link>
-              <Link
-                href="/artists/alpha/admin/users"
-                className="block rounded px-3 py-2 text-xs text-wepac-text-tertiary transition-colors hover:text-wepac-text-secondary"
-              >
-                Admin →
-              </Link>
-            </>
+          {!isMentor && !isAdmin && canMentor && (
+            <Link
+              href="/artists/alpha/mentor"
+              className="block rounded px-3 py-2 text-xs text-wepac-text-tertiary transition-colors hover:text-wepac-text-secondary"
+            >
+              Vista Mentor →
+            </Link>
+          )}
+          {!isMentor && !isAdmin && canAdmin && (
+            <Link
+              href="/artists/alpha/admin/users"
+              className="block rounded px-3 py-2 text-xs text-wepac-text-tertiary transition-colors hover:text-wepac-text-secondary"
+            >
+              Admin →
+            </Link>
           )}
           {(isMentor || isAdmin) && (
             <Link
@@ -160,6 +172,12 @@ export function PlatformSidebar() {
               ← Vista Artista
             </Link>
           )}
+          <button
+            onClick={() => signOut({ callbackUrl: "/artists/alpha/login" })}
+            className="block w-full rounded px-3 py-2 text-left text-xs text-wepac-text-tertiary transition-colors hover:text-wepac-text-secondary"
+          >
+            Sair
+          </button>
         </div>
       </aside>
     </>

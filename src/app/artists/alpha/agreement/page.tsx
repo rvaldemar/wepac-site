@@ -1,7 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { acceptAgreement } from "@/lib/actions/invite";
 
 const COMMITMENTS = [
   "Comprometo-me a estar presente nas sessões agendadas, salvo motivo de força maior comunicado com antecedência.",
@@ -16,6 +18,9 @@ const COMMITMENTS = [
 
 export default function AgreementPage() {
   const [accepted, setAccepted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { data: session } = useSession();
+  const router = useRouter();
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-wepac-black px-6 py-16">
@@ -52,17 +57,26 @@ export default function AgreementPage() {
             </span>
           </label>
 
-          <Link
-            href={accepted ? "/artists/alpha/assessment" : "#"}
-            onClick={(e) => !accepted && e.preventDefault()}
-            className={`mt-6 inline-block rounded px-8 py-3 text-sm font-bold text-wepac-white transition-colors ${
+          <button
+            disabled={!accepted || loading}
+            onClick={async () => {
+              if (!session?.user?.id) return;
+              setLoading(true);
+              try {
+                await acceptAgreement(session.user.id);
+                router.push("/artists/alpha/assessment");
+              } catch {
+                setLoading(false);
+              }
+            }}
+            className={`mt-6 inline-block rounded px-8 py-3 text-sm font-bold transition-colors ${
               accepted
                 ? "bg-wepac-white hover:bg-wepac-accent-muted text-wepac-black"
                 : "cursor-not-allowed bg-wepac-input text-wepac-text-tertiary"
-            }`}
+            } disabled:opacity-50`}
           >
-            Aceitar e continuar
-          </Link>
+            {loading ? "A processar..." : "Aceitar e continuar"}
+          </button>
         </div>
       </div>
     </div>

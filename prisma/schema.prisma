@@ -1,0 +1,358 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===== ENUMS =====
+
+enum UserRole {
+  artist
+  mentor
+  admin
+}
+
+enum ArtistLevel {
+  seed
+  growth
+  signature
+  partner
+}
+
+enum ArtistPhase {
+  diagnosis
+  structuring
+  development
+  activation
+  evaluation
+}
+
+enum EvaluationType {
+  self
+  mentor
+}
+
+enum EvaluationMoment {
+  entry
+  mid
+  exit
+}
+
+enum GoalScope {
+  annual
+  quarterly
+}
+
+enum GoalStatus {
+  not_started
+  in_progress
+  completed
+}
+
+enum TaskStatus {
+  todo
+  in_progress
+  done
+}
+
+enum TaskOrigin {
+  plan
+  session
+  mentor
+  self
+}
+
+enum SessionType {
+  individual
+  group
+}
+
+enum SessionStatus {
+  scheduled
+  completed
+  cancelled
+  no_show
+}
+
+enum AreaKey {
+  physical
+  emotional
+  character
+  spiritual
+  intellectual
+  social
+}
+
+// ===== MODELS =====
+
+model User {
+  id             String       @id @default(cuid())
+  name           String
+  email          String       @unique
+  passwordHash   String?
+  role           UserRole     @default(artist)
+  inviteToken    String?      @unique
+  inviteExpiresAt DateTime?
+  onboarded      Boolean      @default(false)
+  level          ArtistLevel  @default(seed)
+  avatarUrl      String?
+  bio            String?
+  phone          String?
+  currentPhase   ArtistPhase  @default(diagnosis)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  agreements            Agreement[]
+  evaluationsReceived   Evaluation[]       @relation("EvaluationSubject")
+  evaluationsGiven      Evaluation[]       @relation("EvaluationEvaluator")
+  strategicMapsReceived StrategicMapScore[] @relation("StrategicMapSubject")
+  strategicMapsGiven    StrategicMapScore[] @relation("StrategicMapEvaluator")
+  lifePlans             LifePlan[]
+  strategicPlans        StrategicPlan[]
+  tasksOwned            Task[]             @relation("TaskOwner")
+  tasksAssigned         Task[]             @relation("TaskAssigner")
+  sessionsMentored      Session[]
+  sessionAttendances    SessionAttendee[]
+  conversationLinks     ConversationParticipant[]
+  messages              Message[]
+  comments              Comment[]
+  passwordResetTokens   PasswordResetToken[]
+
+  @@map("users")
+}
+
+model Agreement {
+  id         String   @id @default(cuid())
+  userId     String
+  version    String   @default("1.0")
+  acceptedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("agreements")
+}
+
+model Evaluation {
+  id             String           @id @default(cuid())
+  userId         String
+  evaluatorId    String
+  evaluationType EvaluationType
+  moment         EvaluationMoment
+  completedAt    DateTime?
+
+  user      User              @relation("EvaluationSubject", fields: [userId], references: [id], onDelete: Cascade)
+  evaluator User              @relation("EvaluationEvaluator", fields: [evaluatorId], references: [id], onDelete: Cascade)
+  scores    EvaluationScore[]
+
+  @@map("evaluations")
+}
+
+model EvaluationScore {
+  id           String  @id @default(cuid())
+  evaluationId String
+  area         AreaKey
+  indicator    String
+  score        Int
+  notes        String?
+
+  evaluation Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+
+  @@map("evaluation_scores")
+}
+
+model StrategicMapScore {
+  id             String  @id @default(cuid())
+  userId         String
+  evaluatorId    String
+  month          String
+  longTermScore  Int
+  annualScore    Int
+  quarterlyScore Int
+  monthlyScore   Int
+  notes          String?
+
+  user      User @relation("StrategicMapSubject", fields: [userId], references: [id], onDelete: Cascade)
+  evaluator User @relation("StrategicMapEvaluator", fields: [evaluatorId], references: [id], onDelete: Cascade)
+
+  @@map("strategic_map_scores")
+}
+
+model LifePlan {
+  id          String   @id @default(cuid())
+  userId      String
+  whoIAm      String   @default("")
+  whereIAm    String   @default("")
+  whereIGo    String   @default("")
+  whyIDo      String   @default("")
+  commitments String   @default("")
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("life_plans")
+}
+
+model StrategicPlan {
+  id                   String    @id @default(cuid())
+  userId               String
+  quarter              String
+  longTermVision       String    @default("")
+  positioning          String    @default("")
+  focusAreas           AreaKey[]
+  quarterlyReflection  String    @default("")
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goals          Goal[]
+  monthlyActions MonthlyAction[]
+
+  @@map("strategic_plans")
+}
+
+model Goal {
+  id              String     @id @default(cuid())
+  strategicPlanId String
+  scope           GoalScope
+  title           String
+  description     String     @default("")
+  successCriteria String     @default("")
+  deadline        String
+  status          GoalStatus @default(not_started)
+
+  strategicPlan  StrategicPlan  @relation(fields: [strategicPlanId], references: [id], onDelete: Cascade)
+  monthlyActions MonthlyAction[]
+  tasks          Task[]
+
+  @@map("goals")
+}
+
+model MonthlyAction {
+  id              String     @id @default(cuid())
+  strategicPlanId String
+  month           String
+  title           String
+  goalId          String?
+  deadline        String
+  status          TaskStatus @default(todo)
+
+  strategicPlan StrategicPlan @relation(fields: [strategicPlanId], references: [id], onDelete: Cascade)
+  goal          Goal?         @relation(fields: [goalId], references: [id], onDelete: SetNull)
+
+  @@map("monthly_actions")
+}
+
+model Task {
+  id           String     @id @default(cuid())
+  userId       String
+  assignedById String?
+  title        String
+  description  String?
+  origin       TaskOrigin @default(self)
+  goalId       String?
+  deadline     String
+  status       TaskStatus @default(todo)
+
+  user       User      @relation("TaskOwner", fields: [userId], references: [id], onDelete: Cascade)
+  assignedBy User?     @relation("TaskAssigner", fields: [assignedById], references: [id], onDelete: SetNull)
+  goal       Goal?     @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  comments   Comment[] @relation("TaskComments")
+
+  @@map("tasks")
+}
+
+model Session {
+  id              String        @id @default(cuid())
+  mentorId        String
+  sessionType     SessionType
+  scheduledAt     DateTime
+  durationMinutes Int           @default(60)
+  status          SessionStatus @default(scheduled)
+  notes           String?
+  notesPublished  Boolean       @default(false)
+  discussionPoints String?
+
+  mentor    User              @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+  attendees SessionAttendee[]
+
+  @@map("sessions")
+}
+
+model SessionAttendee {
+  id        String  @id @default(cuid())
+  sessionId String
+  userId    String
+  attended  Boolean @default(false)
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, userId])
+
+  @@map("session_attendees")
+}
+
+model Conversation {
+  id           String                    @id @default(cuid())
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  id             String @id @default(cuid())
+  conversationId String
+  userId         String
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+
+  @@map("conversation_participants")
+}
+
+model Message {
+  id             String    @id @default(cuid())
+  conversationId String
+  userId         String
+  body           String
+  readAt         DateTime?
+  createdAt      DateTime  @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+model Comment {
+  id              String   @id @default(cuid())
+  userId          String
+  taskId          String?
+  commentableType String
+  commentableId   String
+  body            String
+  createdAt       DateTime @default(now())
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task Task?  @relation("TaskComments", fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([commentableType, commentableId])
+
+  @@map("comments")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_reset_tokens")
+}

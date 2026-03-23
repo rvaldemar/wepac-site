@@ -31,6 +31,11 @@ cp -r .next/static/* .deploy/.next/static/
 # Copy public assets
 cp -r public .deploy/public
 
+# Copy Prisma files (needed for migrations)
+cp -r prisma .deploy/prisma
+cp -r node_modules/.prisma .deploy/node_modules/.prisma 2>/dev/null || true
+cp -r node_modules/@prisma .deploy/node_modules/@prisma 2>/dev/null || true
+
 echo ""
 echo "=== Deploying to server ==="
 
@@ -43,6 +48,11 @@ ssh ${SERVER} "mkdir -p ${RELEASE_DIR} ${APP_DIR}/shared/public"
 
 # Upload build
 rsync -avz --delete .deploy/ ${SERVER}:${RELEASE_DIR}/
+
+# Run database migrations
+echo ""
+echo "=== Running database migrations ==="
+ssh ${SERVER} "cd ${RELEASE_DIR} && npx prisma migrate deploy"
 
 # Update symlink
 ssh ${SERVER} "ln -snf ${RELEASE_DIR} ${APP_DIR}/current"

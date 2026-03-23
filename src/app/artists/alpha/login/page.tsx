@@ -2,11 +2,16 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-wepac-black px-6">
@@ -22,9 +27,22 @@ export default function LoginPage() {
 
         <form
           className="mt-10 space-y-5"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
-            window.location.href = "/artists/alpha/dashboard";
+            setError("");
+            setLoading(true);
+            const res = await signIn("credentials", {
+              email,
+              password,
+              redirect: false,
+            });
+            setLoading(false);
+            if (res?.error) {
+              setError("Email ou password incorretos.");
+              return;
+            }
+            router.push("/artists/alpha/dashboard");
+            router.refresh();
           }}
         >
           <div>
@@ -75,11 +93,16 @@ export default function LoginPage() {
             </Link>
           </div>
 
+          {error && (
+            <p className="text-sm text-wepac-error">{error}</p>
+          )}
+
           <button
             type="submit"
-            className="w-full rounded bg-wepac-white px-4 py-3 text-sm font-bold text-wepac-black transition-colors hover:bg-wepac-accent-muted"
+            disabled={loading}
+            className="w-full rounded bg-wepac-white px-4 py-3 text-sm font-bold text-wepac-black transition-colors hover:bg-wepac-accent-muted disabled:opacity-50"
           >
-            Entrar
+            {loading ? "A entrar..." : "Entrar"}
           </button>
         </form>
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SessionProvider } from "next-auth/react";
 import { PlatformSidebar } from "@/components/artists/PlatformSidebar";
 
 export const metadata: Metadata = {
@@ -14,11 +15,13 @@ export default function PlatformLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-wepac-dark">
-      <PlatformSidebar />
-      <div className="pt-14 lg:ml-56 lg:pt-0">
-        <div className="min-h-screen">{children}</div>
+    <SessionProvider>
+      <div className="min-h-screen bg-wepac-dark">
+        <PlatformSidebar />
+        <div className="pt-14 lg:ml-56 lg:pt-0">
+          <div className="min-h-screen">{children}</div>
+        </div>
       </div>
-    </div>
+    </SessionProvider>
   );
 }
