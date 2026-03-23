@@ -50,7 +50,7 @@ rsync -avz --delete .deploy/ ${SERVER}:${RELEASE_DIR}/
 # Run database migrations
 echo ""
 echo "=== Running database migrations ==="
-ssh ${SERVER} "cd ${RELEASE_DIR} && npx prisma@6.19.2 migrate deploy"
+ssh ${SERVER} "set -a && source ${APP_DIR}/shared/.env.production && set +a && cd ${RELEASE_DIR} && npx prisma@6.19.2 migrate deploy"
 
 # Update symlink
 ssh ${SERVER} "ln -snf ${RELEASE_DIR} ${APP_DIR}/current"
