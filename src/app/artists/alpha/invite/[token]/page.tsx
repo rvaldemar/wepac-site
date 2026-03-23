@@ -10,7 +10,7 @@ export default function InvitePage() {
     <div className="flex min-h-screen items-center justify-center bg-wepac-black px-6">
       <div className="w-full max-w-sm">
         <div className="text-center">
-          <h1 className="font-cormorant text-3xl font-bold text-wepac-white">
+          <h1 className="font-barlow text-3xl font-bold text-wepac-white">
             Bem-vindo ao Artista Alpha
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-wepac-text-secondary">

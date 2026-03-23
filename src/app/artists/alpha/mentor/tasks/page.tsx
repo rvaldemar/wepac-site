@@ -23,7 +23,7 @@ export default function MentorTasksPage() {
 
   return (
     <div className="p-6 lg:p-8">
-      <h1 className="font-cormorant text-2xl font-bold text-wepac-white">
+      <h1 className="font-barlow text-2xl font-bold text-wepac-white">
         Tarefas — Todos os artistas
       </h1>
 
@@ -74,7 +74,7 @@ export default function MentorTasksPage() {
               <span
                 className={`rounded px-2 py-0.5 text-xs ${
                   task.status === "done"
-                    ? "bg-green-900/30 text-green-400"
+                    ? "bg-wepac-success-bg text-wepac-success"
                     : task.status === "in_progress"
                       ? "bg-wepac-borgonha/20 text-wepac-borgonha"
                       : "bg-wepac-input text-wepac-text-tertiary"

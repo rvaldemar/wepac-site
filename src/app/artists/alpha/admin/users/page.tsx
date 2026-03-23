@@ -48,7 +48,7 @@ export default function AdminUsersPage() {
       <div className="mx-auto max-w-5xl">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-cormorant text-3xl font-bold text-wepac-white">
+            <h1 className="font-barlow text-3xl font-bold text-wepac-white">
               Gestão de Utilizadores
             </h1>
             <p className="mt-1 text-sm text-wepac-text-tertiary">
@@ -66,7 +66,7 @@ export default function AdminUsersPage() {
         {/* Invite form */}
         {showInviteForm && (
           <div className="mt-6 rounded-lg border border-wepac-border bg-wepac-card p-6">
-            <h2 className="font-cormorant text-lg font-bold text-wepac-white">
+            <h2 className="font-barlow text-lg font-bold text-wepac-white">
               Convidar Utilizador
             </h2>
             <form
@@ -131,7 +131,7 @@ export default function AdminUsersPage() {
           ].map((s) => (
             <div key={s.label} className="rounded-lg border border-wepac-border bg-wepac-card p-4">
               <p className="text-xs text-wepac-text-tertiary">{s.label}</p>
-              <p className="mt-1 font-cormorant text-2xl font-bold text-wepac-white">{s.value}</p>
+              <p className="mt-1 font-barlow text-2xl font-bold text-wepac-white">{s.value}</p>
             </div>
           ))}
         </div>
@@ -175,7 +175,7 @@ export default function AdminUsersPage() {
               </div>
               <div className="flex items-center gap-3">
                 {!user.onboarded && (
-                  <span className="rounded bg-yellow-500/10 px-2 py-0.5 text-xs font-medium text-yellow-300">
+                  <span className="rounded bg-wepac-warning-bg px-2 py-0.5 text-xs font-medium text-wepac-warning">
                     Pendente
                   </span>
                 )}

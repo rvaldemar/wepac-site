@@ -84,12 +84,12 @@ export default function MentorArtistView({
 
       <div className="mt-4 flex items-center gap-4">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-wepac-borgonha/20">
-          <span className="font-cormorant text-lg font-bold text-wepac-borgonha">
+          <span className="font-barlow text-lg font-bold text-wepac-borgonha">
             {artist.name.split(" ").map((n) => n[0]).join("")}
           </span>
         </div>
         <div>
-          <h1 className="font-cormorant text-2xl font-bold text-wepac-white">
+          <h1 className="font-barlow text-2xl font-bold text-wepac-white">
             {artist.name}
           </h1>
           <div className="mt-1 flex gap-2">
@@ -107,7 +107,7 @@ export default function MentorArtistView({
       <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="rounded border border-wepac-border bg-wepac-card p-6">
           <div className="flex items-center justify-between">
-            <h2 className="font-cormorant text-lg font-bold text-wepac-white">
+            <h2 className="font-barlow text-lg font-bold text-wepac-white">
               Mapa de Desenvolvimento
             </h2>
             <Link
@@ -126,7 +126,7 @@ export default function MentorArtistView({
         </div>
 
         <div className="rounded border border-wepac-border bg-wepac-card p-6">
-          <h2 className="font-cormorant text-lg font-bold text-wepac-white">
+          <h2 className="font-barlow text-lg font-bold text-wepac-white">
             Mapa Estratégico
           </h2>
           <StrategicRadar
@@ -148,7 +148,7 @@ export default function MentorArtistView({
 
       {/* Progress */}
       <div className="mt-8 rounded border border-wepac-border bg-wepac-card p-6">
-        <h2 className="font-cormorant text-lg font-bold text-wepac-white">
+        <h2 className="font-barlow text-lg font-bold text-wepac-white">
           Progresso Trimestral
         </h2>
         <div className="mt-4 flex items-center justify-between">
@@ -190,7 +190,7 @@ export default function MentorArtistView({
 
       {/* Tasks */}
       <div className="mt-8 rounded border border-wepac-border bg-wepac-card p-6">
-        <h2 className="font-cormorant text-lg font-bold text-wepac-white">
+        <h2 className="font-barlow text-lg font-bold text-wepac-white">
           Tarefas
         </h2>
         <div className="mt-4 space-y-2">

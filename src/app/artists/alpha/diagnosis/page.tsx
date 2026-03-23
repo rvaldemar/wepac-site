@@ -45,7 +45,7 @@ export default function DiagnosisPage() {
 
   return (
     <div className="p-6 lg:p-8">
-      <h1 className="font-cormorant text-2xl font-bold text-wepac-white">
+      <h1 className="font-barlow text-2xl font-bold text-wepac-white">
         Diagnóstico / Avaliação
       </h1>
       <p className="mt-1 text-sm text-wepac-text-tertiary">
@@ -85,7 +85,7 @@ export default function DiagnosisPage() {
           </span>
           {radarPrevious && (
             <span className="flex items-center gap-1">
-              <span className="inline-block h-2 w-4 border border-dashed border-gray-500" />
+              <span className="inline-block h-2 w-4 border border-dashed border-wepac-border" />
               Entrada
             </span>
           )}
@@ -104,7 +104,7 @@ export default function DiagnosisPage() {
                 className="flex w-full items-center justify-between p-4 text-left"
               >
                 <div>
-                  <h3 className="font-cormorant text-lg font-bold text-wepac-white">
+                  <h3 className="font-barlow text-lg font-bold text-wepac-white">
                     {AREA_LABELS[area]}
                   </h3>
                   <div className="mt-1 flex gap-4 text-xs text-wepac-text-tertiary">

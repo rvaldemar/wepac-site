@@ -42,7 +42,7 @@ export default function EvaluatePage({
         ← Voltar ao perfil
       </Link>
 
-      <h1 className="mt-4 font-cormorant text-2xl font-bold text-wepac-white">
+      <h1 className="mt-4 font-barlow text-2xl font-bold text-wepac-white">
         Avaliar {artist.name}
       </h1>
       <p className="mt-1 text-sm text-wepac-text-tertiary">
@@ -67,7 +67,7 @@ export default function EvaluatePage({
       </div>
 
       <div className="mt-8 rounded border border-wepac-border bg-wepac-card p-6">
-        <h2 className="font-cormorant text-xl font-bold text-wepac-white">
+        <h2 className="font-barlow text-xl font-bold text-wepac-white">
           {AREA_LABELS[area]}
         </h2>
 

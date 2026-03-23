@@ -26,7 +26,7 @@ export default function PPVPage() {
 
   return (
     <div className="p-6 lg:p-8">
-      <h1 className="font-cormorant text-2xl font-bold text-wepac-white">
+      <h1 className="font-barlow text-2xl font-bold text-wepac-white">
         Plano de Projeto de Vida
       </h1>
       <p className="mt-1 text-sm text-wepac-text-tertiary">
@@ -43,7 +43,7 @@ export default function PPVPage() {
             <div key={section.key} className="rounded border border-wepac-border bg-wepac-card p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="font-cormorant text-xl font-bold text-wepac-white">
+                  <h2 className="font-barlow text-xl font-bold text-wepac-white">
                     {section.title}
                   </h2>
                   <p className="mt-0.5 text-xs text-wepac-text-tertiary">

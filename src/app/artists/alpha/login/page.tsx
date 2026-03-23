@@ -12,7 +12,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-wepac-black px-6">
       <div className="w-full max-w-sm">
         <div className="text-center">
-          <h1 className="font-cormorant text-3xl font-bold text-wepac-white">
+          <h1 className="font-barlow text-3xl font-bold text-wepac-white">
             Artista Alpha
           </h1>
           <p className="mt-1 text-sm text-wepac-text-tertiary">

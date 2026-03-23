@@ -6,7 +6,7 @@ export default function WelcomePage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-wepac-black px-6">
       <div className="w-full max-w-lg text-center">
-        <h1 className="font-cormorant text-4xl font-bold text-wepac-white md:text-5xl">
+        <h1 className="font-barlow text-4xl font-bold text-wepac-white md:text-5xl">
           Bem-vindo ao Artista Alpha.
         </h1>
 

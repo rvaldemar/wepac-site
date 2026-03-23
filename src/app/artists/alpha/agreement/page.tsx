@@ -20,7 +20,7 @@ export default function AgreementPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-wepac-black px-6 py-16">
       <div className="w-full max-w-lg">
-        <h1 className="font-cormorant text-3xl font-bold text-wepac-white md:text-4xl">
+        <h1 className="font-barlow text-3xl font-bold text-wepac-white md:text-4xl">
           Acordo de Participação
         </h1>
         <p className="mt-4 text-sm text-wepac-text-secondary">

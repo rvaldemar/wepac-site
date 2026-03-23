@@ -51,7 +51,7 @@ export default function AdminSettingsPage() {
   return (
     <div className="min-h-screen bg-wepac-dark px-6 py-10 lg:px-12">
       <div className="mx-auto max-w-3xl">
-        <h1 className="font-cormorant text-3xl font-bold text-wepac-white">
+        <h1 className="font-barlow text-3xl font-bold text-wepac-white">
           Configurações do Programa
         </h1>
         <p className="mt-1 text-sm text-wepac-text-tertiary">
@@ -67,7 +67,7 @@ export default function AdminSettingsPage() {
         >
           {/* General */}
           <section className="rounded-lg border border-wepac-border bg-wepac-card p-6">
-            <h2 className="font-cormorant text-lg font-bold text-wepac-white">Geral</h2>
+            <h2 className="font-barlow text-lg font-bold text-wepac-white">Geral</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-xs text-wepac-text-tertiary">Nome do Programa</label>
@@ -113,7 +113,7 @@ export default function AdminSettingsPage() {
 
           {/* Quarters */}
           <section className="rounded-lg border border-wepac-border bg-wepac-card p-6">
-            <h2 className="font-cormorant text-lg font-bold text-wepac-white">
+            <h2 className="font-barlow text-lg font-bold text-wepac-white">
               Trimestres ({settings.year})
             </h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -185,7 +185,7 @@ export default function AdminSettingsPage() {
 
           {/* Evaluation Moments */}
           <section className="rounded-lg border border-wepac-border bg-wepac-card p-6">
-            <h2 className="font-cormorant text-lg font-bold text-wepac-white">
+            <h2 className="font-barlow text-lg font-bold text-wepac-white">
               Momentos de Avaliação
             </h2>
             <div className="mt-4 space-y-3">
@@ -204,7 +204,7 @@ export default function AdminSettingsPage() {
                     }}
                     className={`rounded px-3 py-1 text-xs font-medium transition-colors ${
                       em.active
-                        ? "bg-green-500/10 text-green-300"
+                        ? "bg-wepac-success-bg text-wepac-success"
                         : "bg-wepac-input text-wepac-text-tertiary"
                     }`}
                   >
@@ -224,7 +224,7 @@ export default function AdminSettingsPage() {
               Guardar Alterações
             </button>
             {saved && (
-              <span className="text-sm text-green-300">Configurações guardadas com sucesso!</span>
+              <span className="text-sm text-wepac-success">Configurações guardadas com sucesso!</span>
             )}
           </div>
         </form>

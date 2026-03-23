@@ -18,7 +18,7 @@ export default function MentorMessagesPage() {
       {/* Sidebar */}
       <div className="w-72 flex-shrink-0 border-r border-wepac-border bg-wepac-black">
         <div className="border-b border-wepac-border p-4">
-          <h1 className="font-cormorant text-lg font-bold text-wepac-white">
+          <h1 className="font-barlow text-lg font-bold text-wepac-white">
             Mensagens
           </h1>
         </div>

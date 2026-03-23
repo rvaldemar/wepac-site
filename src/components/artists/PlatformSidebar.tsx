@@ -44,7 +44,7 @@ export function PlatformSidebar() {
       <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-wepac-black/95 px-4 py-3 backdrop-blur-md lg:hidden">
         <Link
           href="/artists/alpha/dashboard"
-          className="font-cormorant text-lg font-bold text-wepac-white"
+          className="font-barlow text-lg font-bold text-wepac-white"
         >
           Artista Alpha
         </Link>
@@ -109,7 +109,7 @@ export function PlatformSidebar() {
       <aside className="fixed left-0 top-0 hidden h-screen w-56 flex-col border-r border-wepac-border bg-wepac-black lg:flex">
         <div className="border-b border-wepac-border px-5 py-5">
           <Link href="/artists/alpha/dashboard">
-            <span className="font-cormorant text-lg font-bold text-wepac-white">
+            <span className="font-barlow text-lg font-bold text-wepac-white">
               Artista Alpha
             </span>
             <span className="mt-0.5 block text-xs text-wepac-text-tertiary">

@@ -12,7 +12,7 @@ export default function ProfilePage() {
 
   return (
     <div className="p-6 lg:p-8">
-      <h1 className="font-cormorant text-2xl font-bold text-wepac-white">
+      <h1 className="font-barlow text-2xl font-bold text-wepac-white">
         Perfil
       </h1>
       <p className="mt-1 text-sm text-wepac-text-tertiary">
@@ -23,7 +23,7 @@ export default function ProfilePage() {
         {/* Avatar placeholder */}
         <div className="flex items-center gap-4">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-wepac-borgonha/20">
-            <span className="font-cormorant text-xl font-bold text-wepac-borgonha">
+            <span className="font-barlow text-xl font-bold text-wepac-borgonha">
               {user.name.split(" ").map((n) => n[0]).join("")}
             </span>
           </div>

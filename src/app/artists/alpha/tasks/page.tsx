@@ -13,7 +13,7 @@ const STATUS_LABELS: Record<TaskStatus, string> = {
 const STATUS_COLORS: Record<TaskStatus, string> = {
   todo: "bg-wepac-input text-wepac-text-tertiary",
   in_progress: "bg-wepac-borgonha/20 text-wepac-borgonha",
-  done: "bg-green-900/30 text-green-400",
+  done: "bg-wepac-success-bg text-wepac-success",
 };
 
 const ORIGIN_LABELS: Record<string, string> = {
@@ -38,7 +38,7 @@ export default function TasksPage() {
 
   return (
     <div className="p-6 lg:p-8">
-      <h1 className="font-cormorant text-2xl font-bold text-wepac-white">
+      <h1 className="font-barlow text-2xl font-bold text-wepac-white">
         Tarefas
       </h1>
       <p className="mt-1 text-sm text-wepac-text-tertiary">

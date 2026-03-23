@@ -14,7 +14,7 @@ export default function MentorSessionsPage() {
     <div className="p-6 lg:p-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-cormorant text-2xl font-bold text-wepac-white">
+          <h1 className="font-barlow text-2xl font-bold text-wepac-white">
             Sessões
           </h1>
           <p className="mt-1 text-sm text-wepac-text-tertiary">
@@ -111,7 +111,7 @@ export default function MentorSessionsPage() {
                     session.status === "scheduled"
                       ? "bg-wepac-borgonha/20 text-wepac-borgonha"
                       : session.status === "completed"
-                        ? "bg-green-900/30 text-green-400"
+                        ? "bg-wepac-success-bg text-wepac-success"
                         : "bg-wepac-input text-wepac-text-tertiary"
                   }`}
                 >

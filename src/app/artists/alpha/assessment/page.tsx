@@ -43,7 +43,7 @@ export default function AssessmentPage() {
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-wepac-borgonha/20">
             <span className="text-2xl text-wepac-borgonha">✓</span>
           </div>
-          <h1 className="mt-6 font-cormorant text-3xl font-bold text-wepac-white">
+          <h1 className="mt-6 font-barlow text-3xl font-bold text-wepac-white">
             Autoavaliação completa
           </h1>
           <p className="mt-4 text-sm leading-relaxed text-wepac-text-secondary">
@@ -102,7 +102,7 @@ export default function AssessmentPage() {
           })}
         </div>
 
-        <h2 className="font-cormorant text-2xl font-bold text-wepac-white">
+        <h2 className="font-barlow text-2xl font-bold text-wepac-white">
           {AREA_LABELS[area]}
         </h2>
         <p className="mt-1 text-sm text-wepac-text-tertiary">

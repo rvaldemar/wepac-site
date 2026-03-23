@@ -15,9 +15,9 @@ const STATUS_LABELS: Record<string, string> = {
 const STATUS_COLORS: Record<string, string> = {
   not_started: "bg-wepac-input text-wepac-text-tertiary",
   in_progress: "bg-wepac-borgonha/20 text-wepac-borgonha",
-  completed: "bg-green-900/30 text-green-400",
+  completed: "bg-wepac-success-bg text-wepac-success",
   todo: "bg-wepac-input text-wepac-text-tertiary",
-  done: "bg-green-900/30 text-green-400",
+  done: "bg-wepac-success-bg text-wepac-success",
 };
 
 export default function PlanPage() {
@@ -29,7 +29,7 @@ export default function PlanPage() {
 
   return (
     <div className="p-6 lg:p-8">
-      <h1 className="font-cormorant text-2xl font-bold text-wepac-white">
+      <h1 className="font-barlow text-2xl font-bold text-wepac-white">
         Plano Estratégico
       </h1>
       <p className="mt-1 text-sm text-wepac-text-tertiary">
@@ -63,7 +63,7 @@ export default function PlanPage() {
         {/* Long term */}
         {activeTab === "long" && (
           <div className="rounded border border-wepac-border bg-wepac-card p-6">
-            <h2 className="font-cormorant text-xl font-bold text-wepac-white">
+            <h2 className="font-barlow text-xl font-bold text-wepac-white">
               Visão de longo prazo (3–5 anos)
             </h2>
             <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-wepac-text-secondary">
@@ -75,7 +75,7 @@ export default function PlanPage() {
         {/* Annual */}
         {activeTab === "annual" && (
           <div className="space-y-4">
-            <h2 className="font-cormorant text-xl font-bold text-wepac-white">
+            <h2 className="font-barlow text-xl font-bold text-wepac-white">
               Metas Anuais
             </h2>
             {annualGoals.map((goal) => (
@@ -153,7 +153,7 @@ export default function PlanPage() {
         {/* Monthly */}
         {activeTab === "monthly" && (
           <div className="space-y-4">
-            <h2 className="font-cormorant text-xl font-bold text-wepac-white">
+            <h2 className="font-barlow text-xl font-bold text-wepac-white">
               Ações do Mês — Março 2026
             </h2>
             {plan.monthlyActions

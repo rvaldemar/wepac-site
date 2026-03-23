@@ -67,7 +67,7 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-cormorant text-2xl font-bold text-wepac-white">
+          <h1 className="font-barlow text-2xl font-bold text-wepac-white">
             {user.name}
           </h1>
           <div className="mt-1 flex items-center gap-3">
@@ -85,7 +85,7 @@ export default function DashboardPage() {
       <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Development Radar */}
         <div className="rounded border border-wepac-border bg-wepac-card p-6">
-          <h2 className="font-cormorant text-lg font-bold text-wepac-white">
+          <h2 className="font-barlow text-lg font-bold text-wepac-white">
             Mapa de Desenvolvimento
           </h2>
           <div className="mt-1 flex gap-4 text-xs text-wepac-text-tertiary">
@@ -93,7 +93,7 @@ export default function DashboardPage() {
               <span className="inline-block h-2 w-4 bg-wepac-borgonha/40" /> Actual
             </span>
             <span className="flex items-center gap-1">
-              <span className="inline-block h-2 w-4 border border-dashed border-gray-500" /> Anterior
+              <span className="inline-block h-2 w-4 border border-dashed border-wepac-border" /> Anterior
             </span>
           </div>
           <RadarChart
@@ -106,7 +106,7 @@ export default function DashboardPage() {
 
         {/* Strategic Radar */}
         <div className="rounded border border-wepac-border bg-wepac-card p-6">
-          <h2 className="font-cormorant text-lg font-bold text-wepac-white">
+          <h2 className="font-barlow text-lg font-bold text-wepac-white">
             Mapa Estratégico
           </h2>
           <p className="mt-1 text-xs text-wepac-text-tertiary">
@@ -138,7 +138,7 @@ export default function DashboardPage() {
       {selectedArea && (
         <div className="mt-6 rounded border border-wepac-border bg-wepac-card p-6">
           <div className="flex items-center justify-between">
-            <h3 className="font-cormorant text-lg font-bold text-wepac-white">
+            <h3 className="font-barlow text-lg font-bold text-wepac-white">
               {AREA_LABELS[selectedArea]} — Indicadores
             </h3>
             <button
@@ -181,7 +181,7 @@ export default function DashboardPage() {
 
       {/* Trimestral Progress */}
       <div className="mt-8 rounded border border-wepac-border bg-wepac-card p-6">
-        <h2 className="font-cormorant text-lg font-bold text-wepac-white">
+        <h2 className="font-barlow text-lg font-bold text-wepac-white">
           Progresso Trimestral
         </h2>
         <p className="mt-1 text-xs text-wepac-text-tertiary">Semana 8 de 12</p>
@@ -223,7 +223,7 @@ export default function DashboardPage() {
         {/* Tasks */}
         <div className="rounded border border-wepac-border bg-wepac-card p-6">
           <div className="flex items-center justify-between">
-            <h2 className="font-cormorant text-lg font-bold text-wepac-white">
+            <h2 className="font-barlow text-lg font-bold text-wepac-white">
               Próximas Ações
             </h2>
             <Link
@@ -263,7 +263,7 @@ export default function DashboardPage() {
 
         {/* Next Session */}
         <div className="rounded border border-wepac-border bg-wepac-card p-6">
-          <h2 className="font-cormorant text-lg font-bold text-wepac-white">
+          <h2 className="font-barlow text-lg font-bold text-wepac-white">
             Próxima Sessão
           </h2>
           {nextSession ? (
@@ -305,7 +305,7 @@ export default function DashboardPage() {
 
         {/* Recent Messages */}
         <div className="rounded border border-wepac-border bg-wepac-card p-6">
-          <h2 className="font-cormorant text-lg font-bold text-wepac-white">
+          <h2 className="font-barlow text-lg font-bold text-wepac-white">
             Mensagens
           </h2>
           {lastMessage ? (

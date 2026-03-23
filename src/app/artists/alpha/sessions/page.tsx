@@ -11,9 +11,9 @@ const STATUS_LABELS: Record<string, string> = {
 
 const STATUS_COLORS: Record<string, string> = {
   scheduled: "bg-wepac-borgonha/20 text-wepac-borgonha",
-  completed: "bg-green-900/30 text-green-400",
+  completed: "bg-wepac-success-bg text-wepac-success",
   cancelled: "bg-wepac-input text-wepac-text-tertiary",
-  no_show: "bg-red-900/30 text-red-400",
+  no_show: "bg-wepac-error-bg text-wepac-error",
 };
 
 export default function SessionsPage() {
@@ -27,7 +27,7 @@ export default function SessionsPage() {
 
   return (
     <div className="p-6 lg:p-8">
-      <h1 className="font-cormorant text-2xl font-bold text-wepac-white">
+      <h1 className="font-barlow text-2xl font-bold text-wepac-white">
         Sessões
       </h1>
       <p className="mt-1 text-sm text-wepac-text-tertiary">

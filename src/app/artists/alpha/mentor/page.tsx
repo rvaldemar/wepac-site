@@ -15,7 +15,7 @@ export default function MentorDashboard() {
 
   return (
     <div className="p-6 lg:p-8">
-      <h1 className="font-cormorant text-2xl font-bold text-wepac-white">
+      <h1 className="font-barlow text-2xl font-bold text-wepac-white">
         Painel do Mentor
       </h1>
       <p className="mt-1 text-sm text-wepac-text-tertiary">
@@ -25,19 +25,19 @@ export default function MentorDashboard() {
       {/* Quick stats */}
       <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div className="rounded border border-wepac-border bg-wepac-card p-4 text-center">
-          <p className="font-cormorant text-2xl font-bold text-wepac-white">{artists.length}</p>
+          <p className="font-barlow text-2xl font-bold text-wepac-white">{artists.length}</p>
           <p className="text-xs text-wepac-text-tertiary">Artistas</p>
         </div>
         <div className="rounded border border-wepac-border bg-wepac-card p-4 text-center">
-          <p className="font-cormorant text-2xl font-bold text-wepac-white">{pendingSessions.length}</p>
+          <p className="font-barlow text-2xl font-bold text-wepac-white">{pendingSessions.length}</p>
           <p className="text-xs text-wepac-text-tertiary">Sessões agendadas</p>
         </div>
         <div className="rounded border border-wepac-border bg-wepac-card p-4 text-center">
-          <p className="font-cormorant text-2xl font-bold text-wepac-borgonha">{unreadMessages.length}</p>
+          <p className="font-barlow text-2xl font-bold text-wepac-borgonha">{unreadMessages.length}</p>
           <p className="text-xs text-wepac-text-tertiary">Mensagens por ler</p>
         </div>
         <div className="rounded border border-wepac-border bg-wepac-card p-4 text-center">
-          <p className="font-cormorant text-2xl font-bold text-wepac-white">
+          <p className="font-barlow text-2xl font-bold text-wepac-white">
             {mockTasks.filter((t) => t.status !== "done").length}
           </p>
           <p className="text-xs text-wepac-text-tertiary">Tarefas pendentes</p>
@@ -107,10 +107,10 @@ export default function MentorDashboard() {
                   <span
                     className={`h-2.5 w-2.5 rounded-full ${
                       health === "green"
-                        ? "bg-green-500"
+                        ? "bg-wepac-success"
                         : health === "yellow"
-                          ? "bg-yellow-500"
-                          : "bg-red-500"
+                          ? "bg-wepac-warning"
+                          : "bg-wepac-error"
                     }`}
                   />
                 </div>
