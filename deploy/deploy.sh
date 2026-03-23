@@ -31,13 +31,17 @@ cp -r .next/static/* .deploy/.next/static/
 # Copy public assets
 cp -r public .deploy/public
 
-# Copy Prisma files (needed for migrations)
+# Copy Prisma files (needed for migrations on server)
 cp -r prisma .deploy/prisma
-cp -r node_modules/.prisma .deploy/node_modules/.prisma 2>/dev/null || true
-cp -r node_modules/@prisma .deploy/node_modules/@prisma 2>/dev/null || true
-cp -r node_modules/prisma .deploy/node_modules/prisma 2>/dev/null || true
+# Copy prisma CLI + engine packages from project node_modules (not standalone)
+for pkg in .prisma @prisma prisma; do
+  if [ -d "node_modules/$pkg" ]; then
+    mkdir -p ".deploy/node_modules/$(dirname $pkg)"
+    cp -r "node_modules/$pkg" ".deploy/node_modules/$pkg"
+  fi
+done
 mkdir -p .deploy/node_modules/.bin
-cp node_modules/.bin/prisma .deploy/node_modules/.bin/prisma 2>/dev/null || true
+ln -sf ../prisma/build/entry.js .deploy/node_modules/.bin/prisma 2>/dev/null || true
 
 echo ""
 echo "=== Deploying to server ==="
@@ -55,7 +59,7 @@ rsync -avz --delete .deploy/ ${SERVER}:${RELEASE_DIR}/
 # Run database migrations
 echo ""
 echo "=== Running database migrations ==="
-ssh ${SERVER} "cd ${RELEASE_DIR} && node_modules/.bin/prisma migrate deploy"
+ssh ${SERVER} "cd ${RELEASE_DIR} && node node_modules/prisma/build/index.js migrate deploy"
 
 # Update symlink
 ssh ${SERVER} "ln -snf ${RELEASE_DIR} ${APP_DIR}/current"
