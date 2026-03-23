@@ -5,8 +5,16 @@
   --color-wepac-white: #FFFFFF;
   --color-wepac-gray: #DEE0DB;
   --color-wepac-dark: #0A0A0A;
+  --color-wepac-borgonha: #691515;
+  --color-wepac-borgonha-light: #8B1E1E;
+  --color-wepac-card: #1A1A1A;
+  --color-wepac-input: #2A2A2A;
+  --color-wepac-border: #2A2A2A;
+  --color-wepac-text-secondary: #E5E5E5;
+  --color-wepac-text-tertiary: #999999;
   --font-barlow: "Barlow", sans-serif;
   --font-inter: "Inter", sans-serif;
+  --font-cormorant: "Cormorant Garamond", serif;
 }
 
 body {

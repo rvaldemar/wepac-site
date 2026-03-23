@@ -1,0 +1,28 @@
+[Unit]
+Description=WEPAC Next.js Website
+After=network.target
+
+[Service]
+Type=simple
+User=deploy
+Group=deploy
+WorkingDirectory=/var/www/wepac/current
+ExecStart=/usr/bin/node .next/standalone/server.js
+Restart=on-failure
+RestartSec=5
+Environment=NODE_ENV=production
+Environment=PORT=3003
+Environment=HOSTNAME=0.0.0.0
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=wepac
+
+# Security
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/var/www/wepac
+
+[Install]
+WantedBy=multi-user.target
