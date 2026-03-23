@@ -5,10 +5,32 @@ import { FadeIn } from "@/components/FadeIn";
 
 export default function ContactoPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState(false);
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setSubmitted(true);
+    setSending(true);
+    setError(false);
+
+    const form = e.currentTarget;
+    const data = new FormData(form);
+
+    try {
+      const res = await fetch("https://formsubmit.co/ajax/info@wepac.pt", {
+        method: "POST",
+        body: data,
+      });
+      if (res.ok) {
+        setSubmitted(true);
+      } else {
+        setError(true);
+      }
+    } catch {
+      setError(true);
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
@@ -41,7 +63,7 @@ export default function ContactoPage() {
                       Email
                     </p>
                     <p className="mt-1 text-lg text-wepac-white">
-                      geral@wepac.pt
+                      info@wepac.pt
                     </p>
                   </div>
                   <div>
@@ -97,6 +119,9 @@ export default function ContactoPage() {
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+                    <input type="hidden" name="_subject" value="Nova mensagem do site wepac.pt" />
+                    <input type="hidden" name="_template" value="table" />
+                    <input type="text" name="_honey" className="hidden" />
                     <div>
                       <label
                         htmlFor="name"
@@ -171,11 +196,17 @@ export default function ContactoPage() {
                         className="mt-2 w-full border-b border-wepac-white/20 bg-transparent py-3 text-wepac-white outline-none transition-colors focus:border-wepac-white resize-none"
                       />
                     </div>
+                    {error && (
+                      <p className="text-red-400 text-sm">
+                        Erro ao enviar. Tente novamente.
+                      </p>
+                    )}
                     <button
                       type="submit"
-                      className="w-full bg-wepac-white py-3 font-barlow text-sm font-bold uppercase tracking-wider text-wepac-black transition-opacity hover:opacity-90 md:w-auto md:px-12"
+                      disabled={sending}
+                      className="w-full bg-wepac-white py-3 font-barlow text-sm font-bold uppercase tracking-wider text-wepac-black transition-opacity hover:opacity-90 disabled:opacity-50 md:w-auto md:px-12"
                     >
-                      Enviar mensagem
+                      {sending ? "A enviar..." : "Enviar mensagem"}
                     </button>
                   </form>
                 )}

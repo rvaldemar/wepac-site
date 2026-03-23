@@ -62,7 +62,7 @@ export function Footer() {
               Contacto
             </h3>
             <ul className="mt-4 space-y-3 text-sm text-wepac-white/40">
-              <li>geral@wepac.pt</li>
+              <li>info@wepac.pt</li>
               <li>Braga, Portugal</li>
             </ul>
             <div className="mt-6 flex gap-4">

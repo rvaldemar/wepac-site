@@ -569,10 +569,10 @@ export default function ArtistPage() {
               </Link>
               <span className="hidden text-wepac-gray/30 sm:inline">·</span>
               <a
-                href="mailto:geral@wepac.pt"
+                href="mailto:info@wepac.pt"
                 className="text-sm text-white/80 transition-colors hover:text-white"
               >
-                geral@wepac.pt
+                info@wepac.pt
               </a>
             </div>
           </FadeIn>
@@ -583,7 +583,7 @@ export default function ArtistPage() {
                 quando a fase Beta abrir.
               </p>
               <form
-                action="https://formsubmit.co/geral@wepac.pt"
+                action="https://formsubmit.co/info@wepac.pt"
                 method="POST"
                 className="mt-4 flex flex-col gap-3 sm:flex-row"
               >

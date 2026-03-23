@@ -85,7 +85,7 @@ export default function LoginPage() {
 
         <p className="mt-8 text-center text-xs text-wepac-text-tertiary">
           Acesso por convite. Não tens conta?{" "}
-          <a href="mailto:geral@wepac.pt" className="text-wepac-borgonha hover:underline">
+          <a href="mailto:info@wepac.pt" className="text-wepac-borgonha hover:underline">
             Contacta-nos
           </a>
         </p>
