@@ -35,6 +35,9 @@ cp -r public .deploy/public
 cp -r prisma .deploy/prisma
 cp -r node_modules/.prisma .deploy/node_modules/.prisma 2>/dev/null || true
 cp -r node_modules/@prisma .deploy/node_modules/@prisma 2>/dev/null || true
+cp -r node_modules/prisma .deploy/node_modules/prisma 2>/dev/null || true
+mkdir -p .deploy/node_modules/.bin
+cp node_modules/.bin/prisma .deploy/node_modules/.bin/prisma 2>/dev/null || true
 
 echo ""
 echo "=== Deploying to server ==="
@@ -52,7 +55,7 @@ rsync -avz --delete .deploy/ ${SERVER}:${RELEASE_DIR}/
 # Run database migrations
 echo ""
 echo "=== Running database migrations ==="
-ssh ${SERVER} "cd ${RELEASE_DIR} && npx prisma migrate deploy"
+ssh ${SERVER} "cd ${RELEASE_DIR} && node_modules/.bin/prisma migrate deploy"
 
 # Update symlink
 ssh ${SERVER} "ln -snf ${RELEASE_DIR} ${APP_DIR}/current"
