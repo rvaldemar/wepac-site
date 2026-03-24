@@ -52,6 +52,11 @@ echo ""
 echo "=== Running database migrations ==="
 ssh ${SERVER} "set -a && source ${APP_DIR}/shared/.env.production && set +a && cd ${RELEASE_DIR} && npx prisma@6.19.2 migrate deploy"
 
+# Regenerate Prisma client for Linux (build was generated on macOS)
+echo ""
+echo "=== Regenerating Prisma client for Linux ==="
+ssh ${SERVER} "cd ${RELEASE_DIR} && npx prisma@6.19.2 generate"
+
 # Update symlink
 ssh ${SERVER} "ln -snf ${RELEASE_DIR} ${APP_DIR}/current"
 
