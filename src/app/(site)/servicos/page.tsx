@@ -55,7 +55,7 @@ export default function ServicosPage() {
               },
             ].map((service, i) => (
               <FadeIn key={service.title} delay={i * 0.1}>
-                <div className="border border-wepac-white/10 p-8">
+                <div className="border border-wepac-white/10 p-5 md:p-8">
                   <h3 className="font-barlow text-xl font-bold text-wepac-white">
                     {service.title}
                   </h3>
@@ -75,7 +75,7 @@ export default function ServicosPage() {
             <h2 className="font-barlow text-3xl font-bold text-wepac-white md:text-4xl">
               Géneros musicais
             </h2>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-6 md:mt-8 flex flex-wrap gap-2 md:gap-3">
               {[
                 "Música Clássica",
                 "Jazz",
@@ -88,7 +88,7 @@ export default function ServicosPage() {
               ].map((genre) => (
                 <span
                   key={genre}
-                  className="border border-wepac-white/20 px-4 py-2 text-sm text-wepac-white/70"
+                  className="border border-wepac-white/20 px-3 py-1.5 text-xs md:px-4 md:py-2 md:text-sm text-wepac-white/70"
                 >
                   {genre}
                 </span>

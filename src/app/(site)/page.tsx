@@ -47,10 +47,10 @@ export default function Home() {
       <HeroSection />
 
       {/* Positioning statement */}
-      <section className="bg-wepac-black px-6 py-24 lg:px-8 lg:py-32">
+      <section className="bg-wepac-black px-6 py-16 md:py-24 lg:px-8 lg:py-32">
         <div className="mx-auto max-w-4xl">
           <FadeIn>
-            <p className="font-barlow text-3xl font-bold leading-tight text-wepac-white md:text-5xl lg:text-6xl">
+            <p className="font-barlow text-2xl font-bold leading-tight text-wepac-white md:text-5xl lg:text-6xl">
               Arte, educacao e impacto social. Tres projetos, uma missao:
               transformar comunidades atraves da cultura.
             </p>
@@ -75,7 +75,7 @@ export default function Home() {
               <FadeIn key={dept.name} delay={i * 0.1}>
                 <Link
                   href={dept.href}
-                  className="group flex flex-col justify-between border border-wepac-white/10 p-8 transition-colors hover:border-wepac-white/30 min-h-[250px]"
+                  className="group flex flex-col justify-between border border-wepac-white/10 p-5 md:p-8 transition-colors hover:border-wepac-white/30 min-h-[200px] md:min-h-[250px]"
                 >
                   <div>
                     <p className="text-xs font-bold uppercase tracking-widest text-wepac-white/40">
@@ -111,7 +111,7 @@ export default function Home() {
             </h2>
           </FadeIn>
 
-          <div className="mt-16 grid grid-cols-2 gap-8 md:grid-cols-4">
+          <div className="mt-12 md:mt-16 grid grid-cols-2 gap-4 md:gap-8 md:grid-cols-4">
             {[
               { number: "500+", label: "Alunos alcancados" },
               { number: "50+", label: "Eventos realizados" },
@@ -120,7 +120,7 @@ export default function Home() {
             ].map((stat, i) => (
               <FadeIn key={stat.label} delay={i * 0.1}>
                 <div className="text-center">
-                  <p className="font-barlow text-4xl font-bold text-wepac-white md:text-5xl">
+                  <p className="font-barlow text-3xl font-bold text-wepac-white md:text-5xl">
                     {stat.number}
                   </p>
                   <p className="mt-2 text-sm text-wepac-white/50">

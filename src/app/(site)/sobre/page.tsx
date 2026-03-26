@@ -149,7 +149,7 @@ export default function SobrePage() {
             ))}
           </div>
 
-          <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-10 md:mt-16 grid grid-cols-1 gap-6 md:gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
                 title: "Proximidade",
@@ -196,7 +196,7 @@ export default function SobrePage() {
               </h2>
             </FadeIn>
 
-            <div className="mt-16 grid grid-cols-2 gap-12 md:grid-cols-4">
+            <div className="mt-12 md:mt-16 grid grid-cols-2 gap-6 md:gap-12 md:grid-cols-4">
               {[
                 {
                   number: "500+",
@@ -221,7 +221,7 @@ export default function SobrePage() {
               ].map((stat, i) => (
                 <FadeIn key={stat.label} delay={i * 0.1}>
                   <div>
-                    <p className="font-barlow text-4xl font-bold text-wepac-black md:text-5xl">
+                    <p className="font-barlow text-3xl font-bold text-wepac-black md:text-5xl">
                       {stat.number}
                     </p>
                     <p className="mt-2 font-barlow text-lg font-bold text-wepac-black">

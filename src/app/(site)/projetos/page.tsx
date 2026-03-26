@@ -38,7 +38,7 @@ export default function ProjetosPage() {
                 <div className={i % 2 === 1 ? "md:order-2" : ""}>
                   <div className="aspect-[16/10] overflow-hidden bg-wepac-gray/10">
                     <div className="flex h-full items-center justify-center bg-gradient-to-br from-white/5 to-white/0 transition-colors group-hover:from-white/10">
-                      <span className="font-barlow text-5xl font-bold text-wepac-white/10 transition-colors group-hover:text-wepac-white/20">
+                      <span className="font-barlow text-3xl md:text-5xl font-bold text-wepac-white/10 transition-colors group-hover:text-wepac-white/20">
                         {project.name}
                       </span>
                     </div>

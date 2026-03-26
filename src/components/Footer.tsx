@@ -4,7 +4,7 @@ export function Footer() {
   return (
     <footer className="bg-wepac-black border-t border-white/10">
       <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
-        <div className="grid grid-cols-1 gap-12 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-8 md:gap-12 md:grid-cols-4">
           {/* Brand */}
           <div className="md:col-span-1">
             <Link href="/" className="font-barlow text-2xl font-bold text-wepac-white">

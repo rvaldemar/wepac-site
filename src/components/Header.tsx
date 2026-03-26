@@ -60,7 +60,7 @@ export function Header() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="font-inter text-lg text-wepac-white/70 transition-colors hover:text-wepac-white"
+                className="font-inter text-base text-wepac-white/70 transition-colors hover:text-wepac-white"
                 onClick={() => setMenuOpen(false)}
               >
                 {item.name}

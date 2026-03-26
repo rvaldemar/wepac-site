@@ -126,7 +126,7 @@ export function PricingCalculator() {
 
       {/* Quote-only display for custom services */}
       {selected?.quoteOnly && (
-        <div className="border border-wepac-white/10 p-8 text-center">
+        <div className="border border-wepac-white/10 p-5 md:p-8 text-center">
           <p className="text-sm font-bold uppercase tracking-wider text-wepac-white/40">
             Orcamento sob consulta
           </p>
@@ -146,11 +146,11 @@ export function PricingCalculator() {
 
       {/* Price display */}
       {showPrice && (
-        <div className="border border-wepac-white/10 p-8 text-center">
+        <div className="border border-wepac-white/10 p-5 md:p-8 text-center">
           <p className="text-sm font-bold uppercase tracking-wider text-wepac-white/40">
             Valor estimado
           </p>
-          <p className="mt-3 font-barlow text-5xl font-bold text-wepac-white">
+          <p className="mt-3 font-barlow text-4xl md:text-5xl font-bold text-wepac-white">
             {totalPrice}€
           </p>
           {selected.duration && (

@@ -50,7 +50,7 @@ export default function ContactoPage() {
 
       <section className="bg-wepac-dark px-6 py-24 lg:px-8 lg:py-32">
         <div className="mx-auto max-w-7xl">
-          <div className="grid grid-cols-1 gap-16 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-10 md:gap-16 md:grid-cols-2">
             {/* Info */}
             <FadeIn>
               <div>
