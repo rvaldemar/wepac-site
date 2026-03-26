@@ -9,7 +9,6 @@ export function HeroSection() {
       {/* Background texture */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-wepac-black/80 via-transparent to-wepac-black" />
-        {/* Large background text */}
         <div className="absolute inset-0 flex items-center justify-center opacity-[0.03]">
           <span className="whitespace-nowrap font-barlow text-[20vw] font-bold">
             WEPAC
@@ -34,9 +33,9 @@ export function HeroSection() {
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
           className="mt-6 font-barlow text-5xl font-bold leading-none text-wepac-white md:text-7xl lg:text-8xl"
         >
-          Sons que
+          Arte e cultura
           <br />
-          inspiram.
+          que transformam.
         </motion.h1>
 
         <motion.p
@@ -45,8 +44,9 @@ export function HeroSection() {
           transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
           className="mt-8 text-lg text-wepac-white/50 md:text-xl"
         >
-          Arte e educação como motores de mudança social
-          <br className="hidden md:block" /> e valorização do património.
+          Servicos musicais, educacao artistica, patrimonio cultural
+          <br className="hidden md:block" />
+          e desenvolvimento de artistas.
         </motion.p>
 
         <motion.div
@@ -56,16 +56,16 @@ export function HeroSection() {
           className="mt-12 flex flex-col gap-4 sm:flex-row sm:justify-center"
         >
           <Link
-            href="/projetos"
+            href="/servicos"
             className="inline-block bg-wepac-white px-8 py-3 font-barlow text-sm font-bold uppercase tracking-wider text-wepac-black transition-opacity hover:opacity-90"
           >
-            Descobrir projetos
+            Servicos Wessex
           </Link>
           <Link
             href="/sobre"
             className="inline-block border-2 border-wepac-white/30 px-8 py-3 font-barlow text-sm font-bold uppercase tracking-wider text-wepac-white transition-colors hover:border-wepac-white"
           >
-            Sobre a WEPAC
+            Conhecer a WEPAC
           </Link>
         </motion.div>
       </div>

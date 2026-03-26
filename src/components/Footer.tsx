@@ -7,42 +7,26 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-12 md:grid-cols-4">
           {/* Brand */}
           <div className="md:col-span-1">
-            <span className="font-barlow text-2xl font-bold text-wepac-white">wepac</span>
+            <Link href="/" className="font-barlow text-2xl font-bold text-wepac-white">
+              wepac
+            </Link>
             <p className="mt-2 text-sm text-wepac-white/50">Companhia de Artes</p>
             <p className="mt-4 text-sm text-wepac-white/40 leading-relaxed">
-              Sons que inspiram.
+              Arte, educacao e impacto social.
             </p>
           </div>
 
-          {/* Navigation */}
+          {/* Departamentos */}
           <div>
             <h3 className="font-barlow text-sm font-bold uppercase tracking-wider text-wepac-white/60">
-              Navegar
-            </h3>
-            <ul className="mt-4 space-y-3">
-              {["A WEPAC", "Projetos", "Impacto", "Programação"].map((item) => (
-                <li key={item}>
-                  <Link
-                    href={`/${item.toLowerCase().replace(/ /g, "-").replace("a-wepac", "sobre").replace("programação", "programacao")}`}
-                    className="text-sm text-wepac-white/40 transition-colors hover:text-wepac-white"
-                  >
-                    {item}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Projects */}
-          <div>
-            <h3 className="font-barlow text-sm font-bold uppercase tracking-wider text-wepac-white/60">
-              Projetos
+              Departamentos
             </h3>
             <ul className="mt-4 space-y-3">
               {[
+                { name: "Wessex", href: "/servicos" },
                 { name: "Easy Peasy", href: "/projetos/easy-peasy" },
-                { name: "Arte à Capela", href: "/projetos/arte-a-capela" },
-                { name: "Wessex", href: "/projetos/wessex" },
+                { name: "Arte a Capela", href: "/projetos/arte-a-capela" },
+                { name: "Programa Artistas", href: "/artist" },
               ].map((item) => (
                 <li key={item.name}>
                   <Link
@@ -56,13 +40,49 @@ export function Footer() {
             </ul>
           </div>
 
+          {/* Institucional */}
+          <div>
+            <h3 className="font-barlow text-sm font-bold uppercase tracking-wider text-wepac-white/60">
+              Institucional
+            </h3>
+            <ul className="mt-4 space-y-3">
+              {[
+                { name: "A WEPAC", href: "/sobre" },
+                { name: "Agenda", href: "/programacao" },
+                { name: "Parcerias", href: "/parcerias" },
+                { name: "Contacto", href: "/contacto" },
+              ].map((item) => (
+                <li key={item.name}>
+                  <Link
+                    href={item.href}
+                    className="text-sm text-wepac-white/40 transition-colors hover:text-wepac-white"
+                  >
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <Link
+                  href="/artists/alpha/login"
+                  className="text-sm text-wepac-white/30 transition-colors hover:text-wepac-white/60"
+                >
+                  Login Artistas
+                </Link>
+              </li>
+            </ul>
+          </div>
+
           {/* Contact */}
           <div>
             <h3 className="font-barlow text-sm font-bold uppercase tracking-wider text-wepac-white/60">
               Contacto
             </h3>
             <ul className="mt-4 space-y-3 text-sm text-wepac-white/40">
-              <li>info@wepac.pt</li>
+              <li>
+                <a href="mailto:info@wepac.pt" className="transition-colors hover:text-wepac-white">
+                  info@wepac.pt
+                </a>
+              </li>
               <li>Carcavelos, Portugal</li>
             </ul>
             <div className="mt-6 flex gap-4">

@@ -5,12 +5,11 @@ import { useState } from "react";
 
 const navigation = [
   { name: "A WEPAC", href: "/sobre" },
-  { name: "Projetos", href: "/projetos" },
-  { name: "Metodologia", href: "/metodologia" },
-  { name: "Impacto", href: "/impacto" },
-  { name: "Programação", href: "/programacao" },
-  { name: "Serviços", href: "/servicos" },
-  { name: "Media", href: "/media" },
+  { name: "Wessex", href: "/servicos" },
+  { name: "Easy Peasy", href: "/projetos/easy-peasy" },
+  { name: "Arte à Capela", href: "/projetos/arte-a-capela" },
+  { name: "Artistas", href: "/artist" },
+  { name: "Agenda", href: "/programacao" },
   { name: "Contacto", href: "/contacto" },
 ];
 
@@ -25,7 +24,7 @@ export function Header() {
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden lg:flex lg:gap-8">
+        <div className="hidden lg:flex lg:items-center lg:gap-8">
           {navigation.map((item) => (
             <Link
               key={item.name}

@@ -1,8 +1,42 @@
 import Link from "next/link";
-import { projects } from "@/data/projects";
 import { events } from "@/data/events";
 import { HeroSection } from "@/components/HeroSection";
 import { FadeIn } from "@/components/FadeIn";
+
+const departments = [
+  {
+    name: "Wessex",
+    tagline: "Servicos Musicais",
+    description:
+      "Performances musicais de excelencia para eventos privados, corporativos e institucionais. Curadoria artistica dedicada.",
+    href: "/servicos",
+    cta: "Pedir orcamento",
+  },
+  {
+    name: "Easy Peasy",
+    tagline: "Educacao Artistica",
+    description:
+      "Musica e artes performativas em escolas e comunidades. Workshops, residencias artisticas e programas curriculares.",
+    href: "/projetos/easy-peasy",
+    cta: "Saber mais",
+  },
+  {
+    name: "Arte a Capela",
+    tagline: "Patrimonio e Artes",
+    description:
+      "Espacos patrimoniais e espirituais transformados em palcos de experiencias artisticas unicas.",
+    href: "/projetos/arte-a-capela",
+    cta: "Saber mais",
+  },
+  {
+    name: "Programa Artistas",
+    tagline: "Desenvolvimento Artistico",
+    description:
+      "Sistema integrado de desenvolvimento, activacao e consolidacao de artistas. Excelencia artistica, estrutura humana, impacto real.",
+    href: "/artist",
+    cta: "Conhecer o programa",
+  },
+];
 
 export default function Home() {
   const upcomingEvents = events.slice(0, 3);
@@ -12,54 +46,51 @@ export default function Home() {
       {/* Hero */}
       <HeroSection />
 
-      {/* Manifesto */}
+      {/* Positioning statement */}
       <section className="bg-wepac-black px-6 py-24 lg:px-8 lg:py-32">
         <div className="mx-auto max-w-4xl">
           <FadeIn>
             <p className="font-barlow text-3xl font-bold leading-tight text-wepac-white md:text-5xl lg:text-6xl">
-              Unimos arte, formação e impacto social para valorizar o
-              património e transformar vidas com propostas inovadoras,
-              acessíveis e de impacto real.
+              Arte, educacao e impacto social. Tres projetos, uma missao:
+              transformar comunidades atraves da cultura.
             </p>
           </FadeIn>
         </div>
       </section>
 
-      {/* Projetos */}
+      {/* Department entry points */}
       <section className="bg-wepac-dark px-6 py-24 lg:px-8 lg:py-32">
         <div className="mx-auto max-w-7xl">
           <FadeIn>
             <p className="text-sm font-bold uppercase tracking-widest text-wepac-white/40">
-              Projetos
+              O que fazemos
             </p>
             <h2 className="mt-2 font-barlow text-3xl font-bold text-wepac-white md:text-4xl">
-              O que fazemos
+              Quatro caminhos, um proposito
             </h2>
           </FadeIn>
 
-          <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-3">
-            {projects.map((project, i) => (
-              <FadeIn key={project.slug} delay={i * 0.15}>
+          <div className="mt-16 grid grid-cols-1 gap-6 md:grid-cols-2">
+            {departments.map((dept, i) => (
+              <FadeIn key={dept.name} delay={i * 0.1}>
                 <Link
-                  href={`/projetos/${project.slug}`}
-                  className="group block"
+                  href={dept.href}
+                  className="group flex flex-col justify-between border border-wepac-white/10 p-8 transition-colors hover:border-wepac-white/30 min-h-[250px]"
                 >
-                  <div className="aspect-[4/3] overflow-hidden bg-wepac-gray/10">
-                    <div className="flex h-full items-center justify-center bg-gradient-to-br from-white/5 to-white/0 transition-colors group-hover:from-white/10">
-                      <span className="font-barlow text-4xl font-bold text-wepac-white/20 transition-colors group-hover:text-wepac-white/40">
-                        {project.name}
-                      </span>
-                    </div>
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-widest text-wepac-white/40">
+                      {dept.tagline}
+                    </p>
+                    <h3 className="mt-2 font-barlow text-2xl font-bold text-wepac-white md:text-3xl">
+                      {dept.name}
+                    </h3>
+                    <p className="mt-4 leading-relaxed text-wepac-white/50">
+                      {dept.description}
+                    </p>
                   </div>
-                  <h3 className="mt-4 font-barlow text-xl font-bold text-wepac-white">
-                    {project.name}
-                  </h3>
-                  <p className="mt-1 text-sm text-wepac-white/50">
-                    {project.tagline}
-                  </p>
-                  <p className="mt-3 text-sm leading-relaxed text-wepac-white/40">
-                    {project.description}
-                  </p>
+                  <span className="mt-6 inline-block font-barlow text-sm font-bold uppercase tracking-wider text-wepac-white/40 transition-colors group-hover:text-wepac-white">
+                    {dept.cta} &rarr;
+                  </span>
                 </Link>
               </FadeIn>
             ))}
@@ -82,10 +113,10 @@ export default function Home() {
 
           <div className="mt-16 grid grid-cols-2 gap-8 md:grid-cols-4">
             {[
-              { number: "500+", label: "Alunos alcançados" },
+              { number: "500+", label: "Alunos alcancados" },
               { number: "50+", label: "Eventos realizados" },
               { number: "15+", label: "Parceiros" },
-              { number: "10+", label: "Espaços patrimoniais" },
+              { number: "10+", label: "Espacos patrimoniais" },
             ].map((stat, i) => (
               <FadeIn key={stat.label} delay={i * 0.1}>
                 <div className="text-center">
@@ -103,15 +134,16 @@ export default function Home() {
       </section>
       )}
 
-      {/* Próximos Eventos */}
+      {/* Proximos Eventos */}
+      {upcomingEvents.length > 0 && (
       <section className="bg-wepac-gray px-6 py-24 lg:px-8 lg:py-32">
         <div className="mx-auto max-w-7xl">
           <FadeIn>
             <p className="text-sm font-bold uppercase tracking-widest text-wepac-black/40">
-              Programação
+              Agenda
             </p>
             <h2 className="mt-2 font-barlow text-3xl font-bold text-wepac-black md:text-4xl">
-              Próximos eventos
+              Proximos eventos
             </h2>
           </FadeIn>
 
@@ -150,14 +182,15 @@ export default function Home() {
                 href="/programacao"
                 className="inline-block border-2 border-wepac-black px-8 py-3 font-barlow text-sm font-bold uppercase tracking-wider text-wepac-black transition-colors hover:bg-wepac-black hover:text-wepac-white"
               >
-                Ver toda a programação
+                Ver toda a agenda
               </Link>
             </div>
           </FadeIn>
         </div>
       </section>
+      )}
 
-      {/* CTA Parcerias */}
+      {/* CTA */}
       <section className="bg-wepac-black px-6 py-24 lg:px-8 lg:py-32">
         <div className="mx-auto max-w-3xl text-center">
           <FadeIn>
@@ -165,21 +198,21 @@ export default function Home() {
               Vamos criar juntos?
             </h2>
             <p className="mt-4 text-lg text-wepac-white/50">
-              Procuramos parceiros que acreditem no poder transformador da
-              cultura e da educação.
+              Parceiros, instituicoes, escolas, empresas — procuramos quem
+              acredite no poder transformador da cultura.
             </p>
             <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
               <Link
-                href="/parcerias"
+                href="/contacto"
                 className="inline-block bg-wepac-white px-8 py-3 font-barlow text-sm font-bold uppercase tracking-wider text-wepac-black transition-opacity hover:opacity-90"
               >
-                Parcerias
+                Contacto
               </Link>
               <Link
-                href="/contacto"
+                href="/servicos/orcamento"
                 className="inline-block border-2 border-wepac-white px-8 py-3 font-barlow text-sm font-bold uppercase tracking-wider text-wepac-white transition-colors hover:bg-wepac-white hover:text-wepac-black"
               >
-                Contacto
+                Orcamento Wessex
               </Link>
             </div>
           </FadeIn>
