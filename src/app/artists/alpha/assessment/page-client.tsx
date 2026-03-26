@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { OnboardingStepper } from "@/components/artists/OnboardingStepper";
 import {
  AREA_KEYS,
  AREA_LABELS,
@@ -70,7 +71,8 @@ export default function AssessmentPageClient({ userId }: { userId: string }) {
 
  if (completed) {
   return (
-   <div className="flex min-h-screen items-center justify-center bg-wepac-black px-6">
+   <div className="flex min-h-screen items-center justify-center bg-wepac-black px-6 pt-16">
+    <OnboardingStepper currentStep={2} />
     <div className="w-full max-w-md text-center">
      <div className="mx-auto flex h-16 w-16 items-center justify-center bg-wepac-white/10">
       <span className="text-2xl text-wepac-white">✓</span>
@@ -94,7 +96,8 @@ export default function AssessmentPageClient({ userId }: { userId: string }) {
  }
 
  return (
-  <div className="min-h-screen bg-wepac-black px-6 py-16">
+  <div className="min-h-screen bg-wepac-black px-6 pb-16 pt-16">
+   <OnboardingStepper currentStep={2} />
    <div className="mx-auto max-w-xl">
     {/* Progress */}
     <div className="mb-8">

@@ -14,13 +14,13 @@ const STRIP = process.env.NEXT_PUBLIC_STRIP_MOCK === "true";
 export const events: Event[] = STRIP ? [] : [
   {
     id: "1",
-    title: "Concerto a Capela — Ensemble de Cordas",
+    title: "Concerto à Capela — Ensemble de Cordas",
     date: "2026-04-12",
     time: "21:00",
     location: "Igreja de Santo Amaro, Oeiras",
-    project: "Arte a Capela",
+    project: "Arte à Capela",
     description:
-      "Uma noite de musica de camara num dos espacos mais emblematicos de Oeiras.",
+      "Uma noite de música de câmara num dos espaços mais emblemáticos de Oeiras.",
   },
   {
     id: "2",
@@ -30,7 +30,7 @@ export const events: Event[] = STRIP ? [] : [
     location: "Escola EB1 de Carcavelos",
     project: "Easy Peasy",
     description:
-      "Workshop de percussao e movimento corporal para alunos do 1o ciclo.",
+      "Workshop de percussão e movimento corporal para alunos do 1.º ciclo.",
   },
   {
     id: "3",
@@ -44,12 +44,12 @@ export const events: Event[] = STRIP ? [] : [
   },
   {
     id: "4",
-    title: "Arte a Capela — Musica Antiga",
+    title: "Arte à Capela — Música Antiga",
     date: "2026-05-15",
     time: "21:30",
-    location: "Ermida de Sao Jeronimo, Belem",
-    project: "Arte a Capela",
+    location: "Ermida de São Jerónimo, Belém",
+    project: "Arte à Capela",
     description:
-      "Concerto de musica antiga em instrumentos de epoca.",
+      "Concerto de música antiga em instrumentos de época.",
   },
 ];

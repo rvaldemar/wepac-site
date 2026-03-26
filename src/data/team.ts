@@ -9,8 +9,8 @@ const STRIP = process.env.NEXT_PUBLIC_STRIP_MOCK === "true";
 
 export const team: TeamMember[] = STRIP ? [] : [
   {
-    name: "Direção Artística",
-    role: "Direção",
+    name: "Direcção Artística",
+    role: "Direcção",
     bio: "Responsável pela visão criativa e curadoria de todos os projetos WEPAC.",
   },
   {
@@ -21,7 +21,7 @@ export const team: TeamMember[] = STRIP ? [] : [
   {
     name: "Produção",
     role: "Produção",
-    bio: "Gestão logística e produção de eventos e espetáculos.",
+    bio: "Gestão logística e produção de eventos e espectáculos.",
   },
   {
     name: "Comunicação",

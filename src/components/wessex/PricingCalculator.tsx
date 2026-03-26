@@ -52,13 +52,13 @@ export function PricingCalculator() {
           className="mt-2 w-full border-b border-wepac-white/20 bg-transparent py-3 text-wepac-white outline-none transition-colors focus:border-wepac-white"
         >
           <option value="" className="bg-wepac-black">
-            Selecione o ensemble
+            Seleciona o ensemble
           </option>
-          <optgroup label="Ensembles Classicos">
+          <optgroup label="Ensembles Clássicos">
             {classicalEnsembles.map((e) => (
               <option key={e.id} value={e.id} className="bg-wepac-black">
                 {e.name}
-                {e.musicians ? ` (${e.musicians} Musicos)` : ""}
+                {e.musicians ? ` (${e.musicians} Músicos)` : ""}
               </option>
             ))}
           </optgroup>
@@ -66,7 +66,7 @@ export function PricingCalculator() {
             {bandEnsembles.map((e) => (
               <option key={e.id} value={e.id} className="bg-wepac-black">
                 {e.name}
-                {e.musicians ? ` (${e.musicians} Musicos)` : ""}
+                {e.musicians ? ` (${e.musicians} Músicos)` : ""}
               </option>
             ))}
           </optgroup>
@@ -84,7 +84,7 @@ export function PricingCalculator() {
       {selected && !selected.quoteOnly && (
         <div>
           <label className="block text-sm font-bold uppercase tracking-wider text-wepac-white/40">
-            Tipo de Servico
+            Tipo de Serviço
           </label>
           <select
             value={effectiveService}
@@ -92,7 +92,7 @@ export function PricingCalculator() {
             className="mt-2 w-full border-b border-wepac-white/20 bg-transparent py-3 text-wepac-white outline-none transition-colors focus:border-wepac-white"
           >
             <option value="" className="bg-wepac-black">
-              Selecione o tipo de servico
+              Seleciona o tipo de serviço
             </option>
             {availableServices.map((st) => (
               <option key={st} value={st} className="bg-wepac-black">
@@ -102,7 +102,7 @@ export function PricingCalculator() {
           </select>
           {selected.category === "band" && (
             <p className="mt-2 text-sm text-wepac-white/40">
-              As bandas atuam apenas em formato Cocktails / Copo d&apos;Agua (2
+              As bandas atuam apenas em formato Cocktails / Copo d&apos;Água (2
               horas).
             </p>
           )}
@@ -128,18 +128,18 @@ export function PricingCalculator() {
       {selected?.quoteOnly && (
         <div className="border border-wepac-white/10 p-5 md:p-8 text-center">
           <p className="text-sm font-bold uppercase tracking-wider text-wepac-white/40">
-            Orcamento sob consulta
+            Orçamento sob consulta
           </p>
           <p className="mt-4 text-wepac-white/60 leading-relaxed">
             {selected.description}
           </p>
           <Link
             href={`/contacto?subject=servicos&message=${encodeURIComponent(
-              `Pedido Wessex: ${selected.name} — gostaria de receber um orcamento personalizado.`
+              `Pedido Wessex: ${selected.name} — gostaria de receber um orçamento personalizado.`
             )}`}
             className="mt-6 inline-block bg-wepac-white px-8 py-3 font-barlow text-sm font-bold uppercase tracking-wider text-wepac-black transition-opacity hover:opacity-90"
           >
-            Pedir orcamento
+            Pedir orçamento
           </Link>
         </div>
       )}
@@ -155,7 +155,7 @@ export function PricingCalculator() {
           </p>
           {selected.duration && (
             <p className="mt-2 text-sm text-wepac-white/40">
-              Preco para {selected.duration} de performance
+              Preço para {selected.duration} de performance
             </p>
           )}
           {addSom && (
@@ -164,16 +164,16 @@ export function PricingCalculator() {
             </p>
           )}
           <p className="mt-4 text-xs text-wepac-white/30">
-            Eventos fora de Carcavelos/Lisboa sujeitos a taxa de deslocacao (custos Michelin + estadia se aplicavel).
+            Eventos fora de Carcavelos/Lisboa sujeitos a taxa de deslocação (custos Michelin + estadia se aplicável).
           </p>
 
           <Link
             href={`/contacto?subject=servicos&message=${encodeURIComponent(
-              `Orcamento Wessex: ${selected.name}${selected.musicians ? ` (${selected.musicians} musicos)` : ""} — ${SERVICE_TYPE_LABELS[effectiveService]} — ${totalPrice}€`
+              `Orçamento Wessex: ${selected.name}${selected.musicians ? ` (${selected.musicians} músicos)` : ""} — ${SERVICE_TYPE_LABELS[effectiveService]} — ${totalPrice}€`
             )}`}
             className="mt-6 inline-block bg-wepac-white px-8 py-3 font-barlow text-sm font-bold uppercase tracking-wider text-wepac-black transition-opacity hover:opacity-90"
           >
-            Pedir orcamento formal
+            Pedir orçamento formal
           </Link>
         </div>
       )}

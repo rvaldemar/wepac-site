@@ -6,33 +6,33 @@ import { FadeIn } from "@/components/FadeIn";
 const departments = [
   {
     name: "Wessex",
-    tagline: "Servicos Musicais",
+    tagline: "Serviços Musicais",
     description:
-      "Performances musicais de excelencia para eventos privados, corporativos e institucionais. Curadoria artistica dedicada.",
+      "Performances musicais de excelência para eventos privados, corporativos e institucionais. Curadoria artística dedicada.",
     href: "/servicos",
-    cta: "Pedir orcamento",
+    cta: "Pedir orçamento",
   },
   {
     name: "Easy Peasy",
-    tagline: "Educacao Artistica",
+    tagline: "Educação Artística",
     description:
-      "Musica e artes performativas em escolas e comunidades. Workshops, residencias artisticas e programas curriculares.",
+      "Música e artes performativas em escolas e comunidades. Workshops, residências artísticas e programas curriculares.",
     href: "/projetos/easy-peasy",
     cta: "Saber mais",
   },
   {
-    name: "Arte a Capela",
-    tagline: "Patrimonio e Artes",
+    name: "Arte à Capela",
+    tagline: "Património e Artes",
     description:
-      "Espacos patrimoniais e espirituais transformados em palcos de experiencias artisticas unicas.",
+      "Espaços patrimoniais e espirituais transformados em palcos de experiências artísticas únicas.",
     href: "/projetos/arte-a-capela",
     cta: "Saber mais",
   },
   {
     name: "Programa Artistas",
-    tagline: "Desenvolvimento Artistico",
+    tagline: "Desenvolvimento Artístico",
     description:
-      "Sistema integrado de desenvolvimento, activacao e consolidacao de artistas. Excelencia artistica, estrutura humana, impacto real.",
+      "Sistema integrado de desenvolvimento, ativação e consolidação de artistas. Excelência artística, estrutura humana, impacto real.",
     href: "/artist",
     cta: "Conhecer o programa",
   },
@@ -51,8 +51,8 @@ export default function Home() {
         <div className="mx-auto max-w-4xl">
           <FadeIn>
             <p className="font-barlow text-2xl font-bold leading-tight text-wepac-white md:text-5xl lg:text-6xl">
-              Unimos arte, formacao e impacto social para valorizar o patrimonio
-              e transformar vidas com propostas inovadoras, acessiveis e de
+              Unimos arte, formação e impacto social para valorizar o património
+              e transformar vidas com propostas inovadoras, acessíveis e de
               impacto real.
             </p>
           </FadeIn>
@@ -67,7 +67,7 @@ export default function Home() {
               O que fazemos
             </p>
             <h2 className="mt-2 font-barlow text-3xl font-bold text-wepac-white md:text-4xl">
-              Quatro caminhos, um proposito
+              Quatro caminhos, um propósito
             </h2>
           </FadeIn>
 
@@ -114,10 +114,10 @@ export default function Home() {
 
           <div className="mt-12 md:mt-16 grid grid-cols-2 gap-4 md:gap-8 md:grid-cols-4">
             {[
-              { number: "500+", label: "Alunos alcancados" },
+              { number: "500+", label: "Alunos alcançados" },
               { number: "50+", label: "Eventos realizados" },
               { number: "15+", label: "Parceiros" },
-              { number: "10+", label: "Espacos patrimoniais" },
+              { number: "10+", label: "Espaços patrimoniais" },
             ].map((stat, i) => (
               <FadeIn key={stat.label} delay={i * 0.1}>
                 <div className="text-center">
@@ -144,7 +144,7 @@ export default function Home() {
               Agenda
             </p>
             <h2 className="mt-2 font-barlow text-3xl font-bold text-wepac-black md:text-4xl">
-              Proximos eventos
+              Próximos eventos
             </h2>
           </FadeIn>
 
@@ -199,7 +199,7 @@ export default function Home() {
               Vamos criar juntos?
             </h2>
             <p className="mt-4 text-lg text-wepac-white/50">
-              Parceiros, instituicoes, escolas, empresas — procuramos quem
+              Parceiros, instituições, escolas, empresas — procuramos quem
               acredite no poder transformador da cultura.
             </p>
             <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
@@ -213,7 +213,7 @@ export default function Home() {
                 href="/servicos/orcamento"
                 className="inline-block border-2 border-wepac-white px-8 py-3 font-barlow text-sm font-bold uppercase tracking-wider text-wepac-white transition-colors hover:bg-wepac-white hover:text-wepac-black"
               >
-                Orcamento Wessex
+                Orçamento Wessex
               </Link>
             </div>
           </FadeIn>

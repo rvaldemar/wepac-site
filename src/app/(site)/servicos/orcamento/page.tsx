@@ -3,9 +3,9 @@ import { FadeIn } from "@/components/FadeIn";
 import { OrcamentoTabs } from "@/components/wessex/OrcamentoTabs";
 
 export const metadata: Metadata = {
-  title: "Orcamento | Servicos Wessex",
+  title: "Orçamento | Serviços Wessex",
   description:
-    "Simulador de orcamento para servicos musicais Wessex da WEPAC.",
+    "Simulador de orçamento para serviços musicais Wessex da WEPAC.",
 };
 
 export default function OrcamentoPage() {
@@ -15,10 +15,10 @@ export default function OrcamentoPage() {
         <div className="mx-auto max-w-4xl">
           <FadeIn>
             <p className="text-sm font-bold uppercase tracking-widest text-wepac-white/40">
-              Servicos &middot; Wessex
+              Serviços &middot; Wessex
             </p>
             <h1 className="mt-3 font-barlow text-3xl font-bold text-wepac-white md:text-5xl">
-              Orcamento
+              Orçamento
             </h1>
             <p className="mt-3 text-base text-wepac-white/60">
               Simule o investimento ou fale com o nosso assistente.

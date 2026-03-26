@@ -105,13 +105,13 @@ export default function ServicosPage() {
                 href="/servicos/orcamento"
                 className="mt-6 inline-block bg-wepac-white px-8 py-3 font-barlow text-sm font-bold uppercase tracking-wider text-wepac-black transition-opacity hover:opacity-90"
               >
-                Simular orcamento
+                Simular orçamento
               </Link>
               <Link
                 href="/contacto"
                 className="mt-3 block text-sm text-wepac-white/40 transition-colors hover:text-wepac-white/60"
               >
-                Ou contacte-nos diretamente
+                Ou contacte-nos directamente
               </Link>
             </div>
           </FadeIn>

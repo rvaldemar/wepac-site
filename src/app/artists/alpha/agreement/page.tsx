@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { acceptAgreement } from "@/lib/actions/invite";
+import { OnboardingStepper } from "@/components/artists/OnboardingStepper";
 
 const COMMITMENTS = [
  "Comprometo-me a estar presente nas sessões agendadas, salvo motivo de força maior comunicado com antecedência.",
@@ -23,7 +24,8 @@ export default function AgreementPage() {
  const router = useRouter();
 
  return (
-  <div className="flex min-h-screen items-center justify-center bg-wepac-black px-6 py-16">
+  <div className="flex min-h-screen items-center justify-center bg-wepac-black px-6 pb-16 pt-16">
+   <OnboardingStepper currentStep={1} />
    <div className="w-full max-w-lg">
     <h1 className="font-barlow text-3xl font-bold text-wepac-white md:text-4xl">
      Acordo de Participação

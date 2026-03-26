@@ -502,7 +502,7 @@ export default function ArtistPage() {
           <FadeIn delay={0.1}>
             <p className="mt-8 text-lg leading-relaxed text-white/80">
               O programa é sustentado por uma equipa multidisciplinar que
-              intervém diretamente no desenvolvimento do artista.
+              intervém directamente no desenvolvimento do artista.
             </p>
           </FadeIn>
           <div className="mt-10 flex flex-wrap gap-4">

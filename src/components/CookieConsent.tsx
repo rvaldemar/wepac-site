@@ -32,7 +32,7 @@ export function CookieConsent() {
             href="/privacidade"
             className="text-wepac-gray underline hover:text-wepac-white"
           >
-            Politica de Privacidade
+            Política de Privacidade
           </Link>
         </p>
         <div className="flex gap-2 flex-shrink-0">

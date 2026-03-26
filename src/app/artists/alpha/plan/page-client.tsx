@@ -1,7 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { AREA_LABELS, type AreaKey } from "@/lib/types/artist";
+
+const MONTH_NAMES_PT = [
+ "Janeiro", "Fevereiro", "Marco", "Abril", "Maio", "Junho",
+ "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+];
+
+function getCurrentMonthLabel(): string {
+ const now = new Date();
+ return `${MONTH_NAMES_PT[now.getMonth()]} ${now.getFullYear()}`;
+}
+
+function getCurrentMonthKey(): string {
+ const now = new Date();
+ const m = String(now.getMonth() + 1).padStart(2, "0");
+ return `${now.getFullYear()}-${m}`;
+}
 
 const STATUS_LABELS: Record<string, string> = {
  not_started: "Não iniciado",
@@ -196,10 +212,10 @@ export default function PlanPageClient({ plan }: Props) {
     {activeTab === "monthly" && (
      <div className="space-y-4">
       <h2 className="font-barlow text-xl font-bold text-wepac-white">
-       Ações do Mês — Março 2026
+       Acoes do Mes — {getCurrentMonthLabel()}
       </h2>
       {plan.monthlyActions
-       .filter((a) => a.month === "2026-03")
+       .filter((a) => a.month === getCurrentMonthKey())
        .map((action) => (
         <div key={action.id} className="flex items-center justify-between border border-wepac-border bg-wepac-card p-4">
          <div>

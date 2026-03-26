@@ -5,7 +5,7 @@ import { team } from "@/data/team";
 export const metadata: Metadata = {
   title: "A WEPAC",
   description:
-    "A WEPAC — Companhia de Artes. Missao, visao, metodologia, impacto e equipa.",
+    "A WEPAC — Companhia de Artes. Missão, visão, metodologia, impacto e equipa.",
 };
 
 export default function SobrePage() {
@@ -32,11 +32,11 @@ export default function SobrePage() {
         <div className="mx-auto max-w-4xl">
           <FadeIn>
             <p className="text-lg leading-relaxed text-wepac-white/70 md:text-xl">
-              A WEPAC — Companhia de Artes e uma estrutura cultural
-              multidisciplinar portuguesa dedicada a criacao de projetos
-              artisticos, educativos e comunitarios. Trabalhamos na interseccao
-              entre arte, educacao e impacto social, promovendo o acesso a
-              cultura e valorizando o patrimonio historico.
+              A WEPAC — Companhia de Artes é uma estrutura cultural
+              multidisciplinar portuguesa dedicada à criação de projetos
+              artísticos, educativos e comunitários. Trabalhamos na intersecção
+              entre arte, educação e impacto social, promovendo o acesso à
+              cultura e valorizando o património histórico.
             </p>
           </FadeIn>
         </div>
@@ -49,22 +49,22 @@ export default function SobrePage() {
             <FadeIn>
               <div>
                 <p className="text-sm font-bold uppercase tracking-widest text-wepac-white/40">
-                  Missao
+                  Missão
                 </p>
                 <p className="mt-4 font-barlow text-2xl font-bold leading-tight text-wepac-white">
-                  Unimos arte, formacao e impacto social para valorizar o
-                  patrimonio e transformar vidas com propostas inovadoras,
-                  acessiveis e de impacto real.
+                  Unimos arte, formação e impacto social para valorizar o
+                  património e transformar vidas com propostas inovadoras,
+                  acessíveis e de impacto real.
                 </p>
               </div>
             </FadeIn>
             <FadeIn delay={0.15}>
               <div>
                 <p className="text-sm font-bold uppercase tracking-widest text-wepac-white/40">
-                  Visao
+                  Visão
                 </p>
                 <p className="mt-4 font-barlow text-2xl font-bold leading-tight text-wepac-white">
-                  Ser referencia em inovacao artistica e educativa, mostrando
+                  Ser referência em inovação artística e educativa, mostrando
                   como a cultura transforma realidades com proximidade e
                   profissionalismo.
                 </p>
@@ -77,12 +77,12 @@ export default function SobrePage() {
                 </p>
                 <ul className="mt-4 space-y-2">
                   {[
-                    "Educacao",
+                    "Educação",
                     "Acessibilidade cultural",
-                    "Inspiracao artistica",
+                    "Inspiração artística",
                     "Comunidade",
-                    "Sofisticacao artistica",
-                    "Proximidade com o territorio",
+                    "Sofisticação artística",
+                    "Proximidade com o território",
                   ].map((value) => (
                     <li
                       key={value}
@@ -109,8 +109,8 @@ export default function SobrePage() {
               Como trabalhamos
             </h2>
             <p className="mt-6 max-w-3xl text-lg leading-relaxed text-wepac-white/60">
-              A WEPAC desenvolve uma metodologia propria que cruza a pratica
-              artistica com a educacao e o impacto social.
+              A WEPAC desenvolve uma metodologia própria que cruza a prática
+              artística com a educação e o impacto social.
             </p>
           </FadeIn>
 
@@ -118,15 +118,15 @@ export default function SobrePage() {
             {[
               {
                 title: "O Criador",
-                subtitle: "Inovacao artistica",
+                subtitle: "Inovação artística",
                 description:
-                  "Exploramos linguagens artisticas contemporaneas e criamos experiencias que desafiam convencoes.",
+                  "Exploramos linguagens artísticas contemporâneas e criamos experiências que desafiam convenções.",
               },
               {
-                title: "O Sabio",
-                subtitle: "Visao estrategica",
+                title: "O Sábio",
+                subtitle: "Visão estratégica",
                 description:
-                  "Cada projeto e desenhado com rigor metodologico e pensamento critico sobre o papel da cultura na sociedade.",
+                  "Cada projeto é desenhado com rigor metodológico e pensamento crítico sobre o papel da cultura na sociedade.",
               },
               {
                 title: "O Cuidador",
@@ -155,15 +155,15 @@ export default function SobrePage() {
             {[
               {
                 title: "Proximidade",
-                text: "Escuta ativa do territorio. Cada projeto nasce da relacao com a comunidade.",
+                text: "Escuta ativa do território. Cada projeto nasce da relação com a comunidade.",
               },
               {
                 title: "Acessibilidade",
                 text: "A cultura deve ser para todos. Formatos inclusivos que eliminam barreiras.",
               },
               {
-                title: "Excelencia",
-                text: "Profissionalismo em cada detalhe. Padroes elevados de qualidade artistica.",
+                title: "Excelência",
+                text: "Profissionalismo em cada detalhe. Padrões elevados de qualidade artística.",
               },
               {
                 title: "Sustentabilidade",
@@ -213,12 +213,12 @@ export default function SobrePage() {
                 {
                   number: "15+",
                   label: "Parceiros",
-                  detail: "Instituicoes e escolas parceiras",
+                  detail: "Instituições e escolas parceiras",
                 },
                 {
                   number: "10+",
-                  label: "Espacos patrimoniais",
-                  detail: "Valorizados com programacao artistica",
+                  label: "Espaços patrimoniais",
+                  detail: "Valorizados com programação artística",
                 },
               ].map((stat, i) => (
                 <FadeIn key={stat.label} delay={i * 0.1}>
@@ -240,19 +240,19 @@ export default function SobrePage() {
             <div className="mt-16 grid grid-cols-1 gap-12 md:grid-cols-3">
               {[
                 {
-                  title: "Educacao",
+                  title: "Educação",
                   description:
-                    "Programas que desenvolvem competencias artisticas, sociais e emocionais em criancas e jovens.",
+                    "Programas que desenvolvem competências artísticas, sociais e emocionais em crianças e jovens.",
                 },
                 {
-                  title: "Patrimonio",
+                  title: "Património",
                   description:
-                    "Valorizacao de espacos patrimoniais atraves da programacao artistica.",
+                    "Valorização de espaços patrimoniais através da programação artística.",
                 },
                 {
                   title: "Comunidade",
                   description:
-                    "Criacao de lacos comunitarios atraves da arte, promovendo a coesao social.",
+                    "Criação de laços comunitários através da arte, promovendo a coesão social.",
                 },
               ].map((area, i) => (
                 <FadeIn key={area.title} delay={i * 0.15}>

@@ -7,59 +7,59 @@ export interface RepertoireCategory {
 export const repertoire: RepertoireCategory[] = [
   {
     id: "brasileiras",
-    name: "Musicas Brasileiras",
+    name: "Músicas Brasileiras",
     songs: [
-      '"Garota de Ipanema" – Antonio Carlos Jobim',
-      '"Aguas de Marco" – Antonio Carlos Jobim',
-      '"Chega de Saudade" – Joao Gilberto',
-      '"Samba de Uma Nota So" – Antonio Carlos Jobim',
+      '"Garota de Ipanema" – António Carlos Jobim',
+      '"Águas de Março" – António Carlos Jobim',
+      '"Chega de Saudade" – João Gilberto',
+      '"Samba de Uma Nota Só" – António Carlos Jobim',
       '"Mas Que Nada" – Jorge Ben Jor',
-      '"Corcovado" – Antonio Carlos Jobim',
-      '"Wave" – Antonio Carlos Jobim',
-      '"Desafinado" – Joao Gilberto',
-      '"Tico-Tico no Fuba" – Zequinha de Abreu',
-      '"Manha de Carnaval" – Luiz Bonfa',
-      '"Eu Sei Que Vou Te Amar" – Vinicius de Moraes',
+      '"Corcovado" – António Carlos Jobim',
+      '"Wave" – António Carlos Jobim',
+      '"Desafinado" – João Gilberto',
+      '"Tico-Tico no Fubá" – Zequinha de Abreu',
+      '"Manhã de Carnaval" – Luiz Bonfá',
+      '"Eu Sei Que Vou Te Amar" – Vinícius de Moraes',
       '"O Barquinho" – Roberto Menescal',
       '"Aquarela do Brasil" – Ary Barroso',
-      '"Insensatez" – Antonio Carlos Jobim',
+      '"Insensatez" – António Carlos Jobim',
       '"Lamento Sertanejo" – Dominguinhos',
       '"Romaria" – Renato Teixeira',
       '"Carinhoso" – Pixinguinha',
-      '"Eu So Quero um Xodo" – Dominguinhos',
+      '"Eu Só Quero um Xodó" – Dominguinhos',
       '"Asa Branca" – Luiz Gonzaga',
       '"Flor de Lis" – Djavan',
     ],
   },
   {
     id: "portuguesas",
-    name: "Musicas Portuguesas",
+    name: "Músicas Portuguesas",
     songs: [
-      '"Coimbra" – Amalia Rodrigues',
+      '"Coimbra" – Amália Rodrigues',
       '"Chuva" – Mariza',
       '"O Gente da Minha Terra" – Mariza',
-      '"Cancao do Mar" – Dulce Pontes',
-      '"Uma Casa Portuguesa" – Amalia Rodrigues',
-      '"Fado do Estudante" – Jose Afonso',
+      '"Canção do Mar" – Dulce Pontes',
+      '"Uma Casa Portuguesa" – Amália Rodrigues',
+      '"Fado do Estudante" – José Afonso',
       '"Verdes Anos" – Carlos Paredes',
-      '"Barco Negro" – Amalia Rodrigues',
-      '"April in Portugal" – Amalia Rodrigues',
+      '"Barco Negro" – Amália Rodrigues',
+      '"April in Portugal" – Amália Rodrigues',
       '"O Pastor" – Madredeus',
-      '"Gaivota" – Amalia Rodrigues',
+      '"Gaivota" – Amália Rodrigues',
       '"Fado Loucura" – Ana Moura',
-      '"Nem as Paredes Confesso" – Amalia Rodrigues',
-      '"Foi Deus" – Amalia Rodrigues',
-      '"Lisboa Menina e Moca" – Carlos do Carmo',
-      '"Povo Que Lavas no Rio" – Amalia Rodrigues',
-      '"Fado Portugues" – Amalia Rodrigues',
-      '"Maria Lisboa" – Amalia Rodrigues',
-      '"Lagrima" – Amalia Rodrigues',
+      '"Nem as Paredes Confesso" – Amália Rodrigues',
+      '"Foi Deus" – Amália Rodrigues',
+      '"Lisboa Menina e Moça" – Carlos do Carmo',
+      '"Povo Que Lavas no Rio" – Amália Rodrigues',
+      '"Fado Português" – Amália Rodrigues',
+      '"Maria Lisboa" – Amália Rodrigues',
+      '"Lágrima" – Amália Rodrigues',
       '"Fado do 31" – Carlos Ramos',
     ],
   },
   {
     id: "pop",
-    name: "Pop & Classicos",
+    name: "Pop & Clássicos",
     songs: [
       '"Dancing Queen" – ABBA',
       '"Mamma Mia" – ABBA',
@@ -85,7 +85,7 @@ export const repertoire: RepertoireCategory[] = [
   },
   {
     id: "erudita",
-    name: "Musica Erudita / Classica",
+    name: "Música Erudita / Clássica",
     songs: [
       '"Canon in D" – Johann Pachelbel',
       '"Ave Maria" – Franz Schubert',
@@ -98,14 +98,14 @@ export const repertoire: RepertoireCategory[] = [
       '"Minueto" – Luigi Boccherini',
       '"Serenata" – Franz Schubert',
       '"Adagio for Strings" – Samuel Barber',
-      '"Gymnopedie No.1" – Erik Satie',
-      '"Meditation" from "Thais" – Jules Massenet',
+      '"Gymnopédie No.1" – Erik Satie',
+      '"Meditation" from "Thaïs" – Jules Massenet',
       '"Nessun Dorma" – Giacomo Puccini',
       '"Largo" from "Xerxes" – George Frideric Handel',
       '"Intermezzo" from "Cavalleria Rusticana" – Pietro Mascagni',
-      '"Pavane" – Gabriel Faure',
+      '"Pavane" – Gabriel Fauré',
       '"Salut d\'Amour" – Edward Elgar',
-      '"Traumerei" – Robert Schumann',
+      '"Träumerei" – Robert Schumann',
       '"Marcha Nupcial" – Felix Mendelssohn',
     ],
   },
@@ -115,24 +115,24 @@ export const repertoire: RepertoireCategory[] = [
     songs: [
       '"A Whole New World" – Aladdin',
       '"Beauty and the Beast" – A Bela e a Fera',
-      '"Can You Feel the Love Tonight" – O Rei Leao',
+      '"Can You Feel the Love Tonight" – O Rei Leão',
       '"Let It Go" – Frozen',
       '"Under the Sea" – A Pequena Sereia',
       '"Colors of the Wind" – Pocahontas',
       '"You\'ll Be in My Heart" – Tarzan',
-      '"When You Wish Upon a Star" – Pinoquio',
-      '"Circle of Life" – O Rei Leao',
+      '"When You Wish Upon a Star" – Pinóquio',
+      '"Circle of Life" – O Rei Leão',
       '"Part of Your World" – A Pequena Sereia',
       '"Reflection" – Mulan',
       '"Someday My Prince Will Come" – Branca de Neve',
-      '"I See the Light" – Entrelacados',
+      '"I See the Light" – Entrelaçados',
       '"Do You Want to Build a Snowman?" – Frozen',
       '"Go the Distance" – Hercules',
       '"Once Upon a Dream" – A Bela Adormecida',
       '"Remember Me" – Coco',
       '"How Far I\'ll Go" – Moana',
       '"You\'ve Got a Friend in Me" – Toy Story',
-      '"Hakuna Matata" – O Rei Leao',
+      '"Hakuna Matata" – O Rei Leão',
     ],
   },
   {
@@ -168,11 +168,11 @@ export const repertoire: RepertoireCategory[] = [
       '"Hedwig\'s Theme" – Harry Potter',
       '"Tema de Schindler\'s List" – A Lista de Schindler',
       '"Tema de Superman" – Superman',
-      '"Tema de Tubarao" – Tubarao',
+      '"Tema de Tubarão" – Tubarão',
       '"Tema de Hook" – Hook',
       '"Tema de O Resgate do Soldado Ryan"',
       '"Tema de As Aventuras de Tintin"',
-      '"Tema de Memorias de uma Geisha"',
+      '"Tema de Memórias de uma Geisha"',
       '"Tema de Munich"',
       '"Tema de Amistad"',
       '"Tema de O Terminal"',
@@ -206,7 +206,7 @@ export const repertoire: RepertoireCategory[] = [
   },
   {
     id: "anos-80",
-    name: "Musicas dos Anos 80",
+    name: "Músicas dos Anos 80",
     songs: [
       '"Billie Jean" – Michael Jackson',
       '"Take on Me" – a-ha',
@@ -232,12 +232,12 @@ export const repertoire: RepertoireCategory[] = [
   },
   {
     id: "bridgerton",
-    name: "Bridgerton (versoes instrumentais)",
+    name: "Bridgerton (versões instrumentais)",
     songs: [
       '"Material Girl" – Madonna',
       '"Wrecking Ball" – Miley Cyrus',
       '"Wildest Dreams" – Taylor Swift',
-      '"Halo" – Beyonce',
+      '"Halo" – Beyoncé',
       '"Dancing Queen" – ABBA',
       '"Sign of the Times" – Harry Styles',
       '"Take on Me" – A-ha',
@@ -260,9 +260,9 @@ export const repertoire: RepertoireCategory[] = [
 ];
 
 export function getRepertoireSummaryText(): string {
-  let text = "REPERTORIO WESSEX\n\n";
+  let text = "REPERTÓRIO WESSEX\n\n";
   text +=
-    "O repertorio base inclui mais de 190 temas organizados por categoria. O cliente pode escolher temas do repertorio ou pedir musica sob medida (composicoes e arranjos originais).\n\n";
+    "O repertório base inclui mais de 190 temas organizados por categoria. O cliente pode escolher temas do repertório ou pedir música sob medida (composições e arranjos originais).\n\n";
 
   for (const cat of repertoire) {
     text += `${cat.name}:\n`;
@@ -273,7 +273,7 @@ export function getRepertoireSummaryText(): string {
   }
 
   text +=
-    "NOTA: Este e o repertorio base. O cliente pode pedir temas adicionais fora desta lista — a equipa avalia a viabilidade e apresenta orcamento.\n";
+    "NOTA: Este é o repertório base. O cliente pode pedir temas adicionais fora desta lista — a equipa avalia a viabilidade e apresenta orçamento.\n";
 
   return text;
 }

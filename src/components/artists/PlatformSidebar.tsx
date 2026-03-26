@@ -29,7 +29,12 @@ const adminNav = [
  { label: "Configurações", href: "/artists/alpha/admin/settings", icon: "⚙" },
 ];
 
-export function PlatformSidebar() {
+interface SidebarProps {
+ unreadMessages?: number;
+ pendingTasks?: number;
+}
+
+export function PlatformSidebar({ unreadMessages = 0, pendingTasks = 0 }: SidebarProps) {
  const pathname = usePathname();
  const [mobileOpen, setMobileOpen] = useState(false);
  const { data: session } = useSession();
@@ -44,6 +49,12 @@ export function PlatformSidebar() {
 
  const canMentor = role === "mentor" || role === "admin";
  const canAdmin = role === "admin";
+
+ function getBadgeCount(label: string): number {
+  if (label === "Mensagens") return unreadMessages;
+  if (label === "Tarefas") return pendingTasks;
+  return 0;
+ }
 
  return (
   <>
@@ -87,6 +98,11 @@ export function PlatformSidebar() {
        >
         <span className="text-xs">{item.icon}</span>
         {item.label}
+        {getBadgeCount(item.label) > 0 && (
+         <span className="bg-wepac-white text-wepac-black text-[10px] font-bold px-1.5 py-0.5 ml-auto">
+          {getBadgeCount(item.label)}
+         </span>
+        )}
        </Link>
       ))}
       <div className="my-4 border-t border-wepac-border" />
@@ -144,6 +160,11 @@ export function PlatformSidebar() {
       >
        <span className="text-xs opacity-60">{item.icon}</span>
        {item.label}
+       {getBadgeCount(item.label) > 0 && (
+        <span className="bg-wepac-white text-wepac-black text-[10px] font-bold px-1.5 py-0.5 ml-auto">
+         {getBadgeCount(item.label)}
+        </span>
+       )}
       </Link>
      ))}
     </nav>

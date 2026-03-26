@@ -12,7 +12,7 @@ export function Footer() {
             </Link>
             <p className="mt-2 text-sm text-wepac-white/50">Companhia de Artes</p>
             <p className="mt-4 text-sm text-wepac-white/40 leading-relaxed">
-              Arte, educacao e impacto social.
+              Arte, educação e impacto social.
             </p>
           </div>
 
@@ -25,7 +25,7 @@ export function Footer() {
               {[
                 { name: "Wessex", href: "/servicos" },
                 { name: "Easy Peasy", href: "/projetos/easy-peasy" },
-                { name: "Arte a Capela", href: "/projetos/arte-a-capela" },
+                { name: "Arte à Capela", href: "/projetos/arte-a-capela" },
                 { name: "Programa Artistas", href: "/artist" },
               ].map((item) => (
                 <li key={item.name}>
@@ -117,7 +117,7 @@ export function Footer() {
             href="/privacidade"
             className="text-xs text-wepac-white/30 transition-colors hover:text-wepac-white/60"
           >
-            Politica de Privacidade
+            Política de Privacidade
           </Link>
           <p className="text-xs text-wepac-white/30">
             &copy; {new Date().getFullYear()} WEPAC — Companhia de Artes. Todos os direitos reservados.

@@ -44,9 +44,9 @@ export function HeroSection() {
           transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
           className="mt-8 text-lg text-wepac-white/50 md:text-xl"
         >
-          Arte e educacao como motores de mudanca social
+          Arte e educação como motores de mudança social
           <br className="hidden md:block" />
-          e valorizacao do patrimonio.
+          e valorização do património.
         </motion.p>
 
         <motion.div
@@ -59,7 +59,7 @@ export function HeroSection() {
             href="/servicos"
             className="inline-block bg-wepac-white px-8 py-3 font-barlow text-sm font-bold uppercase tracking-wider text-wepac-black transition-opacity hover:opacity-90"
           >
-            Servicos Wessex
+            Serviços Wessex
           </Link>
           <Link
             href="/sobre"

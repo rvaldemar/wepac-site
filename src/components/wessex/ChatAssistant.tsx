@@ -12,7 +12,7 @@ interface Message {
 const WELCOME_MESSAGE: Message = {
   role: "assistant",
   content:
-    "Ola! Sou o assistente da WEPAC — Companhia de Artes. Posso ajudar-te com informacoes sobre os nossos projetos (Easy Peasy, Arte a Capela, Wessex), orcamentos de servicos musicais, sugestoes de repertorio, ou qualquer questao sobre a WEPAC. Como posso ajudar?",
+    "Olá! Sou o assistente da WEPAC — Companhia de Artes. Posso ajudar-te com informações sobre os nossos projetos (Easy Peasy, Arte à Capela, Wessex), orçamentos de serviços musicais, sugestões de repertório, ou qualquer questão sobre a WEPAC. Como posso ajudar?",
 };
 
 export function ChatAssistant() {
@@ -74,7 +74,7 @@ export function ChatAssistant() {
         {
           role: "assistant",
           content:
-            "Desculpe, ocorreu um erro. Por favor tente novamente ou contacte-nos em info@wepac.pt.",
+            "Desculpa, ocorreu um erro. Por favor tenta novamente ou contacta-nos em info@wepac.pt.",
         },
       ]);
     } finally {
@@ -94,7 +94,7 @@ export function ChatAssistant() {
               href="/privacidade"
               className="underline text-wepac-gray hover:text-wepac-white"
             >
-              Politica de Privacidade
+              Política de Privacidade
             </Link>
           </p>
           <button
@@ -148,7 +148,7 @@ export function ChatAssistant() {
           onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
           placeholder={
             consentGiven
-              ? "Escreve aqui a tua questao..."
+              ? "Escreve aqui a tua questão..."
               : "Aceita os termos acima para continuar"
           }
           disabled={isStreaming || !consentGiven}

@@ -12,9 +12,9 @@ export interface Ensemble {
 }
 
 export const SERVICE_TYPE_LABELS: Record<ServiceType, string> = {
-  cerimonias: "Cerimonias / Eventos (1h)",
-  cocktails: "Cocktails / Copo d'Agua (1h)",
-  experiencia_completa: "Experiencia Completa",
+  cerimonias: "Cerimónias / Eventos (1h)",
+  cocktails: "Cocktails / Copo d'Água (1h)",
+  experiencia_completa: "Experiência Completa",
 };
 
 export const ensembles: Ensemble[] = [
@@ -98,28 +98,28 @@ export const ensembles: Ensemble[] = [
     category: "custom",
     quoteOnly: true,
     description:
-      "Combinacao a medida de instrumentos e vozes para o seu evento. Orcamento sob consulta.",
+      "Combinação à medida de instrumentos e vozes para o seu evento. Orçamento sob consulta.",
     prices: {},
   },
   {
     id: "musica-medida",
-    name: "Musica sob Medida",
+    name: "Música sob Medida",
     category: "custom",
     quoteOnly: true,
     description:
-      "Composicoes e arranjos originais criados exclusivamente para o seu evento. Orcamento sob consulta.",
+      "Composições e arranjos originais criados exclusivamente para o seu evento. Orçamento sob consulta.",
     prices: {},
   },
 ];
 
 export function getPricingSummaryText(): string {
-  let text = "TABELA DE PRECOS WESSEX\n\n";
+  let text = "TABELA DE PREÇOS WESSEX\n\n";
 
-  text += "ENSEMBLES CLASSICOS (preco por servico):\n";
-  text += "Formato: Nome | Cerimonias/Eventos (1h) | Cocktails/Copo d'Agua (1h) | Experiencia Completa\n\n";
+  text += "ENSEMBLES CLÁSSICOS (preço por serviço):\n";
+  text += "Formato: Nome | Cerimónias/Eventos (1h) | Cocktails/Copo d'Água (1h) | Experiência Completa\n\n";
 
   for (const e of ensembles.filter((e) => e.category === "classical")) {
-    const label = e.musicians ? `${e.name} (${e.musicians} Musicos)` : e.name;
+    const label = e.musicians ? `${e.name} (${e.musicians} Músicos)` : e.name;
     const cer = e.prices.cerimonias ? `${e.prices.cerimonias}€` : "-";
     const coc = e.prices.cocktails ? `${e.prices.cocktails}€` : "-";
     const exp = e.prices.experiencia_completa
@@ -128,18 +128,18 @@ export function getPricingSummaryText(): string {
     text += `${label} | ${cer} | ${coc} | ${exp}\n`;
   }
 
-  text += "\nBANDAS (apenas Cocktails/Copo d'Agua, 2 horas):\n";
+  text += "\nBANDAS (apenas Cocktails/Copo d'Água, 2 horas):\n";
   for (const e of ensembles.filter((e) => e.category === "band")) {
-    text += `${e.name} (${e.musicians} Musicos) | ${e.prices.cocktails}€\n`;
+    text += `${e.name} (${e.musicians} Músicos) | ${e.prices.cocktails}€\n`;
   }
 
-  text += "\nSERVICOS SOB CONSULTA:\n";
+  text += "\nSERVIÇOS SOB CONSULTA:\n";
   for (const e of ensembles.filter((e) => e.category === "custom")) {
     text += `${e.name} — ${e.description}\n`;
   }
 
   text +=
-    "\nNOTAS:\n- A sede da Wessex e em Carcavelos. Para eventos fora da zona de Carcavelos/Lisboa, e cobrada taxa de deslocacao com base nos custos Michelin (combustivel + portagens) e estadia se necessario.\n- A Experiencia Completa inclui cerimonia + cocktail.\n- A Equipa de Som pode ser adicionada a qualquer ensemble por 200€.\n";
+    "\nNOTAS:\n- A sede da Wessex é em Carcavelos. Para eventos fora da zona de Carcavelos/Lisboa, é cobrada taxa de deslocação com base nos custos Michelin (combustível + portagens) e estadia se necessário.\n- A Experiência Completa inclui cerimónia + cocktail.\n- A Equipa de Som pode ser adicionada a qualquer ensemble por 200€.\n";
 
   return text;
 }
