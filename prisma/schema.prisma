@@ -356,3 +356,41 @@ model PasswordResetToken {
 
   @@map("password_reset_tokens")
 }
+
+// ===== LEAD MANAGEMENT =====
+
+enum LeadStatus {
+  new
+  contacted
+  converted
+  lost
+}
+
+enum LeadSource {
+  chat
+  form
+}
+
+model Lead {
+  id                  String     @id @default(cuid())
+  name                String
+  email               String?
+  phone               String?
+  eventType           String?
+  eventDate           String?
+  location            String?
+  guestCount          Int?
+  musicalPreferences  String?
+  ensemble            String?
+  estimatedBudget     String?
+  notes               String?
+  status              LeadStatus @default(new)
+  conversationHistory Json?
+  source              LeadSource @default(chat)
+  consentGiven        Boolean    @default(false)
+  consentTimestamp     DateTime?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  @@map("leads")
+}

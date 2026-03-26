@@ -112,7 +112,13 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-white/10 pt-8 text-center">
+        <div className="mt-12 border-t border-white/10 pt-8 flex flex-col items-center gap-2">
+          <Link
+            href="/privacidade"
+            className="text-xs text-wepac-white/30 transition-colors hover:text-wepac-white/60"
+          >
+            Politica de Privacidade
+          </Link>
           <p className="text-xs text-wepac-white/30">
             &copy; {new Date().getFullYear()} WEPAC — Companhia de Artes. Todos os direitos reservados.
           </p>

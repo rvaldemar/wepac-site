@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 
 interface Message {
@@ -18,6 +19,7 @@ export function ChatAssistant() {
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
+  const [consentGiven, setConsentGiven] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -26,7 +28,7 @@ export function ChatAssistant() {
 
   async function handleSend() {
     const text = input.trim();
-    if (!text || isStreaming) return;
+    if (!text || isStreaming || !consentGiven) return;
 
     const userMessage: Message = { role: "user", content: text };
     const newMessages = [...messages, userMessage];
@@ -34,16 +36,15 @@ export function ChatAssistant() {
     setInput("");
     setIsStreaming(true);
 
-    // Only send user/assistant messages (skip welcome if it was never part of API context)
     const apiMessages = newMessages
-      .slice(1) // skip welcome message
+      .slice(1)
       .map((m) => ({ role: m.role, content: m.content }));
 
     try {
       const res = await fetch("/api/wessex/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: apiMessages }),
+        body: JSON.stringify({ messages: apiMessages, consentGiven }),
       });
 
       if (!res.ok) {
@@ -54,7 +55,6 @@ export function ChatAssistant() {
       const decoder = new TextDecoder();
       let assistantContent = "";
 
-      // Add empty assistant message
       setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
       while (true) {
@@ -84,6 +84,28 @@ export function ChatAssistant() {
 
   return (
     <div className="flex h-[calc(100vh-180px)] min-h-[350px] max-h-[700px] flex-col border border-wepac-white/10">
+      {/* RGPD consent banner */}
+      {!consentGiven && (
+        <div className="flex-shrink-0 border-b border-wepac-white/10 p-4 bg-wepac-card">
+          <p className="text-xs text-wepac-white/60 leading-relaxed">
+            Ao utilizar este chat, consentes o tratamento dos dados pessoais
+            partilhados para fins de contacto comercial.{" "}
+            <Link
+              href="/privacidade"
+              className="underline text-wepac-gray hover:text-wepac-white"
+            >
+              Politica de Privacidade
+            </Link>
+          </p>
+          <button
+            onClick={() => setConsentGiven(true)}
+            className="mt-2 bg-wepac-white px-4 py-1.5 font-barlow text-xs font-bold uppercase tracking-wider text-wepac-black transition-opacity hover:opacity-90"
+          >
+            Concordo e quero continuar
+          </button>
+        </div>
+      )}
+
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {messages.map((msg, i) => (
@@ -117,20 +139,24 @@ export function ChatAssistant() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input area — always visible at bottom */}
+      {/* Input area */}
       <div className="flex-shrink-0 flex gap-3 border-t border-wepac-white/10 p-4">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-          placeholder="Escreve aqui a tua questao..."
-          disabled={isStreaming}
+          placeholder={
+            consentGiven
+              ? "Escreve aqui a tua questao..."
+              : "Aceita os termos acima para continuar"
+          }
+          disabled={isStreaming || !consentGiven}
           className="flex-1 border-b border-wepac-white/20 bg-transparent py-2 text-sm text-wepac-white outline-none transition-colors focus:border-wepac-white placeholder:text-wepac-white/30 disabled:opacity-50"
         />
         <button
           onClick={handleSend}
-          disabled={isStreaming || !input.trim()}
+          disabled={isStreaming || !input.trim() || !consentGiven}
           className="bg-wepac-white px-6 py-2 font-barlow text-sm font-bold uppercase tracking-wider text-wepac-black transition-opacity hover:opacity-90 disabled:opacity-30"
         >
           Enviar

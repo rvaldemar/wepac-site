@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Barlow, Inter } from "next/font/google";
+import { CookieConsent } from "@/components/CookieConsent";
 import "./globals.css";
 
 const barlow = Barlow({
@@ -29,7 +30,7 @@ export const metadata: Metadata = {
     "música",
     "educação",
     "impacto social",
-    "Braga",
+    "Carcavelos",
     "Easy Peasy",
     "Arte à Capela",
     "Wessex",
@@ -51,6 +52,7 @@ export default function RootLayout({
     <html lang="pt" className={`${barlow.variable} ${inter.variable}`}>
       <body className="font-inter antialiased">
         {children}
+        <CookieConsent />
       </body>
     </html>
   );

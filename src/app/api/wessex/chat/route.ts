@@ -1,6 +1,51 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { getPricingSummaryText } from "@/data/wessex-pricing";
 import { getRepertoireSummaryText } from "@/data/wessex-repertoire";
+import { saveLead } from "@/lib/leads";
+
+const SAVE_LEAD_TOOL: Anthropic.Tool = {
+  name: "save_lead",
+  description:
+    "Guarda os dados de contacto e detalhes do evento do potencial cliente. Usa quando tiveres pelo menos o nome e email ou telefone do cliente.",
+  input_schema: {
+    type: "object" as const,
+    properties: {
+      name: { type: "string", description: "Nome do cliente" },
+      email: { type: "string", description: "Email do cliente" },
+      phone: { type: "string", description: "Telefone do cliente" },
+      eventType: {
+        type: "string",
+        description: "Tipo de evento (casamento, corporativo, etc.)",
+      },
+      eventDate: {
+        type: "string",
+        description: "Data aproximada do evento",
+      },
+      location: { type: "string", description: "Local do evento" },
+      guestCount: {
+        type: "number",
+        description: "Numero estimado de convidados",
+      },
+      musicalPreferences: {
+        type: "string",
+        description: "Preferencias musicais",
+      },
+      ensemble: {
+        type: "string",
+        description: "Ensemble sugerido ou pretendido",
+      },
+      estimatedBudget: {
+        type: "string",
+        description: "Orcamento estimado",
+      },
+      notes: {
+        type: "string",
+        description: "Notas adicionais sobre o pedido",
+      },
+    },
+    required: ["name"],
+  },
+};
 
 const SYSTEM_PROMPT = `Es o assistente comercial da Wessex, o servico de performance musical da WEPAC — Companhia de Artes. Tambem sabes tudo sobre a WEPAC e os seus outros projetos.
 
@@ -81,19 +126,24 @@ ${getRepertoireSummaryText()}
 
 Tipos de parcerias: institucionais, educativas, culturais, empresariais, comunitarias. Para propostas: info@wepac.pt.
 
-## LEAD MANAGEMENT — COMO CONDUZIR A CONVERSA
+## RECOLHA DE CONTACTO E LEAD MANAGEMENT
 
-O teu objetivo e qualificar o lead e conduzi-lo ate ao pedido de orcamento formal ou contacto direto.
+O teu objetivo e qualificar o lead e conduzi-lo ate ao pedido de orcamento formal.
 
 Fluxo ideal:
-1. O utilizador chega e descreve o que precisa (ou faz uma pergunta generica)
-2. Tu perguntas o essencial para sugerir bem: tipo de evento, data aproximada, localizacao, numero de convidados, ambiente pretendido, preferencias musicais
-3. Nao perguntes tudo de uma vez — faz 2-3 perguntas de cada vez, de forma natural
-4. Quando tiveres informacao suficiente, sugere o ensemble mais adequado com o preco e explica porque e a melhor opcao para aquele evento especifico
-5. Sugere repertorio concreto que se adeque ao evento
-6. Fecha com um CTA claro: "Se quiseres avancar, envia-nos um email para **info@wepac.pt** com estes detalhes e preparamos uma proposta formal!" ou sugere o formulario de contacto em wepac.pt/contacto
+1. O utilizador chega e descreve o que precisa
+2. Apos a primeira troca, pede o nome e um contacto de forma natural e comercial. Exemplo: "Para te poder ajudar melhor e preparar uma proposta a medida, podes dizer-me o teu nome e um email ou telefone de contacto?"
+3. Quando tiveres o nome e pelo menos email ou telefone, usa a ferramenta save_lead para guardar os dados. Inclui tambem quaisquer detalhes do evento que ja tenhas.
+4. Continua a perguntar sobre o evento: tipo, data, local, convidados, preferencias musicais (2-3 perguntas de cada vez, natural)
+5. Se ao longo da conversa obtiveres mais detalhes, podes usar save_lead novamente para atualizar
+6. Sugere ensemble + preco + repertorio quando tiveres info suficiente
+7. Fecha com CTA: proposta formal via info@wepac.pt ou wepac.pt/contacto
 
-Quando o cliente demonstra interesse real, mostra entusiasmo genuino. Frases como "Que evento fantastico!", "Adorava ajudar com isso!", "Vai ser incrivel!" sao bem-vindas quando naturais.
+IMPORTANTE:
+- Nunca sejas insistente com dados pessoais. Se o utilizador nao quiser dar, respeita e continua a ajudar.
+- Nao menciones a ferramenta save_lead nem que estas a guardar dados. Age naturalmente.
+- Pede o contacto de forma conversacional, nao como formulario.
+- Mostra entusiasmo genuino quando o cliente descreve o evento.
 
 ## PROTECAO — ANTI-DUMPING E USO ABUSIVO
 
@@ -126,38 +176,109 @@ export async function POST(req: Request) {
   }
 
   const client = new Anthropic({ apiKey });
-  const { messages } = await req.json();
+  const { messages, consentGiven } = await req.json();
 
-  try {
-    const stream = await client.messages.stream({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 1024,
-      system: SYSTEM_PROMPT,
-      messages,
-    });
+  const encoder = new TextEncoder();
 
-    return new Response(
-      new ReadableStream({
-        async start(controller) {
-          const encoder = new TextEncoder();
-          for await (const event of stream) {
+  return new Response(
+    new ReadableStream({
+      async start(controller) {
+        try {
+          let currentMessages = [...messages];
+          let continueLoop = true;
+
+          while (continueLoop) {
+            const stream = await client.messages.stream({
+              model: "claude-haiku-4-5-20251001",
+              max_tokens: 1024,
+              system: SYSTEM_PROMPT,
+              tools: [SAVE_LEAD_TOOL],
+              messages: currentMessages,
+            });
+
+            let toolUseId = "";
+            let toolUseName = "";
+            let toolInputJson = "";
+            let hasToolUse = false;
+
+            for await (const event of stream) {
+              if (
+                event.type === "content_block_delta" &&
+                event.delta.type === "text_delta"
+              ) {
+                controller.enqueue(encoder.encode(event.delta.text));
+              }
+              if (
+                event.type === "content_block_start" &&
+                event.content_block.type === "tool_use"
+              ) {
+                hasToolUse = true;
+                toolUseId = event.content_block.id;
+                toolUseName = event.content_block.name;
+                toolInputJson = "";
+              }
+              if (
+                event.type === "content_block_delta" &&
+                event.delta.type === "input_json_delta"
+              ) {
+                toolInputJson += event.delta.partial_json;
+              }
+            }
+
+            const finalMessage = await stream.finalMessage();
+
             if (
-              event.type === "content_block_delta" &&
-              event.delta.type === "text_delta"
+              finalMessage.stop_reason === "tool_use" &&
+              hasToolUse &&
+              toolUseName === "save_lead"
             ) {
-              controller.enqueue(encoder.encode(event.delta.text));
+              // Execute save_lead tool server-side
+              let toolResult = '{"success": true}';
+              try {
+                const input = JSON.parse(toolInputJson);
+                await saveLead({
+                  ...input,
+                  conversationHistory: currentMessages,
+                  consentGiven: consentGiven ?? false,
+                });
+              } catch (e) {
+                console.error("save_lead tool error:", e);
+                toolResult = '{"success": false, "error": "Failed to save"}';
+              }
+
+              // Add assistant response + tool result for continuation
+              currentMessages = [
+                ...currentMessages,
+                { role: "assistant" as const, content: finalMessage.content },
+                {
+                  role: "user" as const,
+                  content: [
+                    {
+                      type: "tool_result" as const,
+                      tool_use_id: toolUseId,
+                      content: toolResult,
+                    },
+                  ],
+                },
+              ];
+              // Loop continues -- Claude will generate text after tool result
+            } else {
+              continueLoop = false;
             }
           }
+
           controller.close();
-        },
-      }),
-      { headers: { "Content-Type": "text/plain; charset=utf-8" } }
-    );
-  } catch (error: unknown) {
-    const status = error instanceof Anthropic.APIError ? error.status : 500;
-    return new Response(
-      JSON.stringify({ error: "Servico temporariamente indisponivel." }),
-      { status, headers: { "Content-Type": "application/json" } }
-    );
-  }
+        } catch (error: unknown) {
+          console.error("Chat API error:", error);
+          controller.enqueue(
+            encoder.encode(
+              "\n\nDesculpa, ocorreu um erro. Tenta novamente ou contacta-nos em info@wepac.pt."
+            )
+          );
+          controller.close();
+        }
+      },
+    }),
+    { headers: { "Content-Type": "text/plain; charset=utf-8" } }
+  );
 }
