@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { PricingCalculator } from "./PricingCalculator";
 import { ChatAssistant } from "./ChatAssistant";
 
@@ -8,10 +8,17 @@ type Tab = "simulador" | "assistente";
 
 export function OrcamentoTabs() {
   const [activeTab, setActiveTab] = useState<Tab>("simulador");
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (activeTab === "assistente" && containerRef.current) {
+      containerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [activeTab]);
 
   return (
-    <div>
-      <div className="flex border-b border-wepac-white/10">
+    <div ref={containerRef} className="scroll-mt-20">
+      <div className="sticky top-20 z-10 bg-wepac-dark flex border-b border-wepac-white/10">
         <button
           onClick={() => setActiveTab("simulador")}
           className={`px-4 md:px-6 py-3 font-barlow text-xs md:text-sm font-bold uppercase tracking-wider transition-colors ${
@@ -30,11 +37,11 @@ export function OrcamentoTabs() {
               : "text-wepac-white/40 hover:text-wepac-white/70"
           }`}
         >
-          Assistente IA
+          Assistente
         </button>
       </div>
 
-      <div className="mt-10">
+      <div className="mt-6">
         {activeTab === "simulador" ? <PricingCalculator /> : <ChatAssistant />}
       </div>
     </div>

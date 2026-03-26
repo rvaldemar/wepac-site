@@ -83,7 +83,7 @@ export function ChatAssistant() {
   }
 
   return (
-    <div className="flex h-[50vh] min-h-[350px] max-h-[600px] md:h-[60vh] md:min-h-[400px] flex-col border border-wepac-white/10">
+    <div className="flex h-[calc(100vh-180px)] min-h-[350px] max-h-[700px] flex-col border border-wepac-white/10">
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {messages.map((msg, i) => (
