@@ -3,9 +3,9 @@ import { getAllUsers } from "@/lib/actions/user";
 import { AdminUsersPageClient } from "./page-client";
 
 export default async function AdminUsersPage() {
-  await requireRole(["admin"]);
+ await requireRole(["admin"]);
 
-  const users = await getAllUsers();
+ const users = await getAllUsers();
 
-  return <AdminUsersPageClient users={users as any} />;
+ return <AdminUsersPageClient users={users as any} />;
 }

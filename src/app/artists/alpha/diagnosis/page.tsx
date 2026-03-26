@@ -3,17 +3,17 @@ import { computeAreaScores } from "@/lib/actions/evaluation";
 import DiagnosisPageClient from "./page-client";
 
 export default async function DiagnosisPage() {
-  const user = await getCurrentUser();
+ const user = await getCurrentUser();
 
-  const [entryScores, midScores] = await Promise.all([
-    computeAreaScores(user.id, "entry"),
-    computeAreaScores(user.id, "mid"),
-  ]);
+ const [entryScores, midScores] = await Promise.all([
+  computeAreaScores(user.id, "entry"),
+  computeAreaScores(user.id, "mid"),
+ ]);
 
-  return (
-    <DiagnosisPageClient
-      entryScores={entryScores}
-      midScores={midScores}
-    />
-  );
+ return (
+  <DiagnosisPageClient
+   entryScores={entryScores}
+   midScores={midScores}
+  />
+ );
 }

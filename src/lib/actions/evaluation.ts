@@ -75,6 +75,68 @@ export async function getEvaluations(userId: string) {
   });
 }
 
+export async function getIndicatorScores(
+  userId: string,
+  moment: EvaluationMoment
+): Promise<
+  Record<string, Record<string, { selfScore: number; mentorScore: number; composite: number }>>
+> {
+  const evals = await prisma.evaluation.findMany({
+    where: { userId, moment },
+    include: { scores: true },
+  });
+
+  const selfEval = evals.find((e) => e.evaluationType === "self");
+  const mentorEval = evals.find((e) => e.evaluationType === "mentor");
+
+  const areas: AreaKey[] = [
+    "physical",
+    "emotional",
+    "character",
+    "spiritual",
+    "intellectual",
+    "social",
+  ];
+
+  const result: Record<
+    string,
+    Record<string, { selfScore: number; mentorScore: number; composite: number }>
+  > = {};
+
+  for (const area of areas) {
+    result[area] = {};
+    const selfScores = selfEval?.scores.filter((s) => s.area === area) ?? [];
+    const mentorScores = mentorEval?.scores.filter((s) => s.area === area) ?? [];
+
+    const allIndicators = new Set([
+      ...selfScores.map((s) => s.indicator),
+      ...mentorScores.map((s) => s.indicator),
+    ]);
+
+    for (const indicator of allIndicators) {
+      const selfScore = selfScores.find((s) => s.indicator === indicator)?.score ?? 0;
+      const mentorScore = mentorScores.find((s) => s.indicator === indicator)?.score ?? 0;
+
+      let composite: number;
+      if (selfScore > 0 && mentorScore > 0) {
+        composite = selfScore * 0.4 + mentorScore * 0.6;
+      } else if (selfScore > 0) {
+        composite = selfScore;
+      } else {
+        composite = mentorScore;
+      }
+
+      result[area][indicator] = {
+        selfScore,
+        mentorScore,
+        composite: Math.round(composite * 10) / 10,
+      };
+    }
+  }
+
+  return result;
+}
+
 export async function submitEvaluation(data: {
   userId: string;
   evaluatorId: string;

@@ -4,17 +4,17 @@ import { getAllTasks } from "@/lib/actions/task";
 import { MentorTasksPageClient } from "./page-client";
 
 export default async function MentorTasksPage() {
-  await requireRole(["mentor", "admin"]);
+ await requireRole(["mentor", "admin"]);
 
-  const [tasks, users] = await Promise.all([
-    getAllTasks(),
-    getAllUsers(),
-  ]);
+ const [tasks, users] = await Promise.all([
+  getAllTasks(),
+  getAllUsers(),
+ ]);
 
-  return (
-    <MentorTasksPageClient
-      tasks={tasks as any}
-      users={users as any}
-    />
-  );
+ return (
+  <MentorTasksPageClient
+   tasks={tasks as any}
+   users={users as any}
+  />
+ );
 }

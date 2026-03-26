@@ -26,7 +26,7 @@ export async function sendInviteEmail(
       <div style="font-family: Inter, sans-serif; max-width: 500px; margin: 0 auto; padding: 40px 20px;">
         <h1 style="font-family: Barlow, sans-serif; font-size: 24px; font-weight: 700; color: #000;">Artista Alpha</h1>
         <p style="margin-top: 20px; color: #333; line-height: 1.6;">
-          Ola ${name},
+          Olá ${name},
         </p>
         <p style="color: #333; line-height: 1.6;">
           Foste convidado/a para participar no programa Artista Alpha da WEPAC — Companhia de Artes.
@@ -37,7 +37,7 @@ export async function sendInviteEmail(
           </a>
         </p>
         <p style="margin-top: 24px; color: #999; font-size: 12px;">
-          Este convite expira em 7 dias. Se nao esperavas este email, podes ignora-lo.
+          Este convite expira em 7 dias. Se não esperavas este email, podes ignorá-lo.
         </p>
         <p style="margin-top: 32px; color: #999; font-size: 12px;">
           WEPAC — Companhia de Artes
@@ -64,7 +64,7 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string) {
           </a>
         </p>
         <p style="margin-top: 24px; color: #999; font-size: 12px;">
-          Este link expira em 1 hora. Se nao pediste esta recuperacao, podes ignorar este email.
+          Este link expira em 1 hora. Se não pediste esta recuperação, podes ignorar este email.
         </p>
       </div>
     `,
@@ -95,11 +95,11 @@ export async function sendLeadNotificationEmail(lead: LeadEmailData) {
     ["Data do evento", lead.eventDate],
     ["Local", lead.location],
     ["Convidados", lead.guestCount?.toString()],
-    ["Preferencias musicais", lead.musicalPreferences],
+    ["Preferências musicais", lead.musicalPreferences],
     ["Ensemble", lead.ensemble],
-    ["Orcamento estimado", lead.estimatedBudget],
+    ["Orçamento estimado", lead.estimatedBudget],
     ["Notas", lead.notes],
-    ["Origem", lead.source === "chat" ? "Chat Wessex" : "Formulario"],
+    ["Origem", lead.source === "chat" ? "Chat Wessex" : "Formulário"],
   ]
     .filter(([, value]) => value)
     .map(
@@ -138,4 +138,62 @@ export async function sendLeadNotificationEmail(lead: LeadEmailData) {
   } catch (error) {
     console.error("Failed to send lead notification email:", error);
   }
+}
+
+export async function sendBetaSignupConfirmationEmail(name: string, email: string) {
+  const subject = "Candidatura recebida — Programa Artistas WEPAC";
+  const html = `
+    <div style="font-family: Inter, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 24px; background: #000; color: #fff;">
+      <h1 style="font-family: 'Barlow', Arial, sans-serif; font-size: 24px; font-weight: 700; margin: 0;">
+        WEPAC — Companhia de Artes
+      </h1>
+      <div style="margin-top: 32px;">
+        <p style="font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.8);">
+          Olá ${name},
+        </p>
+        <p style="font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.8);">
+          Recebemos a tua candidatura ao Programa Artistas WEPAC. A nossa equipa vai analisar o teu perfil e entrar em contacto em breve.
+        </p>
+        <p style="font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.8);">
+          Obrigado pelo interesse. Até breve.
+        </p>
+      </div>
+      <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);">
+        <p style="font-size: 12px; color: rgba(255,255,255,0.4);">
+          WEPAC — Companhia de Artes · info@wepac.pt
+        </p>
+      </div>
+    </div>
+  `;
+
+  await transporter.sendMail({
+    from: FROM,
+    to: email,
+    subject,
+    html,
+  });
+}
+
+export async function sendBetaSignupNotificationEmail(name: string, email: string, artisticArea?: string | null) {
+  const subject = `Nova candidatura Artistas: ${name}`;
+  const html = `
+    <div style="font-family: Inter, Arial, sans-serif; padding: 24px;">
+      <h2 style="margin: 0;">Nova candidatura — Programa Artistas</h2>
+      <p><strong>Nome:</strong> ${name}</p>
+      <p><strong>Email:</strong> ${email}</p>
+      ${artisticArea ? `<p><strong>Área:</strong> ${artisticArea}</p>` : ""}
+      <p style="margin-top: 16px;">
+        <a href="https://wepac.pt/artists/alpha/admin/beta-signups" style="color: #000; font-weight: bold;">
+          Ver no painel →
+        </a>
+      </p>
+    </div>
+  `;
+
+  await transporter.sendMail({
+    from: FROM,
+    to: FROM,
+    subject,
+    html,
+  });
 }
