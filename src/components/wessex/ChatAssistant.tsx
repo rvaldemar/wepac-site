@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
 
 interface Message {
   role: "user" | "assistant";
@@ -82,22 +83,28 @@ export function ChatAssistant() {
   }
 
   return (
-    <div className="border border-wepac-white/10">
+    <div className="flex h-[60vh] min-h-[400px] max-h-[600px] flex-col border border-wepac-white/10">
       {/* Messages area */}
-      <div className="h-[400px] overflow-y-auto p-6 space-y-4">
+      <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {messages.map((msg, i) => (
           <div
             key={i}
             className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
           >
             <div
-              className={`max-w-[80%] p-4 whitespace-pre-wrap text-sm leading-relaxed ${
+              className={`max-w-[80%] p-4 text-sm leading-relaxed ${
                 msg.role === "user"
                   ? "bg-wepac-card text-wepac-white"
                   : "border border-wepac-white/10 text-wepac-white/80"
               }`}
             >
-              {msg.content}
+              {msg.role === "assistant" ? (
+                <div className="prose prose-sm prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 prose-strong:text-wepac-white prose-a:text-wepac-gray prose-a:underline">
+                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                </div>
+              ) : (
+                <span className="whitespace-pre-wrap">{msg.content}</span>
+              )}
               {isStreaming &&
                 i === messages.length - 1 &&
                 msg.role === "assistant" &&
@@ -110,14 +117,14 @@ export function ChatAssistant() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input area */}
-      <div className="flex gap-3 border-t border-wepac-white/10 p-4">
+      {/* Input area — always visible at bottom */}
+      <div className="flex-shrink-0 flex gap-3 border-t border-wepac-white/10 p-4">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-          placeholder="Descreva o seu evento..."
+          placeholder="Escreve aqui a tua questao..."
           disabled={isStreaming}
           className="flex-1 border-b border-wepac-white/20 bg-transparent py-2 text-sm text-wepac-white outline-none transition-colors focus:border-wepac-white placeholder:text-wepac-white/30 disabled:opacity-50"
         />

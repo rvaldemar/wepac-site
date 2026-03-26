@@ -139,7 +139,7 @@ export function getPricingSummaryText(): string {
   }
 
   text +=
-    "\nNOTAS:\n- Eventos fora de Lisboa tem taxa de deslocacao adicional.\n- A Experiencia Completa inclui cerimonia + cocktail.\n- A Equipa de Som pode ser adicionada a qualquer ensemble por 200€.\n";
+    "\nNOTAS:\n- A sede da Wessex e em Carcavelos. Para eventos fora da zona de Carcavelos/Lisboa, e cobrada taxa de deslocacao com base nos custos Michelin (combustivel + portagens) e estadia se necessario.\n- A Experiencia Completa inclui cerimonia + cocktail.\n- A Equipa de Som pode ser adicionada a qualquer ensemble por 200€.\n";
 
   return text;
 }

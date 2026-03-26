@@ -164,7 +164,7 @@ export function PricingCalculator() {
             </p>
           )}
           <p className="mt-4 text-xs text-wepac-white/30">
-            Eventos fora de Lisboa estao sujeitos a taxa de deslocacao.
+            Eventos fora de Carcavelos/Lisboa sujeitos a taxa de deslocacao (custos Michelin + estadia se aplicavel).
           </p>
 
           <Link

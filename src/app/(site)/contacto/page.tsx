@@ -71,7 +71,7 @@ export default function ContactoPage() {
                       Localização
                     </p>
                     <p className="mt-1 text-lg text-wepac-white">
-                      Braga, Portugal
+                      Carcavelos, Portugal
                     </p>
                   </div>
                   <div>

@@ -13,6 +13,7 @@
     "@anthropic-ai/sdk": "^0.80.0",
     "@auth/prisma-adapter": "^2.11.1",
     "@prisma/client": "^6.19.2",
+    "@tailwindcss/typography": "^0.5.19",
     "bcryptjs": "^3.0.3",
     "framer-motion": "^12.37.0",
     "next": "16.1.6",
@@ -20,7 +21,8 @@
     "nodemailer": "^7.0.13",
     "prisma": "^6.19.2",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "react-markdown": "^10.1.0"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"

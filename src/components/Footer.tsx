@@ -63,7 +63,7 @@ export function Footer() {
             </h3>
             <ul className="mt-4 space-y-3 text-sm text-wepac-white/40">
               <li>info@wepac.pt</li>
-              <li>Braga, Portugal</li>
+              <li>Carcavelos, Portugal</li>
             </ul>
             <div className="mt-6 flex gap-4">
               <a
