@@ -11,6 +11,7 @@ import {
 
 const classicalEnsembles = ensembles.filter((e) => e.category === "classical");
 const bandEnsembles = ensembles.filter((e) => e.category === "band");
+const customEnsembles = ensembles.filter((e) => e.category === "custom");
 
 export function PricingCalculator() {
   const [ensembleId, setEnsembleId] = useState("");
@@ -69,11 +70,18 @@ export function PricingCalculator() {
               </option>
             ))}
           </optgroup>
+          <optgroup label="Sob Consulta">
+            {customEnsembles.map((e) => (
+              <option key={e.id} value={e.id} className="bg-wepac-black">
+                {e.name}
+              </option>
+            ))}
+          </optgroup>
         </select>
       </div>
 
       {/* Service type select */}
-      {selected && (
+      {selected && !selected.quoteOnly && (
         <div>
           <label className="block text-sm font-bold uppercase tracking-wider text-wepac-white/40">
             Tipo de Servico
@@ -102,7 +110,7 @@ export function PricingCalculator() {
       )}
 
       {/* Add som */}
-      {selected && selected.id !== "som" && effectiveService && (
+      {selected && selected.id !== "som" && !selected.quoteOnly && effectiveService && (
         <label className="flex items-center gap-3 cursor-pointer">
           <input
             type="checkbox"
@@ -114,6 +122,26 @@ export function PricingCalculator() {
             Adicionar Equipa de Som (+200€)
           </span>
         </label>
+      )}
+
+      {/* Quote-only display for custom services */}
+      {selected?.quoteOnly && (
+        <div className="border border-wepac-white/10 p-8 text-center">
+          <p className="text-sm font-bold uppercase tracking-wider text-wepac-white/40">
+            Orcamento sob consulta
+          </p>
+          <p className="mt-4 text-wepac-white/60 leading-relaxed">
+            {selected.description}
+          </p>
+          <Link
+            href={`/contacto?subject=servicos&message=${encodeURIComponent(
+              `Pedido Wessex: ${selected.name} — gostaria de receber um orcamento personalizado.`
+            )}`}
+            className="mt-6 inline-block bg-wepac-white px-8 py-3 font-barlow text-sm font-bold uppercase tracking-wider text-wepac-black transition-opacity hover:opacity-90"
+          >
+            Pedir orcamento
+          </Link>
+        </div>
       )}
 
       {/* Price display */}

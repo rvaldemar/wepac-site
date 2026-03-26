@@ -3,10 +3,12 @@ export type ServiceType = "cerimonias" | "cocktails" | "experiencia_completa";
 export interface Ensemble {
   id: string;
   name: string;
-  category: "classical" | "band";
+  category: "classical" | "band" | "custom";
   musicians?: number;
   duration?: string;
   prices: Partial<Record<ServiceType, number>>;
+  quoteOnly?: boolean;
+  description?: string;
 }
 
 export const SERVICE_TYPE_LABELS: Record<ServiceType, string> = {
@@ -90,6 +92,24 @@ export const ensembles: Ensemble[] = [
     duration: "2 horas",
     prices: { cocktails: 1300 },
   },
+  {
+    id: "ensemble-personalizado",
+    name: "Ensemble Personalizado",
+    category: "custom",
+    quoteOnly: true,
+    description:
+      "Combinacao a medida de instrumentos e vozes para o seu evento. Orcamento sob consulta.",
+    prices: {},
+  },
+  {
+    id: "musica-medida",
+    name: "Musica sob Medida",
+    category: "custom",
+    quoteOnly: true,
+    description:
+      "Composicoes e arranjos originais criados exclusivamente para o seu evento. Orcamento sob consulta.",
+    prices: {},
+  },
 ];
 
 export function getPricingSummaryText(): string {
@@ -111,6 +131,11 @@ export function getPricingSummaryText(): string {
   text += "\nBANDAS (apenas Cocktails/Copo d'Agua, 2 horas):\n";
   for (const e of ensembles.filter((e) => e.category === "band")) {
     text += `${e.name} (${e.musicians} Musicos) | ${e.prices.cocktails}€\n`;
+  }
+
+  text += "\nSERVICOS SOB CONSULTA:\n";
+  for (const e of ensembles.filter((e) => e.category === "custom")) {
+    text += `${e.name} — ${e.description}\n`;
   }
 
   text +=

@@ -10,7 +10,7 @@ interface Message {
 const WELCOME_MESSAGE: Message = {
   role: "assistant",
   content:
-    "Ola! Sou o assistente da Wessex. Descreva-me o seu evento e eu ajudo-o com o orcamento. Por exemplo: tipo de evento, numero de convidados, localizacao e estilo musical pretendido.",
+    "Ola! Sou o assistente da WEPAC — Companhia de Artes. Posso ajudar-te com informacoes sobre os nossos projetos (Easy Peasy, Arte a Capela, Wessex), orcamentos de servicos musicais, sugestoes de repertorio, ou qualquer questao sobre a WEPAC. Como posso ajudar?",
 };
 
 export function ChatAssistant() {
