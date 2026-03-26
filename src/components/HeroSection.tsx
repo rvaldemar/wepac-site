@@ -44,9 +44,9 @@ export function HeroSection() {
           transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
           className="mt-8 text-lg text-wepac-white/50 md:text-xl"
         >
-          Servicos musicais, educacao artistica, patrimonio cultural
+          Arte e educacao como motores de mudanca social
           <br className="hidden md:block" />
-          e desenvolvimento de artistas.
+          e valorizacao do patrimonio.
         </motion.p>
 
         <motion.div

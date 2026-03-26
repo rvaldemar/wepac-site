@@ -52,8 +52,9 @@ export default function SobrePage() {
                   Missao
                 </p>
                 <p className="mt-4 font-barlow text-2xl font-bold leading-tight text-wepac-white">
-                  Unir arte, formacao e impacto social para transformar
-                  comunidades.
+                  Unimos arte, formacao e impacto social para valorizar o
+                  patrimonio e transformar vidas com propostas inovadoras,
+                  acessiveis e de impacto real.
                 </p>
               </div>
             </FadeIn>
@@ -63,8 +64,9 @@ export default function SobrePage() {
                   Visao
                 </p>
                 <p className="mt-4 font-barlow text-2xl font-bold leading-tight text-wepac-white">
-                  Ser uma referencia em inovacao cultural e educativa com impacto
-                  social real.
+                  Ser referencia em inovacao artistica e educativa, mostrando
+                  como a cultura transforma realidades com proximidade e
+                  profissionalismo.
                 </p>
               </div>
             </FadeIn>

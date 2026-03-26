@@ -51,8 +51,9 @@ export default function Home() {
         <div className="mx-auto max-w-4xl">
           <FadeIn>
             <p className="font-barlow text-2xl font-bold leading-tight text-wepac-white md:text-5xl lg:text-6xl">
-              Arte, educacao e impacto social. Tres projetos, uma missao:
-              transformar comunidades atraves da cultura.
+              Unimos arte, formacao e impacto social para valorizar o patrimonio
+              e transformar vidas com propostas inovadoras, acessiveis e de
+              impacto real.
             </p>
           </FadeIn>
         </div>

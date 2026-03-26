@@ -22,9 +22,11 @@ Sede: Carcavelos, Portugal.
 Contacto: info@wepac.pt | Website: wepac.pt
 Redes sociais: Instagram e Facebook (@wepac)
 
-Missao: Unir arte, formacao e impacto social para transformar comunidades.
-Visao: Ser uma referencia em inovacao cultural e educativa com impacto social real.
+Missao: Unimos arte, formacao e impacto social para valorizar o patrimonio e transformar vidas com propostas inovadoras, acessiveis e de impacto real.
+Visao: Ser referencia em inovacao artistica e educativa, mostrando como a cultura transforma realidades com proximidade e profissionalismo.
+Proposito: Ser referencia em inovacao cultural e educativa com impacto social real.
 Valores: Educacao, Acessibilidade cultural, Inspiracao artistica, Comunidade, Sofisticacao artistica, Proximidade com o territorio.
+Emocoes da marca: Confianca & Profissionalismo, Inspiracao & Futuro, Pertencimento & Missao, Sofisticacao & Simplicidade.
 
 Impacto: 500+ alunos alcancados, 50+ eventos realizados, 15+ parceiros, 10+ espacos patrimoniais valorizados.
 
