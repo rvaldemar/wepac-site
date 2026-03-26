@@ -99,13 +99,19 @@ export default function ServicosPage() {
           <FadeIn delay={0.2}>
             <div className="mt-16 text-center">
               <p className="text-lg text-wepac-white/50">
-                Peça-nos um orçamento personalizado.
+                Simule o investimento para o seu evento.
               </p>
               <Link
-                href="/contacto"
+                href="/servicos/orcamento"
                 className="mt-6 inline-block bg-wepac-white px-8 py-3 font-barlow text-sm font-bold uppercase tracking-wider text-wepac-black transition-opacity hover:opacity-90"
               >
-                Pedir orçamento
+                Simular orcamento
+              </Link>
+              <Link
+                href="/contacto"
+                className="mt-3 block text-sm text-wepac-white/40 transition-colors hover:text-wepac-white/60"
+              >
+                Ou contacte-nos diretamente
               </Link>
             </div>
           </FadeIn>
