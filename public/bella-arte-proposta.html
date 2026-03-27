@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<meta name="theme-color" content="#000000">
+<title>WEPAC × Bella Arte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--black:#000;--white:#FFF;--grey:#DEE0DB;--gd:#1a1a1a;--gm:#555;--gl:#999;--gs:#e8e8e5;--t:'Barlow',sans-serif;--b:'Inter',sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:var(--b);background:var(--black);color:var(--white);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+
+#loader{position:fixed;inset:0;z-index:9999;background:var(--black);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;transition:opacity .8s,visibility .8s}
+#loader.gone{opacity:0;visibility:hidden;pointer-events:none}
+.ll{display:flex;align-items:center;gap:8px;opacity:0;animation:fu .7s .2s forwards}
+.lt{font-family:var(--t);font-weight:800;font-size:26px;letter-spacing:-.5px}
+.ls{font-family:var(--b);font-size:11px;font-weight:300;letter-spacing:3px;text-transform:uppercase;color:var(--gl);opacity:0;animation:fu .6s .6s forwards}
+@keyframes fu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+.wl{font-family:var(--t);font-weight:800;font-size:18px;letter-spacing:-.3px;color:currentColor}
+
+#progress{position:fixed;top:0;left:0;height:2px;background:var(--white);z-index:1000;width:0;transition:width .1s linear}
+
+.cover{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 28px 52px;position:relative}
+.cover-b{position:absolute;top:28px;left:28px}
+.cover-c{position:absolute;top:32px;right:28px;font-family:var(--b);font-size:9px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--gl)}
+.cover h1{font-family:var(--t);font-weight:800;font-size:clamp(44px,11vw,76px);line-height:1.0;letter-spacing:-2px;margin-bottom:12px}
+.cover h1 .x{font-weight:400;color:var(--gl);margin:0 2px}
+.cover .sub{font-family:var(--b);font-weight:300;font-size:clamp(15px,3.2vw,20px);color:var(--gl);line-height:1.5;margin-bottom:28px}
+.cover .dt{font-family:var(--b);font-size:10px;font-weight:400;letter-spacing:2px;text-transform:uppercase;color:var(--gm)}
+
+.dv{min-height:50vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 28px 40px;background:var(--black);position:relative}
+.dv::after{content:'';position:absolute;bottom:0;left:28px;right:28px;height:1px;background:rgba(255,255,255,.06)}
+.dv .nm{font-family:var(--t);font-weight:800;font-size:clamp(60px,15vw,96px);color:var(--gm);line-height:1;margin-bottom:6px;letter-spacing:-3px;opacity:.4}
+.dv h2{font-family:var(--t);font-weight:700;font-size:clamp(26px,6vw,38px);color:var(--white);line-height:1.1;margin-bottom:10px;letter-spacing:-.5px}
+.dv .hn{font-family:var(--b);font-size:13px;color:var(--gl);font-weight:300;max-width:380px}
+
+.ct{background:var(--white);color:var(--gd);padding:40px 28px 48px}
+.cg{background:var(--grey);color:var(--gd);padding:40px 28px 48px}
+.ct p,.cg p{font-family:var(--b);font-size:15px;line-height:1.8;margin-bottom:16px;font-weight:300;max-width:600px}
+.ct p strong,.cg p strong{font-weight:600;color:var(--black)}
+.ld{font-family:var(--b);font-size:17px;font-weight:400;line-height:1.65;color:var(--black);margin-bottom:24px}
+
+.tl{font-family:var(--b);font-size:10px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--gm);margin-bottom:12px;display:block}
+
+.dp{border-left:3px solid var(--black);padding:14px 18px;margin:16px 0;background:var(--grey);border-radius:0 6px 6px 0}
+.dp-n{font-family:var(--t);font-size:18px;font-weight:700;color:var(--black);margin-bottom:2px;letter-spacing:-.3px}
+.dp-s{font-family:var(--b);font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--gm);margin-bottom:8px}
+.dp p{font-size:14px;color:var(--gm);margin-bottom:0;line-height:1.65}
+
+.vl{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 24px}
+.vl span{font-family:var(--b);font-size:11px;font-weight:400;letter-spacing:.5px;color:var(--gm);padding:5px 12px;border:1px solid var(--grey);border-radius:20px}
+
+.qb{border-left:3px solid var(--black);padding:14px 20px;margin:28px 0}
+.qb p{font-family:var(--t);font-size:20px;font-weight:700;color:var(--black);line-height:1.35;margin-bottom:4px;letter-spacing:-.3px}
+
+.ap{margin:24px 0;display:flex;flex-direction:column}
+.ai{padding:16px 18px;font-size:14px;line-height:1.55}
+.ai:first-child{background:var(--black);color:var(--white);border-radius:6px 6px 0 0}
+.ai:first-child .al{color:var(--gl)}
+.ac{text-align:center;padding:0 0 4px;font-size:18px;color:var(--white);background:var(--black);line-height:1}
+.ai:last-child{background:var(--white);color:var(--gd);border-radius:0 0 6px 6px}
+.ai:last-child .al{color:var(--gm)}
+.al{font-family:var(--b);font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;display:block}
+
+.sp{margin:20px 0}
+.si{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--grey);align-items:baseline}
+.si:last-child{border-bottom:none}
+.sl{font-family:var(--b);font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--gm);min-width:90px;flex-shrink:0}
+.sv{font-size:14px;color:var(--gd);font-weight:300;line-height:1.55}
+
+.rg{display:grid;grid-template-columns:1fr;gap:12px;margin:24px 0}
+@media(min-width:480px){.rg{grid-template-columns:1fr 1fr}}
+.rc{padding:20px;border-radius:8px}
+.rc.dk{background:var(--black);color:var(--white)}
+.rc.lt{background:var(--white);color:var(--gd)}
+.rc h4{font-family:var(--t);font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px}
+.rc.dk h4{color:var(--gl)}.rc.lt h4{color:var(--gm)}
+.rc ul{list-style:none;padding:0}
+.rc li{font-family:var(--b);font-size:13px;font-weight:300;padding:5px 0 5px 16px;position:relative;line-height:1.5}
+.rc li::before{content:'';position:absolute;left:0;top:12px;width:6px;height:1px}
+.rc.dk li{color:#ccc}.rc.dk li::before{background:var(--gl)}
+.rc.lt li{color:var(--gm)}.rc.lt li::before{background:var(--gm)}
+
+.ob{margin:20px 0}
+.oi{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--grey)}
+.oi:last-child{border-bottom:none}
+.on{font-family:var(--t);font-weight:700;font-size:26px;color:var(--gl);line-height:1;min-width:36px;padding-top:2px;letter-spacing:-1px}
+.oh{font-family:var(--t);font-size:15px;font-weight:700;color:var(--black);margin-bottom:4px;letter-spacing:-.2px}
+.od{font-size:13px;color:var(--gm);margin-bottom:0;line-height:1.65}
+
+.st{margin:24px 0}
+.si2{display:flex;gap:16px;padding:14px 0;border-bottom:1px solid rgba(0,0,0,.08);align-items:baseline}
+.si2:last-child{border-bottom:none}
+.sn{font-family:var(--t);font-size:20px;font-weight:700;color:var(--gl);min-width:32px;letter-spacing:-.5px}
+.si2 p{margin-bottom:0;font-size:14px;color:var(--gd)}
+
+.gu{background:var(--white);border-radius:8px;padding:18px 20px;margin:20px 0}
+.gu p{font-size:13px;color:var(--gm);line-height:1.7;margin-bottom:0}
+.gu em{font-size:12px;color:var(--gl)}
+
+.ft{min-height:55vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:48px 28px;background:var(--black);position:relative}
+.ft::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:40px;height:1px;background:var(--gm)}
+.ft .cp{font-family:var(--b);font-weight:300;font-size:14px;color:var(--gl);margin:8px 0 28px}
+.ft .tg{font-family:var(--t);font-weight:600;font-size:14px;color:var(--white);margin-bottom:28px;letter-spacing:-.2px}
+.ft .co{font-family:var(--b);font-size:12px;color:var(--gm);letter-spacing:.5px;line-height:2}
+
+.rv{opacity:0;transform:translateY(18px);transition:opacity .65s ease,transform .65s ease}
+.rv.v{opacity:1;transform:translateY(0)}
+.d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.3s}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<div id="loader">
+  <div class="ll">
+    <div class="lt">wepac</div>
+  </div>
+  <div class="ls">Companhia de Artes</div>
+</div>
+
+<!-- COVER -->
+<section class="cover">
+  <div class="cover-b"><span class="wl" style="color:var(--white)">wepac</span></div>
+  <div class="cover-c">Confidencial</div>
+  <h1 class="rv">WEPAC <span class="x">×</span><br>Bella Arte</h1>
+  <div class="sub rv d1">Parceria Cultural Estratégica<br>Portugal — Fortaleza</div>
+  <div class="dt rv d2">Proposta de Parceria · 2026</div>
+</section>
+
+<!-- 01 -->
+<section class="dv">
+  <div class="nm rv">01</div>
+  <h2 class="rv d1">Quem Somos</h2>
+  <div class="hn rv d2">A WEPAC como parceiro cultural de excelência</div>
+</section>
+<section class="ct">
+  <p class="ld rv">A WEPAC – Companhia de Artes é uma estrutura cultural portuguesa dedicada à criação de projectos artísticos, educativos e comunitários. Não somos uma agência de eventos. Somos uma organização que pensa, desenvolve e executa experiências artísticas com rigor, intencionalidade e impacto duradouro.</p>
+  <p class="rv">A nossa actividade organiza-se em três departamentos complementares — todos genéricos a nível artístico, não limitados a música:</p>
+  <div class="dp rv"><div class="dp-n">Wessex</div><div class="dp-s">Performance Artística</div><p>Curadoria e produção de espectáculos e experiências ao vivo — música, artes performativas, instalações. Artistas seleccionados pelo mérito técnico e pela capacidade de criar momentos transformadores.</p></div>
+  <div class="dp rv"><div class="dp-n">Easy Peasy</div><div class="dp-s">Educação Artística</div><p>Programas de formação artística para escolas, autarquias e comunidades. A arte como ferramenta de desenvolvimento humano, não apenas entretenimento.</p></div>
+  <div class="dp rv"><div class="dp-n">Arte à Capela</div><div class="dp-s">Património & Espaços Sagrados</div><p>Activação artística de espaços arquitectónicos com identidade — igrejas, capelas, edifícios históricos, espaços de excepção. A arte ao serviço do lugar.</p></div>
+  <span class="tl rv">Programa Artistas WEPAC</span>
+  <p class="rv">Todos os artistas que integram projectos WEPAC passam por um sistema de desenvolvimento artístico integral — uma metodologia própria que avalia e desenvolve competências técnicas, humanas e estratégicas em três camadas, quatro níveis e cinco fases. Não se trata apenas de talento: trata-se de consistência, postura e alinhamento com os valores de cada projecto.</p>
+  <div class="vl rv"><span>Educação</span><span>Acessibilidade</span><span>Inspiração</span><span>Comunidade</span><span>Sofisticação</span><span>Proximidade</span></div>
+  <p class="rv" style="font-size:13px;color:var(--gm)">Missão: Unimos arte, formação e impacto social para valorizar o património e transformar vidas com propostas inovadoras, acessíveis e de impacto real.</p>
+</section>
+
+<!-- 02 -->
+<section class="dv">
+  <div class="nm rv">02</div>
+  <h2 class="rv d1">Contexto<br>Estratégico</h2>
+  <div class="hn rv d2">Duas marcas, uma linguagem — e uma oportunidade sem custo</div>
+</section>
+<section class="cg">
+  <p class="ld rv">A Bella Arte é a submarca premium do Grupo Bergano — uma construtora brasileira com mais de 40 anos de experiência internacional e um posicionamento claro no mercado imobiliário de médio-alto padrão.</p>
+  <p class="rv">Os empreendimentos Bella Arte — Oceanic, Residence, Rooftop, Studios — são desenvolvidos em Porto das Dunas, Ceará, e representam a visão da Bergano de que construir é mais do que erguer paredes. É criar experiências que elevam a vida das pessoas.</p>
+  <p class="rv"><strong>Esta visão é exactamente a linguagem da WEPAC.</strong></p>
+  <p class="rv">Para a WEPAC, esta parceria representa a abertura ao mercado de Fortaleza — o primeiro passo de uma presença cultural portuguesa no Nordeste brasileiro. Para a Bella Arte, é uma oportunidade de associar a sua marca a uma experiência cultural europeia de alto nível, <strong>sem qualquer contrapartida financeira.</strong></p>
+  <div class="ap rv">
+    <div class="ai"><span class="al">Propósito Bergano</span>"Construir mais que obras: criar experiências que elevam a vida das pessoas."</div>
+    <div class="ac">↕</div>
+    <div class="ai"><span class="al">Missão WEPAC</span>Excelência artística ao serviço do desenvolvimento humano.</div>
+  </div>
+  <p class="rv">O departamento <strong>Arte à Capela</strong> tem competência comprovada em activação artística de espaços arquitectónicos de excepção — exactamente o que se propõe aqui. A parceria não é uma contratação de serviço. É uma co-criação entre duas marcas com linguagem comum. A WEPAC entra no mercado de Fortaleza. A Bella Arte ganha uma experiência cultural europeia sem qualquer custo artístico.</p>
+  <div class="qb rv"><p>Não é entretenimento. É posicionamento.</p><p>Não é um concerto. É uma declaração de marca.</p></div>
+</section>
+
+<!-- 03 -->
+<section class="dv">
+  <div class="nm rv">03</div>
+  <h2 class="rv d1">A Experiência</h2>
+  <div class="hn rv d2">Um espectáculo único e uma sessão promocional</div>
+</section>
+<section class="ct">
+  <span class="tl rv">O Espectáculo</span>
+  <p class="ld rv">Um momento singular e irrepetível: um violinista de excelência, curado pelo departamento Wessex e enquadrado pela metodologia Artistas WEPAC, numa performance intimista num empreendimento Bella Arte.</p>
+  <div class="sp rv">
+    <div class="si"><span class="sl">Formato</span><span class="sv">Espectáculo único — um momento, uma noite</span></div>
+    <div class="si"><span class="sl">Duração</span><span class="sv">45–60 minutos</span></div>
+    <div class="si"><span class="sl">Ambiente</span><span class="sv">Intimista, número controlado de convidados</span></div>
+    <div class="si"><span class="sl">Repertório</span><span class="sv">Clássico contemporâneo, crossover, ambiente — adaptado ao espaço arquitectónico</span></div>
+    <div class="si"><span class="sl">Artista</span><span class="sv">Violinista internacional, seleccionado e preparado pela WEPAC</span></div>
+  </div>
+  <span class="tl rv" style="margin-top:32px">Sessão Promocional</span>
+  <p class="rv">Além do espectáculo, a WEPAC realizará uma sessão de captação audiovisual no empreendimento Bella Arte:</p>
+  <div class="dp rv"><div class="dp-n">Vídeo & Fotografia</div><div class="dp-s">Conteúdo Premium para Ambas as Marcas</div><p>Filmagem com drone do empreendimento e envolvente. Captação fotográfica profissional — espaço, detalhes arquitectónicos, ambiência. Material audiovisual de alta qualidade, utilizável por ambas as partes para promoção e comunicação institucional.</p></div>
+  <p class="rv" style="font-size:13px;color:var(--gm);font-style:italic">Este conteúdo serve simultaneamente a Bella Arte (promoção imobiliária premium) e a WEPAC (portfólio e comunicação de marca).</p>
+</section>
+
+<!-- 04 -->
+<section class="dv">
+  <div class="nm rv">04</div>
+  <h2 class="rv d1">Responsabilidades</h2>
+  <div class="hn rv d2">Divisão clara entre WEPAC e Bella Arte</div>
+</section>
+<section class="cg">
+  <p class="rv">Sem contrapartida financeira. A WEPAC assegura tudo o que é artístico e criativo. A Bella Arte assegura a logística local e a hospitalidade — o que já faria para qualquer evento próprio.</p>
+  <div class="rg rv">
+    <div class="rc dk">
+      <h4>WEPAC assegura</h4>
+      <ul><li>Curadoria artística completa</li><li>Selecção do artista e definição do repertório</li><li>Gestão integral do artista (deslocação, rider, condições técnicas)</li><li>Direcção criativa do espectáculo</li><li>Avaliação acústica prévia do espaço</li><li>Sessão de vídeo (drone) e fotografia profissional</li><li>Garantia de standard WEPAC de excelência</li></ul>
+    </div>
+    <div class="rc lt">
+      <h4>Bella Arte assegura</h4>
+      <ul><li>Logística geral (montagem, infraestrutura, equipamentos)</li><li>Catering e hospitalidade</li><li>Relações públicas e comunicação</li><li>Bilheteira e gestão de convidados</li><li>Espaço (empreendimento Bella Arte)</li><li>Recepção e acolhimento dos convidados</li><li>Convites, divulgação e imprensa</li></ul>
+    </div>
+  </div>
+</section>
+
+<!-- 05 -->
+<section class="dv">
+  <div class="nm rv">05</div>
+  <h2 class="rv d1">Objectivos<br>Estratégicos</h2>
+  <div class="hn rv d2">O que esta parceria entrega — a ambos</div>
+</section>
+<section class="ct">
+  <div class="ob">
+    <div class="oi rv"><div class="on">01</div><div><div class="oh">Posicionamento de marca</div><p class="od">Associar a Bella Arte a cultura, sofisticação e exclusividade europeia. Num mercado onde todos os empreendimentos prometem luxo, a presença de uma companhia de artes portuguesa com curadoria própria é um diferenciador real e verificável.</p></div></div>
+    <div class="oi rv"><div class="on">02</div><div><div class="oh">Experiência diferenciadora</div><p class="od">Criar um momento que os convidados não encontram em nenhum empreendimento concorrente. A memória emocional associada à música ao vivo num espaço arquitectónico premium é um activo de marca com retorno a longo prazo.</p></div></div>
+    <div class="oi rv"><div class="on">03</div><div><div class="oh">Impacto relacional</div><p class="od">Networking qualificado: investidores, clientes premium, Câmara Municipal, empresários de Porto das Dunas, imprensa seleccionada. A arte como catalisador de relações estratégicas.</p></div></div>
+    <div class="oi rv"><div class="on">04</div><div><div class="oh">Valorização do activo</div><p class="od">Branding experiencial aplicado ao imobiliário. O empreendimento deixa de ser apenas metros quadrados e passa a ser uma marca cultural — com impacto directo no valor percebido e na capacidade de pricing premium.</p></div></div>
+    <div class="oi rv"><div class="on">05</div><div><div class="oh">Custo zero para a Bella Arte</div><p class="od">A WEPAC assume a totalidade da componente artística sem qualquer contrapartida financeira. A Bella Arte assegura apenas a logística local — catering, espaço e comunicação — investimento que faria em qualquer evento próprio.</p></div></div>
+    <div class="oi rv"><div class="on">06</div><div><div class="oh">Abertura de mercado</div><p class="od">Para a WEPAC, este evento marca a entrada no mercado de Fortaleza — o primeiro passo de uma presença cultural portuguesa no Nordeste brasileiro. A Bella Arte torna-se o parceiro de lançamento desta expansão.</p></div></div>
+  </div>
+  <div class="gu rv">
+    <span class="tl">Sugestão de convidados</span>
+    <p>Representantes da Câmara Municipal (Presidente ou Vereador) · Stakeholders locais de Porto das Dunas · Empresários e investidores · Clientes premium e potenciais compradores Bella Arte · Parceiros estratégicos · Imprensa seleccionada</p>
+    <em>A gestão de convites e relações públicas é responsabilidade da Bella Arte.</em>
+  </div>
+</section>
+
+<!-- 06 -->
+<section class="dv">
+  <div class="nm rv">06</div>
+  <h2 class="rv d1">Próximos Passos</h2>
+  <div class="hn rv d2">Acções concretas para avançar</div>
+</section>
+<section class="cg">
+  <div class="st">
+    <div class="si2 rv"><span class="sn">01</span><p>Validação do conceito pela Bella Arte / Grupo Bergano</p></div>
+    <div class="si2 rv"><span class="sn">02</span><p>Selecção do empreendimento e avaliação do espaço pela WEPAC</p></div>
+    <div class="si2 rv"><span class="sn">03</span><p>Definição de data e calendário de produção</p></div>
+    <div class="si2 rv"><span class="sn">04</span><p>Identificação e segmentação de convidados estratégicos (pela Bella Arte)</p></div>
+    <div class="si2 rv"><span class="sn">05</span><p>Início da preparação artística e logística</p></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="ft">
+  <div class="rv"><span class="wl" style="color:var(--white);font-size:26px">wepac</span></div>
+  <div class="cp rv d1">Companhia de Artes</div>
+  <div class="tg rv d2">Excelência artística. Estrutura humana. Impacto real.</div>
+  <div class="co rv d3">Carcavelos · Cascais · Portugal<br>info@wepac.pt · wepac.pt</div>
+</footer>
+
+<script>
+window.addEventListener('load',()=>setTimeout(()=>document.getElementById('loader').classList.add('gone'),1100));
+window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-window.innerHeight;document.getElementById('progress').style.width=(window.scrollY/h)*100+'%'},{passive:true});
+const o=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('v')})},{threshold:.12,rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.rv').forEach(el=>o.observe(el));
+</script>
+</body>
+</html>
