@@ -53,7 +53,6 @@ export default async function ProjectPage({
         </div>
       </section>
 
-      {/* Image placeholder */}
       <section className="bg-wepac-dark">
         <div className="mx-auto max-w-7xl">
           <div className="aspect-[21/9] bg-wepac-gray/10">

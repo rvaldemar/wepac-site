@@ -74,29 +74,6 @@ export default function ContactoPage() {
                       Carcavelos, Portugal
                     </p>
                   </div>
-                  <div>
-                    <p className="text-sm font-bold uppercase tracking-wider text-wepac-white/40">
-                      Redes Sociais
-                    </p>
-                    <div className="mt-2 flex gap-4">
-                      <a
-                        href="https://instagram.com/wepac"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-wepac-white/60 transition-colors hover:text-wepac-white"
-                      >
-                        Instagram
-                      </a>
-                      <a
-                        href="https://facebook.com/wepac"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-wepac-white/60 transition-colors hover:text-wepac-white"
-                      >
-                        Facebook
-                      </a>
-                    </div>
-                  </div>
                 </div>
               </div>
             </FadeIn>

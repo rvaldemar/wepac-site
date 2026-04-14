@@ -8,9 +8,7 @@ export interface Project {
   highlights: string[];
 }
 
-const STRIP = process.env.NEXT_PUBLIC_STRIP_MOCK === "true";
-
-export const projects: Project[] = STRIP ? [] : [
+export const projects: Project[] = [
   {
     slug: "easy-peasy",
     name: "Easy Peasy",

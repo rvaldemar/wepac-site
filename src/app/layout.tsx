@@ -28,18 +28,56 @@ export const metadata: Metadata = {
     "WEPAC",
     "companhia de artes",
     "música",
-    "educação",
+    "educação artística",
     "impacto social",
     "Carcavelos",
+    "Lisboa",
+    "Portugal",
     "Easy Peasy",
     "Arte à Capela",
     "Wessex",
+    "músicos para eventos",
+    "música para casamentos",
+    "quarteto de cordas",
+    "concertos em igrejas",
+    "educação musical",
+    "desenvolvimento artístico",
+    "programa artistas",
+    "curadoria artística",
+    "música clássica",
+    "jazz",
+    "fado",
   ],
+  alternates: {
+    types: {
+      "text/plain": [
+        { url: "/llms.txt", title: "LLM documentation" },
+        { url: "/llms-full.txt", title: "LLM full documentation" },
+      ],
+    },
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "48x48" },
+    ],
+    apple: [
+      { url: "/apple-icon.png", sizes: "180x180" },
+    ],
+  },
+  manifest: "/manifest.json",
   openGraph: {
     title: "WEPAC — Companhia de Artes",
     description: "Sons que inspiram. Arte, formação e impacto social.",
     type: "website",
     locale: "pt_PT",
+    images: [
+      {
+        url: "/logo/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "WEPAC — Companhia de Artes",
+      },
+    ],
   },
 };
 

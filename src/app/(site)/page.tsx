@@ -99,41 +99,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Impacto */}
-      {process.env.NEXT_PUBLIC_STRIP_MOCK !== "true" && (
-      <section className="bg-wepac-black px-6 py-24 lg:px-8 lg:py-32">
-        <div className="mx-auto max-w-7xl">
-          <FadeIn>
-            <p className="text-sm font-bold uppercase tracking-widest text-wepac-white/40">
-              Impacto
-            </p>
-            <h2 className="mt-2 font-barlow text-3xl font-bold text-wepac-white md:text-4xl">
-              Cultura que transforma
-            </h2>
-          </FadeIn>
-
-          <div className="mt-12 md:mt-16 grid grid-cols-2 gap-4 md:gap-8 md:grid-cols-4">
-            {[
-              { number: "500+", label: "Alunos alcançados" },
-              { number: "50+", label: "Eventos realizados" },
-              { number: "15+", label: "Parceiros" },
-              { number: "10+", label: "Espaços patrimoniais" },
-            ].map((stat, i) => (
-              <FadeIn key={stat.label} delay={i * 0.1}>
-                <div className="text-center">
-                  <p className="font-barlow text-3xl font-bold text-wepac-white md:text-5xl">
-                    {stat.number}
-                  </p>
-                  <p className="mt-2 text-sm text-wepac-white/50">
-                    {stat.label}
-                  </p>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
-        </div>
-      </section>
-      )}
 
       {/* Proximos Eventos */}
       {upcomingEvents.length > 0 && (

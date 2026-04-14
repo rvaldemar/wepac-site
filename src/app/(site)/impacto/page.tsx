@@ -25,33 +25,6 @@ export default function ImpactoPage() {
         </div>
       </section>
 
-      {/* Numbers */}
-      {process.env.NEXT_PUBLIC_STRIP_MOCK !== "true" && (
-      <section className="bg-wepac-gray px-6 py-24 lg:px-8 lg:py-32">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid grid-cols-2 gap-12 md:grid-cols-4">
-            {[
-              { number: "500+", label: "Alunos impactados", detail: "Em programas educativos Easy Peasy" },
-              { number: "50+", label: "Eventos realizados", detail: "Concertos, workshops e performances" },
-              { number: "15+", label: "Parceiros", detail: "Instituições e escolas parceiras" },
-              { number: "10+", label: "Espaços patrimoniais", detail: "Valorizados com programação artística" },
-            ].map((stat, i) => (
-              <FadeIn key={stat.label} delay={i * 0.1}>
-                <div>
-                  <p className="font-barlow text-4xl font-bold text-wepac-black md:text-5xl">
-                    {stat.number}
-                  </p>
-                  <p className="mt-2 font-barlow text-lg font-bold text-wepac-black">
-                    {stat.label}
-                  </p>
-                  <p className="mt-1 text-sm text-wepac-black/50">{stat.detail}</p>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
-        </div>
-      </section>
-      )}
 
       {/* Areas */}
       <section className="bg-wepac-black px-6 py-24 lg:px-8 lg:py-32">

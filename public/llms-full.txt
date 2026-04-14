@@ -1,0 +1,235 @@
+# WEPAC -- Companhia de Artes
+
+> Unimos arte, formacao e impacto social para valorizar o patrimonio e transformar vidas. Sons que inspiram.
+
+WEPAC e uma companhia de artes portuguesa que opera em quatro areas: servicos musicais para eventos (Wessex), educacao artistica (Easy Peasy), programacao cultural em espacos patrimoniais (Arte a Capela), e desenvolvimento integral de artistas (Programa Artistas). Fundada com a missao de tornar a cultura acessivel e transformadora, combina excelencia artistica com impacto social.
+
+- Website: https://wepac.pt
+- Email: info@wepac.pt
+- Sede: Carcavelos, Portugal
+- Cobertura: todo o territorio nacional (taxa de deslocacao para eventos fora da zona de Lisboa)
+
+---
+
+## Wessex -- Servicos Musicais para Eventos
+
+URL: https://wepac.pt/servicos
+Orcamento: https://wepac.pt/servicos/orcamento
+
+O Wessex e o departamento de servicos musicais da WEPAC. Oferece performances musicais ao vivo de excelencia para eventos privados, corporativos e institucionais, com curadoria artistica dedicada e uma rede de musicos profissionais.
+
+### Tipos de Evento
+
+- Casamentos e celebracoes (cerimonias religiosas e civis, cocktails, copos d'agua, festas)
+- Eventos corporativos (lancamentos, convencoes, jantares de gala, team buildings)
+- Eventos institucionais (inauguracoes, cerimonias oficiais, festas municipais)
+- Curadoria artistica (programacao musical a medida para espacos, festivais ou temporadas)
+
+### Generos Musicais
+
+Musica classica, jazz, fado, bossa nova, pop acustico, rock acustico, musica contemporanea, world music, musica antiga, musica de camara, Disney, anime/videojogos, trilhas sonoras de cinema.
+
+### Ensembles e Precos (EUR, por servico)
+
+Ensembles classicos (preco por servico de 1 hora):
+- Solo Instrumental: 200 EUR (cerimonias/cocktails), 300 EUR (experiencia completa)
+- Duetos: 400 EUR (cerimonias/cocktails), 500 EUR (experiencia completa)
+- Trios: 700 EUR (cerimonias/cocktails), 800 EUR (experiencia completa)
+- Quarteto: 800 EUR (cerimonias/cocktails), 1000 EUR (experiencia completa)
+- Quarteto + Voz: 850 EUR (cerimonias/cocktails), 1100 EUR (experiencia completa)
+- Orquestra (13 musicos): 2275 EUR (cerimonias/cocktails), 3225 EUR (experiencia completa)
+- Orquestra & Voz (14 musicos): 2450 EUR (cerimonias/cocktails), 3500 EUR (experiencia completa)
+- Equipa de Som: +200 EUR (adicional a qualquer ensemble)
+
+Bandas (cocktails/copo d'agua, 2 horas):
+- Banda Jazz (5 musicos): 1300 EUR
+- Banda Pop (5 musicos): 1300 EUR
+- Banda Bossa Nova (5 musicos): 1300 EUR
+
+Servicos sob consulta:
+- Ensemble Personalizado: combinacao a medida de instrumentos e vozes
+- Musica sob Medida: composicoes e arranjos originais exclusivos para o evento
+
+A experiencia completa inclui cerimonia + cocktail. Para eventos fora de Carcavelos/Lisboa, aplica-se taxa de deslocacao (combustivel + portagens + estadia se necessario).
+
+### Repertorio
+
+Mais de 190 temas disponiveis em 10 categorias: musica brasileira, musica portuguesa, pop internacional, musica classica, Disney, jazz standards, bandas sonoras (John Williams, cinema), anime/videojogos, hits dos anos 80, e Bridgerton. Repertorio personalizavel -- arranjos a medida e composicoes originais disponiveis.
+
+### Assistente AI
+
+O Wessex dispoe de um assistente de conversacao com inteligencia artificial no site que responde a questoes sobre servicos, precos, repertorio e disponibilidade, e pode captar informacoes de contacto para orcamentos personalizados.
+
+---
+
+## Easy Peasy -- Educacao Artistica
+
+URL: https://wepac.pt/projetos/easy-peasy
+
+O Easy Peasy e o projeto educativo da WEPAC que leva a musica e as artes performativas a escolas e comunidades. Atraves de workshops, residencias artisticas e programas curriculares, cria experiencias que despertam a criatividade e promovem o desenvolvimento pessoal dos mais jovens.
+
+### Servicos
+
+- Workshops de musica e artes performativas em escolas
+- Residencias artisticas em comunidades
+- Programas curriculares integrados
+- Formacao de professores em educacao artistica
+
+### Publico-alvo
+
+Criancas e jovens em contexto escolar e comunitario. Professores e educadores que procuram formacao em educacao artistica.
+
+### Impacto
+
+Desenvolvimento de competencias artisticas, sociais e emocionais. Promocao da criatividade, autoexpressao e desenvolvimento pessoal atraves da arte.
+
+---
+
+## Arte a Capela -- Patrimonio e Artes
+
+URL: https://wepac.pt/projetos/arte-a-capela
+
+O Arte a Capela transforma espacos patrimoniais e espirituais em palcos de experiencias artisticas unicas. Capelas, igrejas e monumentos historicos ganham nova vida atraves de concertos, instalacoes e performances que criam um dialogo entre o passado e o presente.
+
+### Servicos
+
+- Concertos em capelas, igrejas e espacos historicos
+- Instalacoes artisticas site-specific
+- Valorizacao e revitalizacao do patrimonio atraves da arte
+- Experiencias imersivas que combinam musica, espaco e historia
+
+### Publico-alvo
+
+Publico geral interessado em cultura e patrimonio. Municipios, dioceses, paroquias e entidades gestoras de patrimonio que procuram programacao cultural. Turismo cultural.
+
+### Impacto
+
+Valorizacao do patrimonio historico e religioso. Criacao de novos publicos para espacos patrimoniais. Dialogo entre arte contemporanea e heranca cultural.
+
+---
+
+## Programa Artistas WEPAC -- Desenvolvimento Artistico Integral
+
+URL: https://wepac.pt/artist
+
+O Programa Artistas e um sistema integrado de desenvolvimento, ativacao e consolidacao de artistas. Nao e escola, agencia ou mentoria tradicional -- e uma estrutura que combina acompanhamento humano com ferramentas estrategicas para artistas que querem construir uma carreira sustentavel.
+
+### Proposta de Valor
+
+"Excelencia artistica. Estrutura humana. Impacto real."
+
+Para artistas com talento que procuram estrutura, processo, construcao de carreira e desenvolvimento pessoal.
+
+### Metodologia
+
+3 Camadas:
+- Areas do Saber: Fisico, Afetivo, Carater, Espiritual, Intelectual, Social
+- Principios: Verdade, Liberdade com responsabilidade, Estrutura, Vinculo, Presenca, Carater
+- Valores: Educacao, Acessibilidade, Inspiracao, Comunidade, Sofisticacao, Proximidade
+
+4 Niveis de Progressao:
+- Semente: entrada, diagnostico e base
+- Crescimento: desenvolvimento ativo
+- Assinatura: consolidacao e identidade artistica
+- Parceiro: artista autonomo integrado no ecossistema WEPAC
+
+### Servicos Incluidos
+
+- Apoio psicologico (psicologos e psiquiatras)
+- Mentoria artistica com musicos profissionais
+- Formacao continua
+- Plano de projeto de vida
+- Plano estrategico de carreira
+- Contabilidade e fiscalidade
+- Gestao de redes sociais
+- Trafego pago (publicidade digital)
+- Producao de conteudo (video, imagem, audio)
+- Branding e identidade visual
+- Booking e representacao
+- Integracao em projetos WEPAC (Wessex, Easy Peasy, Arte a Capela)
+
+### Equipa
+
+Psicologos, psiquiatras, pedagogos, professores, musicos profissionais, gestores de carreira, administradores, gestores de trafego pago, gestores de redes sociais, produtores de conteudo, tecnicos de som e luz, editores de som, editores de video e imagem.
+
+### Plataforma Digital
+
+O programa inclui acesso a uma plataforma digital com:
+- Mapa de Desenvolvimento (grafico radar das 6 areas)
+- Plano de Projeto de Vida
+- Plano Estrategico trimestral
+- Sessoes com mentores (individuais e grupo)
+- Sistema de tarefas
+- Mensagens com mentores
+- Diagnostico e avaliacoes periodicas
+
+### Estado Atual
+
+Em fase Alpha. Pipeline de inscricoes beta aberto.
+
+---
+
+## Sobre a WEPAC
+
+URL: https://wepac.pt/sobre
+
+### Missao
+
+Unir arte, formacao e impacto social para valorizar o patrimonio e transformar vidas com propostas inovadoras, acessiveis e de impacto real.
+
+### Visao
+
+Ser referencia em inovacao artistica e educativa, mostrando como a cultura transforma realidades com proximidade e profissionalismo.
+
+### Valores
+
+- Educacao: a arte como veiculo de aprendizagem e desenvolvimento
+- Acessibilidade cultural: cultura para todos, sem barreiras
+- Inspiracao artistica: excelencia que emociona e transforma
+- Comunidade: criacao de lacos atraves da arte
+- Sofisticacao artistica: rigor e qualidade em cada proposta
+- Proximidade com o territorio: enraizamento local, impacto real
+
+### Metodologia -- 3 Pilares
+
+- O Criador (inovacao artistica): explorar linguagens artisticas contemporaneas, criar experiencias que desafiam convencoes
+- O Sabio (visao estrategica): rigor metodologico, pensamento critico sobre o papel da cultura na sociedade
+- O Cuidador (impacto social): empatia, inclusao, trabalhar com e para comunidades
+
+### Principios
+
+Proximidade, Acessibilidade, Excelencia, Sustentabilidade.
+
+---
+
+## Impacto Social
+
+URL: https://wepac.pt/impacto
+
+A WEPAC atua em tres areas de impacto:
+
+- Educacao: desenvolvimento de competencias artisticas, sociais e emocionais em criancas e jovens atraves do Easy Peasy
+- Patrimonio: programacao artistica que revitaliza monumentos historicos e espacos sagrados atraves do Arte a Capela
+- Comunidade: fortalecimento de lacos comunitarios atraves da arte, coesao social e participacao cultural
+
+---
+
+## Parcerias
+
+URL: https://wepac.pt/parcerias
+
+A WEPAC procura parcerias com:
+- Instituicoes culturais e artisticas
+- Escolas e instituicoes de ensino
+- Empresas (responsabilidade social, eventos corporativos)
+- Municipios e juntas de freguesia
+- Fundacoes e mecenas
+- Media e comunicacao
+
+---
+
+## Contacto
+
+URL: https://wepac.pt/contacto
+Email: info@wepac.pt
+Sede: Carcavelos, Portugal

@@ -9,47 +9,25 @@ export interface Event {
   image?: string;
 }
 
-const STRIP = process.env.NEXT_PUBLIC_STRIP_MOCK === "true";
-
-export const events: Event[] = STRIP ? [] : [
+export const events: Event[] = [
   {
     id: "1",
-    title: "Concerto à Capela — Ensemble de Cordas",
-    date: "2026-04-12",
-    time: "21:00",
-    location: "Igreja de Santo Amaro, Oeiras",
+    title: "A Voz da Ibéria Antiga",
+    date: "2026-04-23",
+    time: "19:30",
+    location: "Capela do Hospital de Jesus, Lisboa",
     project: "Arte à Capela",
     description:
-      "Uma noite de música de câmara num dos espaços mais emblemáticos de Oeiras.",
+      "Música profana e sacra ibérica dos séculos XV–XVI, interpretada por Ananda Roda de Miranda na vihuela.",
   },
   {
     id: "2",
-    title: "Workshop Easy Peasy — Ritmo e Movimento",
-    date: "2026-04-18",
-    time: "10:00",
-    location: "Escola EB1 de Carcavelos",
-    project: "Easy Peasy",
-    description:
-      "Workshop de percussão e movimento corporal para alunos do 1.º ciclo.",
-  },
-  {
-    id: "3",
-    title: "Wessex Live — Jazz & Wine",
-    date: "2026-05-03",
-    time: "20:00",
-    location: "Hotel Cascais Miragem, Cascais",
-    project: "Wessex",
-    description:
-      "Uma noite de jazz intimista com curadoria musical WEPAC.",
-  },
-  {
-    id: "4",
-    title: "Arte à Capela — Música Antiga",
-    date: "2026-05-15",
-    time: "21:30",
-    location: "Ermida de São Jerónimo, Belém",
+    title: "Sopros d'Agora",
+    date: "2026-05-21",
+    time: "19:30",
+    location: "Capela do Hospital de Jesus, Lisboa",
     project: "Arte à Capela",
     description:
-      "Concerto de música antiga em instrumentos de época.",
+      "Carla Costeira (saxofone) apresenta um diálogo entre som, cor e paisagem.",
   },
 ];

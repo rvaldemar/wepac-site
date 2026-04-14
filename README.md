@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WEPAC — Companhia de Artes
 
-## Getting Started
+Site institucional e plataforma **Artista Alpha** da WEPAC. Programa de desenvolvimento artístico integral com mentoria, avaliações e planeamento estratégico.
 
-First, run the development server:
+**Departamentos:** Wessex (performance), Easy Peasy (educação artística), Arte à Capela (património/espaços sagrados).
+
+## Stack
+
+| Camada | Tecnologia |
+|--------|-----------|
+| Framework | Next.js 16, React 19, TypeScript |
+| Styling | Tailwind CSS v4, Framer Motion |
+| Auth | NextAuth v5 (Credentials, JWT) |
+| Database | PostgreSQL 16, Prisma ORM |
+| AI | Anthropic SDK (Claude) |
+| Email | Nodemailer |
+
+## Setup local
 
 ```bash
+# 1. Instalar dependências
+npm install
+
+# 2. Configurar environment
+cp .env.example .env.local
+# Editar .env.local com valores locais (DATABASE_URL, NEXTAUTH_SECRET, etc.)
+
+# 3. Base de dados
+npx prisma migrate dev
+npx prisma db seed
+
+# 4. Correr
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+A app fica disponível em `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Estrutura
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/
+│   ├── (site)/          # Site público (home, sobre, serviços, projetos, ...)
+│   ├── artists/alpha/   # Plataforma Artista Alpha (protegida)
+│   └── api/             # API routes (auth, wessex chat)
+├── components/          # React components
+├── lib/                 # Auth, DB, email, server actions, types
+└── middleware.ts        # Route protection por role
+prisma/
+├── schema.prisma        # Schema da base de dados
+├── seed.ts              # Seed com users de teste
+└── migrations/          # Histórico de migrations
+deploy/
+└── deploy.sh            # Build local + rsync para servidor
+```
 
-## Learn More
+## Plataforma Artista Alpha
 
-To learn more about Next.js, take a look at the following resources:
+Sistema multi-role (artista, mentor, admin) com:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Onboarding** — welcome, agreement, assessment (obrigatório)
+- **Avaliação** — auto + mentor, 6 dimensões, 3 momentos
+- **Planeamento** — plano de vida, plano estratégico, goals, ações mensais
+- **Sessões** — individuais/grupo com mentor
+- **Messaging** — conversas artista-mentor
+- **Tasks** — origem (plan, session, mentor, self), status tracking
+- **Leads** — pipeline de contactos (formulário + chat)
+- **Admin** — gestão de settings e leads
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deploy
 
-## Deploy on Vercel
+Build local + rsync para servidor via `deploy/deploy.sh`. Ver `OPS_LOG.md` para histórico de problemas em produção.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+./deploy/deploy.sh
+# Após deploy, no servidor:
+npx prisma@6.19.2 generate
+sudo systemctl restart wepac
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Convenções
+
+- UI em Português (PT-PT)
+- Cores: `#000`, `#FFF`, `#DEE0DB`
+- Tipografia: Barlow Bold (títulos), Inter (corpo)
+- Código, commits e comentários em inglês

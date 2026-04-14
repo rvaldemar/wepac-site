@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import { FadeIn } from "@/components/FadeIn";
-import { team } from "@/data/team";
 
 export const metadata: Metadata = {
   title: "A WEPAC",
@@ -185,122 +184,7 @@ export default function SobrePage() {
         </div>
       </section>
 
-      {/* Impacto */}
-      {process.env.NEXT_PUBLIC_STRIP_MOCK !== "true" && (
-        <section className="bg-wepac-gray px-6 py-24 lg:px-8 lg:py-32">
-          <div className="mx-auto max-w-7xl">
-            <FadeIn>
-              <p className="text-sm font-bold uppercase tracking-widest text-wepac-black/40">
-                Impacto
-              </p>
-              <h2 className="mt-2 font-barlow text-3xl font-bold text-wepac-black md:text-4xl">
-                Resultados reais
-              </h2>
-            </FadeIn>
 
-            <div className="mt-12 md:mt-16 grid grid-cols-2 gap-6 md:gap-12 md:grid-cols-4">
-              {[
-                {
-                  number: "500+",
-                  label: "Alunos impactados",
-                  detail: "Em programas educativos Easy Peasy",
-                },
-                {
-                  number: "50+",
-                  label: "Eventos realizados",
-                  detail: "Concertos, workshops e performances",
-                },
-                {
-                  number: "15+",
-                  label: "Parceiros",
-                  detail: "Instituições e escolas parceiras",
-                },
-                {
-                  number: "10+",
-                  label: "Espaços patrimoniais",
-                  detail: "Valorizados com programação artística",
-                },
-              ].map((stat, i) => (
-                <FadeIn key={stat.label} delay={i * 0.1}>
-                  <div>
-                    <p className="font-barlow text-3xl font-bold text-wepac-black md:text-5xl">
-                      {stat.number}
-                    </p>
-                    <p className="mt-2 font-barlow text-lg font-bold text-wepac-black">
-                      {stat.label}
-                    </p>
-                    <p className="mt-1 text-sm text-wepac-black/50">
-                      {stat.detail}
-                    </p>
-                  </div>
-                </FadeIn>
-              ))}
-            </div>
-
-            <div className="mt-16 grid grid-cols-1 gap-12 md:grid-cols-3">
-              {[
-                {
-                  title: "Educação",
-                  description:
-                    "Programas que desenvolvem competências artísticas, sociais e emocionais em crianças e jovens.",
-                },
-                {
-                  title: "Património",
-                  description:
-                    "Valorização de espaços patrimoniais através da programação artística.",
-                },
-                {
-                  title: "Comunidade",
-                  description:
-                    "Criação de laços comunitários através da arte, promovendo a coesão social.",
-                },
-              ].map((area, i) => (
-                <FadeIn key={area.title} delay={i * 0.15}>
-                  <div className="border-t-2 border-wepac-black/20 pt-6">
-                    <h3 className="font-barlow text-xl font-bold text-wepac-black">
-                      {area.title}
-                    </h3>
-                    <p className="mt-3 leading-relaxed text-wepac-black/60">
-                      {area.description}
-                    </p>
-                  </div>
-                </FadeIn>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Equipa */}
-      <section className="bg-wepac-black px-6 py-24 lg:px-8 lg:py-32">
-        <div className="mx-auto max-w-7xl">
-          <FadeIn>
-            <p className="text-sm font-bold uppercase tracking-widest text-wepac-white/40">
-              Equipa
-            </p>
-            <h2 className="mt-2 font-barlow text-3xl font-bold text-wepac-white md:text-4xl">
-              Quem somos
-            </h2>
-          </FadeIn>
-
-          <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {team.map((member, i) => (
-              <FadeIn key={member.name} delay={i * 0.1}>
-                <div>
-                  <div className="aspect-square bg-wepac-gray/10" />
-                  <h3 className="mt-4 font-barlow text-lg font-bold text-wepac-white">
-                    {member.name}
-                  </h3>
-                  <p className="text-sm text-wepac-white/40">{member.role}</p>
-                  <p className="mt-2 text-sm leading-relaxed text-wepac-white/50">
-                    {member.bio}
-                  </p>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
