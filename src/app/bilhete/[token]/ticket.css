@@ -1,0 +1,263 @@
+.sn-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: #e8e6e1;
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #000;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sn-ticket {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+}
+
+.sn-hero {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background-image: url("/sem-nome/cover.jpg");
+  background-size: cover;
+  background-position: center top;
+}
+
+.sn-hero-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px 28px;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.45) 0%,
+    rgba(0, 0, 0, 0) 35%,
+    rgba(0, 0, 0, 0) 65%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+  color: #fff;
+}
+
+.sn-hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sn-logo {
+  font-family: "Barlow", sans-serif;
+  font-weight: 900;
+  font-size: 20px;
+  letter-spacing: 0.5px;
+  color: #fff;
+  text-transform: lowercase;
+}
+
+.sn-header-label {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.sn-hero-pre {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 10px;
+}
+
+.sn-h1 {
+  font-family: "Barlow", sans-serif;
+  font-weight: 900;
+  font-size: 40px;
+  line-height: 1.05;
+  letter-spacing: -1px;
+  color: #fff;
+  margin: 0 0 4px;
+}
+
+.sn-subtitle {
+  font-family: "Barlow", sans-serif;
+  font-weight: 900;
+  font-style: italic;
+  font-size: 28px;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.sn-container {
+  padding: 28px 36px 0;
+}
+
+.sn-metadata {
+  display: grid;
+  grid-template-columns: 4.5em 1fr;
+  gap: 10px 16px;
+  font-size: 14px;
+  margin: 0;
+}
+
+.sn-metadata dt {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #333;
+  padding-top: 4px;
+}
+
+.sn-metadata dd {
+  color: #000;
+  font-weight: 400;
+  margin: 0;
+}
+
+.sn-metadata dd.sn-name {
+  font-family: "Barlow", sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.sn-divider {
+  border: none;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  margin: 24px 0;
+}
+
+.sn-code-block {
+  text-align: center;
+  padding: 8px 0 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.sn-code-label {
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #333;
+}
+
+.sn-qr {
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sn-qr svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.sn-code {
+  font-family: "Barlow", sans-serif;
+  font-weight: 900;
+  font-size: 28px;
+  letter-spacing: 2px;
+  color: #000;
+  line-height: 1;
+}
+
+.sn-instructions {
+  font-size: 12px;
+  color: #333;
+  line-height: 1.5;
+  padding-bottom: 24px;
+}
+
+.sn-instructions p {
+  margin: 0 0 6px;
+}
+
+.sn-instructions p:last-child {
+  margin-bottom: 0;
+}
+
+.sn-footer {
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 20px 36px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.sn-footer-brand .sn-logo-footer {
+  font-family: "Barlow", sans-serif;
+  font-weight: 900;
+  font-size: 14px;
+  color: #000;
+  text-transform: lowercase;
+  line-height: 1;
+}
+
+.sn-footer-brand .sn-tagline {
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: #333;
+  margin-top: 4px;
+}
+
+.sn-socials {
+  display: flex;
+  gap: 8px;
+}
+
+.sn-socials a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  color: #000;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sn-socials a:hover {
+  background: #000;
+  color: #fff;
+}
+
+.sn-socials svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+@media (max-width: 420px) {
+  .sn-page {
+    padding: 0;
+  }
+  .sn-ticket {
+    box-shadow: none;
+    max-width: 100%;
+  }
+  .sn-h1 {
+    font-size: 36px;
+  }
+  .sn-subtitle {
+    font-size: 26px;
+  }
+  .sn-code {
+    font-size: 24px;
+  }
+}

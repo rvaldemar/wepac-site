@@ -89,31 +89,31 @@ enum AreaKey {
 // ===== MODELS =====
 
 model User {
-  id             String       @id @default(cuid())
-  name           String
-  email          String       @unique
-  passwordHash   String?
-  role           UserRole     @default(artist)
-  inviteToken    String?      @unique
+  id              String      @id @default(cuid())
+  name            String
+  email           String      @unique
+  passwordHash    String?
+  role            UserRole    @default(artist)
+  inviteToken     String?     @unique
   inviteExpiresAt DateTime?
-  onboarded      Boolean      @default(false)
-  level          ArtistLevel  @default(seed)
-  avatarUrl      String?
-  bio            String?
-  phone          String?
-  currentPhase   ArtistPhase  @default(diagnosis)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  onboarded       Boolean     @default(false)
+  level           ArtistLevel @default(seed)
+  avatarUrl       String?
+  bio             String?
+  phone           String?
+  currentPhase    ArtistPhase @default(diagnosis)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
   agreements            Agreement[]
-  evaluationsReceived   Evaluation[]       @relation("EvaluationSubject")
-  evaluationsGiven      Evaluation[]       @relation("EvaluationEvaluator")
-  strategicMapsReceived StrategicMapScore[] @relation("StrategicMapSubject")
-  strategicMapsGiven    StrategicMapScore[] @relation("StrategicMapEvaluator")
+  evaluationsReceived   Evaluation[]              @relation("EvaluationSubject")
+  evaluationsGiven      Evaluation[]              @relation("EvaluationEvaluator")
+  strategicMapsReceived StrategicMapScore[]       @relation("StrategicMapSubject")
+  strategicMapsGiven    StrategicMapScore[]       @relation("StrategicMapEvaluator")
   lifePlans             LifePlan[]
   strategicPlans        StrategicPlan[]
-  tasksOwned            Task[]             @relation("TaskOwner")
-  tasksAssigned         Task[]             @relation("TaskAssigner")
+  tasksOwned            Task[]                    @relation("TaskOwner")
+  tasksAssigned         Task[]                    @relation("TaskAssigner")
   sessionsMentored      Session[]
   sessionAttendances    SessionAttendee[]
   conversationLinks     ConversationParticipant[]
@@ -196,13 +196,13 @@ model LifePlan {
 }
 
 model StrategicPlan {
-  id                   String    @id @default(cuid())
-  userId               String
-  quarter              String
-  longTermVision       String    @default("")
-  positioning          String    @default("")
-  focusAreas           AreaKey[]
-  quarterlyReflection  String    @default("")
+  id                  String    @id @default(cuid())
+  userId              String
+  quarter             String
+  longTermVision      String    @default("")
+  positioning         String    @default("")
+  focusAreas          AreaKey[]
+  quarterlyReflection String    @default("")
 
   user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   goals          Goal[]
@@ -221,7 +221,7 @@ model Goal {
   deadline        String
   status          GoalStatus @default(not_started)
 
-  strategicPlan  StrategicPlan  @relation(fields: [strategicPlanId], references: [id], onDelete: Cascade)
+  strategicPlan  StrategicPlan   @relation(fields: [strategicPlanId], references: [id], onDelete: Cascade)
   monthlyActions MonthlyAction[]
   tasks          Task[]
 
@@ -263,14 +263,14 @@ model Task {
 }
 
 model Session {
-  id              String        @id @default(cuid())
-  mentorId        String
-  sessionType     SessionType
-  scheduledAt     DateTime
-  durationMinutes Int           @default(60)
-  status          SessionStatus @default(scheduled)
-  notes           String?
-  notesPublished  Boolean       @default(false)
+  id               String        @id @default(cuid())
+  mentorId         String
+  sessionType      SessionType
+  scheduledAt      DateTime
+  durationMinutes  Int           @default(60)
+  status           SessionStatus @default(scheduled)
+  notes            String?
+  notesPublished   Boolean       @default(false)
   discussionPoints String?
 
   mentor    User              @relation(fields: [mentorId], references: [id], onDelete: Cascade)
@@ -289,7 +289,6 @@ model SessionAttendee {
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([sessionId, userId])
-
   @@map("session_attendees")
 }
 
@@ -310,7 +309,6 @@ model ConversationParticipant {
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([conversationId, userId])
-
   @@map("conversation_participants")
 }
 
@@ -338,10 +336,9 @@ model Comment {
   createdAt       DateTime @default(now())
 
   user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  task Task?  @relation("TaskComments", fields: [taskId], references: [id], onDelete: Cascade)
+  task Task? @relation("TaskComments", fields: [taskId], references: [id], onDelete: Cascade)
 
   @@index([commentableType, commentableId])
-
   @@map("comments")
 }
 
@@ -388,7 +385,7 @@ model Lead {
   conversationHistory Json?
   source              LeadSource @default(chat)
   consentGiven        Boolean    @default(false)
-  consentTimestamp     DateTime?
+  consentTimestamp    DateTime?
   createdAt           DateTime   @default(now())
   updatedAt           DateTime   @updatedAt
 
@@ -405,17 +402,30 @@ enum BetaSignupStatus {
 }
 
 model BetaSignup {
-  id              String           @id @default(cuid())
-  name            String
-  email           String           @unique
-  phone           String?
-  artisticArea    String?
-  socialLinks     String?
-  motivation      String?
-  status          BetaSignupStatus @default(pending)
-  notes           String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  id           String           @id @default(cuid())
+  name         String
+  email        String           @unique
+  phone        String?
+  artisticArea String?
+  socialLinks  String?
+  motivation   String?
+  status       BetaSignupStatus @default(pending)
+  notes        String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
 
   @@map("beta_signups")
+}
+
+// ===== SEM NOME — BILHETE DIGITAL =====
+
+model SemNomeTicket {
+  id          String    @id @default(cuid())
+  serial      Int       @unique @default(autoincrement())
+  name        String
+  seats       Int       @default(1)
+  createdAt   DateTime  @default(now())
+  checkedInAt DateTime?
+
+  @@map("sem_nome_tickets")
 }
