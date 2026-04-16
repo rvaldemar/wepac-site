@@ -28,7 +28,8 @@ cp -r .next/standalone/.next .deploy/ 2>/dev/null || true
 mkdir -p .deploy/.next/static
 cp -r .next/static/* .deploy/.next/static/
 
-# Copy public assets
+# Copy public assets (standalone build may pre-create .deploy/public, so clear first to avoid nesting)
+rm -rf .deploy/public
 cp -r public .deploy/public
 
 # Copy Prisma migration files (schema + migrations)
