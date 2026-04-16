@@ -32,6 +32,12 @@ export function AdminForm({ adminKey }: { adminKey: string }) {
   const [copied, setCopied] = useState<string | null>(null);
   const [tickets, setTickets] = useState<ListTicket[]>([]);
   const [totals, setTotals] = useState<Totals | null>(null);
+  const [editingToken, setEditingToken] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editSeats, setEditSeats] = useState(1);
+  const [rowBusy, setRowBusy] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<ListTicket | null>(null);
+  const [rowError, setRowError] = useState<string | null>(null);
 
   const loadList = useCallback(async () => {
     try {
@@ -92,6 +98,75 @@ export function AdminForm({ adminKey }: { adminKey: string }) {
     await navigator.clipboard.writeText(url);
     setCopied(token);
     setTimeout(() => setCopied(null), 2000);
+  }
+
+  function startEdit(t: ListTicket) {
+    setEditingToken(t.token);
+    setEditName(t.name);
+    setEditSeats(t.seats);
+    setRowError(null);
+    setConfirmDelete(null);
+  }
+
+  function cancelEdit() {
+    setEditingToken(null);
+    setEditName("");
+    setEditSeats(1);
+    setRowError(null);
+  }
+
+  async function saveEdit(token: string) {
+    setRowBusy(token);
+    setRowError(null);
+    try {
+      const res = await fetch("/api/sn/update", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-sn-admin-key": adminKey,
+        },
+        body: JSON.stringify({
+          token,
+          name: editName.trim(),
+          seats: editSeats,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+      cancelEdit();
+      loadList();
+    } catch (err) {
+      setRowError(err instanceof Error ? err.message : "erro desconhecido");
+    } finally {
+      setRowBusy(null);
+    }
+  }
+
+  async function confirmDeleteTicket(token: string) {
+    setRowBusy(token);
+    setRowError(null);
+    try {
+      const res = await fetch("/api/sn/delete", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "x-sn-admin-key": adminKey,
+        },
+        body: JSON.stringify({ token }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+      setConfirmDelete(null);
+      loadList();
+    } catch (err) {
+      setRowError(err instanceof Error ? err.message : "erro desconhecido");
+    } finally {
+      setRowBusy(null);
+    }
   }
 
   function whatsappLink(name: string, url: string) {
@@ -182,6 +257,47 @@ export function AdminForm({ adminKey }: { adminKey: string }) {
           </div>
         )}
 
+        {confirmDelete && (
+          <div style={styles.danger}>
+            <div style={styles.dangerTitle}>Eliminar bilhete?</div>
+            <div style={styles.dangerBody}>
+              <strong>{confirmDelete.serialCode}</strong> · {confirmDelete.name}{" "}
+              · {confirmDelete.seats}{" "}
+              {confirmDelete.seats === 1 ? "lugar" : "lugares"}
+              {confirmDelete.checkedInAt && (
+                <span style={styles.dangerWarn}>
+                  {" "}
+                  (já admitido às {formatTime(confirmDelete.checkedInAt)})
+                </span>
+              )}
+            </div>
+            <div style={styles.dangerNote}>
+              Esta ação é irreversível. O link do bilhete deixa de funcionar.
+            </div>
+            {rowError && <div style={styles.dangerError}>Erro: {rowError}</div>}
+            <div style={styles.actions}>
+              <button
+                onClick={() => confirmDeleteTicket(confirmDelete.token)}
+                disabled={rowBusy === confirmDelete.token}
+                style={styles.dangerConfirm}
+              >
+                {rowBusy === confirmDelete.token
+                  ? "A eliminar…"
+                  : "Confirmar eliminação"}
+              </button>
+              <button
+                onClick={() => {
+                  setConfirmDelete(null);
+                  setRowError(null);
+                }}
+                style={styles.actionBtn}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
+
         {totals && tickets.length > 0 && (
           <>
             <div style={styles.totalsBar}>
@@ -221,62 +337,143 @@ export function AdminForm({ adminKey }: { adminKey: string }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {tickets.map((t) => (
-                    <tr
-                      key={t.token}
-                      style={{
-                        ...styles.tr,
-                        background: t.checkedInAt ? "#f1f8e9" : "transparent",
-                      }}
-                    >
-                      <td style={{ ...styles.td, ...styles.tdSerial }}>
-                        {t.serialCode}
-                      </td>
-                      <td style={styles.td}>{t.name}</td>
-                      <td style={{ ...styles.td, textAlign: "center" }}>
-                        {t.seats}
-                      </td>
-                      <td
+                  {tickets.map((t) => {
+                    const isEditing = editingToken === t.token;
+                    return (
+                      <tr
+                        key={t.token}
                         style={{
-                          ...styles.td,
-                          textAlign: "center",
-                          color: t.checkedInAt ? "#1b5e20" : "#999",
-                          fontWeight: t.checkedInAt ? 700 : 400,
+                          ...styles.tr,
+                          background: t.checkedInAt
+                            ? "#f1f8e9"
+                            : isEditing
+                              ? "#fff8e1"
+                              : "transparent",
                         }}
                       >
-                        {t.checkedInAt ? `✓ ${formatTime(t.checkedInAt)}` : "—"}
-                      </td>
-                      <td style={{ ...styles.td, textAlign: "right" }}>
-                        <div style={styles.rowActions}>
-                          <button
-                            onClick={() => copyLink(t.token, t.url)}
-                            style={styles.rowBtn}
-                            title="Copiar link"
-                          >
-                            {copied === t.token ? "✓" : "⧉"}
-                          </button>
-                          <a
-                            href={whatsappLink(t.name, t.url)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={styles.rowBtn}
-                            title="WhatsApp"
-                          >
-                            WA
-                          </a>
-                          <a
-                            href={t.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={styles.rowBtn}
-                            title="Ver"
-                          >
-                            ↗
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        <td style={{ ...styles.td, ...styles.tdSerial }}>
+                          {t.serialCode}
+                        </td>
+                        <td style={styles.td}>
+                          {isEditing ? (
+                            <input
+                              type="text"
+                              value={editName}
+                              onChange={(e) => setEditName(e.target.value)}
+                              style={styles.rowInput}
+                            />
+                          ) : (
+                            t.name
+                          )}
+                        </td>
+                        <td style={{ ...styles.td, textAlign: "center" }}>
+                          {isEditing ? (
+                            <input
+                              type="number"
+                              min={1}
+                              max={20}
+                              value={editSeats}
+                              onChange={(e) =>
+                                setEditSeats(Number(e.target.value))
+                              }
+                              style={{ ...styles.rowInput, width: 60 }}
+                            />
+                          ) : (
+                            t.seats
+                          )}
+                        </td>
+                        <td
+                          style={{
+                            ...styles.td,
+                            textAlign: "center",
+                            color: t.checkedInAt ? "#1b5e20" : "#999",
+                            fontWeight: t.checkedInAt ? 700 : 400,
+                          }}
+                        >
+                          {t.checkedInAt
+                            ? `✓ ${formatTime(t.checkedInAt)}`
+                            : "—"}
+                        </td>
+                        <td style={{ ...styles.td, textAlign: "right" }}>
+                          <div style={styles.rowActions}>
+                            {isEditing ? (
+                              <>
+                                <button
+                                  onClick={() => saveEdit(t.token)}
+                                  disabled={
+                                    rowBusy === t.token || !editName.trim()
+                                  }
+                                  style={styles.rowBtnSave}
+                                  title="Guardar"
+                                >
+                                  {rowBusy === t.token ? "…" : "✓"}
+                                </button>
+                                <button
+                                  onClick={cancelEdit}
+                                  disabled={rowBusy === t.token}
+                                  style={styles.rowBtn}
+                                  title="Cancelar"
+                                >
+                                  ✕
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() => copyLink(t.token, t.url)}
+                                  style={styles.rowBtn}
+                                  title="Copiar link"
+                                >
+                                  {copied === t.token ? "✓" : "⧉"}
+                                </button>
+                                <a
+                                  href={whatsappLink(t.name, t.url)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={styles.rowBtn}
+                                  title="WhatsApp"
+                                >
+                                  WA
+                                </a>
+                                <a
+                                  href={t.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={styles.rowBtn}
+                                  title="Ver"
+                                >
+                                  ↗
+                                </a>
+                                <button
+                                  onClick={() => startEdit(t)}
+                                  style={styles.rowBtn}
+                                  title="Editar"
+                                >
+                                  ✎
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setConfirmDelete(t);
+                                    setRowError(null);
+                                    if (typeof window !== "undefined") {
+                                      window.scrollTo({
+                                        top: 0,
+                                        behavior: "smooth",
+                                      });
+                                    }
+                                  }}
+                                  style={styles.rowBtnDanger}
+                                  title="Eliminar"
+                                >
+                                  ✕
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -467,6 +664,94 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 700,
     cursor: "pointer",
     textDecoration: "none",
+  },
+  rowBtnDanger: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 30,
+    height: 30,
+    padding: "0 6px",
+    background: "#fff",
+    color: "#c00",
+    border: "1px solid #c00",
+    fontSize: 14,
+    fontFamily: "'Barlow', sans-serif",
+    fontWeight: 700,
+    cursor: "pointer",
+  },
+  rowBtnSave: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 30,
+    height: 30,
+    padding: "0 6px",
+    background: "#1b5e20",
+    color: "#fff",
+    border: "1px solid #1b5e20",
+    fontSize: 14,
+    fontFamily: "'Barlow', sans-serif",
+    fontWeight: 700,
+    cursor: "pointer",
+  },
+  rowInput: {
+    padding: "6px 8px",
+    border: "1px solid #999",
+    borderRadius: 0,
+    fontSize: 14,
+    fontFamily: "inherit",
+    outline: "none",
+    width: "100%",
+    boxSizing: "border-box",
+    background: "#fff",
+  },
+  danger: {
+    marginTop: 24,
+    padding: 20,
+    background: "#fdecea",
+    border: "2px solid #c00",
+    color: "#900",
+  },
+  dangerTitle: {
+    fontFamily: "'Barlow', sans-serif",
+    fontWeight: 900,
+    fontSize: 16,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    marginBottom: 10,
+  },
+  dangerBody: {
+    fontSize: 14,
+    color: "#3a0000",
+    marginBottom: 6,
+  },
+  dangerWarn: {
+    color: "#c00",
+    fontWeight: 700,
+  },
+  dangerNote: {
+    fontSize: 12,
+    color: "#900",
+    marginBottom: 16,
+  },
+  dangerError: {
+    fontSize: 13,
+    color: "#c00",
+    marginBottom: 12,
+    fontWeight: 700,
+  },
+  dangerConfirm: {
+    padding: "10px 14px",
+    background: "#c00",
+    color: "#fff",
+    border: "1px solid #c00",
+    fontSize: 12,
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
+    fontFamily: "'Barlow', sans-serif",
+    fontWeight: 700,
+    cursor: "pointer",
   },
   refreshNote: {
     marginTop: 12,
