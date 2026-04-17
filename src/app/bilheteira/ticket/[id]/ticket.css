@@ -1,0 +1,215 @@
+.bt-page {
+  min-height: 100vh;
+  background: #f5f4f0;
+  font-family: "Inter", system-ui, sans-serif;
+  padding: 24px 16px 80px;
+  color: #000;
+}
+
+.bt-welcome {
+  max-width: 460px;
+  margin: 0 auto 16px;
+  padding: 12px 16px;
+  background: #e8f5e9;
+  border: 1px solid #1b5e20;
+  color: #1b5e20;
+  font-size: 13px;
+  text-align: center;
+}
+
+.bt-ticket {
+  max-width: 460px;
+  margin: 0 auto;
+  background: #fff;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.bt-hero {
+  background: #000;
+  color: #fff;
+  padding: 24px 28px 28px;
+}
+
+.bt-hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.bt-logo {
+  font-family: "Barlow", sans-serif;
+  font-weight: 900;
+  font-size: 20px;
+  letter-spacing: -0.5px;
+}
+
+.bt-header-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  background: #dee0db;
+  color: #000;
+  font-weight: 700;
+}
+
+.bt-brand {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 6px;
+}
+
+.bt-h1 {
+  font-family: "Barlow", sans-serif;
+  font-weight: 900;
+  font-size: 32px;
+  line-height: 1.05;
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+
+.bt-subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 6px;
+}
+
+.bt-container {
+  padding: 28px;
+}
+
+.bt-metadata {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px 20px;
+  margin: 0;
+}
+
+.bt-metadata dt {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #666;
+  padding-top: 4px;
+}
+
+.bt-metadata dd {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.bt-tier {
+  font-family: "Barlow", sans-serif;
+  font-weight: 900;
+  font-size: 18px;
+  letter-spacing: -0.3px;
+}
+
+.bt-total {
+  color: #666;
+  font-size: 13px;
+}
+
+.bt-divider {
+  border: 0;
+  border-top: 1px dashed #ccc;
+  margin: 24px 0;
+}
+
+.bt-code-block {
+  text-align: center;
+}
+
+.bt-code-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.bt-qr {
+  display: inline-block;
+  padding: 12px;
+  background: #fff;
+}
+
+.bt-qr svg {
+  width: 180px;
+  height: 180px;
+  display: block;
+}
+
+.bt-code {
+  font-family: "Barlow", sans-serif;
+  font-weight: 900;
+  font-size: 28px;
+  letter-spacing: 2px;
+  margin-top: 12px;
+}
+
+.bt-checked {
+  margin-top: 12px;
+  display: inline-block;
+  padding: 6px 14px;
+  background: #e8f5e9;
+  color: #1b5e20;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.bt-instructions {
+  font-size: 11px;
+  color: #999;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.bt-instructions p {
+  margin: 4px 0;
+}
+
+.bt-footer {
+  background: #000;
+  color: #fff;
+  padding: 20px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bt-logo-footer {
+  font-family: "Barlow", sans-serif;
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.bt-tagline {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+  .bt-page {
+    padding: 0;
+    background: #fff;
+  }
+  .bt-welcome {
+    display: none;
+  }
+  .bt-ticket {
+    box-shadow: none;
+  }
+}

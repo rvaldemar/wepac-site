@@ -429,3 +429,125 @@ model SemNomeTicket {
 
   @@map("sem_nome_tickets")
 }
+
+// ===== BILHETEIRA WEPAC =====
+
+enum EventStatus {
+  draft
+  published
+  cancelled
+  completed
+}
+
+enum TicketStatus {
+  pending
+  checked_in
+  cancelled
+}
+
+model TicketingAdmin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime @default(now())
+  lastLoginAt  DateTime?
+
+  events       Event[]
+
+  @@map("ticketing_admins")
+}
+
+model Department {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+
+  brands      Brand[]
+  events      Event[]
+
+  @@map("departments")
+}
+
+model Brand {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  name         String
+  departmentId String
+  createdAt    DateTime @default(now())
+
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  events       Event[]
+
+  @@map("brands")
+}
+
+model Event {
+  id              String      @id @default(cuid())
+  slug            String      @unique
+  title           String
+  subtitle        String?
+  description     String
+  departmentId    String
+  brandId         String?
+  venue           String
+  address         String?
+  startsAt        DateTime
+  doorsAt         DateTime?
+  durationMinutes Int?
+  coverImage      String?
+  capacity        Int?
+  status          EventStatus @default(draft)
+  createdById     String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  department Department     @relation(fields: [departmentId], references: [id])
+  brand      Brand?         @relation(fields: [brandId], references: [id])
+  createdBy  TicketingAdmin @relation(fields: [createdById], references: [id])
+  tiers      TicketTier[]
+  tickets    Ticket[]
+
+  @@index([status, startsAt])
+  @@map("events")
+}
+
+model TicketTier {
+  id          String   @id @default(cuid())
+  eventId     String
+  name        String
+  description String?
+  priceCents  Int      @default(0)
+  quantity    Int?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  event   Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tickets Ticket[]
+
+  @@map("ticket_tiers")
+}
+
+model Ticket {
+  id          String       @id @default(cuid())
+  serial      Int          @unique @default(autoincrement())
+  eventId     String
+  tierId      String
+  buyerName   String
+  buyerEmail  String
+  buyerPhone  String?
+  seats       Int          @default(1)
+  priceCents  Int          @default(0)
+  status      TicketStatus @default(pending)
+  notes       String?
+  checkedInAt DateTime?
+  createdAt   DateTime     @default(now())
+
+  event Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tier  TicketTier @relation(fields: [tierId], references: [id])
+
+  @@index([eventId, status])
+  @@map("tickets")
+}

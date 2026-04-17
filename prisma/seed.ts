@@ -295,8 +295,118 @@ async function main() {
     data: { conversationId: c2.id, userId: m1.id, body: "Pedro, bem-vindo ao programa. Tens a autoavaliação para completar — vê na plataforma.", readAt: new Date("2026-03-18T10:00:00Z"), createdAt: new Date("2026-03-18T09:00:00Z") },
   });
 
+  // ===== BILHETEIRA WEPAC =====
+
+  const deptsData = [
+    {
+      slug: "wessex",
+      name: "Wessex",
+      description: "Performance e criação contemporânea",
+    },
+    {
+      slug: "easy-peasy",
+      name: "Easy Peasy",
+      description: "Educação artística",
+    },
+    {
+      slug: "arte-a-capela",
+      name: "Arte à Capela",
+      description: "Património e espaços sagrados",
+    },
+  ];
+
+  const depts: Record<string, { id: string }> = {};
+  for (const d of deptsData) {
+    const dept = await prisma.department.upsert({
+      where: { slug: d.slug },
+      update: { name: d.name, description: d.description },
+      create: d,
+    });
+    depts[d.slug] = dept;
+  }
+
+  const capelaViva = await prisma.brand.upsert({
+    where: { slug: "capela-viva" },
+    update: {
+      name: "Capela Viva",
+      departmentId: depts["arte-a-capela"].id,
+    },
+    create: {
+      slug: "capela-viva",
+      name: "Capela Viva",
+      departmentId: depts["arte-a-capela"].id,
+    },
+  });
+
+  const adminPassword = hashSync("password123", 10);
+  const seedAdmin = await prisma.ticketingAdmin.upsert({
+    where: { email: "admin@wepac.pt" },
+    update: { name: "Admin WEPAC" },
+    create: {
+      email: "admin@wepac.pt",
+      name: "Admin WEPAC",
+      passwordHash: adminPassword,
+    },
+  });
+
+  const anandaSlug = "ananda-roda-iberia-antiga-2026-04-23";
+  const anandaDescription = `Uma jornada sonora pelos séculos XV e XVI da Península Ibérica. Música profana e sacra, trazida ao mundo por Ananda Roda com a sua vihuela.
+
+Ananda Roda é uma intérprete de cordas dedilhadas históricas — alaúde, arqui-alaúde e vihuela. Formada em Guitarra Clássica e Cordas Dedilhadas Históricas pelo Conservatório de Tatuí (Brasil) e actualmente a estudar alaúde renascentista na ESMAE (Politécnico do Porto).
+
+Tem actuado em festivais internacionais pela Europa e integrado ensembles como Iberian Ensemble, Orquestra Barroca D'Alem Mar, CordeVoce e Ti'Sage. É a diretora artística do projeto Que he o que vejo?, grupo musical focado na interpretação historicamente informada.
+
+Concerto inserido na programação regular de Capela Viva na Capela do Hospital de Jesus, Lisboa.`;
+
+  const ananda = await prisma.event.upsert({
+    where: { slug: anandaSlug },
+    update: {},
+    create: {
+      slug: anandaSlug,
+      title: "A Voz da Ibéria Antiga",
+      subtitle: "Ananda Roda · vihuela",
+      description: anandaDescription,
+      departmentId: depts["arte-a-capela"].id,
+      brandId: capelaViva.id,
+      venue: "Capela do Hospital de Jesus",
+      address: "Travessa da Arrochela, Lisboa",
+      startsAt: new Date("2026-04-23T19:30:00+01:00"),
+      doorsAt: new Date("2026-04-23T19:00:00+01:00"),
+      durationMinutes: 60,
+      capacity: 80,
+      status: "published",
+      createdById: seedAdmin.id,
+    },
+  });
+
+  const existingTiers = await prisma.ticketTier.count({
+    where: { eventId: ananda.id },
+  });
+  if (existingTiers === 0) {
+    await prisma.ticketTier.createMany({
+      data: [
+        {
+          eventId: ananda.id,
+          name: "Bilhete",
+          description: "Entrada regular — pagamento à porta.",
+          priceCents: 1200,
+          sortOrder: 0,
+        },
+        {
+          eventId: ananda.id,
+          name: "Amigo WEPAC",
+          description: "Convite de cortesia — entrada grátis.",
+          priceCents: 0,
+          sortOrder: 1,
+        },
+      ],
+    });
+  }
+
   console.log("Seed completed successfully!");
   console.log(`Users: ${u1.id}, ${u2.id}, ${u3.id}, ${u4.id}, ${m1.id}, ${a1.id}`);
+  console.log(`Bilheteira admin: admin@wepac.pt / password123`);
+  console.log(`Evento seed: ${ananda.slug}`);
 }
 
 main()
