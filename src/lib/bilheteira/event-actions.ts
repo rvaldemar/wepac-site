@@ -181,6 +181,8 @@ export async function addTierAction(formData: FormData): Promise<void> {
   const priceRaw = String(formData.get("price") || "0");
   const description = String(formData.get("description") || "").trim() || null;
   const quantityRaw = String(formData.get("quantity") || "");
+  const stripePriceId =
+    String(formData.get("stripePriceId") || "").trim() || null;
 
   if (!eventId || !name) {
     back(`/bilheteira/admin/events/${eventId}`, "Nome da tier é obrigatório.");
@@ -195,11 +197,39 @@ export async function addTierAction(formData: FormData): Promise<void> {
       description,
       quantity: quantityRaw ? Number(quantityRaw) : null,
       sortOrder: count,
+      stripePriceId,
     },
   });
   revalidatePath(`/bilheteira/admin/events/${eventId}`);
   revalidatePath(`/bilheteira`);
   redirect(`/bilheteira/admin/events/${eventId}`);
+}
+
+export async function updateTierStripePriceAction(
+  formData: FormData
+): Promise<void> {
+  await requireAdmin();
+  const id = String(formData.get("id") || "");
+  const eventId = String(formData.get("eventId") || "");
+  const stripePriceId =
+    String(formData.get("stripePriceId") || "").trim() || null;
+
+  if (!id || !eventId) {
+    back(`/bilheteira/admin/events/${eventId}`, "Tier inválida.");
+  }
+  if (stripePriceId && !stripePriceId.startsWith("price_")) {
+    back(
+      `/bilheteira/admin/events/${eventId}`,
+      "Price ID Stripe deve começar por 'price_'."
+    );
+  }
+
+  await prisma.ticketTier.update({
+    where: { id },
+    data: { stripePriceId },
+  });
+  revalidatePath(`/bilheteira/admin/events/${eventId}`);
+  redirect(`/bilheteira/admin/events/${eventId}?saved=1`);
 }
 
 export async function deleteTierAction(formData: FormData): Promise<void> {

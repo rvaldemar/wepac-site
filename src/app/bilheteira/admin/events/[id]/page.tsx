@@ -5,6 +5,7 @@ import {
   updateEventAction,
   addTierAction,
   deleteTierAction,
+  updateTierStripePriceAction,
   createManualTicketAction,
   checkInTicketAction,
   deleteTicketAction,
@@ -161,6 +162,7 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
                 <th style={styles.th}>Descrição</th>
                 <th style={styles.th}>Preço</th>
                 <th style={styles.th}>Limite</th>
+                <th style={styles.th}>Stripe Price ID</th>
                 <th style={styles.th}></th>
               </tr>
             </thead>
@@ -175,6 +177,42 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
                   </td>
                   <td style={styles.td}>{formatPriceCents(t.priceCents)}</td>
                   <td style={styles.td}>{t.quantity ?? "—"}</td>
+                  <td style={styles.td}>
+                    <form
+                      action={updateTierStripePriceAction}
+                      style={{
+                        display: "flex",
+                        gap: 4,
+                        alignItems: "center",
+                      }}
+                    >
+                      <input type="hidden" name="id" value={t.id} />
+                      <input type="hidden" name="eventId" value={event.id} />
+                      <input
+                        type="text"
+                        name="stripePriceId"
+                        defaultValue={t.stripePriceId || ""}
+                        placeholder="price_..."
+                        style={{
+                          ...styles.input,
+                          fontFamily: "ui-monospace, Menlo, monospace",
+                          fontSize: 12,
+                          padding: "6px 8px",
+                          minWidth: 180,
+                        }}
+                      />
+                      <button
+                        type="submit"
+                        style={{
+                          ...styles.buttonGhost,
+                          padding: "6px 10px",
+                          fontSize: 10,
+                        }}
+                      >
+                        Guardar
+                      </button>
+                    </form>
+                  </td>
                   <td style={{ ...styles.td, textAlign: "right" }}>
                     <form action={deleteTierAction} style={{ margin: 0 }}>
                       <input type="hidden" name="id" value={t.id} />
@@ -230,6 +268,16 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
               style={styles.input}
             />
           </div>
+          <input
+            type="text"
+            name="stripePriceId"
+            placeholder="Stripe Price ID (opcional — price_...)"
+            style={{
+              ...styles.input,
+              fontFamily: "ui-monospace, Menlo, monospace",
+              fontSize: 13,
+            }}
+          />
           <button type="submit" style={{ ...styles.buttonSecondary }}>
             Adicionar tier
           </button>

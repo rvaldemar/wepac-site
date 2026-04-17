@@ -134,12 +134,9 @@ export async function reserveAction(formData: FormData): Promise<void> {
     },
   });
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    payment_method_types: ["card", "multibanco"],
-    customer_email: buyerEmail,
-    line_items: [
-      {
+  const lineItem = tier.stripePriceId
+    ? { price: tier.stripePriceId, quantity: seats }
+    : {
         price_data: {
           currency: "eur",
           product_data: {
@@ -151,11 +148,16 @@ export async function reserveAction(formData: FormData): Promise<void> {
             },
           },
           unit_amount: tier.priceCents,
-          tax_behavior: "inclusive",
+          tax_behavior: "inclusive" as const,
         },
         quantity: seats,
-      },
-    ],
+      };
+
+  const session = await stripe.checkout.sessions.create({
+    mode: "payment",
+    payment_method_types: ["card", "multibanco"],
+    customer_email: buyerEmail,
+    line_items: [lineItem],
     metadata: {
       paymentId: payment.id,
       eventId: event.id,
