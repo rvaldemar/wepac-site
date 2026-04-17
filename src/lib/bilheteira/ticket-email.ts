@@ -49,6 +49,45 @@ type TicketEmailData = {
   ticketId: string;
 };
 
+export async function sendVerificationEmail(
+  to: string,
+  name: string,
+  verifyUrl: string
+) {
+  await transporter.sendMail({
+    from: FROM,
+    to,
+    subject: "Confirma o teu email — Bilheteira WEPAC",
+    html: `
+      <div style="font-family: Inter, Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 40px 24px; color: #000;">
+        <h1 style="font-family: 'Barlow', Arial, sans-serif; font-size: 24px; font-weight: 900; margin: 0 0 4px;">
+          WEPAC · Bilheteira
+        </h1>
+        <p style="font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #666; margin: 0 0 24px;">
+          Confirmação de email
+        </p>
+        <p style="font-size: 15px; line-height: 1.5;">Olá ${name},</p>
+        <p style="font-size: 15px; line-height: 1.5;">
+          Para activares a tua conta de administrador da Bilheteira WEPAC,
+          confirma o teu email clicando no botão abaixo.
+        </p>
+        <p style="margin-top: 28px;">
+          <a href="${verifyUrl}" style="display:inline-block;background:#000;color:#fff;padding:14px 28px;text-decoration:none;font-family:'Barlow',Arial,sans-serif;font-weight:700;letter-spacing:2px;text-transform:uppercase;font-size:13px;">
+            Confirmar email
+          </a>
+        </p>
+        <p style="margin-top: 24px; color:#666; font-size: 12px;">
+          Este link expira em 24 horas. Se não foste tu, podes ignorar este
+          email.
+        </p>
+        <p style="margin-top: 32px; color:#999; font-size: 11px;">
+          WEPAC — Companhia de Artes · info@wepac.pt
+        </p>
+      </div>
+    `,
+  });
+}
+
 export async function sendTicketEmail(data: TicketEmailData) {
   const base = process.env.APP_URL || "https://wepac.pt";
   const url = `${base}/bilheteira/ticket/${data.ticketId}`;

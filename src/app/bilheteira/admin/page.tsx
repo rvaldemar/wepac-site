@@ -11,7 +11,12 @@ const STATUS_LABEL: Record<string, string> = {
   completed: "Concluído",
 };
 
-export default async function AdminDashboard() {
+type Props = {
+  searchParams: Promise<{ verified?: string }>;
+};
+
+export default async function AdminDashboard({ searchParams }: Props) {
+  const { verified } = await searchParams;
   const events = await prisma.event.findMany({
     orderBy: { startsAt: "desc" },
     include: {
@@ -23,6 +28,20 @@ export default async function AdminDashboard() {
 
   return (
     <main style={styles.container}>
+      {verified && (
+        <div
+          style={{
+            padding: 12,
+            background: "#e8f5e9",
+            border: "1px solid #1b5e20",
+            color: "#1b5e20",
+            fontSize: 13,
+            marginBottom: 16,
+          }}
+        >
+          Email confirmado. Bem-vindo/a à Bilheteira WEPAC.
+        </div>
+      )}
       <div
         style={{
           display: "flex",

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionAdmin } from "@/lib/bilheteira/session";
 import { logoutAction } from "@/lib/bilheteira/auth-actions";
@@ -17,6 +18,12 @@ export default async function AdminLayout({
     <Shell
       rightSlot={
         <>
+          <Link href="/bilheteira/admin" style={styles.buttonGhost}>
+            Eventos
+          </Link>
+          <Link href="/bilheteira/admin/admins" style={styles.buttonGhost}>
+            Admins
+          </Link>
           <span style={{ fontSize: 13, color: "#666" }}>{admin.email}</span>
           <form action={logoutAction} style={{ margin: 0 }}>
             <button type="submit" style={styles.buttonGhost}>

@@ -446,14 +446,17 @@ enum TicketStatus {
 }
 
 model TicketingAdmin {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  name         String
-  passwordHash String
-  createdAt    DateTime @default(now())
-  lastLoginAt  DateTime?
+  id                    String    @id @default(cuid())
+  email                 String    @unique
+  name                  String
+  passwordHash          String
+  createdAt             DateTime  @default(now())
+  lastLoginAt           DateTime?
+  emailVerifiedAt       DateTime?
+  verificationToken     String?   @unique
+  verificationExpiresAt DateTime?
 
-  events       Event[]
+  events Event[]
 
   @@map("ticketing_admins")
 }
@@ -500,13 +503,13 @@ model Event {
   coverImage      String?
   capacity        Int?
   status          EventStatus @default(draft)
-  createdById     String
+  createdById     String?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
-  department Department     @relation(fields: [departmentId], references: [id])
-  brand      Brand?         @relation(fields: [brandId], references: [id])
-  createdBy  TicketingAdmin @relation(fields: [createdById], references: [id])
+  department Department      @relation(fields: [departmentId], references: [id])
+  brand      Brand?          @relation(fields: [brandId], references: [id])
+  createdBy  TicketingAdmin? @relation(fields: [createdById], references: [id], onDelete: SetNull)
   tiers      TicketTier[]
   tickets    Ticket[]
 

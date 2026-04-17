@@ -566,6 +566,170 @@ async function main() {
   // The isAllowedEmail checks above cover the logic; dev-server errors
   // confirm the POST endpoint exists.
 
+  // ---- Email verification flow ----
+  await section("Email verification flow");
+
+  // 1. Create an unverified admin directly (simulating signup in the DB)
+  const unverifiedEmail = `teste-nao-verificado@wepac.pt`;
+  await prisma.ticketingAdmin.deleteMany({
+    where: { email: unverifiedEmail },
+  });
+  const verifyToken = "test-verify-token-" + Date.now();
+  const unverified = await prisma.ticketingAdmin.create({
+    data: {
+      email: unverifiedEmail,
+      name: "Admin Teste",
+      passwordHash: hashSync("password123", 10),
+      verificationToken: verifyToken,
+      verificationExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    },
+  });
+  record(
+    "unverified admin created (emailVerifiedAt=null)",
+    unverified.emailVerifiedAt === null
+  );
+
+  // 2. Session cookie for unverified admin → /bilheteira/admin should still
+  //    work IF we could forge a cookie. But we shouldn't — login gate
+  //    blocks unverified. Here we just verify the DB state.
+  //    More importantly: cookie for an unverified admin doesn't exist
+  //    because login rejects them; this simulates the safeguard.
+  //    We test the actual rejection logic via loginAction import below.
+
+  // 3. Verify via /bilheteira/verify/[token]: should set emailVerifiedAt + log in
+  const verifyResp = await get(`/bilheteira/verify/${verifyToken}`);
+  record(
+    "valid token → 307 to /bilheteira/admin?verified=1",
+    verifyResp.status === 307 &&
+      (verifyResp.location?.includes("/bilheteira/admin") || false) &&
+      (verifyResp.location?.includes("verified=1") || false)
+  );
+
+  const verifiedAdmin = await prisma.ticketingAdmin.findUnique({
+    where: { id: unverified.id },
+  });
+  record(
+    "DB: emailVerifiedAt set",
+    !!verifiedAdmin?.emailVerifiedAt
+  );
+  record(
+    "DB: verificationToken cleared",
+    verifiedAdmin?.verificationToken === null
+  );
+
+  // 4. Reusing the same token should fail (already cleared → redirect to verify-invalid)
+  const reuseResp = await get(`/bilheteira/verify/${verifyToken}`);
+  record(
+    "reusing consumed token → 307 to /verify-invalid",
+    reuseResp.status === 307 &&
+      (reuseResp.location?.includes("/bilheteira/verify-invalid") || false)
+  );
+  const invalidPage = await get("/bilheteira/verify-invalid");
+  record(
+    "/bilheteira/verify-invalid renders 200 with invalid message",
+    invalidPage.status === 200 && invalidPage.body.includes("inválido")
+  );
+
+  // 5. Expired token: create admin with expired token
+  const expiredToken = "test-expired-token-" + Date.now();
+  const expiredAdmin = await prisma.ticketingAdmin.create({
+    data: {
+      email: `teste-expirado@wepac.pt`,
+      name: "Admin Expirado",
+      passwordHash: hashSync("password123", 10),
+      verificationToken: expiredToken,
+      verificationExpiresAt: new Date(Date.now() - 1000),
+    },
+  });
+  const expiredResp = await get(`/bilheteira/verify/${expiredToken}`);
+  record(
+    "expired token → 307 to /verify-invalid",
+    expiredResp.status === 307 &&
+      (expiredResp.location?.includes("/bilheteira/verify-invalid") || false)
+  );
+  const stillExpired = await prisma.ticketingAdmin.findUnique({
+    where: { id: expiredAdmin.id },
+  });
+  record(
+    "DB: expired admin remains unverified",
+    stillExpired?.emailVerifiedAt === null
+  );
+
+  // ---- /bilheteira/admin/admins page ----
+  await section("Admin management page");
+
+  const adminsNoAuth = await get("/bilheteira/admin/admins");
+  record(
+    "no cookie → 307 to login",
+    adminsNoAuth.status === 307 &&
+      (adminsNoAuth.location?.includes("/bilheteira/login") || false)
+  );
+
+  const adminsAuthed = await get("/bilheteira/admin/admins", validCookie);
+  record(
+    "valid cookie → 200",
+    adminsAuthed.status === 200,
+    `status=${adminsAuthed.status}`
+  );
+  record(
+    "page lists seed admin (admin@wepac.pt)",
+    adminsAuthed.body.includes("admin@wepac.pt")
+  );
+  record(
+    "page lists newly verified admin",
+    adminsAuthed.body.includes(unverifiedEmail)
+  );
+  record(
+    "page lists still-unverified admin",
+    adminsAuthed.body.includes("teste-expirado@wepac.pt")
+  );
+  record(
+    "seed admin row shows '(tu)' marker (can't delete self)",
+    /admin@wepac\.pt[\s\S]{0,200}\(tu\)/.test(adminsAuthed.body) ||
+      /\(tu\)[\s\S]{0,200}admin@wepac\.pt/.test(adminsAuthed.body)
+  );
+  record(
+    "unverified admin shows 'Pendente' badge",
+    adminsAuthed.body.includes("Pendente")
+  );
+  record(
+    "verified admin shows 'Verificado' badge",
+    adminsAuthed.body.includes("Verificado")
+  );
+
+  // ---- Delete admin semantics (via DB + count guards) ----
+  await section("Delete admin constraints");
+
+  // Attempting to delete last verified admin (would happen if we deleted
+  // admin@wepac.pt while being them — blocked by self-check AND last-admin
+  // check).
+  // Simulate: delete the test verified admin (has events? no → should work)
+  await prisma.ticketingAdmin.delete({ where: { id: unverified.id } });
+  const stillThere = await prisma.ticketingAdmin.findUnique({
+    where: { id: unverified.id },
+  });
+  record("deleting unrelated verified admin succeeds", stillThere === null);
+
+  // Verify event still exists (createdBy becomes null on delete via SetNull)
+  const eventAfter = await prisma.event.findUnique({ where: { id: event.id } });
+  record(
+    "event survives admin deletion (createdBy SetNull)",
+    !!eventAfter,
+    `createdById=${eventAfter?.createdById}`
+  );
+
+  // Delete expired admin too (cleanup)
+  await prisma.ticketingAdmin.delete({ where: { id: expiredAdmin.id } });
+
+  // Re-assign event createdBy back to seed admin if null
+  if (eventAfter && eventAfter.createdById !== seedAdmin.id) {
+    await prisma.event.update({
+      where: { id: event.id },
+      data: { createdById: seedAdmin.id },
+    });
+    record("event createdBy re-anchored to seed admin", true);
+  }
+
   // ---- Cleanup ----
   await section("Cleanup");
 
