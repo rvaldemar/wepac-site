@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { sendTicketEmail } from "@/lib/bilheteira/ticket-email";
+import { getStripe, isStripeConfigured } from "@/lib/bilheteira/stripe";
 
 function back(path: string, error: string): never {
   redirect(`${path}?error=${encodeURIComponent(error)}`);
@@ -46,51 +47,136 @@ export async function reserveAction(formData: FormData): Promise<void> {
       where: { tierId: tier.id, status: { not: "cancelled" } },
       _sum: { seats: true },
     });
-    const already = used._sum.seats || 0;
-    if (already + seats > tier.quantity) {
+    const alreadyTickets = used._sum.seats || 0;
+    const pendingPayments = await prisma.payment.aggregate({
+      where: { tierId: tier.id, status: "pending" },
+      _sum: { seats: true },
+    });
+    const pending = pendingPayments._sum.seats || 0;
+    if (alreadyTickets + pending + seats > tier.quantity) {
       back(backPath, "Esta tier está esgotada ou com lugares insuficientes.");
     }
   }
 
   if (event.capacity != null) {
-    const used = await prisma.ticket.aggregate({
+    const usedTickets = await prisma.ticket.aggregate({
       where: { eventId: event.id, status: { not: "cancelled" } },
       _sum: { seats: true },
     });
-    const already = used._sum.seats || 0;
+    const pendingPayments = await prisma.payment.aggregate({
+      where: { eventId: event.id, status: "pending" },
+      _sum: { seats: true },
+    });
+    const already =
+      (usedTickets._sum.seats || 0) + (pendingPayments._sum.seats || 0);
     if (already + seats > event.capacity) {
       back(backPath, "Evento esgotado.");
     }
   }
 
-  const ticket = await prisma.ticket.create({
+  // FREE TIER: create ticket immediately (no payment flow).
+  if (tier.priceCents === 0) {
+    const ticket = await prisma.ticket.create({
+      data: {
+        eventId: event.id,
+        tierId: tier.id,
+        buyerName,
+        buyerEmail,
+        buyerPhone,
+        seats,
+        priceCents: 0,
+      },
+    });
+    try {
+      await sendTicketEmail({
+        to: buyerEmail,
+        buyerName,
+        eventTitle: event.title,
+        eventSubtitle: event.subtitle,
+        startsAt: event.startsAt,
+        venue: event.venue,
+        tierName: tier.name,
+        priceCents: 0,
+        seats,
+        ticketId: ticket.id,
+      });
+    } catch (err) {
+      console.error("[bilheteira] email send failed", err);
+    }
+    redirect(`/bilheteira/ticket/${ticket.id}?welcome=1`);
+  }
+
+  // PAID TIER: Stripe Checkout
+  if (!isStripeConfigured()) {
+    back(
+      backPath,
+      "Pagamento online ainda não está configurado. Contacta info@wepac.pt."
+    );
+  }
+
+  const base = process.env.APP_URL || "https://wepac.pt";
+  const totalCents = tier.priceCents * seats;
+  const stripe = getStripe();
+
+  // Create Payment row first so webhook can idempotently locate it.
+  const payment = await prisma.payment.create({
     data: {
+      provider: "stripe",
+      providerRef: `pending_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`,
+      amountCents: totalCents,
+      currency: "eur",
       eventId: event.id,
       tierId: tier.id,
+      seats,
       buyerName,
       buyerEmail,
       buyerPhone,
-      seats,
-      priceCents: tier.priceCents,
     },
   });
 
-  try {
-    await sendTicketEmail({
-      to: buyerEmail,
+  const session = await stripe.checkout.sessions.create({
+    mode: "payment",
+    payment_method_types: ["card", "multibanco"],
+    customer_email: buyerEmail,
+    line_items: [
+      {
+        price_data: {
+          currency: "eur",
+          product_data: {
+            name: `${event.title} — ${tier.name}`,
+            description: tier.description || undefined,
+            metadata: {
+              eventId: event.id,
+              tierId: tier.id,
+            },
+          },
+          unit_amount: tier.priceCents,
+          tax_behavior: "inclusive",
+        },
+        quantity: seats,
+      },
+    ],
+    metadata: {
+      paymentId: payment.id,
+      eventId: event.id,
+      tierId: tier.id,
+      seats: String(seats),
       buyerName,
-      eventTitle: event.title,
-      eventSubtitle: event.subtitle,
-      startsAt: event.startsAt,
-      venue: event.venue,
-      tierName: tier.name,
-      priceCents: tier.priceCents,
-      seats,
-      ticketId: ticket.id,
-    });
-  } catch (err) {
-    console.error("[bilheteira] email send failed", err);
-  }
+      buyerEmail,
+    },
+    success_url: `${base}/bilheteira/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${base}/bilheteira/${eventSlug}?cancelled=1`,
+    locale: "pt",
+    expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
+  });
 
-  redirect(`/bilheteira/ticket/${ticket.id}?welcome=1`);
+  await prisma.payment.update({
+    where: { id: payment.id },
+    data: { providerRef: session.id },
+  });
+
+  if (!session.url) {
+    back(backPath, "Não foi possível iniciar o pagamento. Tenta novamente.");
+  }
+  redirect(session.url);
 }

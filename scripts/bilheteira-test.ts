@@ -95,9 +95,14 @@ async function main() {
   record("seed: admin exists", !!seedAdmin, seedAdmin.email);
   record("seed: event published", event.status === "published", event.slug);
   record(
-    "seed: 2 tiers (Bilhete 12€, Amigo WEPAC 0€)",
-    bilheteTier.priceCents === 1200 && amigoTier.priceCents === 0,
-    `${bilheteTier.name}=${bilheteTier.priceCents}c, ${amigoTier.name}=${amigoTier.priceCents}c`
+    "seed: Bilhete 12€",
+    bilheteTier.priceCents === 1200,
+    `${bilheteTier.priceCents}c`
+  );
+  record(
+    "seed: Amigo WEPAC 25€ (patrono)",
+    amigoTier.priceCents === 2500,
+    `${amigoTier.priceCents}c`
   );
 
   // ---- Public routes ----
@@ -119,8 +124,8 @@ async function main() {
     listing.body.includes("Capela Viva")
   );
   record(
-    "listing contains 'desde 0' (amigo wepac = grátis)",
-    listing.body.includes("Grátis") || listing.body.includes("desde 0")
+    "listing shows min price 'desde 12 €' (Bilhete)",
+    listing.body.includes("desde 12 €") || listing.body.includes("12 €")
   );
 
   const eventPage = await get(`/bilheteira/${event.slug}`);
@@ -307,10 +312,10 @@ async function main() {
       buyerName: "Maria Amiga",
       buyerEmail: "maria.amiga@example.com",
       seats: 1,
-      priceCents: 0,
+      priceCents: amigoTier.priceCents,
     },
   });
-  record("ticket created (Amigo WEPAC, 1 seat)", !!t2);
+  record("ticket created (Amigo WEPAC patrono, 1 seat)", !!t2);
 
   const ticketPage1 = await get(`/bilheteira/ticket/${t1.id}`);
   record("GET /bilheteira/ticket/[id] → 200", ticketPage1.status === 200);
@@ -342,8 +347,12 @@ async function main() {
 
   const ticketPage2 = await get(`/bilheteira/ticket/${t2.id}`);
   record(
-    "amigo ticket page 200 + shows 'Grátis'",
-    ticketPage2.status === 200 && ticketPage2.body.includes("Grátis")
+    "amigo ticket page 200 + shows 25 €",
+    ticketPage2.status === 200 && ticketPage2.body.includes("25 €")
+  );
+  record(
+    "ticket page shows IVA exemption notice",
+    ticketPage1.body.includes("art.º 9") || ticketPage1.body.includes("CIVA")
   );
 
   const ticketPageWithWelcome = await get(
@@ -730,12 +739,157 @@ async function main() {
     record("event createdBy re-anchored to seed admin", true);
   }
 
+  // ---- Stripe integration ----
+  await section("Stripe integration (structure only — no real keys)");
+
+  const { isStripeConfigured } = await import(
+    "../src/lib/bilheteira/stripe"
+  );
+  const stripeConfigured = isStripeConfigured();
+  record(
+    `isStripeConfigured() = ${stripeConfigured} (env: ${process.env.STRIPE_SECRET_KEY ? "set" : "unset"})`,
+    true
+  );
+
+  // Payment model exists + works
+  const testFreeTier = await prisma.ticketTier.create({
+    data: {
+      eventId: event.id,
+      name: "Free tier (teste)",
+      priceCents: 0,
+      sortOrder: 200,
+    },
+  });
+  record("free tier created (to test free reservation path)", !!testFreeTier);
+
+  // Simulate a completed payment + linked ticket
+  const simulatedPayment = await prisma.payment.create({
+    data: {
+      provider: "stripe",
+      providerRef: "cs_test_simulated_" + Date.now(),
+      amountCents: 1200,
+      currency: "eur",
+      eventId: event.id,
+      tierId: bilheteTier.id,
+      seats: 1,
+      buyerName: "Simulated Buyer",
+      buyerEmail: "sim@example.com",
+      status: "completed",
+      paidAt: new Date(),
+    },
+  });
+  const simulatedTicket = await prisma.ticket.create({
+    data: {
+      eventId: event.id,
+      tierId: bilheteTier.id,
+      paymentId: simulatedPayment.id,
+      buyerName: "Simulated Buyer",
+      buyerEmail: "sim@example.com",
+      seats: 1,
+      priceCents: 1200,
+    },
+  });
+  record(
+    "payment linked to ticket (one-to-one)",
+    !!simulatedTicket.paymentId && simulatedTicket.paymentId === simulatedPayment.id
+  );
+
+  // Admin event page now shows payments section
+  const eventAdminWithPayments = await get(
+    `/bilheteira/admin/events/${event.id}`,
+    validCookie
+  );
+  record(
+    "admin event page shows 'Pagamentos' section",
+    eventAdminWithPayments.body.includes("Pagamentos")
+  );
+  record(
+    "admin shows 'Recebido (Stripe)' amount",
+    eventAdminWithPayments.body.includes("Recebido") &&
+      eventAdminWithPayments.body.includes("12 €")
+  );
+  record(
+    "admin lists simulated buyer",
+    eventAdminWithPayments.body.includes("Simulated Buyer")
+  );
+  record(
+    "admin shows 'completed' pill",
+    eventAdminWithPayments.body.includes("completed")
+  );
+
+  // Checkout success page redirect behavior
+  const successMissingSession = await get("/bilheteira/checkout/success");
+  record(
+    "checkout success without session_id → 307 to /bilheteira",
+    successMissingSession.status === 307 &&
+      (successMissingSession.location?.includes("/bilheteira") || false)
+  );
+
+  const successWithSession = await get(
+    `/bilheteira/checkout/success?session_id=${simulatedPayment.providerRef}`
+  );
+  record(
+    "checkout success with known session → 307 to ticket",
+    successWithSession.status === 307 &&
+      (successWithSession.location?.includes(`/bilheteira/ticket/${simulatedTicket.id}`) || false)
+  );
+
+  const successUnknownSession = await get(
+    "/bilheteira/checkout/success?session_id=cs_unknown_session_id"
+  );
+  record(
+    "checkout success with unknown session → 200 processing page",
+    successUnknownSession.status === 200 &&
+      successUnknownSession.body.includes("A confirmar pagamento")
+  );
+
+  // Cancelled redirect
+  const cancelled = await get(
+    `/bilheteira/${event.slug}?cancelled=1`
+  );
+  record(
+    "event page with ?cancelled=1 shows cancel banner",
+    cancelled.body.includes("Pagamento cancelado")
+  );
+
+  // Webhook rejects missing signature
+  const webhookNoSig = await fetch(
+    `${BASE}/api/bilheteira/stripe/webhook`,
+    { method: "POST", body: "{}" }
+  );
+  record(
+    "webhook without signature → 400 (or 500 if secret not set)",
+    [400, 500].includes(webhookNoSig.status),
+    `status=${webhookNoSig.status}`
+  );
+
+  // Webhook rejects tampered payload
+  const webhookBadSig = await fetch(
+    `${BASE}/api/bilheteira/stripe/webhook`,
+    {
+      method: "POST",
+      body: "{}",
+      headers: { "stripe-signature": "t=1,v1=deadbeef" },
+    }
+  );
+  record(
+    "webhook with bad signature → 400 (or 500)",
+    [400, 500].includes(webhookBadSig.status),
+    `status=${webhookBadSig.status}`
+  );
+
+  // Cleanup Stripe test data
+  await prisma.ticket.deleteMany({ where: { paymentId: simulatedPayment.id } });
+  await prisma.payment.delete({ where: { id: simulatedPayment.id } });
+  await prisma.ticketTier.delete({ where: { id: testFreeTier.id } });
+
   // ---- Cleanup ----
   await section("Cleanup");
 
   await prisma.ticket.deleteMany({ where: { eventId: event.id } });
+  await prisma.payment.deleteMany({ where: { eventId: event.id } });
   await prisma.ticketTier.delete({ where: { id: limitedTier.id } });
-  record("cleanup: tickets + test tiers removed", true);
+  record("cleanup: tickets + payments + test tiers removed", true);
 
   // ---- Summary ----
   console.log(`\n━━━ Summary ━━━`);

@@ -93,7 +93,7 @@ export async function sendTicketEmail(data: TicketEmailData) {
   const url = `${base}/bilheteira/ticket/${data.ticketId}`;
   const paymentNote =
     data.priceCents > 0
-      ? `<p style="font-size:13px;color:#666;margin-top:8px;">Pagamento à entrada: <strong>${formatPrice(data.priceCents * data.seats)}</strong>.</p>`
+      ? `<p style="font-size:13px;color:#666;margin-top:8px;">Total pago: <strong>${formatPrice(data.priceCents * data.seats)}</strong>. Isento de IVA ao abrigo do art.º 9.º do CIVA.</p>`
       : "";
 
   await transporter.sendMail({

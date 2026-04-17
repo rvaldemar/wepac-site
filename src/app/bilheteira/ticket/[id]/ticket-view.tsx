@@ -141,10 +141,15 @@ export function TicketView({
               {priceCents > 0 && (
                 <>
                   <dt>Pagamento</dt>
-                  <dd>À entrada</dd>
+                  <dd>Pago online</dd>
                 </>
               )}
             </dl>
+            {priceCents > 0 && (
+              <p className="bt-iva">
+                Isento de IVA ao abrigo do art.º 9.º do CIVA.
+              </p>
+            )}
 
             <hr className="bt-divider" />
 

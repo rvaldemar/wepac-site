@@ -59,7 +59,7 @@ export function EventFormClient({
       ? []
       : [
           { name: "Bilhete", price: "12", description: "" },
-          { name: "Amigo WEPAC", price: "0", description: "" },
+          { name: "Amigo WEPAC", price: "25", description: "Patrono — apoio directo ao programa." },
         ]
   );
 

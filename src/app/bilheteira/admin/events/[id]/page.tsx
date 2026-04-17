@@ -38,6 +38,10 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
         include: { tier: true },
         orderBy: { createdAt: "desc" },
       },
+      payments: {
+        include: { tier: true },
+        orderBy: { createdAt: "desc" },
+      },
     },
   });
   if (!event) notFound();
@@ -57,6 +61,12 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
     (a, t) => a + t.priceCents * t.seats,
     0
   );
+  const paidRevenueCents = event.payments
+    .filter((p) => p.status === "completed")
+    .reduce((a, p) => a + p.amountCents, 0);
+  const pendingPayments = event.payments.filter(
+    (p) => p.status === "pending"
+  ).length;
 
   return (
     <main style={styles.container}>
@@ -224,6 +234,99 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
             Adicionar tier
           </button>
         </form>
+      </div>
+
+      <h2 style={styles.h2}>Pagamentos</h2>
+      <div style={styles.card}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 12,
+            marginBottom: 16,
+          }}
+        >
+          <Stat
+            label="Recebido (Stripe)"
+            value={formatPriceCents(paidRevenueCents)}
+            color="#1b5e20"
+          />
+          <Stat
+            label="Pagamentos pendentes"
+            value={pendingPayments}
+            color={pendingPayments > 0 ? "#b26a00" : undefined}
+          />
+          <Stat
+            label="Total pagamentos"
+            value={event.payments.length}
+          />
+        </div>
+
+        {event.payments.length === 0 ? (
+          <p style={{ color: "#666" }}>Ainda sem pagamentos.</p>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={styles.th}>Data</th>
+                  <th style={styles.th}>Comprador</th>
+                  <th style={styles.th}>Tier</th>
+                  <th style={{ ...styles.th, textAlign: "center" }}>Lug.</th>
+                  <th style={styles.th}>Montante</th>
+                  <th style={styles.th}>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {event.payments.map((p) => (
+                  <tr key={p.id}>
+                    <td
+                      style={{ ...styles.td, fontSize: 12, color: "#666" }}
+                    >
+                      {new Intl.DateTimeFormat("pt-PT", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }).format(p.createdAt)}
+                    </td>
+                    <td style={styles.td}>
+                      {p.buyerName}
+                      <div style={{ fontSize: 11, color: "#666" }}>
+                        {p.buyerEmail}
+                      </div>
+                    </td>
+                    <td style={styles.td}>{p.tier.name}</td>
+                    <td style={{ ...styles.td, textAlign: "center" }}>
+                      {p.seats}
+                    </td>
+                    <td style={styles.td}>
+                      {formatPriceCents(p.amountCents)}
+                    </td>
+                    <td style={styles.td}>
+                      <span
+                        style={{
+                          ...styles.pill,
+                          background:
+                            p.status === "completed"
+                              ? "#c8e6c9"
+                              : p.status === "pending"
+                                ? "#fff3cd"
+                                : p.status === "expired" ||
+                                    p.status === "failed"
+                                  ? "#ffcdd2"
+                                  : "#DEE0DB",
+                        }}
+                      >
+                        {p.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       <h2 style={styles.h2}>Bilhetes emitidos</h2>

@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 
 type Props = {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; cancelled?: string }>;
 };
 
 export async function generateMetadata({ params }: Props) {
@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function EventPublicPage({ params, searchParams }: Props) {
   const { slug } = await params;
-  const { error } = await searchParams;
+  const { error, cancelled } = await searchParams;
 
   const event = await prisma.event.findUnique({
     where: { slug },
@@ -113,6 +113,20 @@ export default async function EventPublicPage({ params, searchParams }: Props) {
         </div>
 
         <h2 style={styles.h2}>Reservar bilhete</h2>
+        {cancelled && (
+          <div
+            style={{
+              padding: 12,
+              background: "#fff3cd",
+              border: "1px solid #856404",
+              color: "#856404",
+              fontSize: 13,
+              marginBottom: 12,
+            }}
+          >
+            Pagamento cancelado. Se foi engano, podes tentar novamente.
+          </div>
+        )}
         {error && <div style={styles.error}>{error}</div>}
         <div style={styles.card}>
           <form action={reserveAction} style={styles.form}>
@@ -198,12 +212,13 @@ export default async function EventPublicPage({ params, searchParams }: Props) {
             </div>
 
             <p style={{ fontSize: 12, color: "#666" }}>
-              As reservas pagas são liquidadas à entrada do evento. O bilhete é
-              enviado por email e pode ser apresentado no telemóvel ou impresso.
+              Tiers pagas são liquidadas online (cartão ou Multibanco). Tiers
+              gratuitas geram bilhete imediato. Preços isentos de IVA ao
+              abrigo do art.º 9.º do CIVA.
             </p>
 
             <button type="submit" style={styles.button}>
-              Confirmar reserva
+              Continuar
             </button>
           </form>
         </div>

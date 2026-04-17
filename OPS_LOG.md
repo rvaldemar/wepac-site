@@ -4,6 +4,39 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-04-17 — Bilheteira: Stripe payments
+
+Pagamento online via Stripe Checkout (test-mode primeiro, depois live).
+
+- Stripe SDK instalado (`stripe` npm). API version `2026-03-25.dahlia`.
+- Novo model `Payment` com enum `PaymentStatus` (pending, completed, failed, refunded, expired). `Ticket.paymentId` opcional one-to-one.
+- `reserveAction` agora bifurca:
+  - Tier grátis (0€) → cria Ticket imediatamente + envia email (como antes).
+  - Tier paga → cria `Payment(pending)` + Stripe Checkout Session (cards + Multibanco, locale pt) + redirect para Stripe.
+- Webhook: `POST /api/bilheteira/stripe/webhook` valida signature, trata `checkout.session.completed` (cria Ticket idempotente + envia email), `checkout.session.expired` (marca Payment expired).
+- Success: `/bilheteira/checkout/success?session_id=X` procura Payment + Ticket; se pronto redireciona, senão mostra página "a processar" com auto-refresh 3s.
+- Cancel: redireciona para `/bilheteira/[slug]?cancelled=1` com banner.
+- Capacidade/quantity agora contam também pagamentos pendentes para evitar oversell durante checkout.
+- Amigo WEPAC corrigido para 25€ (tier patrono, não gratuita). Migration backfill em prod.
+- Aviso IVA no bilhete + email: "Isento de IVA ao abrigo do art.º 9.º do CIVA." (WEPAC como associação cultural sem fins lucrativos).
+- Admin do evento mostra nova secção "Pagamentos": receita Stripe, pendentes, lista completa com estado.
+
+**Env vars necessárias em prod:**
+- `STRIPE_SECRET_KEY` (sk_live_... ou sk_test_...)
+- `STRIPE_PUBLISHABLE_KEY` (pk_live_... — ainda não usado no back, mas conveniente para futuro)
+- `STRIPE_WEBHOOK_SECRET` (whsec_... — obter no dashboard Stripe ao criar o endpoint)
+
+**Configurar webhook na Stripe:**
+1. Dashboard Stripe → Developers → Webhooks → Add endpoint
+2. URL: `https://wepac.pt/api/bilheteira/stripe/webhook`
+3. Events: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.expired`, `checkout.session.async_payment_failed`
+4. Copiar o signing secret (`whsec_...`) para `STRIPE_WEBHOOK_SECRET` em `.env.production`
+5. Activar Multibanco em Stripe → Settings → Payment methods (pode requerer activação da conta PT)
+
+Testes: 95/95 local (subiu de 80). Cobre: path grátis, path pago, webhook signature rejection, success page com sessão conhecida/desconhecida, cancel banner, UI admin de pagamentos.
+
+---
+
 ## 2026-04-17 — Bilheteira: email verification + admin delete
 
 Addições à bilheteira:

@@ -395,8 +395,8 @@ Concerto inserido na programação regular de Capela Viva na Capela do Hospital 
         {
           eventId: ananda.id,
           name: "Amigo WEPAC",
-          description: "Convite de cortesia — entrada grátis.",
-          priceCents: 0,
+          description: "Patrono — apoio directo ao programa Capela Viva.",
+          priceCents: 2500,
           sortOrder: 1,
         },
       ],

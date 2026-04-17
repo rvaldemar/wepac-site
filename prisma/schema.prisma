@@ -445,6 +445,14 @@ enum TicketStatus {
   cancelled
 }
 
+enum PaymentStatus {
+  pending
+  completed
+  failed
+  refunded
+  expired
+}
+
 model TicketingAdmin {
   id                    String    @id @default(cuid())
   email                 String    @unique
@@ -512,6 +520,7 @@ model Event {
   createdBy  TicketingAdmin? @relation(fields: [createdById], references: [id], onDelete: SetNull)
   tiers      TicketTier[]
   tickets    Ticket[]
+  payments   Payment[]
 
   @@index([status, startsAt])
   @@map("events")
@@ -527,8 +536,9 @@ model TicketTier {
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
 
-  event   Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  tickets Ticket[]
+  event    Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tickets  Ticket[]
+  payments Payment[]
 
   @@map("ticket_tiers")
 }
@@ -538,6 +548,7 @@ model Ticket {
   serial      Int          @unique @default(autoincrement())
   eventId     String
   tierId      String
+  paymentId   String?      @unique
   buyerName   String
   buyerEmail  String
   buyerPhone  String?
@@ -548,9 +559,37 @@ model Ticket {
   checkedInAt DateTime?
   createdAt   DateTime     @default(now())
 
-  event Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  tier  TicketTier @relation(fields: [tierId], references: [id])
+  event   Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tier    TicketTier @relation(fields: [tierId], references: [id])
+  payment Payment?   @relation(fields: [paymentId], references: [id])
 
   @@index([eventId, status])
   @@map("tickets")
+}
+
+model Payment {
+  id          String        @id @default(cuid())
+  provider    String        @default("stripe")
+  providerRef String        @unique
+  amountCents Int
+  currency    String        @default("eur")
+  status      PaymentStatus @default(pending)
+  eventId     String
+  tierId      String
+  seats       Int           @default(1)
+  buyerName   String
+  buyerEmail  String
+  buyerPhone  String?
+  metadata    Json?
+  paidAt      DateTime?
+  failedAt    DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  event  Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tier   TicketTier @relation(fields: [tierId], references: [id])
+  ticket Ticket?
+
+  @@index([eventId, status])
+  @@map("payments")
 }
