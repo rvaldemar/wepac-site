@@ -43,50 +43,56 @@ if [ "$EXISTING" -gt 0 ]; then
   echo ""
 fi
 
-# Prompt (silent/hidden input)
-echo "Cola as 3 chaves (input escondido, pressiona Enter após cada uma):"
+# Prompt helper: asks for one key at a time, validates format, confirms receipt
+# with a masked preview, re-prompts on invalid input.
+# Args: 1) label   2) regex   3) variable name to store the result
+prompt_key() {
+  local label="$1"
+  local regex="$2"
+  local var_name="$3"
+  local val=""
+  while true; do
+    printf "  %s: " "$label" >&2
+    read -r -s val
+    printf "\n" >&2
+    val="$(echo -n "$val" | tr -d '[:space:]')"
+    if [[ -z "$val" ]]; then
+      echo "    ✗ vazio — tenta de novo" >&2
+      continue
+    fi
+    if [[ ! "$val" =~ $regex ]]; then
+      echo "    ✗ formato inválido (esperado: $regex) — tenta de novo" >&2
+      continue
+    fi
+    # Masked preview: first 10 chars + … + last 4
+    local preview="${val:0:10}…${val: -4}"
+    echo "    ✓ recebida ($preview)" >&2
+    echo "" >&2
+    printf -v "$var_name" '%s' "$val"
+    return 0
+  done
+}
+
+echo "Cola cada chave quando pedida (input escondido, Enter para confirmar)."
+echo "Pressiona Ctrl+C para abortar a qualquer momento."
 echo ""
 
-read -r -s -p "  STRIPE_SECRET_KEY (sk_test_... / sk_live_...): " STRIPE_SECRET_KEY
-echo ""
-read -r -s -p "  STRIPE_PUBLISHABLE_KEY (pk_test_... / pk_live_...): " STRIPE_PUBLISHABLE_KEY
-echo ""
-read -r -s -p "  STRIPE_WEBHOOK_SECRET (whsec_...): " STRIPE_WEBHOOK_SECRET
-echo ""
-echo ""
+prompt_key "STRIPE_SECRET_KEY (sk_test_... / sk_live_...)" "^sk_(test|live)_[A-Za-z0-9]+$" STRIPE_SECRET_KEY
+prompt_key "STRIPE_PUBLISHABLE_KEY (pk_test_... / pk_live_...)" "^pk_(test|live)_[A-Za-z0-9]+$" STRIPE_PUBLISHABLE_KEY
+prompt_key "STRIPE_WEBHOOK_SECRET (whsec_...)" "^whsec_[A-Za-z0-9]+$" STRIPE_WEBHOOK_SECRET
 
-# Trim whitespace
-STRIPE_SECRET_KEY="$(echo -n "$STRIPE_SECRET_KEY" | tr -d '[:space:]')"
-STRIPE_PUBLISHABLE_KEY="$(echo -n "$STRIPE_PUBLISHABLE_KEY" | tr -d '[:space:]')"
-STRIPE_WEBHOOK_SECRET="$(echo -n "$STRIPE_WEBHOOK_SECRET" | tr -d '[:space:]')"
+# Test-mode vs live coherence
+sk_mode=""
+pk_mode=""
+[[ "$STRIPE_SECRET_KEY" == sk_test_* ]] && sk_mode="test"
+[[ "$STRIPE_SECRET_KEY" == sk_live_* ]] && sk_mode="live"
+[[ "$STRIPE_PUBLISHABLE_KEY" == pk_test_* ]] && pk_mode="test"
+[[ "$STRIPE_PUBLISHABLE_KEY" == pk_live_* ]] && pk_mode="live"
 
-# Validate format
-fail=0
-if [[ ! "$STRIPE_SECRET_KEY" =~ ^sk_(test|live)_ ]]; then
-  echo "✗ STRIPE_SECRET_KEY inválida (deve começar por sk_test_ ou sk_live_)"
-  fail=1
-fi
-if [[ ! "$STRIPE_PUBLISHABLE_KEY" =~ ^pk_(test|live)_ ]]; then
-  echo "✗ STRIPE_PUBLISHABLE_KEY inválida (deve começar por pk_test_ ou pk_live_)"
-  fail=1
-fi
-if [[ ! "$STRIPE_WEBHOOK_SECRET" =~ ^whsec_ ]]; then
-  echo "✗ STRIPE_WEBHOOK_SECRET inválida (deve começar por whsec_)"
-  fail=1
-fi
-
-# Test-mode vs live coherence warning
-if [[ "$STRIPE_SECRET_KEY" == sk_test_* && "$STRIPE_PUBLISHABLE_KEY" != pk_test_* ]] || \
-   [[ "$STRIPE_SECRET_KEY" == sk_live_* && "$STRIPE_PUBLISHABLE_KEY" != pk_live_* ]]; then
-  echo "⚠  Secret e Publishable estão em modos diferentes (test vs live). Continuar mesmo assim?"
-  read -r -p "   (y/N): " answer
-  [[ ! "$answer" =~ ^[Yy]$ ]] && exit 1
-fi
-
-if [ $fail -ne 0 ]; then
-  echo ""
-  echo "Abortado sem alterações."
-  exit 1
+if [[ "$sk_mode" != "$pk_mode" ]]; then
+  echo "⚠  Secret ($sk_mode) e Publishable ($pk_mode) em modos diferentes."
+  read -r -p "   Continuar mesmo assim? (y/N): " answer
+  [[ ! "$answer" =~ ^[Yy]$ ]] && { echo "Abortado."; exit 1; }
 fi
 
 # Detect mode for the comment header

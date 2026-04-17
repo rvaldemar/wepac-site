@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import QRCode from "qrcode";
 import { prisma } from "@/lib/db";
 import { TicketView } from "./ticket-view";
+import { CapelaVivaTicketView } from "./capela-viva-view";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +49,26 @@ export default async function TicketPage({ params, searchParams }: Props) {
 
   const serialCode = `BT-${String(ticket.serial).padStart(3, "0")}`;
   const brandName = ticket.event.brand?.name || ticket.event.department.name;
+
+  // Brand-specific design: Capela Viva uses the C/D-style landscape ticket.
+  if (ticket.event.brand?.slug === "capela-viva") {
+    return (
+      <CapelaVivaTicketView
+        tierName={ticket.tier.name}
+        buyerName={ticket.buyerName}
+        seats={ticket.seats}
+        priceCents={ticket.priceCents}
+        serialCode={serialCode}
+        qrSvg={qrSvg}
+        startsAt={ticket.event.startsAt}
+        doorsAt={ticket.event.doorsAt}
+        venue={ticket.event.venue}
+        address={ticket.event.address}
+        checkedInAt={ticket.checkedInAt}
+        welcome={welcome === "1"}
+      />
+    );
+  }
 
   return (
     <TicketView

@@ -329,7 +329,8 @@ async function main() {
   );
   record(
     "ticket page contains QR (svg)",
-    ticketPage1.body.includes("<svg") && ticketPage1.body.includes("bt-qr")
+    ticketPage1.body.includes("<svg") &&
+      (ticketPage1.body.includes("bt-qr") || ticketPage1.body.includes("cv-qr"))
   );
   record(
     "ticket page shows serial BT-",
@@ -347,8 +348,9 @@ async function main() {
 
   const ticketPage2 = await get(`/bilheteira/ticket/${t2.id}`);
   record(
-    "amigo ticket page 200 + shows 25 €",
-    ticketPage2.status === 200 && ticketPage2.body.includes("25 €")
+    "amigo ticket page 200 + shows 25€",
+    ticketPage2.status === 200 &&
+      (ticketPage2.body.includes("25 €") || ticketPage2.body.includes("25€"))
   );
   record(
     "ticket page shows IVA exemption notice",

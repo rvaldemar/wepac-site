@@ -1,0 +1,533 @@
+/* Capela Viva ticket — inspired by C/D printed models */
+
+.cv-page {
+  min-height: 100vh;
+  background: #f0efe9;
+  font-family: "Rubik", system-ui, sans-serif;
+  color: #001a6d;
+  padding: 24px 16px 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.cv-welcome {
+  max-width: 520px;
+  width: 100%;
+  padding: 12px 16px;
+  background: #e8f5e9;
+  border: 1px solid #1b5e20;
+  color: #1b5e20;
+  font-size: 13px;
+  text-align: center;
+}
+
+/* ───── ticket container (landscape; adapts to column on narrow screens) ───── */
+
+.cv-ticket {
+  width: 100%;
+  max-width: 760px;
+  aspect-ratio: 200 / 80;
+  background: #d2d1c6;
+  color: #001a6d;
+  display: flex;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 26, 109, 0.15);
+  border-radius: 2px;
+}
+
+.cv-photo {
+  width: 29%;
+  flex-shrink: 0;
+  background-size: cover;
+  background-position: 52% 28%;
+}
+
+.cv-corpo {
+  flex: 1;
+  padding: clamp(16px, 3.2%, 32px) clamp(16px, 3.6%, 36px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.cv-tipo {
+  font-family: "Rubik", sans-serif;
+  font-weight: 600;
+  font-size: clamp(9px, 1.1vw, 12px);
+  letter-spacing: 0.4em;
+  color: #2e5944;
+  text-transform: uppercase;
+}
+
+.cv-titulo-italico {
+  font-family: "IBM Plex Serif", serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(11px, 1.4vw, 16px);
+  color: #001a6d;
+  margin-top: 4px;
+  line-height: 1;
+}
+
+.cv-titulo-principal {
+  font-family: "IBM Plex Serif", serif;
+  font-weight: 500;
+  font-size: clamp(20px, 2.7vw, 32px);
+  color: #001a6d;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.cv-ornamento {
+  margin-top: 10px;
+  width: 60%;
+  max-width: 180px;
+  height: auto;
+}
+
+.cv-artista {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-weight: 500;
+  font-size: clamp(13px, 1.6vw, 18px);
+  color: #001a6d;
+  letter-spacing: 0.01em;
+  margin-top: 8px;
+  line-height: 1.15;
+}
+
+.cv-instrumento {
+  display: block;
+  font-family: "IBM Plex Serif", serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(11px, 1.3vw, 15px);
+  color: #2e5944;
+  margin-top: 2px;
+  letter-spacing: 0.02em;
+}
+
+.cv-info {
+  font-family: "Rubik", sans-serif;
+  font-size: clamp(10px, 1.1vw, 13px);
+  line-height: 1.5;
+  color: #001a6d;
+}
+
+.cv-data {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-weight: 600;
+  font-size: clamp(11px, 1.2vw, 14px);
+  letter-spacing: 0.03em;
+}
+
+.cv-logos {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.cv-logos img {
+  height: clamp(16px, 2vw, 22px);
+  width: auto;
+  object-fit: contain;
+  opacity: 0.85;
+}
+
+.cv-logos img.cv-logo-aac {
+  height: clamp(14px, 1.8vw, 20px);
+}
+
+/* ───── stub (right column with QR) ───── */
+
+.cv-stub {
+  width: 22%;
+  flex-shrink: 0;
+  background: #001a6d;
+  color: #d2d1c6;
+  padding: clamp(12px, 1.8%, 20px) clamp(10px, 1.6%, 18px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  justify-content: space-between;
+  position: relative;
+  gap: 6px;
+}
+
+/* perforation dots on left edge */
+.cv-stub::before {
+  content: "";
+  position: absolute;
+  left: -2px;
+  top: 6%;
+  bottom: 6%;
+  width: 4px;
+  background-image: radial-gradient(
+    circle,
+    #d2d1c6 1.4px,
+    transparent 1.8px
+  );
+  background-size: 4px 10px;
+  background-repeat: repeat-y;
+  background-position: center;
+}
+
+.cv-marca {
+  font-family: "IBM Plex Serif", serif;
+  font-weight: 500;
+  font-size: clamp(9px, 1vw, 12px);
+  letter-spacing: 0.12em;
+  color: #d2d1c6;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.cv-marca small {
+  display: block;
+  font-family: "Rubik", sans-serif;
+  font-size: clamp(7px, 0.7vw, 9px);
+  letter-spacing: 0.18em;
+  font-weight: 400;
+  margin-top: 6px;
+  opacity: 0.75;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.cv-estrela {
+  display: inline-block;
+  margin: 0 4px;
+  opacity: 0.9;
+}
+
+.cv-datas {
+  font-family: "IBM Plex Serif", serif;
+}
+
+.cv-dia {
+  font-size: clamp(14px, 1.9vw, 20px);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.05em;
+}
+
+.cv-hora {
+  font-family: "Rubik", sans-serif;
+  font-size: clamp(10px, 1.1vw, 13px);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  margin-top: 4px;
+}
+
+.cv-linha {
+  width: 60%;
+  height: 1px;
+  background: #d2d1c6;
+  opacity: 0.4;
+}
+
+.cv-qr-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.cv-qr {
+  background: #d2d1c6;
+  padding: 6px;
+  border-radius: 2px;
+  line-height: 0;
+}
+
+.cv-qr svg {
+  width: clamp(50px, 7vw, 84px);
+  height: clamp(50px, 7vw, 84px);
+  display: block;
+}
+
+.cv-qr svg path {
+  fill: #001a6d !important;
+}
+
+.cv-serial {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-weight: 600;
+  font-size: clamp(9px, 1vw, 12px);
+  letter-spacing: 0.08em;
+  color: #d2d1c6;
+}
+
+.cv-tier-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.cv-etiqueta {
+  font-family: "Rubik", sans-serif;
+  font-weight: 600;
+  font-size: clamp(10px, 1.1vw, 13px);
+  letter-spacing: 0.3em;
+  color: #d2d1c6;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+
+.cv-etiqueta.two-line {
+  font-size: clamp(9px, 1vw, 12px);
+  letter-spacing: 0.22em;
+  line-height: 1.35;
+}
+
+.cv-detalhe {
+  font-family: "IBM Plex Serif", serif;
+  font-weight: 500;
+  font-size: clamp(13px, 1.6vw, 18px);
+  letter-spacing: 0.02em;
+  color: #d2d1c6;
+  margin-top: 2px;
+}
+
+.cv-sub {
+  display: block;
+  font-family: "IBM Plex Serif", serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(8px, 0.9vw, 11px);
+  letter-spacing: 0.02em;
+  margin-top: 2px;
+  opacity: 0.85;
+}
+
+.cv-total-line {
+  font-family: "Rubik", sans-serif;
+  font-size: clamp(8px, 0.9vw, 10px);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  margin-top: 2px;
+}
+
+.cv-admitido {
+  padding: 3px 10px;
+  background: #2e5944;
+  color: #d2d1c6;
+  font-size: clamp(8px, 0.9vw, 11px);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* ───── details panel (below ticket on mobile/desktop) ───── */
+
+.cv-details {
+  width: 100%;
+  max-width: 760px;
+  background: #d2d1c6;
+  padding: 24px 28px 28px;
+  color: #001a6d;
+  font-family: "IBM Plex Serif", serif;
+}
+
+.cv-details-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0, 26, 109, 0.2);
+}
+
+.cv-details-sub {
+  font-family: "Rubik", sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #2e5944;
+  font-weight: 600;
+}
+
+.cv-details-serial {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+
+.cv-details-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 20px;
+  margin: 0 0 20px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.cv-details-grid dt {
+  font-family: "Rubik", sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #2e5944;
+  padding-top: 3px;
+  white-space: nowrap;
+}
+
+.cv-details-grid dd {
+  margin: 0;
+}
+
+.cv-verso-texto {
+  font-family: "IBM Plex Serif", serif;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #001a6d;
+}
+
+.cv-verso-texto p {
+  margin: 0 0 10px;
+}
+
+.cv-assinatura {
+  font-style: italic;
+  font-size: 12px;
+  color: #2e5944;
+  margin-top: 14px !important;
+}
+
+.cv-iva {
+  margin-top: 18px;
+  font-family: "Rubik", sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #2e5944;
+  opacity: 0.75;
+  text-align: right;
+}
+
+/* ───── mobile adapt (portrait) ───── */
+
+@media (max-width: 640px) {
+  .cv-ticket {
+    aspect-ratio: auto;
+    flex-direction: column;
+    max-width: 420px;
+  }
+  .cv-photo {
+    width: 100%;
+    height: 200px;
+    background-position: center 30%;
+  }
+  .cv-corpo {
+    padding: 22px 22px 18px;
+  }
+  .cv-titulo-principal {
+    font-size: 28px;
+  }
+  .cv-artista {
+    font-size: 17px;
+  }
+  .cv-ornamento {
+    width: 60%;
+  }
+  .cv-info {
+    font-size: 13px;
+  }
+  .cv-data {
+    font-size: 14px;
+  }
+  .cv-logos img {
+    height: 20px;
+  }
+  .cv-stub {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    padding: 18px 16px;
+    gap: 14px;
+  }
+  .cv-stub::before {
+    left: 5%;
+    right: 5%;
+    top: -2px;
+    bottom: auto;
+    height: 4px;
+    width: auto;
+    background-image: radial-gradient(
+      circle,
+      #d2d1c6 1.4px,
+      transparent 1.8px
+    );
+    background-size: 10px 4px;
+    background-repeat: repeat-x;
+    background-position: center;
+  }
+  .cv-marca,
+  .cv-datas,
+  .cv-tier-block {
+    flex: 1 1 40%;
+  }
+  .cv-linha {
+    display: none;
+  }
+  .cv-qr-block {
+    order: 10;
+    flex: 1 1 100%;
+    margin-top: 8px;
+  }
+  .cv-qr svg {
+    width: 140px;
+    height: 140px;
+  }
+  .cv-serial {
+    font-size: 13px;
+  }
+  .cv-dia {
+    font-size: 22px;
+  }
+  .cv-hora {
+    font-size: 14px;
+  }
+  .cv-etiqueta,
+  .cv-detalhe {
+    font-size: 14px;
+  }
+  .cv-details {
+    padding: 20px 22px;
+  }
+}
+
+@media print {
+  body {
+    background: white;
+  }
+  .cv-page {
+    padding: 0;
+    background: white;
+    gap: 0;
+  }
+  .cv-welcome {
+    display: none;
+  }
+  .cv-ticket {
+    box-shadow: none;
+    max-width: 200mm;
+    aspect-ratio: 200 / 80;
+    page-break-after: always;
+  }
+  .cv-details {
+    max-width: 200mm;
+    page-break-inside: avoid;
+  }
+}
