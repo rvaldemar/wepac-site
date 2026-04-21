@@ -1,11 +1,12 @@
 import nodemailer from "nodemailer";
 
 const hasAuth = process.env.SMTP_USER && process.env.SMTP_PASSWORD;
+const SMTP_PORT = parseInt(process.env.SMTP_PORT || "587");
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.zoho.eu",
-  port: parseInt(process.env.SMTP_PORT || "465"),
-  secure: hasAuth ? true : false,
+  port: SMTP_PORT,
+  secure: SMTP_PORT === 465,
   ...(hasAuth
     ? { auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD } }
     : { tls: { rejectUnauthorized: false } }),
@@ -47,6 +48,7 @@ type TicketEmailData = {
   priceCents: number;
   seats: number;
   ticketId: string;
+  coverImage?: string | null;
 };
 
 export async function sendVerificationEmail(
@@ -91,6 +93,14 @@ export async function sendVerificationEmail(
 export async function sendTicketEmail(data: TicketEmailData) {
   const base = process.env.APP_URL || "https://wepac.pt";
   const url = `${base}/bilheteira/ticket/${data.ticketId}`;
+  const coverSrc = data.coverImage
+    ? data.coverImage.startsWith("http")
+      ? data.coverImage
+      : `${base}${data.coverImage}`
+    : null;
+  const coverBlock = coverSrc
+    ? `<img src="${coverSrc}" alt="${data.eventTitle}" style="display:block;width:100%;max-width:560px;height:auto;margin-bottom:24px;" />`
+    : "";
   const paymentNote =
     data.priceCents > 0
       ? `<p style="font-size:13px;color:#666;margin-top:8px;">Total pago: <strong>${formatPrice(data.priceCents * data.seats)}</strong>. Isento de IVA ao abrigo do art.º 9.º do CIVA.</p>`
@@ -102,6 +112,7 @@ export async function sendTicketEmail(data: TicketEmailData) {
     subject: `Bilhete · ${data.eventTitle} — WEPAC`,
     html: `
       <div style="font-family: Inter, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 24px; color: #000;">
+        ${coverBlock}
         <h1 style="font-family: 'Barlow', Arial, sans-serif; font-size: 24px; font-weight: 900; margin: 0 0 4px;">
           WEPAC · Bilheteira
         </h1>

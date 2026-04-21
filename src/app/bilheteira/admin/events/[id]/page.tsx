@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import QRCode from "qrcode";
 import { prisma } from "@/lib/db";
 import {
   updateEventAction,
@@ -11,12 +12,18 @@ import {
   deleteTicketAction,
 } from "@/lib/bilheteira/event-actions";
 import {
+  uploadEventCoverAction,
+  removeEventCoverAction,
+} from "@/lib/bilheteira/upload-actions";
+import {
   styles,
   formatPriceCents,
   formatEventDate,
   formatEventTime,
 } from "../../../ui";
 import { EventFormClient } from "../event-form-client";
+import { TicketView } from "../../../ticket/[id]/ticket-view";
+import { CapelaVivaTicketView } from "../../../ticket/[id]/capela-viva-view";
 
 export const dynamic = "force-dynamic";
 
@@ -147,6 +154,84 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
           }}
           submitLabel="Guardar alterações"
         />
+      </div>
+
+      <h2 style={styles.h2}>Pré-visualização do bilhete</h2>
+      <div style={styles.card}>
+        <p style={{ fontSize: 12, color: "#666", marginBottom: 16 }}>
+          Mostra como o bilhete digital será apresentado ao comprador. Os dados
+          reais (nome, serial, QR) são gerados na emissão.
+        </p>
+        <TicketPreview event={event} />
+      </div>
+
+      <h2 style={styles.h2}>Imagem de capa</h2>
+      <div style={styles.card}>
+        {event.coverImage ? (
+          <div
+            style={{
+              display: "flex",
+              gap: 16,
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+              marginBottom: 16,
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={event.coverImage}
+              alt="Imagem atual"
+              style={{
+                maxWidth: 260,
+                maxHeight: 180,
+                objectFit: "cover",
+                border: "1px solid #ccc",
+              }}
+            />
+            <div style={{ flex: 1, minWidth: 220 }}>
+              <div
+                style={{ fontSize: 12, color: "#666", wordBreak: "break-all" }}
+              >
+                {event.coverImage}
+              </div>
+              <form
+                action={removeEventCoverAction}
+                style={{ margin: "12px 0 0 0" }}
+              >
+                <input type="hidden" name="eventId" value={event.id} />
+                <button type="submit" style={styles.buttonDanger}>
+                  Remover imagem
+                </button>
+              </form>
+            </div>
+          </div>
+        ) : (
+          <p style={{ color: "#666", marginBottom: 16 }}>
+            Sem imagem de capa definida.
+          </p>
+        )}
+        <form
+          action={uploadEventCoverAction}
+          encType="multipart/form-data"
+          style={{ ...styles.form, gap: 10 }}
+        >
+          <input type="hidden" name="eventId" value={event.id} />
+          <label style={styles.label}>
+            <span style={styles.labelText}>
+              Carregar imagem (JPG, PNG, WEBP ou GIF — máx. 5MB)
+            </span>
+            <input
+              type="file"
+              name="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              required
+              style={{ ...styles.input, padding: 8 }}
+            />
+          </label>
+          <button type="submit" style={styles.buttonSecondary}>
+            Enviar imagem
+          </button>
+        </form>
       </div>
 
       <h2 style={styles.h2}>Tiers</h2>
@@ -543,6 +628,63 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
         )}
       </div>
     </main>
+  );
+}
+
+type PreviewEvent = {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle: string | null;
+  startsAt: Date;
+  doorsAt: Date | null;
+  venue: string;
+  address: string | null;
+  coverImage: string | null;
+  department: { name: string };
+  brand: { name: string; slug: string } | null;
+  tiers: { name: string; priceCents: number }[];
+};
+
+async function TicketPreview({ event }: { event: PreviewEvent }) {
+  const base = process.env.APP_URL || "https://wepac.pt";
+  const previewUrl = `${base}/bilheteira/${event.slug}`;
+  const qrSvg = await QRCode.toString(previewUrl, {
+    type: "svg",
+    margin: 0,
+    color: { dark: "#000000", light: "#00000000" },
+  });
+  const firstTier = event.tiers[0];
+  const tierName = firstTier?.name || "Bilhete";
+  const priceCents = firstTier?.priceCents ?? 0;
+  const brandName = event.brand?.name || event.department.name;
+
+  const common = {
+    tierName,
+    buyerName: "Maria Exemplo",
+    seats: 1,
+    priceCents,
+    serialCode: "BT-001",
+    qrSvg,
+    startsAt: event.startsAt,
+    doorsAt: event.doorsAt,
+    venue: event.venue,
+    address: event.address,
+    checkedInAt: null,
+    welcome: false,
+    coverImage: event.coverImage,
+  };
+
+  if (event.brand?.slug === "capela-viva") {
+    return <CapelaVivaTicketView {...common} />;
+  }
+  return (
+    <TicketView
+      {...common}
+      eventTitle={event.title}
+      eventSubtitle={event.subtitle}
+      brandName={brandName}
+    />
   );
 }
 

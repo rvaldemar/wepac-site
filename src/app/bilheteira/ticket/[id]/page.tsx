@@ -66,6 +66,7 @@ export default async function TicketPage({ params, searchParams }: Props) {
         address={ticket.event.address}
         checkedInAt={ticket.checkedInAt}
         welcome={welcome === "1"}
+        coverImage={ticket.event.coverImage}
       />
     );
   }
@@ -87,6 +88,7 @@ export default async function TicketPage({ params, searchParams }: Props) {
       address={ticket.event.address}
       checkedInAt={ticket.checkedInAt}
       welcome={welcome === "1"}
+      coverImage={ticket.event.coverImage}
     />
   );
 }

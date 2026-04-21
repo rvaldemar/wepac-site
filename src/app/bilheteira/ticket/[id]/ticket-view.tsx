@@ -16,6 +16,7 @@ type Props = {
   address: string | null;
   checkedInAt: Date | null;
   welcome: boolean;
+  coverImage?: string | null;
 };
 
 function formatDate(d: Date): string {
@@ -60,6 +61,7 @@ export function TicketView({
   address,
   checkedInAt,
   welcome,
+  coverImage,
 }: Props) {
   const total = priceCents * seats;
 
@@ -79,6 +81,13 @@ export function TicketView({
           </div>
         )}
         <div className="bt-ticket">
+          {coverImage && (
+            <div
+              className="bt-cover"
+              style={{ backgroundImage: `url(${coverImage})` }}
+              aria-hidden="true"
+            />
+          )}
           <div className="bt-hero">
             <div className="bt-hero-top">
               <div className="bt-logo">wepac</div>

@@ -13,7 +13,11 @@ type Props = {
   address: string | null;
   checkedInAt: Date | null;
   welcome: boolean;
+  coverImage?: string | null;
 };
+
+const DEFAULT_CAPELA_VIVA_COVER =
+  "/bilheteira/capela-viva/ananda-roda.jpeg";
 
 function romanMonth(m: number): string {
   return ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"][
@@ -84,9 +88,11 @@ export function CapelaVivaTicketView({
   address,
   checkedInAt,
   welcome,
+  coverImage,
 }: Props) {
   const total = priceCents * seats;
   const isAmigoTier = /amigo/i.test(tierName);
+  const photoUrl = coverImage || DEFAULT_CAPELA_VIVA_COVER;
 
   return (
     <>
@@ -108,9 +114,7 @@ export function CapelaVivaTicketView({
         <article className="cv-ticket">
           <div
             className="cv-photo"
-            style={{
-              backgroundImage: `url(/bilheteira/capela-viva/ananda-roda.jpeg)`,
-            }}
+            style={{ backgroundImage: `url(${photoUrl})` }}
           />
           <div className="cv-corpo">
             <div className="cv-corpo-top">

@@ -203,12 +203,15 @@ export function EventFormClient({
       </div>
 
       <label style={styles.label}>
-        <span style={styles.labelText}>URL da imagem de capa (opcional)</span>
+        <span style={styles.labelText}>
+          URL da imagem de capa (opcional — usa o upload abaixo para enviar do disco)
+        </span>
         <input
           type="text"
           name="coverImage"
           defaultValue={defaults?.coverImage || ""}
           style={styles.input}
+          placeholder="/api/bilheteira/uploads/... ou https://..."
         />
       </label>
 

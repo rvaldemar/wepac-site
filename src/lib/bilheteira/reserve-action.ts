@@ -99,6 +99,7 @@ export async function reserveAction(formData: FormData): Promise<void> {
         priceCents: 0,
         seats,
         ticketId: ticket.id,
+        coverImage: event.coverImage,
       });
     } catch (err) {
       console.error("[bilheteira] email send failed", err);

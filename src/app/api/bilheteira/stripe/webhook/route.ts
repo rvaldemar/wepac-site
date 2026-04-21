@@ -63,6 +63,7 @@ async function fulfillCheckout(session: Stripe.Checkout.Session) {
       priceCents: payment.tier.priceCents,
       seats: payment.seats,
       ticketId: ticket.id,
+      coverImage: payment.event.coverImage,
     });
   } catch (err) {
     console.error("[stripe webhook] email send failed", err);

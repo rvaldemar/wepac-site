@@ -1,11 +1,12 @@
 import nodemailer from "nodemailer";
 
 const hasAuth = process.env.SMTP_USER && process.env.SMTP_PASSWORD;
+const SMTP_PORT = parseInt(process.env.SMTP_PORT || "587");
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.zoho.eu",
-  port: parseInt(process.env.SMTP_PORT || "465"),
-  secure: hasAuth ? true : false,
+  port: SMTP_PORT,
+  secure: SMTP_PORT === 465,
   ...(hasAuth
     ? { auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD } }
     : { tls: { rejectUnauthorized: false } }),

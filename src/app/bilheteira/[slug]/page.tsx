@@ -53,6 +53,16 @@ export default async function EventPublicPage({ params, searchParams }: Props) {
       }
     >
       <main style={styles.container}>
+        {event.coverImage && (
+          <div
+            style={{
+              margin: "0 0 24px",
+              aspectRatio: "16 / 9",
+              background: `#eee url(${event.coverImage}) center / cover no-repeat`,
+            }}
+            aria-label={`Imagem de ${event.title}`}
+          />
+        )}
         <div style={styles.eyebrow}>{brandName}</div>
         <h1 style={styles.h1}>{event.title}</h1>
         {event.subtitle && (

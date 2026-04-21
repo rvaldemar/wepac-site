@@ -25,6 +25,11 @@
   overflow: hidden;
 }
 
+.bt-cover {
+  aspect-ratio: 16 / 9;
+  background: #eee center / cover no-repeat;
+}
+
 .bt-hero {
   background: #000;
   color: #fff;
