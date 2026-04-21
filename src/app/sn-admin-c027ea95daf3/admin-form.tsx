@@ -188,6 +188,25 @@ export function AdminForm({ adminKey }: { adminKey: string }) {
         <h1 style={styles.h1}>Sem Nome · Admin</h1>
         <p style={styles.sub}>Jotta Pê · 21 ABR 2026 · Aquiraz</p>
 
+        <nav style={styles.quickLinks}>
+          <a
+            href="/sn-porta-56c6bdc4cdf7"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={styles.quickLink}
+          >
+            Porta · Dar baixa
+          </a>
+          <a
+            href="/sn-admin-c027ea95daf3/imprimir"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={styles.quickLink}
+          >
+            Lista · Imprimir / PDF
+          </a>
+        </nav>
+
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.formRow}>
             <label style={{ ...styles.label, flex: 2 }}>
@@ -515,6 +534,28 @@ const styles: Record<string, React.CSSProperties> = {
     textTransform: "uppercase",
     color: "#666",
     marginBottom: 32,
+  },
+  quickLinks: {
+    display: "flex",
+    gap: 8,
+    marginBottom: 28,
+    flexWrap: "wrap",
+  },
+  quickLink: {
+    flex: 1,
+    minWidth: 150,
+    padding: "12px 14px",
+    background: "#000",
+    color: "#fff",
+    border: "none",
+    fontFamily: "'Barlow', sans-serif",
+    fontWeight: 700,
+    fontSize: 12,
+    letterSpacing: 2,
+    textTransform: "uppercase",
+    cursor: "pointer",
+    textDecoration: "none",
+    textAlign: "center" as const,
   },
   form: { display: "flex", flexDirection: "column", gap: 20 },
   formRow: { display: "flex", gap: 16 },

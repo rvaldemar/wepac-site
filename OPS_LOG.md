@@ -4,6 +4,38 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-04-21 — Sem Nome: scanner iOS + lista imprimível (dia do evento)
+
+Preparação para a porta do concerto privado "Sem Nome" (21 ABR, 19h, Aquiraz).
+
+- **Scanner QR trocado de `BarcodeDetector` para `qr-scanner` (1.4.2).** O `BarcodeDetector` nativo não funciona em Safari iOS — o iPhone à porta não lia os QR. `qr-scanner` usa canvas + worker e funciona em iOS/Android/desktop.
+  - Worker copiado para `public/qr-scanner-worker.min.js` e `QrScanner.WORKER_PATH` apontado aí (método directo e previsível em Next 16 com build standalone).
+  - UX peek+confirm mantida em `/sn-porta-56c6bdc4cdf7`: PIN → scan (ou input manual) → mostra nome/lugares/estado → botão "Admitir".
+- **Input manual expandido.** Aceita URL completa (`.../bilhete/<id>`), `SN-001`, ou só o número. Útil quando o QR não lê ou o bilhete é visualizado em papel.
+  - `/api/sn/status` e `/api/sn/checkin` agora resolvem por `token` **ou** por `serial`.
+- **Nova página `/sn-admin-c027ea95daf3/imprimir`** com lista completa de convidados (serial, nome, lugares, admitido?), ordenada por serial. Botão "Imprimir / Guardar PDF" chama `window.print()`. CSS `@media print` optimizado para A4. Serve de backup offline à porta (papel ou PDF).
+- **Quick links no admin** (`/sn-admin-c027ea95daf3`): "Porta · Dar baixa" → `/sn-porta-56c6bdc4cdf7`, "Lista · Imprimir / PDF" → `/sn-admin-c027ea95daf3/imprimir`. Abrem em tab nova.
+
+**Env vars já existentes** (não requer alterações):
+- `SN_ADMIN_KEY` — admin
+- `SN_PORTA_PIN` — PIN de porta (digitado no início da sessão do scanner)
+
+---
+
+## 2026-04-18 — Signup bilheteira falhava: Hetzner bloqueia SMTP 465
+
+Signup admin bilheteira criava o user mas o email de verificação nunca chegava. Logs mostravam `ETIMEDOUT` a conectar `smtp.zoho.eu:465`.
+
+Causa: Hetzner bloqueia outbound nas portas 25 e 465 por defeito (anti-spam). Só 587 (STARTTLS) passa. O código hardcoded `port 465` + `secure: true`.
+
+Fix:
+- `src/lib/email.ts` e `src/lib/bilheteira/ticket-email.ts`: default passa a 587, `secure` derivado da porta (`secure: port === 465`).
+- `.env.production` no servidor: `SMTP_PORT=465` → `587`.
+
+Regra: em Hetzner usar sempre porta 587 com STARTTLS para SMTP outbound.
+
+---
+
 ## 2026-04-17 — Bilheteira: Stripe payments
 
 Pagamento online via Stripe Checkout (test-mode primeiro, depois live).

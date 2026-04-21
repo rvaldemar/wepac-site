@@ -4,16 +4,22 @@ import { prisma } from "@/lib/db";
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const token = typeof body?.token === "string" ? body.token.trim() : "";
+  const serial = Number.isFinite(body?.serial) ? Math.floor(body.serial) : null;
   const pin = typeof body?.pin === "string" ? body.pin : "";
 
   if (!pin || pin !== process.env.SN_PORTA_PIN) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
-  if (!token) {
-    return NextResponse.json({ error: "token required" }, { status: 400 });
+  if (!token && serial === null) {
+    return NextResponse.json(
+      { error: "token or serial required" },
+      { status: 400 }
+    );
   }
 
-  const ticket = await prisma.semNomeTicket.findUnique({ where: { id: token } });
+  const ticket = token
+    ? await prisma.semNomeTicket.findUnique({ where: { id: token } })
+    : await prisma.semNomeTicket.findUnique({ where: { serial: serial! } });
   if (!ticket) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }

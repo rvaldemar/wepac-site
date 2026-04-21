@@ -1,6 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import QrScanner from "qr-scanner";
+
+if (typeof window !== "undefined") {
+  QrScanner.WORKER_PATH = "/qr-scanner-worker.min.js";
+}
 
 type TicketInfo = {
   token: string;
@@ -21,12 +26,23 @@ type CheckinResult = {
 
 type Mode = "scanning" | "peek" | "result" | "error";
 
-function extractToken(raw: string): string | null {
-  const trimmed = raw.trim();
-  const match = trimmed.match(/\/bilhete\/([a-z0-9]+)/i);
-  if (match) return match[1];
-  if (/^[a-z0-9]{20,}$/i.test(trimmed)) return trimmed;
-  return null;
+type ParsedInput = { token?: string; serial?: number };
+
+function parseInput(raw: string): ParsedInput {
+  const s = raw.trim();
+  if (!s) return {};
+
+  const urlMatch = s.match(/\/bilhete\/([A-Za-z0-9_-]+)/);
+  if (urlMatch) return { token: urlMatch[1] };
+
+  const serialMatch = s.match(/^SN-?0*(\d+)$/i);
+  if (serialMatch) return { serial: Number(serialMatch[1]) };
+
+  if (/^\d+$/.test(s)) return { serial: Number(s) };
+
+  if (/^[a-z0-9]{20,}$/i.test(s)) return { token: s };
+
+  return {};
 }
 
 export function Scanner({ initialPin }: { initialPin: string }) {
@@ -36,28 +52,31 @@ export function Scanner({ initialPin }: { initialPin: string }) {
   const [ticket, setTicket] = useState<TicketInfo | null>(null);
   const [result, setResult] = useState<CheckinResult | null>(null);
   const [errorMsg, setErrorMsg] = useState<string>("");
-  const [manualUrl, setManualUrl] = useState("");
+  const [manualInput, setManualInput] = useState("");
   const [cameraActive, setCameraActive] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const detectorRef = useRef<{ detect: (v: HTMLVideoElement) => Promise<Array<{ rawValue: string }>> } | null>(null);
-  const loopRef = useRef<number | null>(null);
+  const scannerRef = useRef<QrScanner | null>(null);
+  const busyRef = useRef<boolean>(false);
 
   const stopCamera = useCallback(() => {
-    if (loopRef.current !== null) {
-      cancelAnimationFrame(loopRef.current);
-      loopRef.current = null;
-    }
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((t) => t.stop());
-      streamRef.current = null;
+    if (scannerRef.current) {
+      scannerRef.current.stop();
+      scannerRef.current.destroy();
+      scannerRef.current = null;
     }
     setCameraActive(false);
   }, []);
 
-  const handleToken = useCallback(
-    async (token: string) => {
+  const handleInput = useCallback(
+    async (parsed: ParsedInput) => {
+      if (busyRef.current) return;
+      if (!parsed.token && parsed.serial === undefined) {
+        setErrorMsg("Código inválido.");
+        setMode("error");
+        return;
+      }
+      busyRef.current = true;
       stopCamera();
       setMode("peek");
       setErrorMsg("");
@@ -65,7 +84,7 @@ export function Scanner({ initialPin }: { initialPin: string }) {
         const res = await fetch("/api/sn/status", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token, pin }),
+          body: JSON.stringify({ ...parsed, pin }),
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
@@ -76,6 +95,8 @@ export function Scanner({ initialPin }: { initialPin: string }) {
       } catch (err) {
         setErrorMsg(err instanceof Error ? err.message : "erro desconhecido");
         setMode("error");
+      } finally {
+        busyRef.current = false;
       }
     },
     [pin, stopCamera]
@@ -83,51 +104,33 @@ export function Scanner({ initialPin }: { initialPin: string }) {
 
   const startCamera = useCallback(async () => {
     setErrorMsg("");
+    if (!videoRef.current) return;
+
     try {
-      const win = window as unknown as {
-        BarcodeDetector?: new (opts: { formats: string[] }) => {
-          detect: (v: HTMLVideoElement) => Promise<Array<{ rawValue: string }>>;
-        };
-      };
-      if (!win.BarcodeDetector) {
-        setErrorMsg(
-          "Scanner nativo indisponível neste browser. Cola a URL do bilhete abaixo."
-        );
-        return;
-      }
-      detectorRef.current = new win.BarcodeDetector({ formats: ["qr_code"] });
-
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-      });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
-      setCameraActive(true);
-
-      const tick = async () => {
-        if (!detectorRef.current || !videoRef.current) return;
-        try {
-          const codes = await detectorRef.current.detect(videoRef.current);
-          if (codes.length > 0) {
-            const token = extractToken(codes[0].rawValue);
-            if (token) {
-              await handleToken(token);
-              return;
-            }
+      const scanner = new QrScanner(
+        videoRef.current,
+        (scanResult) => {
+          const parsed = parseInput(scanResult.data);
+          if (parsed.token || parsed.serial !== undefined) {
+            handleInput(parsed);
           }
-        } catch {
-          // ignore detect errors
+        },
+        {
+          preferredCamera: "environment",
+          highlightScanRegion: true,
+          highlightCodeOutline: true,
+          maxScansPerSecond: 5,
         }
-        loopRef.current = requestAnimationFrame(tick);
-      };
-      loopRef.current = requestAnimationFrame(tick);
+      );
+      scannerRef.current = scanner;
+      await scanner.start();
+      setCameraActive(true);
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : "erro a aceder à câmara");
+      setErrorMsg(
+        err instanceof Error ? err.message : "erro a aceder à câmara"
+      );
     }
-  }, [handleToken]);
+  }, [handleInput]);
 
   useEffect(() => {
     return () => stopCamera();
@@ -164,18 +167,18 @@ export function Scanner({ initialPin }: { initialPin: string }) {
     setTicket(null);
     setResult(null);
     setErrorMsg("");
-    setManualUrl("");
+    setManualInput("");
     setMode("scanning");
   }
 
   async function submitManual(e: React.FormEvent) {
     e.preventDefault();
-    const token = extractToken(manualUrl);
-    if (!token) {
-      setErrorMsg("URL inválida");
+    const parsed = parseInput(manualInput);
+    if (!parsed.token && parsed.serial === undefined) {
+      setErrorMsg("Formato inválido. Usa URL do bilhete, SN-001 ou número.");
       return;
     }
-    await handleToken(token);
+    await handleInput(parsed);
   }
 
   if (!pinConfirmed) {
@@ -226,12 +229,17 @@ export function Scanner({ initialPin }: { initialPin: string }) {
 
             <form onSubmit={submitManual} style={styles.form}>
               <label style={styles.label}>
-                <span style={styles.labelText}>Colar URL / token</span>
+                <span style={styles.labelText}>
+                  Colar URL · SN-001 · token
+                </span>
                 <input
                   type="text"
-                  value={manualUrl}
-                  onChange={(e) => setManualUrl(e.target.value)}
-                  placeholder="https://wepac.pt/bilhete/…"
+                  value={manualInput}
+                  onChange={(e) => setManualInput(e.target.value)}
+                  placeholder="SN-001 ou https://wepac.pt/bilhete/…"
+                  autoComplete="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
                   style={styles.input}
                 />
               </label>
