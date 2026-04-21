@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { findReservation } from "@/lib/sem-nome/reserved-seats";
 import { PrintButton } from "./print-button";
 
 export const dynamic = "force-dynamic";
@@ -71,19 +72,20 @@ export default async function SemNomeImprimirPage() {
           <table className="sn-print-table">
             <thead>
               <tr>
-                <th style={{ width: "12%" }}>Serial</th>
-                <th>Nome</th>
-                <th style={{ width: "10%", textAlign: "center" }}>Lug.</th>
-                <th style={{ width: "18%", textAlign: "center" }}>Admitido</th>
-                <th style={{ width: "18%" }} className="no-print">
-                  Entrada
+                <th style={{ width: "10%" }}>Serial</th>
+                <th style={{ width: "22%" }}>Nome</th>
+                <th style={{ width: "8%", textAlign: "center" }}>Lug.</th>
+                <th style={{ width: "14%", textAlign: "center" }}>Admitido</th>
+                <th style={{ width: "32%" }}>Reserva</th>
+                <th style={{ width: "14%" }} className="no-print">
+                  Token
                 </th>
               </tr>
             </thead>
             <tbody>
               {tickets.length === 0 && (
                 <tr>
-                  <td colSpan={5} style={{ textAlign: "center", padding: 40 }}>
+                  <td colSpan={6} style={{ textAlign: "center", padding: 40 }}>
                     Sem bilhetes emitidos.
                   </td>
                 </tr>
@@ -96,16 +98,35 @@ export default async function SemNomeImprimirPage() {
                       minute: "2-digit",
                     })
                   : "";
+                const reservation = findReservation(t.name);
+                const rowClasses = [
+                  t.checkedInAt ? "sn-print-in" : "",
+                  reservation ? "sn-print-reserved" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ");
                 return (
-                  <tr
-                    key={t.id}
-                    className={t.checkedInAt ? "sn-print-in" : ""}
-                  >
+                  <tr key={t.id} className={rowClasses}>
                     <td className="sn-print-serial">{serialCode}</td>
                     <td>{t.name}</td>
                     <td style={{ textAlign: "center" }}>{t.seats}</td>
                     <td style={{ textAlign: "center" }}>
                       {checkIn ? `✓ ${checkIn}` : "☐"}
+                    </td>
+                    <td>
+                      {reservation ? (
+                        <div className="sn-print-reserved-cell">
+                          <span className="sn-print-reserved-star">★</span>
+                          <span className="sn-print-reserved-role">
+                            {reservation.role}
+                          </span>
+                          <span className="sn-print-reserved-org">
+                            {reservation.org}
+                          </span>
+                        </div>
+                      ) : (
+                        <span style={{ color: "#bbb" }}>—</span>
+                      )}
                     </td>
                     <td className="no-print" style={{ color: "#888" }}>
                       {t.id.slice(0, 10)}…
@@ -237,6 +258,37 @@ const printCss = `
   .sn-print-in {
     background: #f1f8e9;
   }
+  .sn-print-reserved {
+    background: #fffbe6;
+  }
+  .sn-print-reserved.sn-print-in {
+    background: #f0f7d8;
+  }
+  .sn-print-reserved-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    line-height: 1.25;
+  }
+  .sn-print-reserved-star {
+    font-family: 'Barlow', sans-serif;
+    font-weight: 900;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #8a6d00;
+  }
+  .sn-print-reserved-role {
+    font-weight: 700;
+    font-size: 12px;
+    color: #000;
+  }
+  .sn-print-reserved-org {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #555;
+  }
   .sn-print-footer {
     margin-top: 24px;
     padding-top: 16px;
@@ -281,6 +333,14 @@ const printCss = `
       background: #eee !important;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
+    }
+    .sn-print-reserved {
+      background: #fff5c2 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .sn-print-reserved.sn-print-in {
+      background: #eceec2 !important;
     }
     @page {
       size: A4 portrait;

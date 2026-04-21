@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { findReservation } from "@/lib/sem-nome/reserved-seats";
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
@@ -24,6 +25,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
 
+  const reservation = findReservation(ticket.name);
+
   return NextResponse.json({
     token: ticket.id,
     serial: ticket.serial,
@@ -31,5 +34,12 @@ export async function POST(req: NextRequest) {
     name: ticket.name,
     seats: ticket.seats,
     checkedInAt: ticket.checkedInAt?.toISOString() ?? null,
+    reservation: reservation
+      ? {
+          name: reservation.name,
+          role: reservation.role,
+          org: reservation.org,
+        }
+      : null,
   });
 }

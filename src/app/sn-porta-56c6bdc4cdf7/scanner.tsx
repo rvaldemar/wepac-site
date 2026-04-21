@@ -7,12 +7,19 @@ if (typeof window !== "undefined") {
   QrScanner.WORKER_PATH = "/qr-scanner-worker.min.js";
 }
 
+type Reservation = {
+  name: string;
+  role: string;
+  org: string;
+};
+
 type TicketInfo = {
   token: string;
   serialCode: string;
   name: string;
   seats: number;
   checkedInAt: string | null;
+  reservation: Reservation | null;
 };
 
 type CheckinResult = {
@@ -22,6 +29,7 @@ type CheckinResult = {
   name: string;
   seats: number;
   checkedInAt: string;
+  reservation: Reservation | null;
 };
 
 type Mode = "scanning" | "peek" | "result" | "error";
@@ -254,6 +262,9 @@ export function Scanner({ initialPin }: { initialPin: string }) {
 
         {mode === "peek" && ticket && (
           <div>
+            {ticket.reservation && (
+              <ReservationBanner reservation={ticket.reservation} />
+            )}
             <div
               style={{
                 ...styles.banner,
@@ -287,6 +298,9 @@ export function Scanner({ initialPin }: { initialPin: string }) {
 
         {mode === "result" && result && (
           <div>
+            {result.reservation && (
+              <ReservationBanner reservation={result.reservation} />
+            )}
             <div
               style={{
                 ...styles.banner,
@@ -338,6 +352,17 @@ function formatTime(iso: string) {
   const hh = String(d.getHours()).padStart(2, "0");
   const mm = String(d.getMinutes()).padStart(2, "0");
   return `${hh}:${mm}`;
+}
+
+function ReservationBanner({ reservation }: { reservation: Reservation }) {
+  return (
+    <div style={styles.reservedBanner}>
+      <div style={styles.reservedLabel}>★ Lugar reservado</div>
+      <div style={styles.reservedName}>{reservation.name}</div>
+      <div style={styles.reservedRole}>{reservation.role}</div>
+      <div style={styles.reservedOrg}>{reservation.org}</div>
+    </div>
+  );
 }
 
 const styles: Record<string, React.CSSProperties> = {
@@ -483,5 +508,44 @@ const styles: Record<string, React.CSSProperties> = {
     border: "1px solid #c00",
     color: "#f99",
     fontSize: 13,
+  },
+  reservedBanner: {
+    padding: "16px 18px 18px",
+    background: "#fff6d6",
+    border: "2px solid #d4af37",
+    color: "#4a3600",
+    marginBottom: 14,
+    textAlign: "center",
+  },
+  reservedLabel: {
+    fontFamily: "'Barlow', sans-serif",
+    fontWeight: 900,
+    fontSize: 12,
+    letterSpacing: 3,
+    textTransform: "uppercase",
+    color: "#8a6d00",
+    marginBottom: 8,
+  },
+  reservedName: {
+    fontFamily: "'Barlow', sans-serif",
+    fontWeight: 900,
+    fontSize: 22,
+    letterSpacing: "-0.3px",
+    lineHeight: 1.1,
+    color: "#2a1f00",
+    marginBottom: 4,
+  },
+  reservedRole: {
+    fontSize: 13,
+    fontStyle: "italic",
+    color: "#4a3600",
+    lineHeight: 1.2,
+  },
+  reservedOrg: {
+    fontSize: 10,
+    letterSpacing: 2,
+    textTransform: "uppercase",
+    color: "#6a5100",
+    marginTop: 4,
   },
 };
