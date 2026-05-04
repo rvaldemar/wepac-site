@@ -39,7 +39,7 @@ export default function WessexPage() {
       </header>
 
       {/* HERO */}
-      <section className="relative w-full min-h-[600px] sm:h-[700px] lg:h-[867px] overflow-hidden">
+      <section className="relative w-full min-h-[600px] sm:h-[700px] lg:h-[867px] overflow-hidden max-w-[100vw]">
         <div className="absolute inset-0">
           <img
             src="/images/wessex/hero.jpg"
