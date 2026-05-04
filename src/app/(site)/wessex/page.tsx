@@ -14,8 +14,12 @@ export default function WessexPage() {
       {/* Hero Section */}
       <section className="relative w-full h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-gray-900 to-black z-10" />
-          <div className="w-full h-full bg-gradient-to-b from-gray-900 to-black" />
+          <img
+            src="/images/wessex-hero.jpg"
+            alt="Wessex Performance"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/50 to-black z-10" />
         </div>
 
         <div className="relative z-20 container mx-auto px-6 max-w-4xl">
@@ -52,11 +56,12 @@ export default function WessexPage() {
 
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <FadeIn>
-              <div className="relative h-96 md:h-auto aspect-square bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-                <div className="text-center">
-                  <p className="text-gray-500 text-sm">Imagem em alta resolução</p>
-                  <p className="text-gray-600 text-xs mt-2">wessex-about.jpg</p>
-                </div>
+              <div className="relative h-96 md:h-auto aspect-square overflow-hidden">
+                <img
+                  src="/images/wessex-about.jpg"
+                  alt="Wessex About"
+                  className="w-full h-full object-cover"
+                />
               </div>
             </FadeIn>
 
@@ -102,10 +107,14 @@ export default function WessexPage() {
           <div className="grid md:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
               <FadeIn key={i}>
-                <div className="relative h-64 md:h-72 bg-gradient-to-br from-gray-800 to-gray-900 overflow-hidden group flex items-center justify-center">
-                  <div className="text-center">
-                    <p className="text-gray-500 text-sm">Imagem Performance {i}</p>
-                    <p className="text-gray-600 text-xs mt-2">wessex-gallery-{i}.jpg</p>
+                <div className="relative h-64 md:h-72 overflow-hidden group">
+                  <img
+                    src={`/images/wessex-gallery-${i}.jpg`}
+                    alt={`Performance ${i}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-6">
+                    <p className="text-sm text-gray-200">Performance {i}</p>
                   </div>
                 </div>
               </FadeIn>
@@ -137,14 +146,15 @@ export default function WessexPage() {
                 name: "Artista 3",
                 role: "Performance Principal",
               },
-            ].map((member) => (
+            ].map((member, idx) => (
               <FadeIn key={member.name}>
                 <div className="text-center space-y-4">
-                  <div className="relative h-64 bg-gradient-to-br from-gray-800 to-gray-900 overflow-hidden flex items-center justify-center">
-                    <div className="text-center">
-                      <p className="text-gray-500 text-sm">Foto {member.name}</p>
-                      <p className="text-gray-600 text-xs mt-2">wessex-member-{member.name.split(" ")[1]}.jpg</p>
-                    </div>
+                  <div className="relative h-64 overflow-hidden">
+                    <img
+                      src={`/images/wessex-member-${idx + 1}.jpg`}
+                      alt={member.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold">{member.name}</h3>
