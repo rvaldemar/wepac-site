@@ -107,11 +107,11 @@ export default function WessexPage() {
       {/* QUEM SOMOS - Hero block */}
       <section
         id="quem-somos"
-        className="relative bg-black overflow-hidden py-16 lg:py-24"
+        className="relative bg-black overflow-hidden py-20 lg:py-32"
       >
-        <div className="max-w-[1400px] mx-auto px-6 lg:px-16">
-          <div className="grid md:grid-cols-2 gap-10 lg:gap-16 items-center">
-            <div className="relative w-full max-w-[520px] mx-auto md:mx-0 aspect-[844/1500]">
+        <div className="max-w-[1280px] mx-auto px-6 lg:px-16">
+          <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
+            <div className="relative w-full max-w-[460px] mx-auto md:mx-0 aspect-[844/1500]">
               <img
                 src="/images/wessex/quem-somos.jpg"
                 alt="Wessex performance"
@@ -119,15 +119,16 @@ export default function WessexPage() {
               />
             </div>
 
-            <div className="space-y-6 lg:space-y-10">
+            <div className="space-y-8">
               <h2
-                className={`${serif} text-white text-[40px] sm:text-[52px] md:text-[64px] lg:text-[80px] leading-[1] font-normal`}
+                className={`${serif} text-white text-[36px] sm:text-[44px] md:text-[52px] lg:text-[60px] leading-[1.05] font-normal`}
               >
                 Quem somos
               </h2>
-              <p className="text-[#EFEFF0] text-[16px] md:text-[18px] lg:text-[22px] leading-[1.55] max-w-[480px]">
+              <div className="h-px w-16 bg-[#B8A042]" />
+              <p className="text-[#EFEFF0]/80 text-[15px] md:text-[16px] lg:text-[18px] leading-[1.7] max-w-[440px] font-light">
                 Mais do que música ao vivo.{" "}
-                <span className="font-semibold text-white">
+                <span className="font-medium text-white">
                   Uma experiência construída para o teu momento
                 </span>
                 .
@@ -210,11 +211,10 @@ export default function WessexPage() {
       </section>
 
       {/* EVENTOS - Title */}
-      <section id="eventos" className="bg-black pt-12 lg:pt-32">
-        <div className="max-w-[1920px] mx-auto px-6 lg:px-[260px]">
+      <section id="eventos" className="bg-black pt-12 lg:pt-24">
+        <div className="max-w-[1400px] mx-auto px-6 lg:px-16">
           <h2
-            className="text-[#EFEFF0] text-[26px] sm:text-[36px] md:text-[56px] lg:text-[80px] xl:text-[96px] leading-[1.1] font-normal"
-            style={{ mixBlendMode: "difference" }}
+            className={`${serif} text-[#EFEFF0] text-[28px] sm:text-[36px] md:text-[44px] lg:text-[56px] leading-[1.15] font-normal max-w-[1100px]`}
           >
             Uma performance para cada momento de forma adaptada a celebração.
           </h2>
@@ -410,10 +410,10 @@ export default function WessexPage() {
       </section>
 
       {/* CTA Final */}
-      <section id="cta" className="bg-black py-12 lg:py-20">
-        <div className="max-w-[1400px] mx-auto px-6 lg:px-16">
-          <div className="bg-[#2c2d2e] grid lg:grid-cols-[320px_1fr] items-center gap-8 lg:gap-12 p-6 sm:p-10 lg:p-12">
-            <div className="relative w-full max-w-[320px] mx-auto lg:mx-0 aspect-[3/4]">
+      <section id="cta" className="bg-black py-16 lg:py-32">
+        <div className="max-w-[1280px] mx-auto px-6 lg:px-16">
+          <div className="bg-[#2c2d2e] relative grid lg:grid-cols-[320px_1fr] items-center gap-8 lg:gap-16 px-6 sm:px-10 lg:px-16 py-10 lg:py-16">
+            <div className="relative w-full max-w-[320px] mx-auto lg:mx-0 aspect-[3/4] lg:-translate-y-12">
               <img
                 src="/images/wessex/cta.jpg"
                 alt=""
