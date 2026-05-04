@@ -41,6 +41,11 @@ html {
   scroll-behavior: smooth;
 }
 
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 /* Scrollbar minimal */
 ::-webkit-scrollbar {
   width: 6px;
