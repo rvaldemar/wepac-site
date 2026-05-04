@@ -51,12 +51,12 @@ export default function WessexPage() {
 
         <div className="relative z-10 h-full max-w-[1920px] mx-auto pl-6 lg:pl-[250px] pr-6 pt-[150px] lg:pt-[175px]">
           <h1
-            className={`${serif} font-bold text-white text-[36px] md:text-[52px] lg:text-[64px] leading-[1.125] max-w-[660px] mb-12 lg:mb-[60px]`}
+            className={`${serif} font-bold text-white text-[44px] md:text-[60px] lg:text-[72px] leading-[1.1] max-w-[720px] mb-12 lg:mb-[48px]`}
           >
             A música que transforma celebração em{" "}
             <em className="italic font-normal">memória inesquecível</em>.
           </h1>
-          <p className="font-light text-white text-[18px] md:text-[24px] lg:text-[28px] leading-[1.3] max-w-[660px] mb-12 lg:mb-[60px]">
+          <p className="font-light text-white text-[18px] md:text-[24px] lg:text-[28px] leading-[1.35] max-w-[660px] mb-12 lg:mb-[48px]">
             Música ao vivo feita sob medida para{" "}
             <span className="font-semibold">casamentos</span>,{" "}
             <span className="font-semibold">eventos</span> e{" "}
@@ -287,9 +287,9 @@ export default function WessexPage() {
       {/* BIG IDEIA */}
       <section id="big-ideia" className="bg-black pt-12 lg:pt-20 pb-0">
         <div className="max-w-[1920px] mx-auto px-6 lg:px-[240px]">
-          <div className="bg-[#2c2d2e] py-16 lg:py-[105px] px-8 lg:px-[105px]">
-            <div className="grid lg:grid-cols-[605px_1fr] gap-12 lg:gap-[124px] items-start">
-              <div className="space-y-[31px]">
+          <div className="bg-[#2c2d2e] py-12 lg:py-[105px] px-6 lg:px-[105px] min-h-[700px] lg:min-h-[1267px]">
+            <div className="grid lg:grid-cols-[1fr_476px] gap-12 lg:gap-[100px] items-stretch h-full">
+              <div className="flex flex-col gap-[40px] lg:gap-[31px] justify-between">
                 {[
                   {
                     title: "Música sob medida:",
@@ -310,14 +310,12 @@ export default function WessexPage() {
                 ].map((feature) => (
                   <div key={feature.title} className="space-y-[12px]">
                     <h3
-                      className="capitalize text-[#d3d2d1] text-[24px] md:text-[32px] lg:text-[37px] leading-[1.1]"
-                      style={{ mixBlendMode: "difference" }}
+                      className="capitalize text-white text-[28px] md:text-[36px] lg:text-[42px] leading-[1.1] font-normal"
                     >
                       {feature.title}
                     </h3>
                     <p
-                      className="text-[#d3d2d1] text-[14px] md:text-[16px] lg:text-[18px] leading-[1.4]"
-                      style={{ mixBlendMode: "difference" }}
+                      className="text-[#d3d2d1] text-[15px] md:text-[17px] lg:text-[19px] leading-[1.45]"
                     >
                       {feature.text}
                     </p>
@@ -325,22 +323,22 @@ export default function WessexPage() {
                 ))}
               </div>
 
-              <div className="relative w-full aspect-[476/591] max-w-[476px] mx-auto lg:ml-auto">
+              <div className="relative w-full lg:h-full min-h-[500px] lg:min-h-[1057px]">
                 <img
                   src="/images/wessex/features.jpg"
                   alt=""
-                  className="absolute inset-0 w-full h-full object-cover object-bottom"
+                  className="absolute inset-0 w-full h-full object-cover object-center"
                 />
               </div>
             </div>
           </div>
 
           {/* Banner */}
-          <div className="relative w-full aspect-[1440/480] mt-0">
+          <div className="relative w-full h-[280px] lg:h-[480px] -mt-px">
             <img
               src="/images/wessex/banner.jpg"
               alt=""
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover object-center"
             />
           </div>
         </div>
