@@ -10,7 +10,7 @@ const serif = "font-[family-name:var(--font-pt-serif)]";
 
 export default function WessexPage() {
   return (
-    <div className="bg-black text-white min-h-screen">
+    <div className="bg-black text-white min-h-screen overflow-x-hidden">
       {/* HEADER */}
       <header className="absolute top-0 left-0 right-0 z-50 h-[80px] lg:h-[103px] bg-gradient-to-b from-black/70 via-black/40 to-transparent">
         <div className="h-full px-6 lg:px-[60px] xl:px-[120px] flex items-center justify-between">
@@ -39,7 +39,7 @@ export default function WessexPage() {
       </header>
 
       {/* HERO */}
-      <section className="relative w-full h-[700px] lg:h-[867px] overflow-hidden">
+      <section className="relative w-full min-h-[600px] sm:h-[700px] lg:h-[867px] overflow-hidden">
         <div className="absolute inset-0">
           <img
             src="/images/wessex/hero.jpg"
@@ -57,12 +57,12 @@ export default function WessexPage() {
 
         <div className="relative z-10 h-full max-w-[1920px] mx-auto px-6 sm:px-10 lg:pl-[250px] lg:pr-6 pt-[140px] lg:pt-[175px]">
           <h1
-            className={`${serif} font-bold text-white text-[32px] sm:text-[42px] md:text-[56px] lg:text-[72px] leading-[1.1] max-w-[720px] mb-8 lg:mb-[48px]`}
+            className={`${serif} font-bold text-white text-[28px] sm:text-[36px] md:text-[52px] lg:text-[64px] xl:text-[72px] leading-[1.15] max-w-full lg:max-w-[720px] mb-6 lg:mb-[48px]`}
           >
             A música que transforma celebração em{" "}
             <em className="italic font-normal">memória inesquecível</em>.
           </h1>
-          <p className="font-light text-white text-[15px] sm:text-[17px] md:text-[22px] lg:text-[28px] leading-[1.4] max-w-[660px] mb-8 lg:mb-[48px]">
+          <p className="font-light text-white text-[14px] sm:text-[16px] md:text-[20px] lg:text-[26px] xl:text-[28px] leading-[1.5] max-w-full lg:max-w-[660px] mb-8 lg:mb-[48px]">
             Música ao vivo feita sob medida para{" "}
             <span className="font-semibold">casamentos</span>,{" "}
             <span className="font-semibold">eventos</span> e{" "}
@@ -180,24 +180,38 @@ export default function WessexPage() {
             </div>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-10 sm:gap-8 lg:gap-[100px] mt-16 lg:mt-20">
-            {[
-              { label: "EVENTOS REALIZADOS" },
-              { label: "CASAMENTOS MARCADOS\nDE FORMA ESPECIAL" },
-              { label: "MUSICAS CRIADAS SOB\nMEDIDA" },
-            ].map((stat, i) => (
-              <div key={i} className="space-y-3">
-                <div className="flex items-baseline gap-3 text-[#FCFCFC]">
-                  <span className="text-[44px] sm:text-[48px] lg:text-[56px] leading-none">X</span>
-                  <span className="text-[50px] sm:text-[54px] lg:text-[62px] leading-none">+</span>
+          {/* Eventos onde participamos */}
+          <div className="mt-16 lg:mt-24">
+            <h3
+              className={`${serif} italic text-[#FCFCFC] text-[24px] sm:text-[30px] md:text-[36px] lg:text-[42px] leading-[1.2] mb-8 lg:mb-12`}
+            >
+              É com gosto que já participamos em:
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-[60px]">
+              {[
+                {
+                  title: "Casamentos",
+                  detail: "Cerimónias e Cocktails",
+                },
+                {
+                  title: "Eventos Corporativos",
+                  detail: "Jantares de gala e recepções",
+                },
+                {
+                  title: "Celebrações Privadas",
+                  detail: "Aniversários, pedidos e serenatas",
+                },
+              ].map((item) => (
+                <div key={item.title} className="space-y-3 border-t border-white/30 pt-4">
+                  <p className={`${serif} text-[#FCFCFC] text-[22px] sm:text-[26px] lg:text-[30px] leading-tight`}>
+                    {item.title}
+                  </p>
+                  <p className="text-[#EFEFF0]/80 text-[14px] sm:text-[15px] lg:text-[17px] leading-[1.4]">
+                    {item.detail}
+                  </p>
                 </div>
-                <p className="font-bold text-[15px] sm:text-[16px] md:text-[20px] lg:text-[22px] text-[#FCFCFC] whitespace-pre-line leading-[1.27]">
-                  {stat.label}
-                </p>
-                <div className="h-px w-[160px] lg:w-[204px] bg-[#FCFCFC]" />
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
