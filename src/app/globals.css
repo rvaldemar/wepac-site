@@ -24,11 +24,11 @@
   --font-barlow: "Barlow", sans-serif;
   --font-inter: "Inter", sans-serif;
   --font-pt-serif: "PT Serif", serif;
-  --color-wessex-gold: #b8a042;
-  --color-wessex-dark: #2c2d2e;
+  --color-wessex-gold: #B8A042;
   --color-wessex-red: #540000;
-  --color-wessex-light: #fcfcfc;
-  --color-wessex-muted: #d3d2d1;
+  --color-wessex-gray: #EFEFF0;
+  --color-wessex-dark: #2c2d2e;
+  --color-wessex-light: #FCFCFC;
 }
 
 body {

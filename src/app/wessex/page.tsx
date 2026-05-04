@@ -13,19 +13,28 @@ export default function WessexPage() {
     <div className="bg-black text-white min-h-screen">
       {/* HEADER */}
       <header className="absolute top-0 left-0 right-0 z-50 h-[103px] bg-gradient-to-b from-black/60 to-transparent">
-        <div className="h-full px-[60px] xl:px-[298px] flex items-center justify-between">
-          <span className={`${serif} text-2xl tracking-wider`}>WEPAC</span>
-          <nav className="hidden lg:flex items-center gap-[60px] text-[20px] font-medium">
-            <a href="#quem-somos" className="hover:text-[#b8a042] transition">
+        <div className="h-full px-6 lg:px-[60px] xl:px-[120px] flex items-center justify-between">
+          <Link href="/wessex" className="flex items-center gap-3 text-white">
+            <img
+              src="/images/wessex/logo/wessex-mark.svg"
+              alt="Wessex"
+              className="w-9 h-12"
+            />
+            <span className={`${serif} text-[36px] leading-none lowercase tracking-tight`}>
+              wessex
+            </span>
+          </Link>
+          <nav className="hidden lg:flex items-center gap-[40px] xl:gap-[60px] text-[16px] xl:text-[18px] font-medium">
+            <a href="#quem-somos" className="hover:text-[#B8A042] transition">
               QUEM SOMOS
             </a>
-            <a href="#eventos" className="hover:text-[#b8a042] transition">
+            <a href="#eventos" className="hover:text-[#B8A042] transition">
               EVENTOS
             </a>
-            <a href="#big-ideia" className="hover:text-[#b8a042] transition">
+            <a href="#big-ideia" className="hover:text-[#B8A042] transition">
               BIG IDEIA
             </a>
-            <a href="#depoimentos" className="hover:text-[#b8a042] transition">
+            <a href="#depoimentos" className="hover:text-[#B8A042] transition">
               DEPOIMENTOS
             </a>
           </nav>
@@ -426,11 +435,18 @@ export default function WessexPage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-[#d3d2d1] text-black py-12 lg:py-16">
+      <footer className="bg-[#EFEFF0] text-black py-12 lg:py-16">
         <div className="max-w-[1920px] mx-auto px-6 lg:px-[107px]">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-8">
-            <Link href="/" className={`${serif} text-2xl tracking-wider`}>
-              WEPAC
+            <Link href="/wessex" className="flex items-center gap-3">
+              <img
+                src="/images/wessex/logo/wessex-mark.svg"
+                alt="Wessex"
+                className="w-9 h-12"
+              />
+              <span className={`${serif} text-[36px] leading-none lowercase tracking-tight`}>
+                wessex
+              </span>
             </Link>
             <div className="flex items-center gap-4">
               {[
