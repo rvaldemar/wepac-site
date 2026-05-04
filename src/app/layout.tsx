@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Barlow, Inter } from "next/font/google";
+import { Barlow, Inter, PT_Serif } from "next/font/google";
 import { CookieConsent } from "@/components/CookieConsent";
 import "./globals.css";
 
@@ -13,7 +13,15 @@ const barlow = Barlow({
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["300", "400", "700"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+});
+
+const ptSerif = PT_Serif({
+  variable: "--font-pt-serif",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 
@@ -87,7 +95,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt" className={`${barlow.variable} ${inter.variable}`}>
+    <html lang="pt" className={`${barlow.variable} ${inter.variable} ${ptSerif.variable}`}>
       <body className="font-inter antialiased">
         {children}
         <CookieConsent />
