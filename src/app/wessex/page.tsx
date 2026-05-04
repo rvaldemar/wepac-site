@@ -16,9 +16,9 @@ export default function WessexPage() {
         <div className="h-full px-6 lg:px-[60px] xl:px-[120px] flex items-center justify-between">
           <Link href="/wessex" className="flex items-center text-white">
             <img
-              src="/images/wessex/logo/wessex-white.svg"
+              src="/images/wessex/logo/main-white.png"
               alt="Wessex"
-              className="h-8 sm:h-10 lg:h-12 w-auto"
+              className="h-9 sm:h-11 lg:h-14 w-auto"
             />
           </Link>
           <nav className="hidden lg:flex items-center gap-[28px] xl:gap-[60px] text-[14px] xl:text-[18px] font-medium">
@@ -466,7 +466,7 @@ export default function WessexPage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-8">
             <Link href="/wessex" className="flex items-center">
               <img
-                src="/images/wessex/logo/wessex-black.svg"
+                src="/images/wessex/logo/main-black.png"
                 alt="Wessex"
                 className="h-10 lg:h-12 w-auto"
               />
