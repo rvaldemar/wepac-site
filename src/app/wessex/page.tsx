@@ -74,7 +74,7 @@ export default function WessexPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <a
-              href="#cta"
+              href="/servicos/orcamento"
               className="flex items-center justify-center bg-[#B8A042] text-black font-medium text-[16px] sm:text-[18px] lg:text-[20px] w-full sm:w-[280px] lg:w-[311px] h-[52px] lg:h-[60px] rounded-[12px] hover:bg-[#c9b04f] transition"
             >
               Reserva a tua data
@@ -107,34 +107,70 @@ export default function WessexPage() {
       {/* QUEM SOMOS - Hero block */}
       <section
         id="quem-somos"
-        className="relative bg-black overflow-hidden py-20 lg:py-32"
+        className="relative bg-black overflow-hidden py-12 lg:py-0 lg:h-[1100px]"
       >
-        <div className="max-w-[1280px] mx-auto px-6 lg:px-16">
-          <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
-            <div className="relative w-full max-w-[460px] mx-auto md:mx-0 aspect-[844/1500]">
+        {/* Mobile: simple stack */}
+        <div className="lg:hidden max-w-[1280px] mx-auto px-6">
+          <div className="grid gap-10 items-center">
+            <div className="relative w-full max-w-[440px] mx-auto aspect-[844/1500]">
               <img
                 src="/images/wessex/quem-somos.jpg"
                 alt="Wessex performance"
                 className="absolute inset-0 w-full h-full object-cover object-center"
               />
             </div>
-
-            <div className="space-y-8">
-              <h2
-                className={`${serif} text-white text-[36px] sm:text-[44px] md:text-[52px] lg:text-[60px] leading-[1.05] font-normal`}
-              >
-                Quem somos
+            <div className="space-y-6">
+              <h2 className={`${serif} text-white text-[44px] sm:text-[60px] leading-[0.95]`}>
+                Quem
+                <br />
+                somos
               </h2>
-              <div className="h-px w-16 bg-[#B8A042]" />
-              <p className="text-[#EFEFF0]/80 text-[15px] md:text-[16px] lg:text-[18px] leading-[1.7] max-w-[440px] font-light">
+              <p className="text-[#EFEFF0] text-[18px] leading-[1.4] max-w-[400px]">
                 Mais do que música ao vivo.{" "}
-                <span className="font-medium text-white">
+                <span className="font-semibold text-white">
                   Uma experiência construída para o teu momento
                 </span>
                 .
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Desktop: dramatic absolute layout matching Figma */}
+        <div className="hidden lg:block max-w-[1920px] mx-auto h-full relative">
+          {/* Dark rectangle background (right) */}
+          <div className="absolute right-[160px] top-[120px] w-[800px] h-[900px] bg-[#2c2d2e]" />
+
+          {/* Image */}
+          <div className="absolute left-[280px] top-[180px] w-[460px] h-[820px] z-10">
+            <img
+              src="/images/wessex/quem-somos.jpg"
+              alt="Wessex performance"
+              className="w-full h-full object-cover"
+            />
+          </div>
+
+          {/* Big "Quem somos" text overlay */}
+          <h2
+            className={`${serif} absolute right-[180px] top-[80px] text-[#d3d2d1] text-[260px] xl:text-[288px] leading-[0.92] font-normal z-20`}
+            style={{ mixBlendMode: "difference" }}
+          >
+            Quem
+            <br />
+            somos
+          </h2>
+
+          {/* Subtitle inside the dark box, right side */}
+          <p
+            className="absolute right-[200px] top-[680px] w-[300px] text-[#d3d2d1] text-[44px] leading-[1.05] font-light z-20"
+            style={{ mixBlendMode: "difference" }}
+          >
+            Mais do que música ao vivo.{" "}
+            <span className="font-semibold text-white">
+              Uma experiência construída para o teu momento
+            </span>
+            .
+          </p>
         </div>
       </section>
 
@@ -313,11 +349,11 @@ export default function WessexPage() {
             </div>
           </div>
 
-          {/* Banner */}
-          <div className="relative w-full h-[180px] sm:h-[260px] lg:h-[400px]">
+          {/* Banner with real Wessex performance photo */}
+          <div className="relative w-full h-[200px] sm:h-[280px] lg:h-[400px]">
             <img
               src="/images/wessex/banner.jpg"
-              alt=""
+              alt="Performance Wessex"
               className="absolute inset-0 w-full h-full object-cover object-center"
             />
           </div>
@@ -408,7 +444,7 @@ export default function WessexPage() {
               </ul>
 
               <Link
-                href="/contacto"
+                href="/servicos/orcamento"
                 className="inline-flex items-center justify-center bg-[#B8A042] text-black font-medium text-[16px] sm:text-[18px] lg:text-[20px] w-full sm:w-[280px] lg:w-[311px] h-[52px] lg:h-[60px] rounded-[12px] hover:bg-[#c9b04f] transition"
               >
                 Reserva a tua data
