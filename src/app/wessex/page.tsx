@@ -12,16 +12,16 @@ export default function WessexPage() {
   return (
     <div className="bg-black text-white min-h-screen">
       {/* HEADER */}
-      <header className="absolute top-0 left-0 right-0 z-50 h-[103px] bg-gradient-to-b from-black/60 to-transparent">
+      <header className="absolute top-0 left-0 right-0 z-50 h-[80px] lg:h-[103px] bg-gradient-to-b from-black/70 via-black/40 to-transparent">
         <div className="h-full px-6 lg:px-[60px] xl:px-[120px] flex items-center justify-between">
           <Link href="/wessex" className="flex items-center text-white">
             <img
               src="/images/wessex/logo/wessex-white.svg"
               alt="Wessex"
-              className="h-10 lg:h-12 w-auto"
+              className="h-8 sm:h-10 lg:h-12 w-auto"
             />
           </Link>
-          <nav className="hidden lg:flex items-center gap-[40px] xl:gap-[60px] text-[16px] xl:text-[18px] font-medium">
+          <nav className="hidden lg:flex items-center gap-[28px] xl:gap-[60px] text-[14px] xl:text-[18px] font-medium">
             <a href="#quem-somos" className="hover:text-[#B8A042] transition">
               QUEM SOMOS
             </a>
@@ -55,14 +55,14 @@ export default function WessexPage() {
           />
         </div>
 
-        <div className="relative z-10 h-full max-w-[1920px] mx-auto pl-6 lg:pl-[250px] pr-6 pt-[150px] lg:pt-[175px]">
+        <div className="relative z-10 h-full max-w-[1920px] mx-auto px-6 sm:px-10 lg:pl-[250px] lg:pr-6 pt-[140px] lg:pt-[175px]">
           <h1
-            className={`${serif} font-bold text-white text-[44px] md:text-[60px] lg:text-[72px] leading-[1.1] max-w-[720px] mb-12 lg:mb-[48px]`}
+            className={`${serif} font-bold text-white text-[32px] sm:text-[42px] md:text-[56px] lg:text-[72px] leading-[1.1] max-w-[720px] mb-8 lg:mb-[48px]`}
           >
             A música que transforma celebração em{" "}
             <em className="italic font-normal">memória inesquecível</em>.
           </h1>
-          <p className="font-light text-white text-[18px] md:text-[24px] lg:text-[28px] leading-[1.35] max-w-[660px] mb-12 lg:mb-[48px]">
+          <p className="font-light text-white text-[15px] sm:text-[17px] md:text-[22px] lg:text-[28px] leading-[1.4] max-w-[660px] mb-8 lg:mb-[48px]">
             Música ao vivo feita sob medida para{" "}
             <span className="font-semibold">casamentos</span>,{" "}
             <span className="font-semibold">eventos</span> e{" "}
@@ -75,13 +75,13 @@ export default function WessexPage() {
           <div className="flex flex-col sm:flex-row gap-3">
             <a
               href="#cta"
-              className="flex items-center justify-center bg-[#b8a042] text-black font-medium text-[20px] w-full sm:w-[311px] h-[60px] rounded-[12px] hover:bg-[#c9b04f] transition"
+              className="flex items-center justify-center bg-[#B8A042] text-black font-medium text-[16px] sm:text-[18px] lg:text-[20px] w-full sm:w-[280px] lg:w-[311px] h-[52px] lg:h-[60px] rounded-[12px] hover:bg-[#c9b04f] transition"
             >
               Reserva a tua data
             </a>
             <a
               href="#depoimentos"
-              className="flex items-center justify-center border border-white text-white font-medium text-[20px] w-full sm:w-[311px] h-[60px] rounded-[12px] hover:bg-white hover:text-black transition"
+              className="flex items-center justify-center border border-white text-white font-medium text-[16px] sm:text-[18px] lg:text-[20px] w-full sm:w-[280px] lg:w-[311px] h-[52px] lg:h-[60px] rounded-[12px] hover:bg-white hover:text-black transition"
             >
               Ouve a nossa música
             </a>
@@ -122,9 +122,9 @@ export default function WessexPage() {
         </div>
 
         {/* Big "Quem somos" + subtitle */}
-        <div className="relative lg:absolute lg:left-[40%] lg:top-[50px] z-20 mt-12 lg:mt-0 px-6 lg:px-0 max-w-[841px]">
+        <div className="relative lg:absolute lg:left-[40%] lg:top-[50px] z-20 mt-12 lg:mt-0 px-6 lg:px-0 max-w-full lg:max-w-[841px]">
           <h2
-            className={`${serif} text-[#d3d2d1] text-[80px] sm:text-[140px] md:text-[200px] lg:text-[288px] leading-[0.95] font-normal`}
+            className={`${serif} text-[#EFEFF0] text-[64px] sm:text-[110px] md:text-[170px] lg:text-[260px] xl:text-[288px] leading-[0.95] font-normal`}
             style={{ mixBlendMode: "difference" }}
           >
             Quem
@@ -147,12 +147,12 @@ export default function WessexPage() {
       {/* QUEM SOMOS - Detail */}
       <section className="bg-black pt-12 lg:pt-20 pb-12 lg:pb-32">
         <div className="max-w-[1920px] mx-auto px-6 lg:px-[260px]">
-          <p className={`${serif} text-[#fcfcfc] text-[28px] md:text-[36px] uppercase mb-12`}>
+          <p className={`${serif} text-[#FCFCFC] text-[22px] sm:text-[28px] md:text-[36px] uppercase mb-8 lg:mb-12`}>
             quem somos
           </p>
 
-          <div className="grid lg:grid-cols-[436px_1fr] gap-12 lg:gap-[74px] items-start">
-            <div className="relative w-full max-w-[436px] aspect-[436/458]">
+          <div className="grid lg:grid-cols-[436px_1fr] gap-8 lg:gap-[74px] items-start">
+            <div className="relative w-full max-w-[436px] mx-auto lg:mx-0 aspect-[436/458]">
               <img
                 src="/images/wessex/detail.jpg"
                 alt=""
@@ -160,8 +160,8 @@ export default function WessexPage() {
               />
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8 lg:gap-[52px]">
-              <p className="text-[#fcfcfc] text-[16px] md:text-[20px] lg:text-[22px] leading-[1.3]">
+            <div className="grid md:grid-cols-2 gap-6 lg:gap-[52px]">
+              <p className="text-[#FCFCFC] text-[15px] sm:text-[16px] md:text-[19px] lg:text-[22px] leading-[1.45]">
                 A Wessex nasceu de uma convicção simples: a música tem o poder
                 de elevar qualquer momento e quando é feita com intenção,
                 torna-se a memória que as pessoas guardam para sempre. Somos um
@@ -171,7 +171,7 @@ export default function WessexPage() {
                 fórmula. Existe atenção, dedicação e a certeza de que o teu
                 momento é único.
               </p>
-              <p className="text-[#fcfcfc] text-[16px] md:text-[20px] lg:text-[22px] leading-[1.3]">
+              <p className="text-[#FCFCFC] text-[15px] sm:text-[16px] md:text-[19px] lg:text-[22px] leading-[1.45]">
                 Trabalhamos com noivos que querem uma cerimónia que arrepia, com
                 empresas que querem um jantar que impressiona, com pessoas que
                 querem criar uma surpresa que não se esquece. O que une todos? A
@@ -181,21 +181,21 @@ export default function WessexPage() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-[100px] mt-20">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-10 sm:gap-8 lg:gap-[100px] mt-16 lg:mt-20">
             {[
               { label: "EVENTOS REALIZADOS" },
               { label: "CASAMENTOS MARCADOS\nDE FORMA ESPECIAL" },
               { label: "MUSICAS CRIADAS SOB\nMEDIDA" },
             ].map((stat, i) => (
               <div key={i} className="space-y-3">
-                <div className="flex items-baseline gap-3 text-[#fcfcfc]">
-                  <span className="text-[56px] leading-none">X</span>
-                  <span className="text-[62px] leading-none">+</span>
+                <div className="flex items-baseline gap-3 text-[#FCFCFC]">
+                  <span className="text-[44px] sm:text-[48px] lg:text-[56px] leading-none">X</span>
+                  <span className="text-[50px] sm:text-[54px] lg:text-[62px] leading-none">+</span>
                 </div>
-                <p className="font-bold text-[18px] md:text-[22px] text-[#fcfcfc] whitespace-pre-line leading-[1.27]">
+                <p className="font-bold text-[15px] sm:text-[16px] md:text-[20px] lg:text-[22px] text-[#FCFCFC] whitespace-pre-line leading-[1.27]">
                   {stat.label}
                 </p>
-                <div className="h-px w-[204px] bg-[#fcfcfc]" />
+                <div className="h-px w-[160px] lg:w-[204px] bg-[#FCFCFC]" />
               </div>
             ))}
           </div>
@@ -206,7 +206,7 @@ export default function WessexPage() {
       <section id="eventos" className="bg-black pt-12 lg:pt-32">
         <div className="max-w-[1920px] mx-auto px-6 lg:px-[260px]">
           <h2
-            className="text-[#d3d2d1] text-[36px] md:text-[64px] lg:text-[96px] leading-[1.05] font-normal"
+            className="text-[#EFEFF0] text-[26px] sm:text-[36px] md:text-[56px] lg:text-[80px] xl:text-[96px] leading-[1.1] font-normal"
             style={{ mixBlendMode: "difference" }}
           >
             Uma performance para cada momento de forma adaptada a celebração.
@@ -293,9 +293,9 @@ export default function WessexPage() {
       {/* BIG IDEIA */}
       <section id="big-ideia" className="bg-black pt-12 lg:pt-20 pb-0">
         <div className="max-w-[1920px] mx-auto px-6 lg:px-[240px]">
-          <div className="bg-[#2c2d2e] py-12 lg:py-[105px] px-6 lg:px-[105px] min-h-[700px] lg:min-h-[1267px]">
-            <div className="grid lg:grid-cols-[1fr_476px] gap-12 lg:gap-[100px] items-stretch h-full">
-              <div className="flex flex-col gap-[40px] lg:gap-[31px] justify-between">
+          <div className="bg-[#2c2d2e] py-12 lg:py-[105px] px-6 sm:px-10 lg:px-[105px] lg:min-h-[1267px]">
+            <div className="grid lg:grid-cols-[1fr_476px] gap-10 lg:gap-[100px] items-stretch">
+              <div className="flex flex-col gap-[32px] lg:gap-[31px] justify-between">
                 {[
                   {
                     title: "Música sob medida:",
@@ -316,12 +316,12 @@ export default function WessexPage() {
                 ].map((feature) => (
                   <div key={feature.title} className="space-y-[12px]">
                     <h3
-                      className="capitalize text-white text-[28px] md:text-[36px] lg:text-[42px] leading-[1.1] font-normal"
+                      className="capitalize text-white text-[24px] sm:text-[28px] md:text-[34px] lg:text-[42px] leading-[1.15] font-normal"
                     >
                       {feature.title}
                     </h3>
                     <p
-                      className="text-[#d3d2d1] text-[15px] md:text-[17px] lg:text-[19px] leading-[1.45]"
+                      className="text-[#EFEFF0] text-[14px] sm:text-[15px] md:text-[17px] lg:text-[19px] leading-[1.5]"
                     >
                       {feature.text}
                     </p>
@@ -329,7 +329,7 @@ export default function WessexPage() {
                 ))}
               </div>
 
-              <div className="relative w-full lg:h-full min-h-[500px] lg:min-h-[1057px]">
+              <div className="relative w-full aspect-[476/591] lg:aspect-auto lg:h-full lg:min-h-[1057px]">
                 <img
                   src="/images/wessex/features.jpg"
                   alt=""
@@ -340,7 +340,7 @@ export default function WessexPage() {
           </div>
 
           {/* Banner */}
-          <div className="relative w-full h-[280px] lg:h-[480px] -mt-px">
+          <div className="relative w-full h-[180px] sm:h-[260px] lg:h-[480px]">
             <img
               src="/images/wessex/banner.jpg"
               alt=""
@@ -351,10 +351,10 @@ export default function WessexPage() {
       </section>
 
       {/* DEPOIMENTOS */}
-      <section id="depoimentos" className="bg-[#540000] py-16 lg:py-24">
+      <section id="depoimentos" className="bg-[#540000] py-12 sm:py-16 lg:py-24">
         <div className="max-w-[1920px] mx-auto px-6 lg:px-[160px]">
           <h2
-            className={`${serif} italic text-white text-[40px] md:text-[56px] lg:text-[72px] mb-12 lg:mb-20`}
+            className={`${serif} italic text-white text-[36px] sm:text-[44px] md:text-[56px] lg:text-[72px] mb-10 sm:mb-12 lg:mb-20`}
           >
             Feedback
           </h2>
@@ -383,17 +383,17 @@ export default function WessexPage() {
             ].map((t) => (
               <div
                 key={t.name}
-                className="border border-white/40 rounded-2xl p-8 lg:p-10 relative"
+                className="border border-white/40 rounded-2xl p-6 sm:p-8 lg:p-10 relative"
               >
                 <span
-                  className={`${serif} italic absolute -top-5 left-8 bg-[#540000] px-3 text-white text-[48px] leading-none`}
+                  className={`${serif} italic absolute -top-5 left-6 sm:left-8 bg-[#540000] px-3 text-white text-[40px] sm:text-[48px] leading-none`}
                 >
                   &ldquo;
                 </span>
-                <p className={`${serif} italic text-white/90 text-[16px] md:text-[18px] leading-[1.55] mb-6`}>
+                <p className={`${serif} italic text-white/90 text-[14px] sm:text-[16px] md:text-[18px] leading-[1.55] mb-5 sm:mb-6`}>
                   {t.quote}
                 </p>
-                <p className={`${serif} italic text-white text-[16px] md:text-[18px]`}>
+                <p className={`${serif} italic text-white text-[14px] sm:text-[16px] md:text-[18px]`}>
                   {t.name}
                 </p>
               </div>
@@ -405,8 +405,8 @@ export default function WessexPage() {
       {/* CTA Final */}
       <section id="cta" className="bg-black py-12 lg:py-20">
         <div className="max-w-[1920px] mx-auto px-6 lg:px-[251px]">
-          <div className="relative bg-[#2c2d2e] flex flex-col lg:flex-row items-center gap-8 p-8 lg:p-0 lg:min-h-[800px]">
-            <div className="relative w-full max-w-[450px] aspect-[450/675] lg:absolute lg:left-0 lg:top-[62px] lg:w-[450px] lg:h-[675px]">
+          <div className="relative bg-[#2c2d2e] flex flex-col lg:flex-row items-center gap-8 p-6 sm:p-8 lg:p-0 lg:min-h-[800px]">
+            <div className="relative w-full max-w-[400px] aspect-[450/675] lg:absolute lg:left-0 lg:top-[62px] lg:w-[450px] lg:h-[675px] lg:max-w-none">
               <img
                 src="/images/wessex/cta.jpg"
                 alt=""
@@ -414,9 +414,9 @@ export default function WessexPage() {
               />
             </div>
 
-            <div className="relative w-full lg:ml-[549px] lg:pt-[168px] lg:pr-[251px] space-y-[34px] max-w-[605px]">
+            <div className="relative w-full lg:ml-[549px] lg:pt-[168px] lg:pr-[251px] space-y-6 lg:space-y-[34px] max-w-[605px]">
               <p
-                className="text-[#d3d2d1] text-[24px] md:text-[32px] lg:text-[37px] leading-[1.15]"
+                className="text-[#EFEFF0] text-[20px] sm:text-[24px] md:text-[30px] lg:text-[37px] leading-[1.2]"
                 style={{ mixBlendMode: "difference" }}
               >
                 <span className="font-semibold text-white">
@@ -427,7 +427,7 @@ export default function WessexPage() {
               </p>
 
               <ul
-                className="list-disc pl-9 space-y-2 text-[18px] md:text-[22px] lg:text-[24px] text-[#d3d2d1]"
+                className="list-disc pl-6 sm:pl-9 space-y-2 text-[15px] sm:text-[17px] md:text-[20px] lg:text-[24px] text-[#EFEFF0]"
                 style={{ mixBlendMode: "difference" }}
               >
                 <li>Consultoria de repertório gratuita</li>
@@ -437,7 +437,7 @@ export default function WessexPage() {
 
               <Link
                 href="/contacto"
-                className="inline-flex items-center justify-center bg-[#b8a042] text-black font-medium text-[20px] w-full sm:w-[311px] h-[60px] rounded-[12px] hover:bg-[#c9b04f] transition"
+                className="inline-flex items-center justify-center bg-[#B8A042] text-black font-medium text-[16px] sm:text-[18px] lg:text-[20px] w-full sm:w-[280px] lg:w-[311px] h-[52px] lg:h-[60px] rounded-[12px] hover:bg-[#c9b04f] transition"
               >
                 Reserva a tua data
               </Link>
