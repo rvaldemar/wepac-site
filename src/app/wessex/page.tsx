@@ -14,15 +14,12 @@ export default function WessexPage() {
       {/* HEADER */}
       <header className="absolute top-0 left-0 right-0 z-50 h-[103px] bg-gradient-to-b from-black/60 to-transparent">
         <div className="h-full px-6 lg:px-[60px] xl:px-[120px] flex items-center justify-between">
-          <Link href="/wessex" className="flex items-center gap-3 text-white">
+          <Link href="/wessex" className="flex items-center text-white">
             <img
-              src="/images/wessex/logo/wessex-mark.svg"
+              src="/images/wessex/logo/wessex-white.svg"
               alt="Wessex"
-              className="w-9 h-12"
+              className="h-10 lg:h-12 w-auto"
             />
-            <span className={`${serif} text-[36px] leading-none lowercase tracking-tight`}>
-              wessex
-            </span>
           </Link>
           <nav className="hidden lg:flex items-center gap-[40px] xl:gap-[60px] text-[16px] xl:text-[18px] font-medium">
             <a href="#quem-somos" className="hover:text-[#B8A042] transition">
@@ -354,36 +351,51 @@ export default function WessexPage() {
       </section>
 
       {/* DEPOIMENTOS */}
-      <section id="depoimentos" className="bg-black py-12 lg:py-20">
-        <div className="max-w-[1920px] mx-auto px-6 lg:px-[250px]">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-[45px]">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="space-y-[10px]">
-                <div className="relative w-full aspect-[438/407]">
-                  <img
-                    src="/images/wessex/testimonial.jpg"
-                    alt={`Cliente ${i}`}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                </div>
-                <div className="space-y-[20px] pt-2">
-                  <div className="space-y-[24px]">
-                    <p className="font-extralight text-[24px] text-[#fcfcfc]">
-                      2024
-                    </p>
-                    <p
-                      className={`${serif} font-bold text-[28px] md:text-[37px] text-[#fcfcfc]`}
-                    >
-                      Nome do Cliente
-                    </p>
-                  </div>
-                  <p className="text-[18px] md:text-[24px] text-[#fcfcfc] leading-[1.5]">
-                    Lorem Ipsum is simply dummy text of the printing and
-                    typesetting industry. Lorem Ipsum has been the industry's
-                    standard dummy text ever since the 1500s, when an unknown
-                    printer took a galley of type and scrambled it to make
-                  </p>
-                </div>
+      <section id="depoimentos" className="bg-[#540000] py-16 lg:py-24">
+        <div className="max-w-[1920px] mx-auto px-6 lg:px-[160px]">
+          <h2
+            className={`${serif} italic text-white text-[40px] md:text-[56px] lg:text-[72px] mb-12 lg:mb-20`}
+          >
+            Feedback
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+            {[
+              {
+                name: "Giovanna Fraga",
+                quote:
+                  "A música no nosso casamento foi incrível! Tocada pelo Grupo Wessex, com emoção e sensibilidade, tornou o momento ainda mais especial. Convidados encantados e um dia inesquecível. Obrigada!",
+              },
+              {
+                name: "Pedro Azevedo",
+                quote:
+                  "A música no nosso casamento foi simplesmente emocionante! Cada nota trouxe um toque especial ao momento, tornando tudo ainda mais inesquecível. A sensibilidade e o talento fizeram toda a diferença. Muito obrigado por essa experiência maravilhosa!",
+              },
+              {
+                name: "Dinamene Silva",
+                quote:
+                  "Que momento mágico! A música tornou nosso pedido de casamento ainda mais especial e emocionante. Cada nota transmitiu amor e tornou o momento inesquecível. Gratidão por fazer parte desse dia tão único!",
+              },
+              {
+                name: "Chef Eunice Silveira",
+                quote:
+                  "O talento do saxofonista trouxe um toque de elegância e animação à festa de 18 anos da minha cliente. A música envolvente criou uma atmosfera incrível e encantou a todos. Foi simplesmente perfeito! Muito obrigada!",
+              },
+            ].map((t) => (
+              <div
+                key={t.name}
+                className="border border-white/40 rounded-2xl p-8 lg:p-10 relative"
+              >
+                <span
+                  className={`${serif} italic absolute -top-5 left-8 bg-[#540000] px-3 text-white text-[48px] leading-none`}
+                >
+                  &ldquo;
+                </span>
+                <p className={`${serif} italic text-white/90 text-[16px] md:text-[18px] leading-[1.55] mb-6`}>
+                  {t.quote}
+                </p>
+                <p className={`${serif} italic text-white text-[16px] md:text-[18px]`}>
+                  {t.name}
+                </p>
               </div>
             ))}
           </div>
@@ -438,15 +450,12 @@ export default function WessexPage() {
       <footer className="bg-[#EFEFF0] text-black py-12 lg:py-16">
         <div className="max-w-[1920px] mx-auto px-6 lg:px-[107px]">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-8">
-            <Link href="/wessex" className="flex items-center gap-3">
+            <Link href="/wessex" className="flex items-center">
               <img
-                src="/images/wessex/logo/wessex-mark.svg"
+                src="/images/wessex/logo/wessex-black.svg"
                 alt="Wessex"
-                className="w-9 h-12"
+                className="h-10 lg:h-12 w-auto"
               />
-              <span className={`${serif} text-[36px] leading-none lowercase tracking-tight`}>
-                wessex
-              </span>
             </Link>
             <div className="flex items-center gap-4">
               {[
