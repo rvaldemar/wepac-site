@@ -110,14 +110,14 @@ export default function WessexPage() {
         className="relative bg-black overflow-hidden py-16 lg:py-24"
       >
         <div className="max-w-[1600px] mx-auto px-6 lg:px-[120px] relative">
-          <div className="grid lg:grid-cols-[480px_1fr] gap-10 lg:gap-16 items-center">
+          <div className="grid lg:grid-cols-[460px_1fr] gap-10 lg:gap-16 items-center">
             {/* Image */}
-            <div className="relative w-full max-w-[480px] mx-auto lg:mx-0 aspect-[480/720] z-10">
-              <div className="hidden lg:block absolute -right-12 -top-8 w-[calc(100%+200px)] h-[calc(100%+80px)] bg-[#2c2d2e]" />
+            <div className="relative w-full max-w-[460px] mx-auto lg:mx-0 aspect-[844/1500] z-10">
+              <div className="hidden lg:block absolute -right-12 -top-8 w-[calc(100%+220px)] h-[calc(100%+80px)] bg-[#2c2d2e]" />
               <img
                 src="/images/wessex/quem-somos.jpg"
                 alt="Wessex performance"
-                className="absolute inset-0 w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover object-center"
               />
             </div>
 
