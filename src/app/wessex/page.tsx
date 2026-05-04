@@ -174,39 +174,6 @@ export default function WessexPage() {
             </div>
           </div>
 
-          {/* Eventos onde participamos */}
-          <div className="mt-16 lg:mt-24">
-            <h3
-              className={`${serif} italic text-[#FCFCFC] text-[24px] sm:text-[30px] md:text-[36px] lg:text-[42px] leading-[1.2] mb-8 lg:mb-12`}
-            >
-              É com gosto que proporcionamos:
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-[60px]">
-              {[
-                {
-                  title: "Casamentos",
-                  detail: "Cerimónias e Cocktails",
-                },
-                {
-                  title: "Eventos Corporativos",
-                  detail: "Jantares de gala e recepções",
-                },
-                {
-                  title: "Celebrações Privadas",
-                  detail: "Aniversários, pedidos e serenatas",
-                },
-              ].map((item) => (
-                <div key={item.title} className="space-y-3 border-t border-white/30 pt-4">
-                  <p className={`${serif} text-[#FCFCFC] text-[22px] sm:text-[26px] lg:text-[30px] leading-tight`}>
-                    {item.title}
-                  </p>
-                  <p className="text-[#EFEFF0]/80 text-[14px] sm:text-[15px] lg:text-[17px] leading-[1.4]">
-                    {item.detail}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </section>
 
