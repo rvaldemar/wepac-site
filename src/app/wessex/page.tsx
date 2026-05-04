@@ -306,10 +306,10 @@ export default function WessexPage() {
 
       {/* BIG IDEIA */}
       <section id="big-ideia" className="bg-black pt-12 lg:pt-20 pb-0">
-        <div className="max-w-[1920px] mx-auto px-6 lg:px-[240px]">
-          <div className="bg-[#2c2d2e] py-12 lg:py-[105px] px-6 sm:px-10 lg:px-[105px] lg:min-h-[1267px]">
-            <div className="grid lg:grid-cols-[1fr_476px] gap-10 lg:gap-[100px] items-stretch">
-              <div className="flex flex-col gap-[32px] lg:gap-[31px] justify-between">
+        <div className="max-w-[1920px] mx-auto px-6 lg:px-[120px]">
+          <div className="bg-[#2c2d2e] py-12 lg:py-[80px] px-6 sm:px-10 lg:px-[80px]">
+            <div className="grid lg:grid-cols-[1fr_440px] gap-10 lg:gap-[80px] items-center">
+              <div className="flex flex-col gap-[28px] lg:gap-[32px]">
                 {[
                   {
                     title: "Música sob medida:",
@@ -328,14 +328,14 @@ export default function WessexPage() {
                     text: "A nossa missão não é tocar bem é fazer as pessoas sentir. Cada nota é colocada com intenção. O objectivo é sempre o mesmo: criar o momento que todos vão querer reviver.",
                   },
                 ].map((feature) => (
-                  <div key={feature.title} className="space-y-[12px]">
+                  <div key={feature.title} className="space-y-2">
                     <h3
-                      className="capitalize text-white text-[24px] sm:text-[28px] md:text-[34px] lg:text-[42px] leading-[1.15] font-normal"
+                      className="capitalize text-white text-[20px] sm:text-[22px] md:text-[26px] lg:text-[30px] leading-[1.15] font-normal"
                     >
                       {feature.title}
                     </h3>
                     <p
-                      className="text-[#EFEFF0] text-[14px] sm:text-[15px] md:text-[17px] lg:text-[19px] leading-[1.5]"
+                      className="text-[#EFEFF0] text-[13px] sm:text-[14px] md:text-[15px] lg:text-[16px] leading-[1.55]"
                     >
                       {feature.text}
                     </p>
@@ -343,7 +343,7 @@ export default function WessexPage() {
                 ))}
               </div>
 
-              <div className="relative w-full aspect-[476/591] lg:aspect-auto lg:h-full lg:min-h-[1057px]">
+              <div className="relative w-full max-w-[440px] mx-auto lg:mx-0 aspect-[440/560]">
                 <img
                   src="/images/wessex/features.jpg"
                   alt=""
@@ -354,7 +354,7 @@ export default function WessexPage() {
           </div>
 
           {/* Banner */}
-          <div className="relative w-full h-[180px] sm:h-[260px] lg:h-[480px]">
+          <div className="relative w-full h-[180px] sm:h-[260px] lg:h-[400px]">
             <img
               src="/images/wessex/banner.jpg"
               alt=""
