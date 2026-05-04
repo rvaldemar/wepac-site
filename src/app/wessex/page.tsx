@@ -136,13 +136,13 @@ export default function WessexPage() {
           </div>
         </div>
 
-        {/* Desktop: dramatic absolute layout matching Figma */}
-        <div className="hidden lg:block max-w-[1920px] mx-auto h-full relative">
-          {/* Dark rectangle background (right) */}
-          <div className="absolute right-[160px] top-[120px] w-[800px] h-[900px] bg-[#2c2d2e]" />
+        {/* Desktop: dramatic absolute layout matching Figma 1920x1100 */}
+        <div className="hidden lg:block w-full max-w-[1920px] mx-auto h-full relative">
+          {/* Dark rectangle background — covers right ~70% */}
+          <div className="absolute left-[480px] right-[100px] top-[100px] h-[940px] bg-[#2c2d2e]" />
 
-          {/* Image */}
-          <div className="absolute left-[280px] top-[180px] w-[460px] h-[820px] z-10">
+          {/* Image — left side, overlapping the dark box */}
+          <div className="absolute left-[240px] top-[140px] w-[500px] h-[880px] z-10">
             <img
               src="/images/wessex/quem-somos.jpg"
               alt="Wessex performance"
@@ -150,23 +150,21 @@ export default function WessexPage() {
             />
           </div>
 
-          {/* Big "Quem somos" text overlay */}
+          {/* Big "Quem somos" — over dark box, right of image */}
           <h2
-            className={`${serif} absolute right-[180px] top-[80px] text-[#d3d2d1] text-[260px] xl:text-[288px] leading-[0.92] font-normal z-20`}
-            style={{ mixBlendMode: "difference" }}
+            className={`${serif} absolute right-[120px] top-[60px] text-[#d3d2d1] text-[260px] xl:text-[280px] leading-[0.92] font-normal z-20 text-right`}
           >
             Quem
             <br />
             somos
           </h2>
 
-          {/* Subtitle inside the dark box, right side */}
+          {/* Subtitle inside dark box, bottom right */}
           <p
-            className="absolute right-[200px] top-[680px] w-[300px] text-[#d3d2d1] text-[44px] leading-[1.05] font-light z-20"
-            style={{ mixBlendMode: "difference" }}
+            className="absolute right-[140px] bottom-[160px] w-[330px] text-white text-[40px] leading-[1.08] font-light z-20"
           >
             Mais do que música ao vivo.{" "}
-            <span className="font-semibold text-white">
+            <span className="font-semibold">
               Uma experiência construída para o teu momento
             </span>
             .
@@ -415,8 +413,9 @@ export default function WessexPage() {
       {/* CTA Final */}
       <section id="cta" className="bg-black py-16 lg:py-32">
         <div className="max-w-[1280px] mx-auto px-6 lg:px-16">
-          <div className="bg-[#2c2d2e] relative grid lg:grid-cols-[320px_1fr] items-center gap-8 lg:gap-16 px-6 sm:px-10 lg:px-16 py-10 lg:py-16">
-            <div className="relative w-full max-w-[320px] mx-auto lg:mx-0 aspect-[3/4] lg:-translate-y-12">
+          <div className="bg-[#2c2d2e] relative grid lg:grid-cols-[400px_1fr] items-center gap-8 lg:gap-16 px-6 sm:px-10 lg:pl-0 lg:pr-16 lg:py-12 py-10">
+            {/* Image overflows box top+bottom (matches Figma) */}
+            <div className="relative w-full max-w-[360px] mx-auto lg:mx-0 lg:ml-12 aspect-[3/4] lg:-mt-16 lg:-mb-16 lg:max-w-none lg:w-[360px] lg:h-[540px]">
               <img
                 src="/images/wessex/cta.jpg"
                 alt=""
@@ -425,9 +424,7 @@ export default function WessexPage() {
             </div>
 
             <div className="space-y-6 max-w-[600px]">
-              <p
-                className="text-[#EFEFF0] text-[18px] sm:text-[20px] md:text-[24px] lg:text-[26px] leading-[1.4]"
-              >
+              <p className="text-[#EFEFF0] text-[18px] sm:text-[20px] md:text-[24px] lg:text-[28px] leading-[1.4]">
                 <span className="font-semibold text-white">
                   O próximo será o seu
                 </span>
@@ -435,9 +432,7 @@ export default function WessexPage() {
                 contacto para montar uma proposta personalizada.
               </p>
 
-              <ul
-                className="list-disc pl-6 space-y-1.5 text-[14px] sm:text-[15px] md:text-[16px] lg:text-[17px] text-[#EFEFF0]"
-              >
+              <ul className="list-disc pl-6 space-y-1.5 text-[14px] sm:text-[15px] md:text-[16px] lg:text-[18px] text-[#EFEFF0]">
                 <li>Consultoria de repertório gratuita</li>
                 <li>Registro de em vídeo do momento</li>
                 <li>Prioridade de data</li>
