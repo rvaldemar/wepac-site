@@ -57,12 +57,12 @@ export default function WessexPage() {
 
         <div className="relative z-10 h-full max-w-[1920px] mx-auto px-6 sm:px-10 lg:pl-[250px] lg:pr-6 pt-[140px] lg:pt-[175px]">
           <h1
-            className={`${serif} font-bold text-white text-[28px] sm:text-[36px] md:text-[52px] lg:text-[64px] xl:text-[72px] leading-[1.15] max-w-full lg:max-w-[720px] mb-6 lg:mb-[48px]`}
+            className={`${serif} font-bold text-white text-[28px] sm:text-[36px] md:text-[52px] lg:text-[64px] xl:text-[72px] leading-[1.15] max-w-full lg:max-w-[720px] mb-6 lg:mb-[48px] break-words`}
           >
             A música que transforma celebração em{" "}
             <em className="italic font-normal">memória inesquecível</em>.
           </h1>
-          <p className="font-light text-white text-[14px] sm:text-[16px] md:text-[20px] lg:text-[26px] xl:text-[28px] leading-[1.5] max-w-full lg:max-w-[660px] mb-8 lg:mb-[48px]">
+          <p className="font-light text-white text-[14px] sm:text-[16px] md:text-[20px] lg:text-[26px] xl:text-[28px] leading-[1.5] max-w-full lg:max-w-[660px] mb-8 lg:mb-[48px] break-words">
             Música ao vivo feita sob medida para{" "}
             <span className="font-semibold">casamentos</span>,{" "}
             <span className="font-semibold">eventos</span> e{" "}
