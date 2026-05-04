@@ -104,16 +104,14 @@ export default function WessexPage() {
         </div>
       </section>
 
-      {/* QUEM SOMOS - Hero block (large) */}
+      {/* QUEM SOMOS - Hero block */}
       <section
         id="quem-somos"
         className="relative bg-black overflow-hidden py-16 lg:py-24"
       >
-        <div className="max-w-[1600px] mx-auto px-6 lg:px-[120px] relative">
-          <div className="grid lg:grid-cols-[460px_1fr] gap-10 lg:gap-16 items-center">
-            {/* Image */}
-            <div className="relative w-full max-w-[460px] mx-auto lg:mx-0 aspect-[844/1500] z-10">
-              <div className="hidden lg:block absolute -right-12 -top-8 w-[calc(100%+220px)] h-[calc(100%+80px)] bg-[#2c2d2e]" />
+        <div className="max-w-[1400px] mx-auto px-6 lg:px-16">
+          <div className="grid md:grid-cols-2 gap-10 lg:gap-16 items-center">
+            <div className="relative w-full max-w-[520px] mx-auto md:mx-0 aspect-[844/1500]">
               <img
                 src="/images/wessex/quem-somos.jpg"
                 alt="Wessex performance"
@@ -121,19 +119,14 @@ export default function WessexPage() {
               />
             </div>
 
-            {/* Big "Quem somos" + subtitle */}
-            <div className="relative z-20 px-2 lg:px-0">
+            <div className="space-y-6 lg:space-y-10">
               <h2
-                className={`${serif} text-white text-[56px] sm:text-[88px] md:text-[120px] lg:text-[140px] xl:text-[160px] leading-[0.92] font-normal`}
+                className={`${serif} text-white text-[40px] sm:text-[52px] md:text-[64px] lg:text-[80px] leading-[1] font-normal`}
               >
-                Quem
-                <br />
-                somos
+                Quem somos
               </h2>
-              <p
-                className="text-[#EFEFF0] text-[18px] md:text-[22px] lg:text-[26px] leading-[1.4] mt-8 lg:mt-12 max-w-[420px]"
-              >
-            Mais do que música ao vivo.{" "}
+              <p className="text-[#EFEFF0] text-[16px] md:text-[18px] lg:text-[22px] leading-[1.55] max-w-[480px]">
+                Mais do que música ao vivo.{" "}
                 <span className="font-semibold text-white">
                   Uma experiência construída para o teu momento
                 </span>
@@ -151,12 +144,12 @@ export default function WessexPage() {
             quem somos
           </p>
 
-          <div className="grid lg:grid-cols-[436px_1fr] gap-8 lg:gap-[74px] items-start">
-            <div className="relative w-full max-w-[436px] mx-auto lg:mx-0 aspect-[436/458]">
+          <div className="grid lg:grid-cols-[400px_1fr] gap-10 lg:gap-[60px] items-start">
+            <div className="relative w-full max-w-[400px] mx-auto lg:mx-0 aspect-[4/3]">
               <img
                 src="/images/wessex/detail.jpg"
                 alt=""
-                className="absolute inset-0 w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover object-center"
               />
             </div>
 
@@ -307,9 +300,9 @@ export default function WessexPage() {
       {/* BIG IDEIA */}
       <section id="big-ideia" className="bg-black pt-12 lg:pt-20 pb-0">
         <div className="max-w-[1920px] mx-auto px-6 lg:px-[120px]">
-          <div className="bg-[#2c2d2e] py-12 lg:py-[80px] px-6 sm:px-10 lg:px-[80px]">
-            <div className="grid lg:grid-cols-[1fr_440px] gap-10 lg:gap-[80px] items-center">
-              <div className="flex flex-col gap-[28px] lg:gap-[32px]">
+          <div className="bg-[#2c2d2e] py-10 lg:py-[60px] px-6 sm:px-10 lg:px-[60px]">
+            <div className="grid lg:grid-cols-[1fr_360px] gap-8 lg:gap-[60px] items-center">
+              <div className="flex flex-col gap-[20px] lg:gap-[24px]">
                 {[
                   {
                     title: "Música sob medida:",
@@ -328,14 +321,14 @@ export default function WessexPage() {
                     text: "A nossa missão não é tocar bem é fazer as pessoas sentir. Cada nota é colocada com intenção. O objectivo é sempre o mesmo: criar o momento que todos vão querer reviver.",
                   },
                 ].map((feature) => (
-                  <div key={feature.title} className="space-y-2">
+                  <div key={feature.title} className="space-y-1.5">
                     <h3
-                      className="capitalize text-white text-[20px] sm:text-[22px] md:text-[26px] lg:text-[30px] leading-[1.15] font-normal"
+                      className="capitalize text-white text-[17px] sm:text-[18px] md:text-[20px] lg:text-[22px] leading-[1.2] font-normal"
                     >
                       {feature.title}
                     </h3>
                     <p
-                      className="text-[#EFEFF0] text-[13px] sm:text-[14px] md:text-[15px] lg:text-[16px] leading-[1.55]"
+                      className="text-[#EFEFF0] text-[12px] sm:text-[13px] md:text-[14px] lg:text-[14px] leading-[1.5]"
                     >
                       {feature.text}
                     </p>
@@ -343,7 +336,7 @@ export default function WessexPage() {
                 ))}
               </div>
 
-              <div className="relative w-full max-w-[440px] mx-auto lg:mx-0 aspect-[440/560]">
+              <div className="relative w-full max-w-[360px] mx-auto lg:mx-0 aspect-[360/440]">
                 <img
                   src="/images/wessex/features.jpg"
                   alt=""
@@ -418,9 +411,9 @@ export default function WessexPage() {
 
       {/* CTA Final */}
       <section id="cta" className="bg-black py-12 lg:py-20">
-        <div className="max-w-[1920px] mx-auto px-6 lg:px-[251px]">
-          <div className="relative bg-[#2c2d2e] flex flex-col lg:flex-row items-center gap-8 p-6 sm:p-8 lg:p-0 lg:min-h-[800px]">
-            <div className="relative w-full max-w-[400px] aspect-[450/675] lg:absolute lg:left-0 lg:top-[62px] lg:w-[450px] lg:h-[675px] lg:max-w-none">
+        <div className="max-w-[1400px] mx-auto px-6 lg:px-16">
+          <div className="bg-[#2c2d2e] grid lg:grid-cols-[320px_1fr] items-center gap-8 lg:gap-12 p-6 sm:p-10 lg:p-12">
+            <div className="relative w-full max-w-[320px] mx-auto lg:mx-0 aspect-[3/4]">
               <img
                 src="/images/wessex/cta.jpg"
                 alt=""
@@ -428,10 +421,9 @@ export default function WessexPage() {
               />
             </div>
 
-            <div className="relative w-full lg:ml-[549px] lg:pt-[168px] lg:pr-[251px] space-y-6 lg:space-y-[34px] max-w-[605px]">
+            <div className="space-y-6 max-w-[600px]">
               <p
-                className="text-[#EFEFF0] text-[20px] sm:text-[24px] md:text-[30px] lg:text-[37px] leading-[1.2]"
-                style={{ mixBlendMode: "difference" }}
+                className="text-[#EFEFF0] text-[18px] sm:text-[20px] md:text-[24px] lg:text-[26px] leading-[1.4]"
               >
                 <span className="font-semibold text-white">
                   O próximo será o seu
@@ -441,8 +433,7 @@ export default function WessexPage() {
               </p>
 
               <ul
-                className="list-disc pl-6 sm:pl-9 space-y-2 text-[15px] sm:text-[17px] md:text-[20px] lg:text-[24px] text-[#EFEFF0]"
-                style={{ mixBlendMode: "difference" }}
+                className="list-disc pl-6 space-y-1.5 text-[14px] sm:text-[15px] md:text-[16px] lg:text-[17px] text-[#EFEFF0]"
               >
                 <li>Consultoria de repertório gratuita</li>
                 <li>Registro de em vídeo do momento</li>
