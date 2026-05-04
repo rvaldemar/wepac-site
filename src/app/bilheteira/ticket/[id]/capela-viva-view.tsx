@@ -14,6 +14,9 @@ type Props = {
   checkedInAt: Date | null;
   welcome: boolean;
   coverImage?: string | null;
+  eventTitle: string;
+  eventSubtitle: string | null;
+  ticketNote?: string | null;
 };
 
 const DEFAULT_CAPELA_VIVA_COVER =
@@ -89,10 +92,23 @@ export function CapelaVivaTicketView({
   checkedInAt,
   welcome,
   coverImage,
+  eventTitle,
+  eventSubtitle,
+  ticketNote,
 }: Props) {
   const total = priceCents * seats;
   const isAmigoTier = /amigo/i.test(tierName);
   const photoUrl = coverImage || DEFAULT_CAPELA_VIVA_COVER;
+
+  // Split subtitle "Artista · instrumento" into two parts for the ticket layout
+  const subtitleParts = eventSubtitle?.split("·").map((s) => s.trim()) ?? [];
+  const artistName = subtitleParts[0] ?? "";
+  const instrument = subtitleParts[1] ?? "";
+
+  // Split title into two lines if it contains a space (last word on second line)
+  const titleWords = eventTitle.split(" ");
+  const titleLine1 = titleWords.slice(0, -1).join(" ");
+  const titleLine2 = titleWords[titleWords.length - 1];
 
   return (
     <>
@@ -119,12 +135,12 @@ export function CapelaVivaTicketView({
           <div className="cv-corpo">
             <div className="cv-corpo-top">
               <div className="cv-tipo">{tierName}</div>
-              <div className="cv-titulo-italico">A voz da</div>
-              <div className="cv-titulo-principal">Ibéria Antiga</div>
+              <div className="cv-titulo-italico">{titleLine1}</div>
+              <div className="cv-titulo-principal">{titleLine2}</div>
               <Ornamento />
               <div className="cv-artista">
-                Ananda Roda
-                <span className="cv-instrumento">vihuela</span>
+                {artistName}
+                {instrument && <span className="cv-instrumento">{instrument}</span>}
               </div>
             </div>
             <div className="cv-corpo-bottom">
@@ -214,19 +230,11 @@ export function CapelaVivaTicketView({
             )}
           </dl>
           <div className="cv-verso-texto">
-            <p>
-              A vihuela antecedeu a guitarra em duzentos anos. Quase ninguém a
-              toca hoje.
-            </p>
-            <p>
-              Ananda Roda, formada em música antiga, devolve o som de um
-              repertório que atravessou a Ibéria em mãos de poetas, monges e
-              peregrinos.
-            </p>
-            <p>
-              A Capela do Hospital de Jesus é barroca, pequena e sonora.
-              Senta-se, escuta-se, regressa-se.
-            </p>
+            {ticketNote
+              ? ticketNote
+                  .split(/\n\s*\n/)
+                  .map((p, i) => <p key={i}>{p.trim()}</p>)
+              : null}
             {isAmigoTier ? (
               <p className="cv-assinatura">
                 Amigos WEPAC · sustentam a programação da Capela Viva.

@@ -54,6 +54,7 @@ export async function createEventAction(formData: FormData): Promise<void> {
   const durationRaw = String(formData.get("durationMinutes") || "");
   const capacityRaw = String(formData.get("capacity") || "");
   const coverImage = String(formData.get("coverImage") || "").trim() || null;
+  const ticketNote = String(formData.get("ticketNote") || "").trim() || null;
   const statusRaw = String(formData.get("status") || "draft");
 
   if (!title || !description || !departmentId || !venue || !startsAtRaw) {
@@ -106,6 +107,7 @@ export async function createEventAction(formData: FormData): Promise<void> {
       durationMinutes: durationRaw ? Number(durationRaw) : null,
       capacity: capacityRaw ? Number(capacityRaw) : null,
       coverImage,
+      ticketNote,
       status:
         statusRaw === "published" || statusRaw === "draft" ? statusRaw : "draft",
       createdById: admin.id,
@@ -136,6 +138,7 @@ export async function updateEventAction(formData: FormData): Promise<void> {
   const durationRaw = String(formData.get("durationMinutes") || "");
   const capacityRaw = String(formData.get("capacity") || "");
   const coverImage = String(formData.get("coverImage") || "").trim() || null;
+  const ticketNote = String(formData.get("ticketNote") || "").trim() || null;
   const statusRaw = String(formData.get("status") || "draft");
 
   if (!title || !description || !departmentId || !venue || !startsAtRaw) {
@@ -160,6 +163,7 @@ export async function updateEventAction(formData: FormData): Promise<void> {
       durationMinutes: durationRaw ? Number(durationRaw) : null,
       capacity: capacityRaw ? Number(capacityRaw) : null,
       coverImage,
+      ticketNote,
       status: ["draft", "published", "cancelled", "completed"].includes(
         statusRaw
       )

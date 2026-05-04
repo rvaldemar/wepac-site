@@ -150,6 +150,7 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
             durationMinutes: event.durationMinutes,
             capacity: event.capacity,
             coverImage: event.coverImage,
+            ticketNote: event.ticketNote,
             status: event.status,
           }}
           submitLabel="Guardar alterações"
@@ -641,6 +642,7 @@ type PreviewEvent = {
   venue: string;
   address: string | null;
   coverImage: string | null;
+  ticketNote: string | null;
   department: { name: string };
   brand: { name: string; slug: string } | null;
   tiers: { name: string; priceCents: number }[];
@@ -676,7 +678,14 @@ async function TicketPreview({ event }: { event: PreviewEvent }) {
   };
 
   if (event.brand?.slug === "capela-viva") {
-    return <CapelaVivaTicketView {...common} />;
+    return (
+      <CapelaVivaTicketView
+        {...common}
+        eventTitle={event.title}
+        eventSubtitle={event.subtitle}
+        ticketNote={event.ticketNote}
+      />
+    );
   }
   return (
     <TicketView

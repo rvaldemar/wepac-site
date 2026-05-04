@@ -20,6 +20,7 @@ type Defaults = {
   durationMinutes: number | null;
   capacity: number | null;
   coverImage: string | null;
+  ticketNote: string | null;
   status: string;
 };
 
@@ -31,9 +32,10 @@ type Props = {
   submitLabel: string;
 };
 
-function toLocalDateTimeInput(d: Date): string {
+function toLocalDateTimeInput(d: Date | string): string {
+  const date = typeof d === "string" ? new Date(d) : d;
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
 export function EventFormClient({
@@ -212,6 +214,18 @@ export function EventFormClient({
           defaultValue={defaults?.coverImage || ""}
           style={styles.input}
           placeholder="/api/bilheteira/uploads/... ou https://..."
+        />
+      </label>
+
+      <label style={styles.label}>
+        <span style={styles.labelText}>
+          Texto do verso do bilhete (opcional — texto editorial específico deste evento, aparece no bilhete digital)
+        </span>
+        <textarea
+          name="ticketNote"
+          defaultValue={defaults?.ticketNote || ""}
+          style={styles.textarea}
+          placeholder="Ex: A vihuela antecedeu a guitarra em duzentos anos..."
         />
       </label>
 

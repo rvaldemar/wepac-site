@@ -67,6 +67,9 @@ export default async function TicketPage({ params, searchParams }: Props) {
         checkedInAt={ticket.checkedInAt}
         welcome={welcome === "1"}
         coverImage={ticket.event.coverImage}
+        eventTitle={ticket.event.title}
+        eventSubtitle={ticket.event.subtitle}
+        ticketNote={ticket.event.ticketNote}
       />
     );
   }

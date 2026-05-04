@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { events } from "@/data/events";
+import { prisma } from "@/lib/db";
 import { HeroSection } from "@/components/HeroSection";
 import { FadeIn } from "@/components/FadeIn";
+
+export const dynamic = "force-dynamic";
 
 const departments = [
   {
@@ -38,8 +40,14 @@ const departments = [
   },
 ];
 
-export default function Home() {
-  const upcomingEvents = events.slice(0, 3);
+export default async function Home() {
+  const now = new Date();
+  const upcomingEvents = await prisma.event.findMany({
+    where: { status: "published", startsAt: { gte: now } },
+    include: { department: true, brand: true },
+    orderBy: { startsAt: "asc" },
+    take: 3,
+  });
 
   return (
     <>
@@ -114,32 +122,46 @@ export default function Home() {
           </FadeIn>
 
           <div className="mt-12 space-y-6">
-            {upcomingEvents.map((event, i) => (
-              <FadeIn key={event.id} delay={i * 0.1}>
-                <div className="flex flex-col gap-4 border-b border-wepac-black/10 pb-6 md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-wider text-wepac-black/40">
-                      {event.project}
-                    </p>
-                    <h3 className="mt-1 font-barlow text-lg font-bold text-wepac-black">
-                      {event.title}
-                    </h3>
-                    <p className="mt-1 text-sm text-wepac-black/60">
-                      {event.location}
-                    </p>
-                  </div>
-                  <div className="text-left md:text-right">
-                    <p className="font-barlow text-lg font-bold text-wepac-black">
-                      {new Date(event.date).toLocaleDateString("pt-PT", {
-                        day: "numeric",
-                        month: "long",
-                      })}
-                    </p>
-                    <p className="text-sm text-wepac-black/50">{event.time}</p>
-                  </div>
-                </div>
-              </FadeIn>
-            ))}
+            {upcomingEvents.map((event, i) => {
+              const projectName = event.brand?.name || event.department.name;
+              const location = event.address
+                ? `${event.venue}, ${event.address}`
+                : event.venue;
+              return (
+                <FadeIn key={event.id} delay={i * 0.1}>
+                  <Link
+                    href={`/bilheteira/${event.slug}`}
+                    className="group flex flex-col gap-4 border-b border-wepac-black/10 pb-6 transition-opacity hover:opacity-70 md:flex-row md:items-center md:justify-between"
+                  >
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wider text-wepac-black/40">
+                        {projectName}
+                      </p>
+                      <h3 className="mt-1 font-barlow text-lg font-bold text-wepac-black">
+                        {event.title}
+                      </h3>
+                      <p className="mt-1 text-sm text-wepac-black/60">
+                        {location}
+                      </p>
+                    </div>
+                    <div className="text-left md:text-right">
+                      <p className="font-barlow text-lg font-bold text-wepac-black">
+                        {event.startsAt.toLocaleDateString("pt-PT", {
+                          day: "numeric",
+                          month: "long",
+                        })}
+                      </p>
+                      <p className="text-sm text-wepac-black/50">
+                        {event.startsAt.toLocaleTimeString("pt-PT", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                  </Link>
+                </FadeIn>
+              );
+            })}
           </div>
 
           <FadeIn delay={0.3}>

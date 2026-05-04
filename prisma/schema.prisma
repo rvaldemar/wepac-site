@@ -510,6 +510,7 @@ model Event {
   durationMinutes Int?
   coverImage      String?
   capacity        Int?
+  ticketNote      String?
   status          EventStatus @default(draft)
   createdById     String?
   createdAt       DateTime    @default(now())
