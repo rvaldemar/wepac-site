@@ -91,14 +91,14 @@ export default function WessexPage() {
 
       {/* TRUST BAR */}
       <section className="bg-[#540000]">
-        <div className="max-w-[1920px] mx-auto h-auto md:h-[100px] flex flex-col md:flex-row items-center justify-around gap-4 md:gap-[60px] px-6 py-6 md:py-0">
-          <p className="font-light text-[14px] md:text-[20px] lg:text-[28px] text-white uppercase whitespace-nowrap">
+        <div className="max-w-[1920px] mx-auto h-auto md:h-[100px] flex flex-col md:flex-row items-center justify-around gap-3 md:gap-[40px] px-6 py-5 md:py-0 text-center">
+          <p className="font-light text-[12px] sm:text-[14px] md:text-[18px] lg:text-[24px] xl:text-[28px] text-white uppercase tracking-wide">
             Resposta em menos de 24h
           </p>
-          <p className="font-light text-[14px] md:text-[20px] lg:text-[28px] text-white uppercase whitespace-nowrap">
+          <p className="font-light text-[12px] sm:text-[14px] md:text-[18px] lg:text-[24px] xl:text-[28px] text-white uppercase tracking-wide">
             Sem compromisso inicial
           </p>
-          <p className="font-light text-[14px] md:text-[20px] lg:text-[28px] text-white uppercase whitespace-nowrap">
+          <p className="font-light text-[12px] sm:text-[14px] md:text-[18px] lg:text-[24px] xl:text-[28px] text-white uppercase tracking-wide">
             Proposta personalizada e gratuita
           </p>
         </div>
