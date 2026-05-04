@@ -107,40 +107,40 @@ export default function WessexPage() {
       {/* QUEM SOMOS - Hero block (large) */}
       <section
         id="quem-somos"
-        className="relative bg-black overflow-hidden py-20 lg:py-0 lg:h-[1200px]"
+        className="relative bg-black overflow-hidden py-16 lg:py-24"
       >
-        {/* Dark rectangle background (right) */}
-        <div className="hidden lg:block absolute right-[10%] top-[200px] w-[795px] h-[957px] bg-[#2c2d2e]" />
+        <div className="max-w-[1600px] mx-auto px-6 lg:px-[120px] relative">
+          <div className="grid lg:grid-cols-[480px_1fr] gap-10 lg:gap-16 items-center">
+            {/* Image */}
+            <div className="relative w-full max-w-[480px] mx-auto lg:mx-0 aspect-[480/720] z-10">
+              <div className="hidden lg:block absolute -right-12 -top-8 w-[calc(100%+200px)] h-[calc(100%+80px)] bg-[#2c2d2e]" />
+              <img
+                src="/images/wessex/quem-somos.jpg"
+                alt="Wessex performance"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            </div>
 
-        {/* Image */}
-        <div className="relative lg:absolute lg:left-[19.7%] lg:top-[270px] w-full lg:w-[448px] h-[400px] sm:h-[500px] lg:h-[750px] z-10 px-6 lg:px-0">
-          <img
-            src="/images/wessex/quem-somos.jpg"
-            alt="Wessex performance"
-            className="w-full h-full object-cover"
-          />
-        </div>
-
-        {/* Big "Quem somos" + subtitle */}
-        <div className="relative lg:absolute lg:left-[40%] lg:top-[50px] z-20 mt-12 lg:mt-0 px-6 lg:px-0 max-w-full lg:max-w-[841px]">
-          <h2
-            className={`${serif} text-[#EFEFF0] text-[64px] sm:text-[110px] md:text-[170px] lg:text-[260px] xl:text-[288px] leading-[0.95] font-normal`}
-            style={{ mixBlendMode: "difference" }}
-          >
-            Quem
-            <br />
-            somos
-          </h2>
-          <p
-            className="text-[#d3d2d1] text-[24px] md:text-[36px] lg:text-[48px] leading-[1.05] mt-12 lg:mt-[80px] max-w-[323px]"
-            style={{ mixBlendMode: "difference" }}
-          >
+            {/* Big "Quem somos" + subtitle */}
+            <div className="relative z-20 px-2 lg:px-0">
+              <h2
+                className={`${serif} text-white text-[56px] sm:text-[88px] md:text-[120px] lg:text-[140px] xl:text-[160px] leading-[0.92] font-normal`}
+              >
+                Quem
+                <br />
+                somos
+              </h2>
+              <p
+                className="text-[#EFEFF0] text-[18px] md:text-[22px] lg:text-[26px] leading-[1.4] mt-8 lg:mt-12 max-w-[420px]"
+              >
             Mais do que música ao vivo.{" "}
-            <span className="font-semibold text-white">
-              Uma experiência construída para o teu momento
-            </span>
-            .
-          </p>
+                <span className="font-semibold text-white">
+                  Uma experiência construída para o teu momento
+                </span>
+                .
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -185,7 +185,7 @@ export default function WessexPage() {
             <h3
               className={`${serif} italic text-[#FCFCFC] text-[24px] sm:text-[30px] md:text-[36px] lg:text-[42px] leading-[1.2] mb-8 lg:mb-12`}
             >
-              É com gosto que já participamos em:
+              É com gosto que proporcionamos:
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-[60px]">
               {[
