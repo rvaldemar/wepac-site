@@ -12,16 +12,16 @@ export default function WessexPage() {
   return (
     <div className="bg-black text-white min-h-screen overflow-x-hidden">
       {/* HEADER */}
-      <header className="absolute top-0 left-0 right-0 z-50 h-[80px] lg:h-[103px] bg-gradient-to-b from-black/70 via-black/40 to-transparent">
-        <div className="h-full px-6 lg:px-[60px] xl:px-[120px] flex items-center justify-between">
+      <header className="absolute top-0 left-0 right-0 z-50 h-[88px] lg:h-[120px]">
+        <div className="h-full px-6 lg:px-12 xl:px-[80px] flex items-center justify-between">
           <Link href="/wessex" className="flex items-center text-white">
             <img
               src="/images/wessex/logo/main-white.png"
               alt="Wessex"
-              className="h-9 sm:h-11 lg:h-14 w-auto"
+              className="h-10 sm:h-12 lg:h-[60px] w-auto"
             />
           </Link>
-          <nav className="hidden lg:flex items-center gap-[28px] xl:gap-[60px] text-[14px] xl:text-[18px] font-medium">
+          <nav className="hidden lg:flex items-center gap-[40px] xl:gap-[80px] text-[16px] xl:text-[20px] font-medium tracking-wider text-white">
             <a href="#quem-somos" className="hover:text-[#B8A042] transition">
               QUEM SOMOS
             </a>
