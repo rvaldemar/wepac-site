@@ -413,9 +413,9 @@ export default function WessexPage() {
       {/* CTA Final */}
       <section id="cta" className="bg-black py-16 lg:py-32">
         <div className="max-w-[1280px] mx-auto px-6 lg:px-16">
-          <div className="bg-[#2c2d2e] relative grid lg:grid-cols-[400px_1fr] items-center gap-8 lg:gap-16 px-6 sm:px-10 lg:pl-0 lg:pr-16 lg:py-12 py-10">
+          <div className="bg-[#2c2d2e] relative grid lg:grid-cols-[440px_1fr] items-center gap-8 lg:gap-16 px-6 sm:px-10 lg:pl-0 lg:pr-16 lg:py-16 py-10 lg:min-h-[480px]">
             {/* Image overflows box top+bottom (matches Figma) */}
-            <div className="relative w-full max-w-[360px] mx-auto lg:mx-0 lg:ml-12 aspect-[3/4] lg:-mt-16 lg:-mb-16 lg:max-w-none lg:w-[360px] lg:h-[540px]">
+            <div className="relative w-full max-w-[400px] mx-auto lg:mx-0 lg:ml-16 aspect-[3/4] lg:-mt-24 lg:-mb-24 lg:max-w-none lg:w-[400px] lg:h-[640px]">
               <img
                 src="/images/wessex/cta.jpg"
                 alt=""
