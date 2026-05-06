@@ -170,7 +170,16 @@ export function PricingCalculator() {
             </p>
           )}
           <p className="mt-4 text-xs text-wepac-white/30">
-            Eventos fora de Carcavelos/Lisboa sujeitos a taxa de deslocação (custos Michelin + estadia se aplicável).
+            Eventos fora de Lisboa: taxa de deslocação calculada via{" "}
+            <a
+              href="https://www.viamichelin.pt/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-wepac-white/60"
+            >
+              viamichelin.pt
+            </a>
+            {" "}(combustível + portagens + estadia se aplicável).
           </p>
 
           <Link

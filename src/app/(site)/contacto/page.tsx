@@ -90,7 +90,51 @@ function ContactoContent() {
                       Email
                     </p>
                     <p className="mt-1 text-lg text-wepac-white">
-                      info@wepac.pt
+                      <a href="mailto:info@wepac.pt" className="hover:opacity-70 transition">
+                        info@wepac.pt
+                      </a>
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold uppercase tracking-wider text-wepac-white/40">
+                      Telefones
+                    </p>
+                    <p className="mt-1 text-lg text-wepac-white">
+                      Jotta Pê —{" "}
+                      <a href="tel:+351933515995" className="hover:opacity-70 transition">
+                        +351 933 515 995
+                      </a>
+                    </p>
+                    <p className="mt-1 text-lg text-wepac-white">
+                      Gabriela Leite —{" "}
+                      <a href="tel:+351963480535" className="hover:opacity-70 transition">
+                        +351 963 480 535
+                      </a>
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold uppercase tracking-wider text-wepac-white/40">
+                      Instagram
+                    </p>
+                    <p className="mt-1 text-lg text-wepac-white">
+                      <a
+                        href="https://www.instagram.com/wepac.oficial/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:opacity-70 transition"
+                      >
+                        @wepac.oficial
+                      </a>
+                    </p>
+                    <p className="mt-1 text-lg text-wepac-white">
+                      <a
+                        href="https://www.instagram.com/wessex.pt/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:opacity-70 transition"
+                      >
+                        @wessex.pt
+                      </a>
                     </p>
                   </div>
                   <div>
