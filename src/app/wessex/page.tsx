@@ -279,24 +279,24 @@ export default function WessexPage() {
             <div className="space-y-6 lg:space-y-7">
               {[
                 {
-                  title: "Música sob medida:",
+                  title: "Música Sob Medida:",
                   text: "Nenhuma performance é igual à anterior. O repertório, o formato e a intensidade são pensados especificamente para o teu evento, o teu espaço e a emoção que queres criar.",
                 },
                 {
-                  title: "Músicos profissionais",
+                  title: "Músicos Profissionais",
                   text: "Formação clássica, experiência em eventos premium e capacidade de adaptar qualquer género musical — do clássico ao contemporâneo com elegância e precisão.",
                 },
                 {
-                  title: "Flexibilidade de formatos",
+                  title: "Flexibilidade de Formatos",
                   text: "Solo, duo, trio ou quarteto com ou sem voz. Adaptamos o ensemble ao teu orçamento, ao espaço disponível e ao momento do evento onde queremos causar mais impacto.",
                 },
                 {
-                  title: "História e impacto musical",
+                  title: "História e Impacto Musical",
                   text: "A nossa missão não é tocar bem é fazer as pessoas sentir. Cada nota é colocada com intenção. O objectivo é sempre o mesmo: criar o momento que todos vão querer reviver.",
                 },
               ].map((feature) => (
                 <div key={feature.title} className="space-y-2">
-                  <h3 className="capitalize text-white text-[18px] sm:text-[20px] lg:text-[24px] leading-[1.2] font-normal">
+                  <h3 className="text-white text-[18px] sm:text-[20px] lg:text-[24px] leading-[1.2] font-normal">
                     {feature.title}
                   </h3>
                   <p className="text-[#EFEFF0] text-[13px] sm:text-[14px] lg:text-[15px] leading-[1.55]">
