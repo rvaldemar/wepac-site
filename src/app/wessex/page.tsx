@@ -66,7 +66,7 @@ export default function WessexPage() {
               href="/servicos/orcamento"
               className="flex items-center justify-center bg-[#B8A042] text-black font-medium text-[16px] lg:text-[18px] w-full sm:w-[260px] h-[52px] lg:h-[56px] rounded-[12px] hover:bg-[#c9b04f] transition"
             >
-              Simula
+              Simular orçamento
             </Link>
             <Link
               href="/contacto"
@@ -398,7 +398,7 @@ export default function WessexPage() {
                 href="/servicos/orcamento"
                 className="inline-flex items-center justify-center bg-[#B8A042] text-black font-medium text-[16px] lg:text-[18px] w-full sm:w-[260px] h-[52px] lg:h-[56px] rounded-[12px] hover:bg-[#c9b04f] transition"
               >
-                Reserva a tua data
+                Simular orçamento
               </Link>
             </div>
           </div>
