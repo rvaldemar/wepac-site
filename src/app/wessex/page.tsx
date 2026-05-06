@@ -123,13 +123,13 @@ export default function WessexPage() {
           </div>
         </div>
 
-        {/* Desktop dramatic absolute — all positions in % of parent for consistency */}
+        {/* Desktop dramatic absolute */}
         <div className="hidden lg:block max-w-[1400px] mx-auto h-full relative px-16">
-          {/* Dark rectangle — behind image right + subtitle */}
-          <div className="absolute left-[28%] top-[14%] w-[55%] h-[78%] bg-[#2c2d2e]">
-            {/* Subtitle in available gray area (right of image) */}
-            <div className="absolute left-[44%] top-0 right-0 bottom-0 flex items-center justify-center">
-              <p className="text-[#9ca0a3] text-[clamp(20px,1.6vw,28px)] leading-[1.3] font-light max-w-[280px]">
+          {/* Dark rectangle — small, behind right edge of image + subtitle */}
+          <div className="absolute left-[30vw] top-[16vh] w-[35vw] h-[70vh] bg-[#2c2d2e]">
+            {/* Subtitle in available gray area (right of image), equal margins all sides */}
+            <div className="absolute left-[33%] top-0 right-0 bottom-0 flex items-center justify-center">
+              <p className="text-[#9ca0a3] text-[30px] leading-[1.3] font-light max-w-[280px]">
                 Mais do que música ao vivo.{" "}
                 <span className="font-bold text-white">
                   Uma experiência construída para o teu momento.
@@ -139,7 +139,7 @@ export default function WessexPage() {
           </div>
 
           {/* Image — overlaps left edge of dark box */}
-          <div className="absolute left-[10%] top-[18%] w-[28%] aspect-[448/750]">
+          <div className="absolute left-[18vw] top-[20vh] w-[24%] aspect-[448/750]">
             <img
               src="/images/wessex/quem-somos.jpg"
               alt="Wessex performance"
@@ -147,10 +147,10 @@ export default function WessexPage() {
             />
           </div>
 
-          {/* Big "Quem somos" text — top-right above dark box */}
+          {/* Big "Quem somos" text — partially overlaps top-right of dark box */}
           <h2
-            className={`${serif} absolute right-[8%] top-[5%] text-[#d3d2d1] font-normal leading-[0.92] text-right`}
-            style={{ fontSize: "clamp(80px, 8vw, 130px)" }}
+            className={`${serif} absolute left-[50%] top-[5vh] text-[#d3d2d1] font-normal leading-[0.92]`}
+            style={{ fontSize: "clamp(110px, 11vw, 160px)" }}
           >
             Quem<br />somos
           </h2>
