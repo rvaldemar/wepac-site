@@ -98,29 +98,37 @@ export default function WessexPage() {
         id="quem-somos"
         className="relative bg-black overflow-hidden py-16 lg:py-0 lg:h-[900px]"
       >
-        {/* Mobile/Tablet stacked */}
-        <div className="lg:hidden max-w-[1200px] mx-auto px-6 md:px-10">
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div className="relative aspect-[844/1500] max-w-[420px] mx-auto md:mx-0">
-              <img
-                src="/images/wessex/quem-somos.jpg"
-                alt="Wessex performance"
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            </div>
-            <div className="space-y-6">
-              <h2 className={`${serif} text-white text-[44px] sm:text-[56px] md:text-[68px] leading-[0.95] font-normal`}>
-                Quem<br />somos
-              </h2>
-              <p className="text-[#EFEFF0] text-[16px] md:text-[18px] leading-[1.5] max-w-[400px]">
+        {/* Mobile/Tablet — same composition as desktop, scaled */}
+        <div className="lg:hidden relative w-full" style={{ height: "115vw" }}>
+          {/* Dark rectangle */}
+          <div className="absolute left-[30vw] top-[10vw] w-[60vw] h-[90vw] bg-[#2c2d2e]">
+            {/* Subtitle in gray area below image */}
+            <div className="absolute left-[40%] right-[6%] bottom-[6%]">
+              <p className="text-[#9ca0a3] font-light" style={{ fontSize: "3.2vw", lineHeight: 1.3 }}>
                 Mais do que música ao vivo.{" "}
-                <span className="font-semibold text-white">
-                  Uma experiência construída para o teu momento
+                <span className="font-bold text-white">
+                  Uma experiência construída para o teu momento.
                 </span>
-                .
               </p>
             </div>
           </div>
+
+          {/* Image — overlaps left edge of dark box */}
+          <div className="absolute left-[8vw] top-[22vw] w-[34vw] aspect-[448/750]">
+            <img
+              src="/images/wessex/quem-somos.jpg"
+              alt="Wessex performance"
+              className="absolute inset-0 w-full h-full object-cover object-center"
+            />
+          </div>
+
+          {/* Big "Quem somos" text */}
+          <h2
+            className={`${serif} absolute left-[42vw] top-[2vw] text-[#d3d2d1] font-normal leading-[0.92]`}
+            style={{ fontSize: "16vw" }}
+          >
+            Quem<br />somos
+          </h2>
         </div>
 
         {/* Desktop dramatic absolute */}
@@ -129,7 +137,7 @@ export default function WessexPage() {
           <div className="absolute left-[30vw] top-[16vh] w-[35vw] h-[70vh] bg-[#2c2d2e]">
             {/* Subtitle in available gray area (right of image), equal margins all sides */}
             <div className="absolute left-[33%] top-0 right-0 bottom-0 flex items-center justify-center">
-              <p className="text-[#9ca0a3] font-light" style={{ fontSize: "2.08vw", lineHeight: 1.3, maxWidth: "19.4vw" }}>
+              <p className="text-[#9ca0a3] text-[30px] leading-[1.3] font-light max-w-[280px]">
                 Mais do que música ao vivo.{" "}
                 <span className="font-bold text-white">
                   Uma experiência construída para o teu momento.
@@ -150,7 +158,7 @@ export default function WessexPage() {
           {/* Big "Quem somos" text — partially overlaps top-right of dark box */}
           <h2
             className={`${serif} absolute left-[50%] top-[5vh] text-[#d3d2d1] font-normal leading-[0.92]`}
-            style={{ fontSize: "11vw" }}
+            style={{ fontSize: "clamp(110px, 11vw, 160px)" }}
           >
             Quem<br />somos
           </h2>
