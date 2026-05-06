@@ -124,12 +124,12 @@ export default function WessexPage() {
         </div>
 
         {/* Desktop dramatic absolute */}
-        <div className="hidden lg:block max-w-[1600px] mx-auto h-full relative px-16">
-          {/* Dark rectangle — small, only behind image right edge + subtitle */}
-          <div className="absolute left-[26%] top-[140px] w-[24%] h-[640px] bg-[#2c2d2e]" />
+        <div className="hidden lg:block max-w-[1400px] mx-auto h-full relative px-16">
+          {/* Dark rectangle — small, behind right edge of image + subtitle */}
+          <div className="absolute left-[28%] top-[140px] w-[26%] h-[660px] bg-[#2c2d2e]" />
 
           {/* Image — overlaps left edge of dark box */}
-          <div className="absolute left-[14%] top-[120px] w-[26%] aspect-[448/750]">
+          <div className="absolute left-[12%] top-[120px] w-[24%] aspect-[448/750]">
             <img
               src="/images/wessex/quem-somos.jpg"
               alt="Wessex performance"
@@ -137,17 +137,17 @@ export default function WessexPage() {
             />
           </div>
 
-          {/* Big "Quem somos" text — over black background, right of image */}
+          {/* Big "Quem somos" text — partially overlaps top-right of dark box */}
           <h2
-            className={`${serif} absolute right-[80px] top-[40px] text-[#d3d2d1] font-normal text-right leading-[0.95]`}
-            style={{ fontSize: "clamp(140px, 13vw, 200px)" }}
+            className={`${serif} absolute left-[44%] top-[80px] text-[#d3d2d1] font-normal leading-[0.92]`}
+            style={{ fontSize: "clamp(110px, 11vw, 160px)" }}
           >
             Quem<br />somos
           </h2>
 
-          {/* Subtitle — inside dark box (right side, below image) */}
+          {/* Subtitle — inside dark box */}
           <p
-            className="absolute left-[42%] top-[600px] w-[200px] text-white text-[16px] xl:text-[18px] leading-[1.4] font-light"
+            className="absolute left-[44%] top-[640px] w-[260px] text-white text-[18px] leading-[1.35] font-light"
           >
             Mais do que música ao vivo.{" "}
             <span className="font-semibold">
