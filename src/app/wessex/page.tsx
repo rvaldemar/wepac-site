@@ -31,7 +31,7 @@ export default function WessexPage() {
       </header>
 
       {/* HERO */}
-      <section className="relative w-full h-[640px] sm:h-[760px] lg:h-[820px] overflow-hidden">
+      <section className="relative w-full h-screen min-h-[640px] overflow-hidden flex flex-col">
         <div className="absolute inset-0">
           <img
             src="/images/wessex/hero.jpg"
@@ -46,7 +46,7 @@ export default function WessexPage() {
           />
         </div>
 
-        <div className="relative z-10 max-w-[1600px] mx-auto h-full px-6 md:px-10 lg:px-16 xl:px-24 pt-[140px] lg:pt-[200px]">
+        <div className="relative z-10 flex-1 max-w-[1600px] w-full mx-auto px-6 md:px-10 lg:px-16 xl:px-24 pt-[140px] lg:pt-[200px]">
           <p className={`${serif} font-bold text-white text-[28px] sm:text-[40px] md:text-[52px] lg:text-[60px] leading-[1.15] max-w-[640px] mb-6 lg:mb-10`}>
             A música que transforma celebração em{" "}
             <em className="italic font-normal">memória inesquecível</em>.
@@ -76,20 +76,20 @@ export default function WessexPage() {
             </Link>
           </div>
         </div>
-      </section>
 
-      {/* TRUST BAR */}
-      <section className="bg-[#540000]">
-        <div className="max-w-[1600px] mx-auto h-auto md:h-[88px] flex flex-col md:flex-row items-center justify-around gap-2 md:gap-8 px-6 md:px-10 py-5 md:py-0 text-center">
-          <p className="font-light text-[12px] md:text-[16px] lg:text-[22px] text-white uppercase">
-            Resposta em menos de 24h
-          </p>
-          <p className="font-light text-[12px] md:text-[16px] lg:text-[22px] text-white uppercase">
-            Sem compromisso inicial
-          </p>
-          <p className="font-light text-[12px] md:text-[16px] lg:text-[22px] text-white uppercase">
-            Proposta personalizada e gratuita
-          </p>
+        {/* TRUST BAR — at bottom of hero viewport */}
+        <div className="relative z-10 bg-[#540000] flex-shrink-0">
+          <div className="max-w-[1600px] mx-auto h-auto md:h-[88px] flex flex-col md:flex-row items-center justify-around gap-2 md:gap-8 px-6 md:px-10 py-5 md:py-0 text-center">
+            <p className="font-light text-[12px] md:text-[16px] lg:text-[22px] text-white uppercase">
+              Resposta em menos de 24h
+            </p>
+            <p className="font-light text-[12px] md:text-[16px] lg:text-[22px] text-white uppercase">
+              Sem compromisso inicial
+            </p>
+            <p className="font-light text-[12px] md:text-[16px] lg:text-[22px] text-white uppercase">
+              Proposta personalizada e gratuita
+            </p>
+          </div>
         </div>
       </section>
 
@@ -126,7 +126,14 @@ export default function WessexPage() {
         {/* Desktop dramatic absolute */}
         <div className="hidden lg:block max-w-[1400px] mx-auto h-full relative px-16">
           {/* Dark rectangle — small, behind right edge of image + subtitle */}
-          <div className="absolute left-[28%] top-[10vh] w-[35vw] h-[660px] bg-[#2c2d2e]" />
+          <div className="absolute left-[28%] top-[10vh] w-[35vw] h-[660px] bg-[#2c2d2e] flex items-center justify-center">
+            <p className="text-white text-[18px] xl:text-[20px] leading-[1.4] font-light text-center max-w-[260px] mt-auto mb-12 ml-auto mr-12">
+              Mais do que música ao vivo.{" "}
+              <span className="font-bold">
+                Uma experiência construída para o teu momento.
+              </span>
+            </p>
+          </div>
 
           {/* Image — overlaps left edge of dark box */}
           <div className="absolute left-[12%] top-[120px] w-[24%] aspect-[448/750]">
@@ -145,16 +152,6 @@ export default function WessexPage() {
             Quem<br />somos
           </h2>
 
-          {/* Subtitle — inside dark box */}
-          <p
-            className="absolute left-[44%] top-[640px] w-[260px] text-white text-[18px] leading-[1.35] font-light"
-          >
-            Mais do que música ao vivo.{" "}
-            <span className="font-semibold">
-              Uma experiência construída para o teu momento
-            </span>
-            .
-          </p>
         </div>
       </section>
 
