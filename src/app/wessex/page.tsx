@@ -306,7 +306,7 @@ export default function WessexPage() {
               ))}
             </div>
 
-            <div className="relative w-full max-w-[360px] mx-auto lg:mx-0 aspect-[360/440]">
+            <div className="relative w-full max-w-[360px] mx-auto lg:mx-0 aspect-[9/16]">
               <img
                 src="/images/wessex/features.jpg"
                 alt=""
