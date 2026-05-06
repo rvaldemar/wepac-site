@@ -132,7 +132,7 @@ export default function WessexPage() {
         </div>
 
         {/* Desktop dramatic absolute */}
-        <div className="hidden lg:block max-w-[1400px] mx-auto h-full relative px-16">
+        <div className="hidden lg:block w-full h-full relative">
           {/* Dark rectangle — small, behind right edge of image + subtitle */}
           <div className="absolute left-[30vw] top-[16vh] w-[35vw] h-[70vh] bg-[#2c2d2e]">
             {/* Subtitle in available gray area (right of image), equal margins all sides */}
@@ -157,8 +157,8 @@ export default function WessexPage() {
 
           {/* Big "Quem somos" text — partially overlaps top-right of dark box */}
           <h2
-            className={`${serif} absolute left-[50%] top-[5vh] text-[#d3d2d1] font-normal leading-[0.92]`}
-            style={{ fontSize: "clamp(110px, 11vw, 160px)" }}
+            className={`${serif} absolute text-[#d3d2d1] font-normal leading-[0.92]`}
+            style={{ fontSize: "11vw", left: "48.6vw", top: "5vh" }}
           >
             Quem<br />somos
           </h2>
