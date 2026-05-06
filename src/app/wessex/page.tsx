@@ -126,13 +126,16 @@ export default function WessexPage() {
         {/* Desktop dramatic absolute */}
         <div className="hidden lg:block max-w-[1400px] mx-auto h-full relative px-16">
           {/* Dark rectangle — small, behind right edge of image + subtitle */}
-          <div className="absolute left-[28%] top-[10vh] w-[35vw] h-[660px] bg-[#2c2d2e] flex items-center justify-center">
-            <p className="text-white text-[18px] xl:text-[20px] leading-[1.4] font-light text-center max-w-[260px] mt-auto mb-12 ml-auto mr-12">
-              Mais do que música ao vivo.{" "}
-              <span className="font-bold">
-                Uma experiência construída para o teu momento.
-              </span>
-            </p>
+          <div className="absolute left-[28%] top-[10vh] w-[35vw] h-[660px] bg-[#2c2d2e]">
+            {/* Subtitle centered in the visible right portion of the dark rectangle (right of image) */}
+            <div className="absolute left-[33%] top-0 right-0 bottom-0 flex items-center justify-center">
+              <p className="text-white text-[26px] leading-[1.35] font-light text-center max-w-[300px]">
+                Mais do que música ao vivo.{" "}
+                <span className="font-bold">
+                  Uma experiência construída para o teu momento.
+                </span>
+              </p>
+            </div>
           </div>
 
           {/* Image — overlaps left edge of dark box */}
