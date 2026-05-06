@@ -94,11 +94,17 @@ export function PricingCalculator() {
             <option value="" className="bg-wepac-black">
               Seleciona o tipo de serviço
             </option>
-            {availableServices.map((st) => (
-              <option key={st} value={st} className="bg-wepac-black">
-                {SERVICE_TYPE_LABELS[st]}
-              </option>
-            ))}
+            {availableServices.map((st) => {
+              const label =
+                selected.category === "band" && st === "cocktails"
+                  ? "Cocktails / Copo d'Água (2h)"
+                  : SERVICE_TYPE_LABELS[st];
+              return (
+                <option key={st} value={st} className="bg-wepac-black">
+                  {label}
+                </option>
+              );
+            })}
           </select>
           {selected.category === "band" && (
             <p className="mt-2 text-sm text-wepac-white/40">
@@ -168,12 +174,14 @@ export function PricingCalculator() {
           </p>
 
           <Link
-            href={`/contacto?subject=servicos&message=${encodeURIComponent(
-              `Orçamento Wessex: ${selected.name}${selected.musicians ? ` (${selected.musicians} músicos)` : ""} — ${SERVICE_TYPE_LABELS[effectiveService]} — ${totalPrice}€`
+            href={`/contacto?subject=servicos&ensemble=${encodeURIComponent(
+              `${selected.name}${selected.musicians ? ` (${selected.musicians} músicos)` : ""}`
+            )}&service=${encodeURIComponent(SERVICE_TYPE_LABELS[effectiveService])}&som=${addSom ? "1" : "0"}&total=${totalPrice}&message=${encodeURIComponent(
+              `Encomenda Wessex:\n• Ensemble: ${selected.name}${selected.musicians ? ` (${selected.musicians} músicos)` : ""}\n• Serviço: ${SERVICE_TYPE_LABELS[effectiveService]}${addSom ? "\n• + Equipa de Som (200€)" : ""}\n• Total estimado: ${totalPrice}€\n\n`
             )}`}
             className="mt-6 inline-block bg-wepac-white px-8 py-3 font-barlow text-sm font-bold uppercase tracking-wider text-wepac-black transition-opacity hover:opacity-90"
           >
-            Pedir orçamento formal
+            Encomendar
           </Link>
         </div>
       )}

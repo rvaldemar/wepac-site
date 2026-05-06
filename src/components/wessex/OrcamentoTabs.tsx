@@ -37,7 +37,7 @@ export function OrcamentoTabs() {
               : "text-wepac-white/40 hover:text-wepac-white/70"
           }`}
         >
-          Assistente
+          Assistente IA
         </button>
       </div>
 

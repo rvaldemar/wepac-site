@@ -1,12 +1,39 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { FadeIn } from "@/components/FadeIn";
 
-export default function ContactoPage() {
+function ContactoContent() {
+  const params = useSearchParams();
+  const initialSubject = params.get("subject") ?? "geral";
+  const initialMessage = params.get("message") ?? "";
+  const ensemble = params.get("ensemble") ?? "";
+  const service = params.get("service") ?? "";
+  const total = params.get("total") ?? "";
+
   const [submitted, setSubmitted] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(false);
+  const [subject, setSubject] = useState(initialSubject);
+  const [message, setMessage] = useState(initialMessage);
+
+  useEffect(() => {
+    setSubject(initialSubject);
+    setMessage(initialMessage);
+  }, [initialSubject, initialMessage]);
+
+  // Auto-scroll to form when arriving with prefilled data
+  useEffect(() => {
+    if (ensemble || initialMessage) {
+      const el = document.getElementById("contact-form");
+      if (el) {
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100);
+      }
+    }
+  }, [ensemble, initialMessage]);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -80,7 +107,7 @@ export default function ContactoPage() {
 
             {/* Form */}
             <FadeIn delay={0.15}>
-              <div>
+              <div id="contact-form" className="scroll-mt-24">
                 <h2 className="font-barlow text-2xl font-bold text-wepac-white">
                   Envie uma mensagem
                 </h2>
@@ -96,9 +123,26 @@ export default function ContactoPage() {
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-                    <input type="hidden" name="_subject" value="Nova mensagem do site wepac.pt" />
+                    <input
+                      type="hidden"
+                      name="_subject"
+                      value={
+                        subject === "servicos" && ensemble
+                          ? `Encomenda Wessex: ${ensemble} — ${total}€`
+                          : "Nova mensagem do site wepac.pt"
+                      }
+                    />
                     <input type="hidden" name="_template" value="table" />
                     <input type="text" name="_honey" className="hidden" />
+                    {ensemble && (
+                      <input type="hidden" name="ensemble" value={ensemble} />
+                    )}
+                    {service && (
+                      <input type="hidden" name="service" value={service} />
+                    )}
+                    {total && (
+                      <input type="hidden" name="total" value={`${total}€`} />
+                    )}
                     <div>
                       <label
                         htmlFor="name"
@@ -139,6 +183,8 @@ export default function ContactoPage() {
                       <select
                         id="subject"
                         name="subject"
+                        value={subject}
+                        onChange={(e) => setSubject(e.target.value)}
                         className="mt-2 w-full border-b border-wepac-white/20 bg-transparent py-3 text-wepac-white outline-none transition-colors focus:border-wepac-white"
                       >
                         <option value="geral" className="bg-wepac-black">
@@ -170,6 +216,8 @@ export default function ContactoPage() {
                         name="message"
                         rows={5}
                         required
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
                         className="mt-2 w-full border-b border-wepac-white/20 bg-transparent py-3 text-wepac-white outline-none transition-colors focus:border-wepac-white resize-none"
                       />
                     </div>
@@ -193,5 +241,13 @@ export default function ContactoPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+export default function ContactoPage() {
+  return (
+    <Suspense fallback={null}>
+      <ContactoContent />
+    </Suspense>
   );
 }
