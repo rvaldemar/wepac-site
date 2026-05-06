@@ -72,7 +72,7 @@ export default function WessexPage() {
               href="/contacto"
               className="flex items-center justify-center border border-white text-white font-medium text-[16px] lg:text-[18px] w-full sm:w-[260px] h-[52px] lg:h-[56px] rounded-[12px] hover:bg-white hover:text-black transition"
             >
-              Fala connoscos
+              Fala connosco
             </Link>
           </div>
         </div>
