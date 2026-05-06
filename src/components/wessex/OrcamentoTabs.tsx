@@ -10,11 +10,8 @@ export function OrcamentoTabs() {
   const [activeTab, setActiveTab] = useState<Tab>("simulador");
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (activeTab === "assistente" && containerRef.current) {
-      containerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, [activeTab]);
+  // No auto-scroll; user controls scroll position
+  // (Removed scrollIntoView to prevent unwanted page scroll on tab change.)
 
   return (
     <div ref={containerRef} className="scroll-mt-20">

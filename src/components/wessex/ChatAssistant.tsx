@@ -20,10 +20,14 @@ export function ChatAssistant() {
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [consentGiven, setConsentGiven] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
+  // Scroll only inside the messages container (not the page)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = messagesContainerRef.current;
+    if (el) {
+      el.scrollTop = el.scrollHeight;
+    }
   }, [messages]);
 
   async function handleSend() {
@@ -107,7 +111,7 @@ export function ChatAssistant() {
       )}
 
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-6 space-y-4">
         {messages.map((msg, i) => (
           <div
             key={i}
@@ -136,7 +140,6 @@ export function ChatAssistant() {
             </div>
           </div>
         ))}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Input area */}
