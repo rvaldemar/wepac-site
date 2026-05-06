@@ -126,7 +126,7 @@ export default function WessexPage() {
         {/* Desktop dramatic absolute */}
         <div className="hidden lg:block max-w-[1400px] mx-auto h-full relative px-16">
           {/* Dark rectangle — small, behind right edge of image + subtitle */}
-          <div className="absolute left-[28%] top-[140px] w-[26%] h-[660px] bg-[#2c2d2e]" />
+          <div className="absolute left-[28%] top-[10vh] w-[35vw] h-[660px] bg-[#2c2d2e]" />
 
           {/* Image — overlaps left edge of dark box */}
           <div className="absolute left-[12%] top-[120px] w-[24%] aspect-[448/750]">
