@@ -31,7 +31,7 @@ export default function WessexPage() {
       </header>
 
       {/* HERO */}
-      <section className="relative w-full h-[640px] sm:h-[720px] lg:h-screen lg:min-h-[700px] overflow-hidden flex flex-col">
+      <section className="relative w-full min-h-[640px] sm:min-h-[720px] lg:min-h-screen overflow-hidden flex flex-col">
         <div className="absolute inset-0">
           <img
             src="/images/wessex/hero.jpg"
@@ -46,7 +46,7 @@ export default function WessexPage() {
           />
         </div>
 
-        <div className="relative z-10 flex-1 max-w-[1600px] w-full mx-auto px-6 md:px-10 lg:px-16 xl:px-24 pt-[140px] lg:pt-[200px]">
+        <div className="relative z-10 flex-1 max-w-[1600px] w-full mx-auto px-6 md:px-10 lg:px-16 xl:px-24 pt-[140px] lg:pt-[160px] xl:pt-[200px] pb-10">
           <p className={`${serif} font-bold text-white text-[26px] sm:text-[36px] md:text-[48px] lg:text-[60px] leading-[1.15] max-w-full lg:max-w-[640px] mb-5 lg:mb-10 break-words`}>
             A música que transforma celebração em{" "}
             <em className="italic font-normal">memória inesquecível</em>.
