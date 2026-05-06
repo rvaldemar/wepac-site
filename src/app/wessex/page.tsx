@@ -66,14 +66,14 @@ export default function WessexPage() {
               href="/servicos/orcamento"
               className="flex items-center justify-center bg-[#B8A042] text-black font-medium text-[16px] lg:text-[18px] w-full sm:w-[260px] h-[52px] lg:h-[56px] rounded-[12px] hover:bg-[#c9b04f] transition"
             >
-              Reserva a tua data
+              Simula
             </Link>
-            <a
-              href="#depoimentos"
+            <Link
+              href="/contacto"
               className="flex items-center justify-center border border-white text-white font-medium text-[16px] lg:text-[18px] w-full sm:w-[260px] h-[52px] lg:h-[56px] rounded-[12px] hover:bg-white hover:text-black transition"
             >
-              Ouve a nossa música
-            </a>
+              Fala connoscos
+            </Link>
           </div>
         </div>
       </section>
