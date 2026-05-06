@@ -137,7 +137,7 @@ export default function WessexPage() {
           <div className="absolute left-[30vw] top-[16vh] w-[35vw] h-[70vh] bg-[#2c2d2e]">
             {/* Subtitle in available gray area (right of image), equal margins all sides */}
             <div className="absolute left-[33%] top-[12%] right-0 bottom-0 flex items-center justify-center">
-              <p className="text-[#9ca0a3] text-[30px] leading-[1.3] font-light max-w-[280px]">
+              <p className="text-[#9ca0a3] font-light" style={{ fontSize: "2.08vw", lineHeight: 1.3, maxWidth: "19.4vw" }}>
                 Mais do que música ao vivo.{" "}
                 <span className="font-bold text-white">
                   Uma experiência construída para o teu momento.
