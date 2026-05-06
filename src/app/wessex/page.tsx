@@ -127,9 +127,9 @@ export default function WessexPage() {
         <div className="hidden lg:block max-w-[1400px] mx-auto h-full relative px-16">
           {/* Dark rectangle — small, behind right edge of image + subtitle */}
           <div className="absolute left-[28%] top-[10vh] w-[35vw] h-[660px] bg-[#2c2d2e]">
-            {/* Subtitle centered in the visible right portion of the dark rectangle (right of image) */}
+            {/* Subtitle in available gray area (right of image), equal margins all sides */}
             <div className="absolute left-[33%] top-0 right-0 bottom-0 flex items-center justify-center">
-              <p className="text-white text-[26px] leading-[1.35] font-light text-center max-w-[300px]">
+              <p className="text-white text-[30px] leading-[1.3] font-light max-w-[280px]">
                 Mais do que música ao vivo.{" "}
                 <span className="font-bold">
                   Uma experiência construída para o teu momento.
