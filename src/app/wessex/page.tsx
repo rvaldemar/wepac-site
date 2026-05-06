@@ -125,8 +125,8 @@ export default function WessexPage() {
 
         {/* Desktop dramatic absolute */}
         <div className="hidden lg:block max-w-[1600px] mx-auto h-full relative px-16">
-          {/* Dark rectangle background — right side */}
-          <div className="absolute right-[64px] top-[80px] bottom-[60px] w-[58%] bg-[#2c2d2e]" />
+          {/* Dark rectangle — small, only behind image right edge + subtitle */}
+          <div className="absolute left-[26%] top-[140px] w-[24%] h-[640px] bg-[#2c2d2e]" />
 
           {/* Image — overlaps left edge of dark box */}
           <div className="absolute left-[14%] top-[120px] w-[26%] aspect-[448/750]">
@@ -137,7 +137,7 @@ export default function WessexPage() {
             />
           </div>
 
-          {/* Big "Quem somos" text */}
+          {/* Big "Quem somos" text — over black background, right of image */}
           <h2
             className={`${serif} absolute right-[80px] top-[40px] text-[#d3d2d1] font-normal text-right leading-[0.95]`}
             style={{ fontSize: "clamp(140px, 13vw, 200px)" }}
@@ -145,12 +145,12 @@ export default function WessexPage() {
             Quem<br />somos
           </h2>
 
-          {/* Subtitle */}
+          {/* Subtitle — inside dark box (right side, below image) */}
           <p
-            className="absolute right-[80px] bottom-[100px] w-[280px] text-[#d3d2d1] text-[26px] xl:text-[30px] leading-[1.15] font-light text-right"
+            className="absolute left-[42%] top-[600px] w-[200px] text-white text-[16px] xl:text-[18px] leading-[1.4] font-light"
           >
             Mais do que música ao vivo.{" "}
-            <span className="font-semibold text-white">
+            <span className="font-semibold">
               Uma experiência construída para o teu momento
             </span>
             .
