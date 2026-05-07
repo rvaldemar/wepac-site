@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { styles } from "../../ui";
 
 type Department = { id: string; name: string };
@@ -32,10 +32,60 @@ type Props = {
   submitLabel: string;
 };
 
-function toLocalDateTimeInput(d: Date | string): string {
-  const date = typeof d === "string" ? new Date(d) : d;
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+type FormState = {
+  title: string;
+  subtitle: string;
+  description: string;
+  departmentId: string;
+  brandId: string;
+  venue: string;
+  address: string;
+  startsAtDate: string;
+  startsAtTime: string;
+  doorsAtDate: string;
+  doorsAtTime: string;
+  durationMinutes: string;
+  capacity: string;
+  coverImage: string;
+  ticketNote: string;
+  status: string;
+};
+
+type Tier = { name: string; price: string; description: string };
+
+const pad = (n: number) => String(n).padStart(2, "0");
+
+function toInputDate(value: Date | string): string {
+  const d = typeof value === "string" ? new Date(value) : value;
+  if (Number.isNaN(d.getTime())) return "";
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function toInputTime(value: Date | string): string {
+  const d = typeof value === "string" ? new Date(value) : value;
+  if (Number.isNaN(d.getTime())) return "";
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function emptyState(departments: Department[]): FormState {
+  return {
+    title: "",
+    subtitle: "",
+    description: "",
+    departmentId: departments[0]?.id ?? "",
+    brandId: "",
+    venue: "",
+    address: "",
+    startsAtDate: "",
+    startsAtTime: "",
+    doorsAtDate: "",
+    doorsAtTime: "",
+    durationMinutes: "",
+    capacity: "",
+    coverImage: "",
+    ticketNote: "",
+    status: "draft",
+  };
 }
 
 export function EventFormClient({
@@ -45,68 +95,106 @@ export function EventFormClient({
   defaults,
   submitLabel,
 }: Props) {
-  const [departmentId, setDepartmentId] = useState<string>(
-    defaults?.departmentId || departments[0]?.id || ""
-  );
+  // Initial state is identical on server and client (empty / first department).
+  // Real values are populated client-side via useEffect to avoid hydration
+  // mismatches caused by locale-dependent date formatting.
+  const [form, setForm] = useState<FormState>(() => emptyState(departments));
+  const [hydrated, setHydrated] = useState(false);
 
-  const filteredBrands = useMemo(
-    () => brands.filter((b) => b.departmentId === departmentId),
-    [brands, departmentId]
-  );
-
-  const [tiers, setTiers] = useState<
-    { name: string; price: string; description: string }[]
-  >(
+  const [tiers, setTiers] = useState<Tier[]>(
     defaults
       ? []
       : [
           { name: "Bilhete", price: "12", description: "" },
-          { name: "Amigo WEPAC", price: "25", description: "Patrono — apoio directo ao programa." },
+          {
+            name: "Amigo WEPAC",
+            price: "25",
+            description: "Patrono — apoio directo ao programa.",
+          },
         ]
   );
 
-  // Datetime inputs are populated client-side after mount to avoid
-  // hydration mismatch: server renders in UTC, browser in local timezone.
-  const startsAtRef = useRef<HTMLInputElement>(null);
-  const doorsAtRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    if (startsAtRef.current && defaults?.startsAt) {
-      startsAtRef.current.value = toLocalDateTimeInput(defaults.startsAt);
+    if (!defaults) {
+      setHydrated(true);
+      return;
     }
-    if (doorsAtRef.current && defaults?.doorsAt) {
-      doorsAtRef.current.value = toLocalDateTimeInput(defaults.doorsAt);
-    }
-  }, [defaults?.startsAt, defaults?.doorsAt]);
+    setForm({
+      title: defaults.title ?? "",
+      subtitle: defaults.subtitle ?? "",
+      description: defaults.description ?? "",
+      departmentId: defaults.departmentId || departments[0]?.id || "",
+      brandId: defaults.brandId ?? "",
+      venue: defaults.venue ?? "",
+      address: defaults.address ?? "",
+      startsAtDate: toInputDate(defaults.startsAt),
+      startsAtTime: toInputTime(defaults.startsAt),
+      doorsAtDate: defaults.doorsAt ? toInputDate(defaults.doorsAt) : "",
+      doorsAtTime: defaults.doorsAt ? toInputTime(defaults.doorsAt) : "",
+      durationMinutes:
+        defaults.durationMinutes != null ? String(defaults.durationMinutes) : "",
+      capacity: defaults.capacity != null ? String(defaults.capacity) : "",
+      coverImage: defaults.coverImage ?? "",
+      ticketNote: defaults.ticketNote ?? "",
+      status: defaults.status || "draft",
+    });
+    setHydrated(true);
+  }, [defaults, departments]);
+
+  const filteredBrands = useMemo(
+    () => brands.filter((b) => b.departmentId === form.departmentId),
+    [brands, form.departmentId]
+  );
+
+  const update = <K extends keyof FormState>(key: K, value: FormState[K]) =>
+    setForm((prev) => ({ ...prev, [key]: value }));
+
+  const startsAtCombined =
+    form.startsAtDate && form.startsAtTime
+      ? `${form.startsAtDate}T${form.startsAtTime}`
+      : "";
+  const doorsAtCombined =
+    form.doorsAtDate && form.doorsAtTime
+      ? `${form.doorsAtDate}T${form.doorsAtTime}`
+      : "";
 
   return (
     <form action={action} style={styles.form}>
       {defaults && <input type="hidden" name="id" value={defaults.id} />}
+      <input type="hidden" name="startsAt" value={startsAtCombined} />
+      <input type="hidden" name="doorsAt" value={doorsAtCombined} />
+
       <label style={styles.label}>
         <span style={styles.labelText}>Título</span>
         <input
           type="text"
           name="title"
           required
-          defaultValue={defaults?.title || ""}
+          value={form.title}
+          onChange={(e) => update("title", e.target.value)}
           style={styles.input}
         />
       </label>
+
       <label style={styles.label}>
         <span style={styles.labelText}>Subtítulo (opcional)</span>
         <input
           type="text"
           name="subtitle"
-          defaultValue={defaults?.subtitle || ""}
+          value={form.subtitle}
+          onChange={(e) => update("subtitle", e.target.value)}
           style={styles.input}
           placeholder="ex: Ananda Roda · vihuela"
         />
       </label>
+
       <label style={styles.label}>
         <span style={styles.labelText}>Descrição</span>
         <textarea
           name="description"
           required
-          defaultValue={defaults?.description || ""}
+          value={form.description}
+          onChange={(e) => update("description", e.target.value)}
           style={styles.textarea}
         />
       </label>
@@ -117,8 +205,11 @@ export function EventFormClient({
           <select
             name="departmentId"
             required
-            value={departmentId}
-            onChange={(e) => setDepartmentId(e.target.value)}
+            value={form.departmentId}
+            onChange={(e) => {
+              update("departmentId", e.target.value);
+              update("brandId", "");
+            }}
             style={styles.select}
           >
             {departments.map((d) => (
@@ -132,7 +223,8 @@ export function EventFormClient({
           <span style={styles.labelText}>Marca (opcional)</span>
           <select
             name="brandId"
-            defaultValue={defaults?.brandId || ""}
+            value={form.brandId}
+            onChange={(e) => update("brandId", e.target.value)}
             style={styles.select}
           >
             <option value="">— Sem marca (usa o departamento)</option>
@@ -152,7 +244,8 @@ export function EventFormClient({
             type="text"
             name="venue"
             required
-            defaultValue={defaults?.venue || ""}
+            value={form.venue}
+            onChange={(e) => update("venue", e.target.value)}
             style={styles.input}
             placeholder="Capela do Hospital de Jesus"
           />
@@ -162,33 +255,64 @@ export function EventFormClient({
           <input
             type="text"
             name="address"
-            defaultValue={defaults?.address || ""}
+            value={form.address}
+            onChange={(e) => update("address", e.target.value)}
             style={styles.input}
           />
         </label>
       </div>
 
-      <div style={styles.grid2}>
-        <label style={styles.label}>
-          <span style={styles.labelText}>Data e hora</span>
-          <input
-            ref={startsAtRef}
-            type="datetime-local"
-            name="startsAt"
-            required
-            style={styles.input}
-          />
-        </label>
-        <label style={styles.label}>
-          <span style={styles.labelText}>Abertura de portas (opcional)</span>
-          <input
-            ref={doorsAtRef}
-            type="datetime-local"
-            name="doorsAt"
-            style={styles.input}
-          />
-        </label>
-      </div>
+      <fieldset style={styles.fieldset}>
+        <legend style={styles.legend}>Início</legend>
+        <div style={styles.grid2}>
+          <label style={styles.label}>
+            <span style={styles.labelText}>Data</span>
+            <input
+              type="date"
+              required
+              value={form.startsAtDate}
+              onChange={(e) => update("startsAtDate", e.target.value)}
+              style={styles.input}
+            />
+          </label>
+          <label style={styles.label}>
+            <span style={styles.labelText}>Hora</span>
+            <input
+              type="time"
+              required
+              step={60}
+              value={form.startsAtTime}
+              onChange={(e) => update("startsAtTime", e.target.value)}
+              style={styles.input}
+            />
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset style={styles.fieldset}>
+        <legend style={styles.legend}>Abertura de portas (opcional)</legend>
+        <div style={styles.grid2}>
+          <label style={styles.label}>
+            <span style={styles.labelText}>Data</span>
+            <input
+              type="date"
+              value={form.doorsAtDate}
+              onChange={(e) => update("doorsAtDate", e.target.value)}
+              style={styles.input}
+            />
+          </label>
+          <label style={styles.label}>
+            <span style={styles.labelText}>Hora</span>
+            <input
+              type="time"
+              step={60}
+              value={form.doorsAtTime}
+              onChange={(e) => update("doorsAtTime", e.target.value)}
+              style={styles.input}
+            />
+          </label>
+        </div>
+      </fieldset>
 
       <div style={styles.grid2}>
         <label style={styles.label}>
@@ -197,7 +321,8 @@ export function EventFormClient({
             type="number"
             name="durationMinutes"
             min={1}
-            defaultValue={defaults?.durationMinutes ?? ""}
+            value={form.durationMinutes}
+            onChange={(e) => update("durationMinutes", e.target.value)}
             style={styles.input}
           />
         </label>
@@ -207,7 +332,8 @@ export function EventFormClient({
             type="number"
             name="capacity"
             min={1}
-            defaultValue={defaults?.capacity ?? ""}
+            value={form.capacity}
+            onChange={(e) => update("capacity", e.target.value)}
             style={styles.input}
           />
         </label>
@@ -215,12 +341,14 @@ export function EventFormClient({
 
       <label style={styles.label}>
         <span style={styles.labelText}>
-          URL da imagem de capa (opcional — usa o upload abaixo para enviar do disco)
+          URL da imagem de capa (opcional — usa o upload abaixo para enviar do
+          disco)
         </span>
         <input
           type="text"
           name="coverImage"
-          defaultValue={defaults?.coverImage || ""}
+          value={form.coverImage}
+          onChange={(e) => update("coverImage", e.target.value)}
           style={styles.input}
           placeholder="/api/bilheteira/uploads/... ou https://..."
         />
@@ -228,11 +356,13 @@ export function EventFormClient({
 
       <label style={styles.label}>
         <span style={styles.labelText}>
-          Texto do verso do bilhete (opcional — texto editorial específico deste evento, aparece no bilhete digital)
+          Texto do verso do bilhete (opcional — texto editorial específico
+          deste evento, aparece no bilhete digital)
         </span>
         <textarea
           name="ticketNote"
-          defaultValue={defaults?.ticketNote || ""}
+          value={form.ticketNote}
+          onChange={(e) => update("ticketNote", e.target.value)}
           style={styles.textarea}
           placeholder="Ex: A vihuela antecedeu a guitarra em duzentos anos..."
         />
@@ -242,7 +372,8 @@ export function EventFormClient({
         <span style={styles.labelText}>Estado</span>
         <select
           name="status"
-          defaultValue={defaults?.status || "draft"}
+          value={form.status}
+          onChange={(e) => update("status", e.target.value)}
           style={styles.select}
         >
           <option value="draft">Rascunho</option>
@@ -332,7 +463,12 @@ export function EventFormClient({
         </>
       )}
 
-      <button type="submit" style={styles.button}>
+      <button
+        type="submit"
+        style={styles.button}
+        disabled={!hydrated}
+        title={!hydrated ? "A carregar valores…" : undefined}
+      >
         {submitLabel}
       </button>
     </form>

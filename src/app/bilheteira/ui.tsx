@@ -81,6 +81,21 @@ export const styles: Record<string, CSSProperties> = {
     marginBottom: 16,
   },
   form: { display: "flex", flexDirection: "column", gap: 16 },
+  fieldset: {
+    border: `1px solid ${palette.line}`,
+    padding: "12px 16px 16px",
+    margin: 0,
+    display: "flex",
+    flexDirection: "column",
+    gap: 12,
+  },
+  legend: {
+    padding: "0 8px",
+    fontSize: 10,
+    letterSpacing: 2,
+    textTransform: "uppercase",
+    color: "#333",
+  },
   label: { display: "flex", flexDirection: "column", gap: 6 },
   labelText: {
     fontSize: 10,
