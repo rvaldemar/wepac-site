@@ -213,7 +213,6 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
         )}
         <form
           action={uploadEventCoverAction}
-          encType="multipart/form-data"
           style={{ ...styles.form, gap: 10 }}
         >
           <input type="hidden" name="eventId" value={event.id} />
