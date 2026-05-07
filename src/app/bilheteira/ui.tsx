@@ -264,8 +264,13 @@ export function formatPriceCents(cents: number): string {
     : `${euros.toFixed(2).replace(".", ",")} €`;
 }
 
+// Events happen in Portugal — always render in Europe/Lisbon regardless of
+// where the rendering process (server or client) happens to be.
+const LISBON_TZ = "Europe/Lisbon";
+
 export function formatEventDate(d: Date): string {
   return new Intl.DateTimeFormat("pt-PT", {
+    timeZone: LISBON_TZ,
     day: "2-digit",
     month: "long",
     year: "numeric",
@@ -274,7 +279,9 @@ export function formatEventDate(d: Date): string {
 
 export function formatEventTime(d: Date): string {
   return new Intl.DateTimeFormat("pt-PT", {
+    timeZone: LISBON_TZ,
     hour: "2-digit",
     minute: "2-digit",
+    hourCycle: "h23",
   }).format(d);
 }

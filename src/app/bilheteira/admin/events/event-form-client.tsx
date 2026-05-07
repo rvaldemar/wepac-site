@@ -53,18 +53,41 @@ type FormState = {
 
 type Tier = { name: string; price: string; description: string };
 
-const pad = (n: number) => String(n).padStart(2, "0");
+const LISBON_TZ = "Europe/Lisbon";
+
+function lisbonParts(d: Date) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: LISBON_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(d);
+  const get = (type: string) =>
+    parts.find((p) => p.type === type)?.value ?? "";
+  return {
+    year: get("year"),
+    month: get("month"),
+    day: get("day"),
+    hour: get("hour"),
+    minute: get("minute"),
+  };
+}
 
 function toInputDate(value: Date | string): string {
   const d = typeof value === "string" ? new Date(value) : value;
   if (Number.isNaN(d.getTime())) return "";
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const p = lisbonParts(d);
+  return `${p.year}-${p.month}-${p.day}`;
 }
 
 function toInputTime(value: Date | string): string {
   const d = typeof value === "string" ? new Date(value) : value;
   if (Number.isNaN(d.getTime())) return "";
-  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const p = lisbonParts(d);
+  return `${p.hour}:${p.minute}`;
 }
 
 function emptyState(departments: Department[]): FormState {
@@ -149,14 +172,20 @@ export function EventFormClient({
   const update = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
-  const startsAtCombined =
-    form.startsAtDate && form.startsAtTime
-      ? `${form.startsAtDate}T${form.startsAtTime}`
-      : "";
-  const doorsAtCombined =
-    form.doorsAtDate && form.doorsAtTime
-      ? `${form.doorsAtDate}T${form.doorsAtTime}`
-      : "";
+  // Convert the (Date, Time) pair the user typed (interpreted in their browser
+  // timezone — typically Europe/Lisbon for WEPAC events) to a UTC ISO string,
+  // so the server stores the absolute moment regardless of where it's running.
+  const toUtcIso = (date: string, time: string): string => {
+    if (!date || !time) return "";
+    const [y, m, d] = date.split("-").map(Number);
+    const [h, min] = time.split(":").map(Number);
+    if (!y || !m || !d || h == null || min == null) return "";
+    const dt = new Date(y, m - 1, d, h, min);
+    if (Number.isNaN(dt.getTime())) return "";
+    return dt.toISOString();
+  };
+  const startsAtCombined = toUtcIso(form.startsAtDate, form.startsAtTime);
+  const doorsAtCombined = toUtcIso(form.doorsAtDate, form.doorsAtTime);
 
   return (
     <form action={action} style={styles.form}>

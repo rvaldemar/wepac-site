@@ -22,8 +22,11 @@ function formatPrice(cents: number): string {
     : `${euros.toFixed(2).replace(".", ",")} €`;
 }
 
+const LISBON_TZ = "Europe/Lisbon";
+
 function formatDate(d: Date): string {
   return new Intl.DateTimeFormat("pt-PT", {
+    timeZone: LISBON_TZ,
     day: "2-digit",
     month: "long",
     year: "numeric",
@@ -32,8 +35,10 @@ function formatDate(d: Date): string {
 
 function formatTime(d: Date): string {
   return new Intl.DateTimeFormat("pt-PT", {
+    timeZone: LISBON_TZ,
     hour: "2-digit",
     minute: "2-digit",
+    hourCycle: "h23",
   }).format(d);
 }
 

@@ -22,40 +22,69 @@ type Props = {
 const DEFAULT_CAPELA_VIVA_COVER =
   "/bilheteira/capela-viva/ananda-roda.jpeg";
 
-function romanMonth(m: number): string {
-  return ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"][
-    m
-  ];
+const LISBON_TZ = "Europe/Lisbon";
+const ROMAN_MONTHS = [
+  "I",
+  "II",
+  "III",
+  "IV",
+  "V",
+  "VI",
+  "VII",
+  "VIII",
+  "IX",
+  "X",
+  "XI",
+  "XII",
+];
+const PT_MONTHS = [
+  "Janeiro",
+  "Fevereiro",
+  "Março",
+  "Abril",
+  "Maio",
+  "Junho",
+  "Julho",
+  "Agosto",
+  "Setembro",
+  "Outubro",
+  "Novembro",
+  "Dezembro",
+];
+
+function lisbonParts(d: Date) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: LISBON_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(d);
+  const get = (type: string) =>
+    parts.find((p) => p.type === type)?.value ?? "";
+  return {
+    day: parseInt(get("day"), 10),
+    month: parseInt(get("month"), 10),
+    hour: get("hour"),
+    minute: get("minute"),
+  };
 }
 
 function formatShortDate(d: Date): string {
-  return `${d.getDate()}·${romanMonth(d.getMonth())}`;
+  const p = lisbonParts(d);
+  return `${p.day}·${ROMAN_MONTHS[p.month - 1]}`;
 }
 
 function formatTime(d: Date): string {
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  return `${hh}H${mm}`;
+  const p = lisbonParts(d);
+  return `${p.hour}H${p.minute}`;
 }
 
 function formatDateLong(d: Date): string {
-  const months = [
-    "Janeiro",
-    "Fevereiro",
-    "Março",
-    "Abril",
-    "Maio",
-    "Junho",
-    "Julho",
-    "Agosto",
-    "Setembro",
-    "Outubro",
-    "Novembro",
-    "Dezembro",
-  ];
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  return `${d.getDate()} de ${months[d.getMonth()]} · ${hh}h${mm}`;
+  const p = lisbonParts(d);
+  return `${p.day} de ${PT_MONTHS[p.month - 1]} · ${p.hour}h${p.minute}`;
 }
 
 function formatPrice(cents: number): string {
