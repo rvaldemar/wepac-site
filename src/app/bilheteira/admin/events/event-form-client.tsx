@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { styles } from "../../ui";
 
 type Department = { id: string; name: string };
@@ -64,6 +64,19 @@ export function EventFormClient({
           { name: "Amigo WEPAC", price: "25", description: "Patrono — apoio directo ao programa." },
         ]
   );
+
+  // Datetime inputs are populated client-side after mount to avoid
+  // hydration mismatch: server renders in UTC, browser in local timezone.
+  const startsAtRef = useRef<HTMLInputElement>(null);
+  const doorsAtRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (startsAtRef.current && defaults?.startsAt) {
+      startsAtRef.current.value = toLocalDateTimeInput(defaults.startsAt);
+    }
+    if (doorsAtRef.current && defaults?.doorsAt) {
+      doorsAtRef.current.value = toLocalDateTimeInput(defaults.doorsAt);
+    }
+  }, [defaults?.startsAt, defaults?.doorsAt]);
 
   return (
     <form action={action} style={styles.form}>
@@ -159,23 +172,19 @@ export function EventFormClient({
         <label style={styles.label}>
           <span style={styles.labelText}>Data e hora</span>
           <input
+            ref={startsAtRef}
             type="datetime-local"
             name="startsAt"
             required
-            defaultValue={
-              defaults ? toLocalDateTimeInput(defaults.startsAt) : ""
-            }
             style={styles.input}
           />
         </label>
         <label style={styles.label}>
           <span style={styles.labelText}>Abertura de portas (opcional)</span>
           <input
+            ref={doorsAtRef}
             type="datetime-local"
             name="doorsAt"
-            defaultValue={
-              defaults?.doorsAt ? toLocalDateTimeInput(defaults.doorsAt) : ""
-            }
             style={styles.input}
           />
         </label>
