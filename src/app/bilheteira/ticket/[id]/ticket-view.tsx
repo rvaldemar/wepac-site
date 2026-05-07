@@ -67,13 +67,11 @@ export function TicketView({
 
   return (
     <>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,700;0,900;1,900&family=Inter:wght@300;400;500;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,700;0,900;1,900&family=Inter:wght@300;400;500;700&display=swap"
+        rel="stylesheet"
+      />
       <main className="bt-page">
         {welcome && (
           <div className="bt-welcome">
@@ -189,3 +187,4 @@ export function TicketView({
     </>
   );
 }
+
