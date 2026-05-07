@@ -4,6 +4,20 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-05-07 — Bilheteira admin: client-side exception em /events/[id]
+
+Sintoma: editar um evento em `https://wepac.pt/bilheteira/admin/events/<id>` mostrava "Application error: a client-side exception has occurred" em vez do formulário. Sem entrada nos logs do servidor (puramente cliente).
+
+Causa: hydration mismatch nos `<input type="datetime-local">`. O `toLocalDateTimeInput` usa `getHours()`/`getMinutes()` que devolvem hora **local**. Servidor está em `Etc/UTC`, browser do utilizador em Europe/Lisbon (UTC+1 em Maio com DST). React 19 rejeita o mismatch e levanta CSE.
+
+O commit anterior (668b2c5, 4 Maio) "fixed" o caso em que a função recebia uma string em vez de Date — mas isso na prática mascarava o problema porque crashava silenciosamente e os campos ficavam vazios. Com o fix, ambos os lados produzem datas válidas mas em fuso diferente, expondo a mismatch.
+
+Fix (172b3ba): renderizar inputs vazios no SSR e popular via `useEffect` com refs depois do mount. Server e client renderizam o mesmo (vazio), client preenche ao montar com a hora local correcta.
+
+Lição: sempre que um valor renderizado depende do timezone do utilizador (`Date.prototype.getHours` etc), tem de ser computado client-side ou usar UTC em ambos os lados. Próxima vez verificar também a página pública do bilhete (`/bilheteira/ticket/[id]`) — actualmente mostra hora UTC ao utilizador, o que é UX bug mas não CSE porque é server component.
+
+---
+
 ## 2026-04-21 — Sem Nome: scanner iOS + lista imprimível (dia do evento)
 
 Preparação para a porta do concerto privado "Sem Nome" (21 ABR, 19h, Aquiraz).
