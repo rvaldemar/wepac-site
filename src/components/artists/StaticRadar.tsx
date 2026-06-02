@@ -1,6 +1,6 @@
 "use client";
 
-const AREAS = ["Físico", "Afetivo", "Caráter", "Espiritual", "Intelectual", "Social"];
+const AREAS = ["Físico", "Afetivo", "Caráter", "Espiritual", "Intelectual", "Social", "Artístico-Cultural"];
 
 export function StaticRadar({ className = "" }: { className?: string }) {
  const size = 280;
@@ -8,7 +8,7 @@ export function StaticRadar({ className = "" }: { className?: string }) {
  const radius = 110;
  const levels = 5;
 
- const angleStep = (2 * Math.PI) / 6;
+ const angleStep = (2 * Math.PI) / AREAS.length;
  const startAngle = -Math.PI / 2;
 
  function getPoint(index: number, r: number) {
@@ -20,14 +20,14 @@ export function StaticRadar({ className = "" }: { className?: string }) {
  }
 
  function polygonPoints(r: number) {
-  return Array.from({ length: 6 }, (_, i) => {
+  return Array.from({ length: AREAS.length }, (_, i) => {
    const p = getPoint(i, r);
    return `${p.x},${p.y}`;
   }).join(" ");
  }
 
  // Illustrative values
- const values = [3.8, 3.2, 4.1, 2.8, 3.5, 3.0];
+ const values = [3.8, 3.2, 4.1, 2.8, 3.5, 3.0, 3.6];
  const dataPoints = values.map((v, i) => {
   const r = (v / 5) * radius;
   return getPoint(i, r);
@@ -49,7 +49,7 @@ export function StaticRadar({ className = "" }: { className?: string }) {
    ))}
 
    {/* Axis lines */}
-   {Array.from({ length: 6 }, (_, i) => {
+   {Array.from({ length: AREAS.length }, (_, i) => {
     const p = getPoint(i, radius);
     return (
      <line

@@ -1,6 +1,6 @@
 "use client";
 
-import { AREA_LABELS, type AreaKey } from "@/lib/types/artist";
+import { AREA_KEYS, AREA_LABELS, type AreaKey } from "@/lib/types/artist";
 
 interface RadarChartProps {
  currentValues: Record<AreaKey, number>;
@@ -10,7 +10,7 @@ interface RadarChartProps {
  className?: string;
 }
 
-const AREAS: AreaKey[] = ["physical", "emotional", "character", "spiritual", "intellectual", "social"];
+const AREAS: AreaKey[] = [...AREA_KEYS];
 
 export function RadarChart({
  currentValues,
@@ -22,7 +22,7 @@ export function RadarChart({
  const center = size / 2;
  const radius = size * 0.34;
  const levels = 5;
- const angleStep = (2 * Math.PI) / 6;
+ const angleStep = (2 * Math.PI) / AREAS.length;
  const startAngle = -Math.PI / 2;
 
  function getPoint(index: number, r: number) {
@@ -42,7 +42,7 @@ export function RadarChart({
 
  function dataPolygon(values: Record<AreaKey, number>) {
   return AREAS.map((area, i) => {
-   const r = (Math.min(values[area], 5) / 5) * radius;
+   const r = (Math.min(values[area] ?? 0, 5) / 5) * radius;
    const p = getPoint(i, r);
    return `${p.x},${p.y}`;
   }).join(" ");
@@ -91,7 +91,7 @@ export function RadarChart({
 
    {/* Data points - current */}
    {AREAS.map((area, i) => {
-    const r = (Math.min(currentValues[area], 5) / 5) * radius;
+    const r = (Math.min(currentValues[area] ?? 0, 5) / 5) * radius;
     const p = getPoint(i, r);
     return <circle key={area} cx={p.x} cy={p.y} r="4" fill="#FFFFFF" />;
    })}
@@ -130,7 +130,7 @@ export function RadarChart({
        fontWeight="bold"
        fontFamily="Inter, sans-serif"
       >
-       {currentValues[area].toFixed(1)}
+       {(currentValues[area] ?? 0).toFixed(1)}
       </text>
      </g>
     );

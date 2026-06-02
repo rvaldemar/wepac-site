@@ -5,10 +5,11 @@ import { RadarChart } from "@/components/artists/RadarChart";
 import {
  AREA_LABELS,
  AREA_KEYS,
- INDICATORS,
+ getIndicators,
  SCORE_LABELS,
  type AreaKey,
  type EvaluationMoment,
+ type Track,
 } from "@/lib/types/artist";
 
 const MOMENT_LABELS: Record<EvaluationMoment, string> = {
@@ -22,9 +23,11 @@ type AreaScores = Record<string, { selfAvg: number; mentorAvg: number; composite
 interface Props {
  entryScores: AreaScores;
  midScores: AreaScores;
+ track: Track;
 }
 
-export default function DiagnosisPageClient({ entryScores, midScores }: Props) {
+export default function DiagnosisPageClient({ entryScores, midScores, track }: Props) {
+ const indicatorsByArea = getIndicators(track);
  const [moment, setMoment] = useState<EvaluationMoment>("mid");
  const [expandedArea, setExpandedArea] = useState<AreaKey | null>(null);
 
@@ -139,7 +142,7 @@ export default function DiagnosisPageClient({ entryScores, midScores }: Props) {
        {isExpanded && (
         <div className="border-t border-wepac-border px-4 pb-4 pt-3">
          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {INDICATORS[area].map((ind, idx) => {
+          {indicatorsByArea[area].map((ind, idx) => {
            // Use area composite as base with slight variation for demo
            const selfScore = Math.max(1, Math.min(5, Math.round(areaScores.selfAvg + (idx % 3 - 1) * 0.5)));
            const mentorScore = Math.max(1, Math.min(5, Math.round(areaScores.mentorAvg + ((idx + 1) % 3 - 1) * 0.5)));

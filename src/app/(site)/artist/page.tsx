@@ -19,6 +19,7 @@ const AREAS = [
   { name: "Espiritual", desc: "Profundidade, propósito e sentido" },
   { name: "Intelectual", desc: "Pensamento, estratégia e visão de mercado" },
   { name: "Social", desc: "Relação, rede, comunicação e comunidade" },
+  { name: "Artístico-Cultural", desc: "Expressão, imaginação, técnica e memória cultural" },
 ];
 
 const PRINCIPIOS = [
@@ -81,7 +82,7 @@ const EQUIPA_PERFIS = [
 const PLATFORM_FEATURES = [
   {
     title: "Mapa de Desenvolvimento",
-    desc: "Diagnóstico visual em 6 áreas: físico, afetivo, caráter, espiritual, intelectual e social. Compara a tua evolução ao longo do tempo.",
+    desc: "Diagnóstico visual em 7 áreas: físico, afetivo, caráter, espiritual, intelectual, social e artístico-cultural. Compara a tua evolução ao longo do tempo.",
     hasRadar: true,
   },
   {
@@ -396,7 +397,7 @@ export default function ArtistPage() {
                 <div className="w-full max-w-sm">
                   <StaticRadar className="w-full" />
                   <p className="mt-4 text-center text-xs text-white/50">
-                    Mapa de Desenvolvimento — 6 Áreas do Saber
+                    Mapa de Desenvolvimento — 7 Áreas do Saber
                   </p>
                 </div>
               </div>

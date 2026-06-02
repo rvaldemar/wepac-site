@@ -2,26 +2,69 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
  AREA_KEYS,
  AREA_LABELS,
- INDICATORS,
+ getIndicators,
  SCORE_LABELS,
- type AreaKey,
 } from "@/lib/types/artist";
 import type { User } from "@/lib/types/artist";
+import { submitEvaluation } from "@/lib/actions/evaluation";
 
 interface EvaluatePageProps {
  artist: User;
+ mentorId: string;
 }
 
-export function EvaluatePageClient({ artist }: EvaluatePageProps) {
+export function EvaluatePageClient({ artist, mentorId }: EvaluatePageProps) {
+ const router = useRouter();
+ const indicatorsByArea = getIndicators(artist.track);
  const [scores, setScores] = useState<Record<string, number>>({});
  const [notes, setNotes] = useState<Record<string, string>>({});
  const [currentArea, setCurrentArea] = useState(0);
+ const [submitting, setSubmitting] = useState(false);
+ const [completed, setCompleted] = useState(false);
+ const [error, setError] = useState<string | null>(null);
 
  const area = AREA_KEYS[currentArea];
- const indicators = INDICATORS[area];
+ const indicators = indicatorsByArea[area];
+
+ async function handleSave() {
+  setSubmitting(true);
+  setError(null);
+
+  try {
+   // Only submit indicators the mentor actually scored, so untouched
+   // indicators don't pollute the averages.
+   const scoreEntries = Object.entries(scores)
+    .filter(([, score]) => score > 0)
+    .map(([key, score]) => {
+     const [scoreArea, indicator] = key.split(".");
+     return {
+      area: scoreArea,
+      indicator,
+      score,
+      notes: notes[key]?.trim() ? notes[key].trim() : undefined,
+     };
+    });
+
+   await submitEvaluation({
+    userId: artist.id,
+    evaluatorId: mentorId,
+    evaluationType: "mentor",
+    moment: "mid",
+    scores: scoreEntries,
+   });
+
+   setCompleted(true);
+   router.push(`/artists/alpha/mentor/artists/${artist.id}`);
+  } catch (e) {
+   console.error("Failed to submit evaluation:", e);
+   setError("Erro ao guardar a avaliação. Tenta novamente.");
+   setSubmitting(false);
+  }
+ }
 
  return (
   <div className="p-6 lg:p-8">
@@ -97,6 +140,9 @@ export function EvaluatePageClient({ artist }: EvaluatePageProps) {
     </div>
    </div>
 
+   {/* Error message */}
+   {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
+
    {/* Navigation */}
    <div className="mt-6 flex items-center justify-between">
     <button
@@ -114,8 +160,12 @@ export function EvaluatePageClient({ artist }: EvaluatePageProps) {
       Seguinte
      </button>
     ) : (
-     <button className="bg-wepac-white px-6 py-2 text-sm font-bold text-wepac-black">
-      Guardar Avaliação
+     <button
+      onClick={handleSave}
+      disabled={submitting || completed}
+      className="bg-wepac-white px-6 py-2 text-sm font-bold text-wepac-black transition-colors hover:bg-wepac-accent-muted disabled:opacity-30"
+     >
+      {submitting || completed ? "A guardar..." : "Guardar Avaliação"}
      </button>
     )}
    </div>

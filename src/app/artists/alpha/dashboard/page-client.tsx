@@ -6,13 +6,14 @@ import { RadarChart } from "@/components/artists/RadarChart";
 import { StrategicRadar } from "@/components/artists/StrategicRadar";
 import {
  AREA_LABELS,
- INDICATORS,
+ getIndicators,
  PHASE_LABELS,
  LEVEL_LABELS,
  SCORE_LABELS,
  type AreaKey,
  type ArtistLevel,
  type ArtistPhase,
+ type Track,
 } from "@/lib/types/artist";
 
 const PHASES: ArtistPhase[] = ["diagnosis", "structuring", "development", "activation", "evaluation"];
@@ -26,6 +27,7 @@ interface Props {
   email: string;
   level: string;
   currentPhase: ArtistPhase;
+  track: Track;
   bio?: string | null;
   phone?: string | null;
   avatarUrl?: string | null;
@@ -72,6 +74,7 @@ export default function DashboardPageClient({
  latestMessage,
  quarterWeek,
 }: Props) {
+ const indicatorsByArea = getIndicators(user.track);
  const [selectedArea, setSelectedArea] = useState<AreaKey | null>(null);
 
  const currentRadar = Object.fromEntries(
@@ -181,7 +184,7 @@ export default function DashboardPageClient({
       </button>
      </div>
      <div className="mt-4 space-y-3">
-      {INDICATORS[selectedArea].map((ind) => {
+      {indicatorsByArea[selectedArea].map((ind) => {
        const indData = indicatorScores[selectedArea]?.[ind.key];
        const indScore = indData ? Math.round(indData.composite) : 0;
        return (

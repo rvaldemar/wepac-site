@@ -1,7 +1,8 @@
 "use server";
 
 import { prisma } from "@/lib/db";
-import type { AreaKey, EvaluationMoment } from "@prisma/client";
+import type { EvaluationMoment } from "@prisma/client";
+import { AREA_KEYS, type AreaKey } from "@/lib/types/artist";
 
 export async function computeAreaScores(
   userId: string,
@@ -17,14 +18,7 @@ export async function computeAreaScores(
   const selfEval = evals.find((e) => e.evaluationType === "self");
   const mentorEval = evals.find((e) => e.evaluationType === "mentor");
 
-  const areas: AreaKey[] = [
-    "physical",
-    "emotional",
-    "character",
-    "spiritual",
-    "intellectual",
-    "social",
-  ];
+  const areas: readonly AreaKey[] = AREA_KEYS;
 
   const result: Record<
     string,
@@ -89,14 +83,7 @@ export async function getIndicatorScores(
   const selfEval = evals.find((e) => e.evaluationType === "self");
   const mentorEval = evals.find((e) => e.evaluationType === "mentor");
 
-  const areas: AreaKey[] = [
-    "physical",
-    "emotional",
-    "character",
-    "spiritual",
-    "intellectual",
-    "social",
-  ];
+  const areas: readonly AreaKey[] = AREA_KEYS;
 
   const result: Record<
     string,
@@ -142,7 +129,7 @@ export async function submitEvaluation(data: {
   evaluatorId: string;
   evaluationType: "self" | "mentor";
   moment: "entry" | "mid" | "exit";
-  scores: { area: string; indicator: string; score: number }[];
+  scores: { area: string; indicator: string; score: number; notes?: string }[];
 }) {
   return prisma.evaluation.create({
     data: {
@@ -156,6 +143,7 @@ export async function submitEvaluation(data: {
           area: s.area as AreaKey,
           indicator: s.indicator,
           score: s.score,
+          notes: s.notes,
         })),
       },
     },

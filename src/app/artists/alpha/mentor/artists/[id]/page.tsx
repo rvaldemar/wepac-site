@@ -5,7 +5,7 @@ import { getStrategicMapScores, getStrategicPlan, getLifePlan } from "@/lib/acti
 import { getUserTasks } from "@/lib/actions/task";
 import { getUserSessions } from "@/lib/actions/session";
 import { MentorArtistViewClient } from "./page-client";
-import type { AreaKey } from "@/lib/types/artist";
+import { AREA_KEYS, type AreaKey } from "@/lib/types/artist";
 
 export default async function MentorArtistViewPage({
  params,
@@ -19,7 +19,7 @@ export default async function MentorArtistViewPage({
 
  const empty = { selfAvg: 0, mentorAvg: 0, composite: 0 };
  const emptyScores = Object.fromEntries(
-  ["physical", "emotional", "character", "spiritual", "intellectual", "social"].map((k) => [k, empty])
+  AREA_KEYS.map((k) => [k, empty])
  ) as Record<AreaKey, typeof empty>;
 
  let currentScores: Record<string, { selfAvg: number; mentorAvg: number; composite: number }>;

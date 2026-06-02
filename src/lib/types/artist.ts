@@ -11,8 +11,9 @@ export type TaskStatus = "todo" | "in_progress" | "done";
 export type TaskOrigin = "plan" | "session" | "mentor" | "self";
 export type SessionType = "individual" | "group";
 export type SessionStatus = "scheduled" | "completed" | "cancelled" | "no_show";
+export type Track = "artist" | "adult" | "clinic";
 
-export const AREA_KEYS = ["physical", "emotional", "character", "spiritual", "intellectual", "social"] as const;
+export const AREA_KEYS = ["physical", "emotional", "character", "spiritual", "intellectual", "social", "artistic"] as const;
 export type AreaKey = (typeof AREA_KEYS)[number];
 
 export const AREA_LABELS: Record<AreaKey, string> = {
@@ -22,9 +23,14 @@ export const AREA_LABELS: Record<AreaKey, string> = {
   spiritual: "Espiritual",
   intellectual: "Intelectual",
   social: "Social",
+  artistic: "Artístico-Cultural",
 };
 
-export const INDICATORS: Record<AreaKey, { key: string; label: string }[]> = {
+type Indicator = { key: string; label: string };
+
+// Artist track — the integral-development indicators used by the WEPAC
+// "Artista Alpha" programme (now including the 7th, artistic-cultural pillar).
+const ARTIST_INDICATORS: Record<AreaKey, Indicator[]> = {
   physical: [
     { key: "posture", label: "Postura" },
     { key: "breathing", label: "Respiração" },
@@ -78,7 +84,89 @@ export const INDICATORS: Record<AreaKey, { key: string; label: string }[]> = {
     { key: "collaboration", label: "Colaboração / co-criação" },
     { key: "community_presence", label: "Presença comunitária" },
   ],
+  artistic: [
+    { key: "creative_voice", label: "Voz criativa própria" },
+    { key: "technical_mastery", label: "Domínio técnico da linguagem" },
+    { key: "imagination", label: "Imaginação e originalidade" },
+    { key: "finish_quality", label: "Cuidado com o detalhe e acabamento" },
+    { key: "creative_courage", label: "Coragem criativa / arriscar" },
+    { key: "cultural_memory", label: "Memória cultural e referências" },
+    { key: "beauty_relationship", label: "Relação com o belo e o património" },
+  ],
 };
+
+// Adult track — indicators derived from the WEPAC Diagnóstico Integral
+// instrument (diagnostico-integral-instrumento.md): each pillar's questions
+// condensed into short, observable indicator labels (PT-PT).
+const ADULT_INDICATORS: Record<AreaKey, Indicator[]> = {
+  physical: [
+    { key: "daily_rhythm", label: "Ritmo de dia e sono" },
+    { key: "energy_stability", label: "Estabilidade de energia" },
+    { key: "stress_regulation", label: "Regulação em stress / cansaço" },
+    { key: "body_tension", label: "Tensão corporal crónica" },
+    { key: "effort_rest", label: "Relação com esforço e descanso" },
+    { key: "basic_self_care", label: "Cuidado do básico e do espaço" },
+  ],
+  emotional: [
+    { key: "name_emotions", label: "Nomear o que se sente" },
+    { key: "recover_failure", label: "Recuperar de falha ou frustração" },
+    { key: "repair_relationship", label: "Reparar falhas nas relações" },
+    { key: "secure_bonds", label: "Vínculos com previsibilidade e confiança" },
+    { key: "self_esteem_base", label: "Autoestima em competência e vínculo" },
+  ],
+  character: [
+    { key: "finish_what_starts", label: "Terminar o que se começa" },
+    { key: "small_habits", label: "Hábitos pequenos e consistentes" },
+    { key: "own_consequences", label: "Assumir consequências" },
+    { key: "values_coherence", label: "Coerência entre valores e ação" },
+    { key: "service_beyond_self", label: "Servir algo para além de si" },
+  ],
+  spiritual: [
+    { key: "purpose_link", label: "Ligar esforço a propósito" },
+    { key: "silence_tolerance", label: "Tolerar o silêncio" },
+    { key: "gratitude_reverence", label: "Gratidão e reverência" },
+    { key: "big_questions", label: "Lugar para as perguntas grandes" },
+    { key: "belonging_greater", label: "Pertencer a algo maior" },
+  ],
+  intellectual: [
+    { key: "sustained_focus", label: "Foco sustentado" },
+    { key: "genuine_curiosity", label: "Curiosidade genuína por aprender" },
+    { key: "opinion_vs_evidence", label: "Distinguir opinião de evidência" },
+    { key: "depth_over_surface", label: "Aprofundar em vez de consumir raso" },
+    { key: "explain_in_own_words", label: "Explicar por palavras próprias" },
+  ],
+  social: [
+    { key: "communicate_listen", label: "Comunicar e escutar" },
+    { key: "handle_conflict", label: "Reparar em vez de fugir no conflito" },
+    { key: "belong_with_integrity", label: "Pertencer sem se submeter" },
+    { key: "cooperate", label: "Cooperar e assumir o resultado" },
+    { key: "support_network", label: "Rede de apoio real" },
+  ],
+  artistic: [
+    { key: "create_not_only_consume", label: "Criar, não só consumir" },
+    { key: "express_self", label: "Expressar-se (corpo, voz, linguagem, arte)" },
+    { key: "attention_to_detail", label: "Atenção ao detalhe e acabamento" },
+    { key: "receive_feedback", label: "Receber feedback sem colapsar" },
+    { key: "beauty_culture", label: "Relação com beleza, património e cultura" },
+  ],
+};
+
+// Returns the indicator set to score for a given subject track.
+// The professional/mentor view is agnostic: it reads the track from the
+// SUBJECT being evaluated, never from a global const or the professional.
+export function getIndicators(track: Track): Record<AreaKey, Indicator[]> {
+  switch (track) {
+    case "adult":
+      return ADULT_INDICATORS;
+    case "clinic":
+      // TODO(P2): clinic track has its own specifics (guardian model,
+      // role-by-specialty, age-phase 0-24); mirrors adult for now.
+      return ADULT_INDICATORS;
+    case "artist":
+    default:
+      return ARTIST_INDICATORS;
+  }
+}
 
 export const SCORE_LABELS: Record<number, string> = {
   1: "Inicial",
@@ -125,6 +213,7 @@ export interface User {
   bio?: string;
   phone?: string;
   currentPhase: ArtistPhase;
+  track: Track;
   createdAt: string;
   updatedAt: string;
 }
