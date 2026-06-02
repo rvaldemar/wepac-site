@@ -7,14 +7,21 @@ import { OnboardingStepper } from "@/components/artists/OnboardingStepper";
 import {
  AREA_KEYS,
  AREA_LABELS,
- INDICATORS,
+ getIndicators,
  SCORE_LABELS,
- type AreaKey,
+ type Track,
 } from "@/lib/types/artist";
 import { submitEvaluation } from "@/lib/actions/evaluation";
 
-export default function AssessmentPageClient({ userId }: { userId: string }) {
+export default function AssessmentPageClient({
+ userId,
+ track,
+}: {
+ userId: string;
+ track: Track;
+}) {
  const router = useRouter();
+ const indicatorsByArea = getIndicators(track);
  const [currentArea, setCurrentArea] = useState(0);
  const [scores, setScores] = useState<Record<string, number>>({});
  const [completed, setCompleted] = useState(false);
@@ -22,12 +29,12 @@ export default function AssessmentPageClient({ userId }: { userId: string }) {
  const [error, setError] = useState<string | null>(null);
 
  const area = AREA_KEYS[currentArea];
- const indicators = INDICATORS[area];
+ const indicators = indicatorsByArea[area];
  const totalAreas = AREA_KEYS.length;
 
  const areaComplete = indicators.every((ind) => scores[`${area}.${ind.key}`] > 0);
  const allComplete = AREA_KEYS.every((a) =>
-  INDICATORS[a].every((ind) => scores[`${a}.${ind.key}`] > 0)
+  indicatorsByArea[a].every((ind) => scores[`${a}.${ind.key}`] > 0)
  );
 
  function handleScore(indicatorKey: string, score: number) {
@@ -118,7 +125,7 @@ export default function AssessmentPageClient({ userId }: { userId: string }) {
     {/* Area pills */}
     <div className="mb-8 flex flex-wrap gap-2">
      {AREA_KEYS.map((a, i) => {
-      const done = INDICATORS[a].every((ind) => scores[`${a}.${ind.key}`] > 0);
+      const done = indicatorsByArea[a].every((ind) => scores[`${a}.${ind.key}`] > 0);
       return (
        <button
         key={a}

@@ -7,10 +7,10 @@ export default async function EvaluatePage({
 }: {
  params: Promise<{ id: string }>;
 }) {
- await requireRole(["mentor", "admin"]);
+ const mentor = await requireRole(["mentor", "admin"]);
  const { id } = await params;
 
  const artist = await getUser(id);
 
- return <EvaluatePageClient artist={artist as any} />;
+ return <EvaluatePageClient artist={artist as any} mentorId={mentor.id} />;
 }

@@ -14,6 +14,7 @@ export default async function DiagnosisPage() {
   <DiagnosisPageClient
    entryScores={entryScores}
    midScores={midScores}
+   track={user.track}
   />
  );
 }

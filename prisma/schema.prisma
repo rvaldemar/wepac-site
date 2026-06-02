@@ -84,6 +84,13 @@ enum AreaKey {
   spiritual
   intellectual
   social
+  artistic
+}
+
+enum Track {
+  artist
+  adult
+  clinic
 }
 
 // ===== MODELS =====
@@ -102,6 +109,7 @@ model User {
   bio             String?
   phone           String?
   currentPhase    ArtistPhase @default(diagnosis)
+  track           Track       @default(artist)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
