@@ -1,68 +1,84 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
-const PUBLIC_ROUTES = [
-  "/artists/alpha/login",
-  "/artists/alpha/password/reset",
+const PUBLIC_ROUTES = ["/wepacker", "/wepacker/login", "/wepacker/password/reset"];
+
+const PUBLIC_PREFIXES = ["/wepacker/invite/"];
+
+// /wepacker/<pack-slug>/candidatura is public.
+const CANDIDATURA_RE = /^\/wepacker\/[^/]+\/candidatura\/?$/;
+
+const ONBOARDING_PATHS = [
+  "/wepacker/welcome",
+  "/wepacker/agreement",
+  "/wepacker/assessment",
 ];
 
-const PUBLIC_PREFIXES = [
-  "/artists/alpha/invite/",
-];
+// Legacy Artista Alpha routes → WEPACKER equivalents.
+function legacyRedirect(pathname: string): string | null {
+  if (!pathname.startsWith("/artists/alpha")) return null;
+  const rest = pathname.slice("/artists/alpha".length);
+  if (rest.startsWith("/mentor/artists/")) {
+    return "/wepacker/mentor/members/" + rest.slice("/mentor/artists/".length);
+  }
+  if (rest.startsWith("/admin/beta-signups")) {
+    return "/wepacker/admin/applications";
+  }
+  if (rest === "" || rest === "/") return "/wepacker";
+  return "/wepacker" + rest;
+}
 
 export default auth((req) => {
-  const { pathname } = req.nextUrl;
+  const { pathname, search } = req.nextUrl;
 
-  // Only protect /artists/alpha/* routes
-  if (!pathname.startsWith("/artists/alpha")) {
+  const legacy = legacyRedirect(pathname);
+  if (legacy) {
+    return NextResponse.redirect(new URL(legacy + search, req.url), 308);
+  }
+
+  if (!pathname.startsWith("/wepacker")) {
     return NextResponse.next();
   }
 
-  // Allow public routes
-  if (PUBLIC_ROUTES.includes(pathname)) {
-    return NextResponse.next();
-  }
+  // Public routes
+  if (PUBLIC_ROUTES.includes(pathname)) return NextResponse.next();
   if (PUBLIC_PREFIXES.some((p) => pathname.startsWith(p))) {
     return NextResponse.next();
   }
+  if (CANDIDATURA_RE.test(pathname)) return NextResponse.next();
 
-  // Check authentication
+  // Authentication
   const user = req.auth?.user;
   if (!user) {
-    return NextResponse.redirect(new URL("/artists/alpha/login", req.url));
+    return NextResponse.redirect(new URL("/wepacker/login", req.url));
   }
 
   const role = (user as { role?: string }).role;
   const onboarded = (user as { onboarded?: boolean }).onboarded;
 
-  // Not onboarded — only allow welcome, agreement, assessment
+  // Not onboarded — only allow the onboarding flow
   if (!onboarded) {
-    const allowedPaths = [
-      "/artists/alpha/welcome",
-      "/artists/alpha/agreement",
-      "/artists/alpha/assessment",
-    ];
-    if (!allowedPaths.includes(pathname)) {
-      return NextResponse.redirect(new URL("/artists/alpha/welcome", req.url));
+    if (!ONBOARDING_PATHS.includes(pathname)) {
+      return NextResponse.redirect(new URL("/wepacker/welcome", req.url));
     }
     return NextResponse.next();
   }
 
   // Role-based access
-  if (pathname.startsWith("/artists/alpha/admin") && role !== "admin") {
-    return NextResponse.redirect(new URL("/artists/alpha/dashboard", req.url));
+  if (pathname.startsWith("/wepacker/admin") && role !== "admin") {
+    return NextResponse.redirect(new URL("/wepacker/dashboard", req.url));
   }
   if (
-    pathname.startsWith("/artists/alpha/mentor") &&
+    pathname.startsWith("/wepacker/mentor") &&
     role !== "mentor" &&
     role !== "admin"
   ) {
-    return NextResponse.redirect(new URL("/artists/alpha/dashboard", req.url));
+    return NextResponse.redirect(new URL("/wepacker/dashboard", req.url));
   }
 
   return NextResponse.next();
 });
 
 export const config = {
-  matcher: ["/artists/alpha/:path*"],
+  matcher: ["/wepacker/:path*", "/artists/alpha/:path*"],
 };

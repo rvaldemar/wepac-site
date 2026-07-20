@@ -37,14 +37,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   session: { strategy: "jwt" },
   pages: {
-    signIn: "/artists/alpha/login",
+    signIn: "/wepacker/login",
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
         token.role = (user as { role: string }).role;
         token.onboarded = (user as { onboarded: boolean }).onboarded;
+      }
+      // Refresh role/onboarded from the DB when the client calls
+      // useSession().update() (e.g. right after finishing onboarding).
+      if (trigger === "update" && token.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { role: true, onboarded: true },
+        });
+        if (dbUser) {
+          token.role = dbUser.role;
+          token.onboarded = dbUser.onboarded;
+        }
       }
       return token;
     },

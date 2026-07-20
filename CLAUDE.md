@@ -2,7 +2,7 @@
 
 ## Projeto
 
-WEPAC — Companhia de Artes. Site institucional + plataforma "Artista Alpha" (programa de desenvolvimento artístico integral com mentoria, avaliações e planeamento estratégico).
+WEPAC — Companhia de Artes. Site institucional + plataforma "WEPACKER" (desenvolvimento humano integral multi-pack — mentoria, avaliações, planeamento estratégico e comunidade; o Pack Artista substitui o antigo programa "Artista Alpha").
 
 ## Stack
 
@@ -49,27 +49,29 @@ Ver `.env.example`. Variáveis obrigatórias:
 
 **Site público** (`(site)/`): `/`, `/sobre`, `/parcerias`, `/impacto`, `/contacto`, `/privacidade`, `/programacao`, `/projetos`, `/servicos`, `/media`, `/artist`
 
-**Artista Alpha** (`/artists/alpha/`):
-- Públicas: login, password reset, invite
+**WEPACKER** (`/wepacker/`):
+- Públicas: landing `/wepacker`, candidatura `/wepacker/[pack]/candidatura`, login, password reset, invite
 - Onboarding: welcome → agreement → assessment
-- Core: dashboard, plan, ppv, tasks, messages, sessions, diagnosis, profile
-- Mentor: `/mentor/*`
-- Admin: `/admin/settings`, `/admin/leads`
+- Member: dashboard, diagnosis, ppv, plan, tasks, sessions, messages, profile
+- Mentor: `/wepacker/mentor/*` (detalhe por membershipId em `members/[id]`)
+- Admin: `/wepacker/admin/{users,cohorts,applications,leads,settings}`
+- Legacy: `/artists/alpha/*` redireciona 308 para os equivalentes novos
 
 **API:** `/api/auth/[...nextauth]`, `/api/wessex/chat`
 
 ## Features produto
 
-- **Roles:** artist, mentor, admin (middleware protege rotas por role)
+- **Arquitetura:** Pack → Cohort → CohortMembership; artefactos de desenvolvimento pendurados na membership (multi-pack por pessoa). 7ª área de avaliação é o domínio do pack (`Pack.domainLabel`).
+- **Roles:** member, mentor, admin (middleware + guards por action protegem por role e ownership — ver `src/lib/wepacker/guards.ts`)
 - **Onboarding:** welcome → agreement → assessment (gate obrigatória)
-- **Avaliação:** auto + mentor, 6 áreas (física, emocional, carácter, espiritual, intelectual, social), em 3 momentos (entrada, meio, saída)
+- **Avaliação:** auto + mentor, 7 áreas (física, emocional, carácter, espiritual, intelectual, social + domínio do pack), em 3 momentos (entrada, meio, saída)
 - **Planeamento:** plano de vida, plano estratégico trimestral, goals, ações mensais
 - **Sessões:** individuais/grupo com mentor, tracking de presença
-- **Messaging:** conversas entre artistas e mentores
+- **Messaging:** conversas entre membros e mentores (contactos limitados a quem partilha cohort + admins)
 - **Tasks:** com origem (plan, session, mentor, self) e status tracking
 - **Leads:** formulário + chat → backoffice admin, com status pipeline
 - **Chat Wessex:** integração Claude API
-- **Beta signup:** pipeline de inscrições
+- **Candidaturas:** formulário público por pack → pipeline `beta_signups` (com `packSlug`) no backoffice admin
 
 ## Convenções
 

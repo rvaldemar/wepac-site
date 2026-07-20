@@ -63,10 +63,10 @@ export function Footer() {
               ))}
               <li>
                 <Link
-                  href="/artists/alpha/login"
+                  href="/wepacker/login"
                   className="text-sm text-wepac-white/30 transition-colors hover:text-wepac-white/60"
                 >
-                  Login Artistas
+                  Login WEPACKER
                 </Link>
               </li>
             </ul>

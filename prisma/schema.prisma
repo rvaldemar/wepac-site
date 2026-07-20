@@ -7,27 +7,45 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ===== ENUMS =====
+// ===== WEPACKER PLATFORM — ENUMS =====
 
 enum UserRole {
-  artist
+  member
   mentor
   admin
 }
 
-enum ArtistLevel {
+enum MemberLevel {
   seed
   growth
   signature
   partner
 }
 
-enum ArtistPhase {
+enum MemberPhase {
   diagnosis
   structuring
   development
   activation
-  evaluation
+  consolidation
+}
+
+enum CohortStatus {
+  draft
+  active
+  completed
+  archived
+}
+
+enum MembershipRole {
+  member
+  mentor
+}
+
+enum MembershipStatus {
+  active
+  paused
+  exited
 }
 
 enum EvaluationType {
@@ -84,50 +102,101 @@ enum AreaKey {
   spiritual
   intellectual
   social
-  artistic
+  domain
 }
 
-enum Track {
-  artist
-  adult
-  clinic
+// ===== WEPACKER PLATFORM — MODELS =====
+
+// A Pack is the application of the WEPAC methodology to a specific
+// profile/context (e.g. artist, sport). The 7th development area is
+// pack-specific: `AreaKey.domain` labelled by `domainLabel`.
+model Pack {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  tagline     String   @default("")
+  description String   @default("")
+  domainLabel String
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cohorts Cohort[]
+
+  @@map("packs")
 }
 
-// ===== MODELS =====
+// A Cohort is a closed accompaniment cycle within a Pack.
+model Cohort {
+  id        String       @id @default(cuid())
+  packId    String
+  name      String
+  status    CohortStatus @default(draft)
+  startsAt  DateTime?
+  endsAt    DateTime?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  pack        Pack               @relation(fields: [packId], references: [id], onDelete: Cascade)
+  memberships CohortMembership[]
+  sessions    Session[]
+
+  @@map("cohorts")
+}
+
+// A person inside a cohort — either a member in development or a mentor.
+// All development artefacts (evaluations, plans, tasks) hang on the
+// membership, not the user, so one person can belong to several packs.
+model CohortMembership {
+  id           String           @id @default(cuid())
+  cohortId     String
+  userId       String
+  role         MembershipRole   @default(member)
+  status       MembershipStatus @default(active)
+  level        MemberLevel      @default(seed)
+  currentPhase MemberPhase      @default(diagnosis)
+  joinedAt     DateTime         @default(now())
+
+  cohort             Cohort              @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  evaluations        Evaluation[]
+  strategicMapScores StrategicMapScore[]
+  lifePlans          LifePlan[]
+  strategicPlans     StrategicPlan[]
+  tasks              Task[]
+  sessionAttendances SessionAttendee[]
+
+  @@unique([cohortId, userId])
+  @@index([userId])
+  @@map("cohort_memberships")
+}
 
 model User {
-  id              String      @id @default(cuid())
+  id              String    @id @default(cuid())
   name            String
-  email           String      @unique
+  email           String    @unique
   passwordHash    String?
-  role            UserRole    @default(artist)
-  inviteToken     String?     @unique
+  role            UserRole  @default(member)
+  inviteToken     String?   @unique
   inviteExpiresAt DateTime?
-  onboarded       Boolean     @default(false)
-  level           ArtistLevel @default(seed)
+  onboarded       Boolean   @default(false)
   avatarUrl       String?
   bio             String?
   phone           String?
-  currentPhase    ArtistPhase @default(diagnosis)
-  track           Track       @default(artist)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  agreements            Agreement[]
-  evaluationsReceived   Evaluation[]              @relation("EvaluationSubject")
-  evaluationsGiven      Evaluation[]              @relation("EvaluationEvaluator")
-  strategicMapsReceived StrategicMapScore[]       @relation("StrategicMapSubject")
-  strategicMapsGiven    StrategicMapScore[]       @relation("StrategicMapEvaluator")
-  lifePlans             LifePlan[]
-  strategicPlans        StrategicPlan[]
-  tasksOwned            Task[]                    @relation("TaskOwner")
-  tasksAssigned         Task[]                    @relation("TaskAssigner")
-  sessionsMentored      Session[]
-  sessionAttendances    SessionAttendee[]
-  conversationLinks     ConversationParticipant[]
-  messages              Message[]
-  comments              Comment[]
-  passwordResetTokens   PasswordResetToken[]
+  memberships         CohortMembership[]
+  agreements          Agreement[]
+  evaluationsGiven    Evaluation[]              @relation("EvaluationEvaluator")
+  strategicMapsGiven  StrategicMapScore[]       @relation("StrategicMapEvaluator")
+  tasksAssigned       Task[]                    @relation("TaskAssigner")
+  sessionsMentored    Session[]
+  conversationLinks   ConversationParticipant[]
+  messages            Message[]
+  comments            Comment[]
+  passwordResetTokens PasswordResetToken[]
 
   @@map("users")
 }
@@ -145,15 +214,15 @@ model Agreement {
 
 model Evaluation {
   id             String           @id @default(cuid())
-  userId         String
+  membershipId   String
   evaluatorId    String
   evaluationType EvaluationType
   moment         EvaluationMoment
   completedAt    DateTime?
 
-  user      User              @relation("EvaluationSubject", fields: [userId], references: [id], onDelete: Cascade)
-  evaluator User              @relation("EvaluationEvaluator", fields: [evaluatorId], references: [id], onDelete: Cascade)
-  scores    EvaluationScore[]
+  membership CohortMembership  @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  evaluator  User              @relation("EvaluationEvaluator", fields: [evaluatorId], references: [id], onDelete: Cascade)
+  scores     EvaluationScore[]
 
   @@map("evaluations")
 }
@@ -173,7 +242,7 @@ model EvaluationScore {
 
 model StrategicMapScore {
   id             String  @id @default(cuid())
-  userId         String
+  membershipId   String
   evaluatorId    String
   month          String
   longTermScore  Int
@@ -182,37 +251,37 @@ model StrategicMapScore {
   monthlyScore   Int
   notes          String?
 
-  user      User @relation("StrategicMapSubject", fields: [userId], references: [id], onDelete: Cascade)
-  evaluator User @relation("StrategicMapEvaluator", fields: [evaluatorId], references: [id], onDelete: Cascade)
+  membership CohortMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  evaluator  User             @relation("StrategicMapEvaluator", fields: [evaluatorId], references: [id], onDelete: Cascade)
 
   @@map("strategic_map_scores")
 }
 
 model LifePlan {
-  id          String   @id @default(cuid())
-  userId      String
-  whoIAm      String   @default("")
-  whereIAm    String   @default("")
-  whereIGo    String   @default("")
-  whyIDo      String   @default("")
-  commitments String   @default("")
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(cuid())
+  membershipId String
+  whoIAm       String   @default("")
+  whereIAm     String   @default("")
+  whereIGo     String   @default("")
+  whyIDo       String   @default("")
+  commitments  String   @default("")
+  updatedAt    DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  membership CohortMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
 
   @@map("life_plans")
 }
 
 model StrategicPlan {
   id                  String    @id @default(cuid())
-  userId              String
+  membershipId        String
   quarter             String
   longTermVision      String    @default("")
   positioning         String    @default("")
   focusAreas          AreaKey[]
   quarterlyReflection String    @default("")
 
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  membership     CohortMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
   goals          Goal[]
   monthlyActions MonthlyAction[]
 
@@ -253,7 +322,7 @@ model MonthlyAction {
 
 model Task {
   id           String     @id @default(cuid())
-  userId       String
+  membershipId String
   assignedById String?
   title        String
   description  String?
@@ -262,16 +331,17 @@ model Task {
   deadline     String
   status       TaskStatus @default(todo)
 
-  user       User      @relation("TaskOwner", fields: [userId], references: [id], onDelete: Cascade)
-  assignedBy User?     @relation("TaskAssigner", fields: [assignedById], references: [id], onDelete: SetNull)
-  goal       Goal?     @relation(fields: [goalId], references: [id], onDelete: SetNull)
-  comments   Comment[] @relation("TaskComments")
+  membership CohortMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  assignedBy User?            @relation("TaskAssigner", fields: [assignedById], references: [id], onDelete: SetNull)
+  goal       Goal?            @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  comments   Comment[]        @relation("TaskComments")
 
   @@map("tasks")
 }
 
 model Session {
   id               String        @id @default(cuid())
+  cohortId         String
   mentorId         String
   sessionType      SessionType
   scheduledAt      DateTime
@@ -281,6 +351,7 @@ model Session {
   notesPublished   Boolean       @default(false)
   discussionPoints String?
 
+  cohort    Cohort            @relation(fields: [cohortId], references: [id], onDelete: Cascade)
   mentor    User              @relation(fields: [mentorId], references: [id], onDelete: Cascade)
   attendees SessionAttendee[]
 
@@ -288,15 +359,15 @@ model Session {
 }
 
 model SessionAttendee {
-  id        String  @id @default(cuid())
-  sessionId String
-  userId    String
-  attended  Boolean @default(false)
+  id           String  @id @default(cuid())
+  sessionId    String
+  membershipId String
+  attended     Boolean @default(false)
 
-  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session    Session          @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  membership CohortMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
 
-  @@unique([sessionId, userId])
+  @@unique([sessionId, membershipId])
   @@map("session_attendees")
 }
 
@@ -419,6 +490,8 @@ model BetaSignup {
   motivation   String?
   status       BetaSignupStatus @default(pending)
   notes        String?
+  // Pack the application targets; existing rows default to the artist pack.
+  packSlug     String           @default("artist")
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
 
@@ -559,22 +632,37 @@ model Ticket {
   eventId     String
   tierId      String
   paymentId   String?      @unique
-  buyerName   String
-  buyerEmail  String
-  buyerPhone  String?
-  seats       Int          @default(1)
-  priceCents  Int          @default(0)
-  status      TicketStatus @default(pending)
-  notes       String?
-  checkedInAt DateTime?
-  createdAt   DateTime     @default(now())
+  buyerName         String
+  buyerEmail        String
+  buyerPhone        String?
+  marketingConsent  Boolean      @default(false)
+  seats             Int          @default(1)
+  priceCents        Int          @default(0)
+  status            TicketStatus @default(pending)
+  notes             String?
+  checkedInAt       DateTime?
+  createdAt         DateTime     @default(now())
 
-  event   Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  tier    TicketTier @relation(fields: [tierId], references: [id])
-  payment Payment?   @relation(fields: [paymentId], references: [id])
+  event     Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tier      TicketTier       @relation(fields: [tierId], references: [id])
+  payment   Payment?         @relation(fields: [paymentId], references: [id])
+  checkLogs TicketCheckLog[]
 
   @@index([eventId, status])
   @@map("tickets")
+}
+
+model TicketCheckLog {
+  id        String   @id @default(cuid())
+  ticketId  String
+  action    String   // "checkin" | "checkout"
+  adminId   String?
+  createdAt DateTime @default(now())
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@map("ticket_check_logs")
 }
 
 model Payment {
@@ -587,10 +675,11 @@ model Payment {
   eventId     String
   tierId      String
   seats       Int           @default(1)
-  buyerName   String
-  buyerEmail  String
-  buyerPhone  String?
-  metadata    Json?
+  buyerName         String
+  buyerEmail        String
+  buyerPhone        String?
+  marketingConsent  Boolean       @default(false)
+  metadata          Json?
   paidAt      DateTime?
   failedAt    DateTime?
   createdAt   DateTime      @default(now())

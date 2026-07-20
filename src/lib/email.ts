@@ -22,15 +22,15 @@ export async function sendInviteEmail(
   await transporter.sendMail({
     from: FROM,
     to,
-    subject: "Convite — Artista Alpha | WEPAC",
+    subject: "Convite — WEPACKER | WEPAC",
     html: `
       <div style="font-family: Inter, sans-serif; max-width: 500px; margin: 0 auto; padding: 40px 20px;">
-        <h1 style="font-family: Barlow, sans-serif; font-size: 24px; font-weight: 700; color: #000;">Artista Alpha</h1>
+        <h1 style="font-family: Barlow, sans-serif; font-size: 24px; font-weight: 700; color: #000;">WEPACKER</h1>
         <p style="margin-top: 20px; color: #333; line-height: 1.6;">
           Olá ${name},
         </p>
         <p style="color: #333; line-height: 1.6;">
-          Foste convidado/a para participar no programa Artista Alpha da WEPAC — Companhia de Artes.
+          Foste convidado/a para o WEPACKER — o programa de desenvolvimento integral da WEPAC — Companhia de Artes. Estamos juntos. Juntos somos mais fortes.
         </p>
         <p style="margin-top: 24px;">
           <a href="${inviteUrl}" style="display: inline-block; background: #000; color: #fff; padding: 12px 32px; text-decoration: none; font-weight: 700; font-size: 14px;">
@@ -52,10 +52,10 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string) {
   await transporter.sendMail({
     from: FROM,
     to,
-    subject: "Recuperar password — Artista Alpha | WEPAC",
+    subject: "Recuperar password — WEPACKER | WEPAC",
     html: `
       <div style="font-family: Inter, sans-serif; max-width: 500px; margin: 0 auto; padding: 40px 20px;">
-        <h1 style="font-family: Barlow, sans-serif; font-size: 24px; font-weight: 700; color: #000;">Artista Alpha</h1>
+        <h1 style="font-family: Barlow, sans-serif; font-size: 24px; font-weight: 700; color: #000;">WEPACKER</h1>
         <p style="margin-top: 20px; color: #333; line-height: 1.6;">
           Recebemos um pedido para recuperar a tua password.
         </p>
@@ -126,7 +126,7 @@ export async function sendLeadNotificationEmail(lead: LeadEmailData) {
             ${details}
           </table>
           <p style="margin-top: 32px;">
-            <a href="https://wepac.pt/artists/alpha/admin/leads" style="display: inline-block; background: #000; color: #fff; padding: 12px 32px; text-decoration: none; font-weight: 700; font-size: 14px;">
+            <a href="https://wepac.pt/wepacker/admin/leads" style="display: inline-block; background: #000; color: #fff; padding: 12px 32px; text-decoration: none; font-weight: 700; font-size: 14px;">
               Ver no backoffice
             </a>
           </p>
@@ -142,7 +142,7 @@ export async function sendLeadNotificationEmail(lead: LeadEmailData) {
 }
 
 export async function sendBetaSignupConfirmationEmail(name: string, email: string) {
-  const subject = "Candidatura recebida — Programa Artistas WEPAC";
+  const subject = "Candidatura recebida — WEPACKER";
   const html = `
     <div style="font-family: Inter, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 24px; background: #000; color: #fff;">
       <h1 style="font-family: 'Barlow', Arial, sans-serif; font-size: 24px; font-weight: 700; margin: 0;">
@@ -153,7 +153,7 @@ export async function sendBetaSignupConfirmationEmail(name: string, email: strin
           Olá ${name},
         </p>
         <p style="font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.8);">
-          Recebemos a tua candidatura ao Programa Artistas WEPAC. A nossa equipa vai analisar o teu perfil e entrar em contacto em breve.
+          Recebemos a tua candidatura ao WEPACKER. A nossa equipa vai analisar o teu perfil e entrar em contacto em breve.
         </p>
         <p style="font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.8);">
           Obrigado pelo interesse. Até breve.
@@ -176,15 +176,15 @@ export async function sendBetaSignupConfirmationEmail(name: string, email: strin
 }
 
 export async function sendBetaSignupNotificationEmail(name: string, email: string, artisticArea?: string | null) {
-  const subject = `Nova candidatura Artistas: ${name}`;
+  const subject = `Nova candidatura WEPACKER: ${name}`;
   const html = `
     <div style="font-family: Inter, Arial, sans-serif; padding: 24px;">
-      <h2 style="margin: 0;">Nova candidatura — Programa Artistas</h2>
+      <h2 style="margin: 0;">Nova candidatura — WEPACKER</h2>
       <p><strong>Nome:</strong> ${name}</p>
       <p><strong>Email:</strong> ${email}</p>
       ${artisticArea ? `<p><strong>Área:</strong> ${artisticArea}</p>` : ""}
       <p style="margin-top: 16px;">
-        <a href="https://wepac.pt/artists/alpha/admin/beta-signups" style="color: #000; font-weight: bold;">
+        <a href="https://wepac.pt/wepacker/admin/applications" style="color: #000; font-weight: bold;">
           Ver no painel →
         </a>
       </p>

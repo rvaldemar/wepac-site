@@ -4,6 +4,42 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-20 — WEPACKER: rebuild completo da plataforma (substitui Artista Alpha)
+
+A área `/artists/alpha` foi reconstruída do zero como plataforma multi-pack **WEPACKER** em `/wepacker`. Leads e candidaturas (tabelas `leads` e `beta_signups`) preservadas — dados reais intocados.
+
+**Arquitetura nova:**
+
+- **Schema:** models `Pack` / `Cohort` / `CohortMembership`; artefactos de desenvolvimento (avaliações, planos, tarefas, sessões) pendurados na membership, não no user — uma pessoa pode pertencer a vários packs. `UserRole` passa a `member|mentor|admin`; 7ª área do radar é `domain`, com label por pack (`Pack.domainLabel`). `beta_signups` ganha coluna aditiva `packSlug` (default `artist`). Migração: `20260720120000_wepacker_platform_rebuild` — **esvazia as tabelas da plataforma (dados de teste) antes de alterar; leads/beta_signups só levam o ADD COLUMN**.
+- **Segurança (fix do defeito conhecido):** todas as server actions novas em `src/lib/wepacker/actions/` verificam sessão e ownership via guards centrais (`src/lib/wepacker/guards.ts`). Nenhuma action aceita userId/membershipId do cliente sem validação de acesso (owner, mentor da cohort ou admin). As actions antigas sem auth foram eliminadas com a área antiga.
+- **Rotas:** `/wepacker` (landing pública), `/wepacker/[pack]/candidatura` (pública, alimenta pipeline beta_signups), login/invite/password, onboarding (welcome/agreement/assessment), área member (dashboard/diagnosis/ppv/plan/tasks/sessions/messages/profile), mentor (`/wepacker/mentor/*`, detalhe por membershipId em `members/[id]`), admin (users, cohorts, applications, leads, settings). Redirects 308 de `/artists/alpha/*` para os equivalentes novos no middleware.
+- **Onboarding fix:** o callback jwt agora refaz role/onboarded da BD quando o cliente chama `useSession().update()` — o fluxo antigo deixava o utilizador preso com JWT `onboarded=false` após aceitar o acordo.
+- **Seed:** Pack `artist` ("Pack Artista") + cohort "Alpha" + users de teste (ana/pedro/maria/joao @example.com, ricardo@wepac.pt mentor, admin@wepac.pt — password123).
+
+**Deploy (pendente — decisão HITL):** requer no servidor (1) `npx prisma@6.19.2 migrate deploy` (a migração **apaga os users/dados de teste da plataforma em prod**; leads intactas), (2) `npx prisma@6.19.2 generate`, (3) recriar o utilizador admin (via seed completo NÃO — o seed apaga e recria tudo; criar admin à mão via psql ou correr o seed conscientemente), (4) `systemctl restart wepac`. Nota: em `next start` o Auth.js exige `NEXTAUTH_SECRET`/`AUTH_SECRET` e host confiável — prod já tem ambiente configurado.
+
+**Validação local:** build verde (53 páginas), vitest 11/11, smoke test HTTP autenticado com os 3 perfis (member/mentor/admin) tudo 200, gates de role e redirects legacy confirmados.
+
+---
+
+## 2026-06-18 — Bilheteira: check-in/check-out com histórico + scanner QR + QR de acesso por bilhete
+
+Implementação completa do sistema de check-in para uso em porta de concertos.
+
+**O que foi adicionado:**
+
+- **`TicketCheckLog` (Prisma)** — nova tabela que regista cada check-in e check-out com timestamp e adminId. Migração: `20260618_add_ticket_check_log`.
+- **API route `POST/GET /api/bilheteira/checkin`** — endpoint JSON autenticado por cookie de sessão. GET faz lookup por ticket ID ou serial (BT-xxx). POST executa checkin/checkout e regista no log.
+- **Página `/bilheteira/admin/events/[id]/checkin`** — página dedicada para o porteiro. Mostra contador de admitidos, botão de câmara (QR scanner via `qr-scanner` 1.4.2), input manual de serial como fallback. Auto check-in ao ler QR, resultado com feedback imediato (verde = admitido, laranja = já admitido, vermelho = inválido). Histórico do bilhete visível no resultado. Auto-reset após 4 segundos.
+- **Botão "Modo Check-in"** no painel admin do evento — acesso rápido à página de porta.
+- **Coluna QR na tabela de bilhetes** — QR code 48×48 inline por bilhete, para o admin mostrar ao cliente no ecrã e o cliente digitalizar para aceder ao bilhete no telemóvel.
+- **Histórico inline por bilhete** na tabela do admin — linha extra abaixo de cada bilhete com log de check-ins/check-outs (hora exacta, tipo de acção).
+- **`checkInTicketAction` actualizada** — agora também regista no `TicketCheckLog` (para toggling via botão Admitir/Anular da página admin).
+
+**Fluxo na porta:** porteiro acede a `/bilheteira/admin/events/[id]/checkin` no telemóvel → liga câmara → lê QR do bilhete do cliente → sistema faz check-in automático → mostra nome, tier, lugares e estado. Se bilhete já admitido, mostra aviso laranja. Sempre possível anular a admissão com botão "Anular admissão".
+
+---
+
 ## 2026-05-07 — Bilheteira admin: client-side exception em /events/[id]
 
 Sintoma: editar um evento em `https://wepac.pt/bilheteira/admin/events/<id>` mostrava "Application error: a client-side exception has occurred" em vez do formulário. Sem entrada nos logs do servidor (puramente cliente).

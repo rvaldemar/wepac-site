@@ -3,8 +3,8 @@ import { Fragment } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { FadeIn } from "@/components/FadeIn";
-import { StaticRadar } from "@/components/artists/StaticRadar";
-import { BetaSignupForm } from "@/components/artists/BetaSignupForm";
+import { StaticRadar } from "@/components/wepacker/StaticRadar";
+import { BetaSignupForm } from "@/components/wepacker/BetaSignupForm";
 
 export const metadata: Metadata = {
   title: "Artistas WEPAC",

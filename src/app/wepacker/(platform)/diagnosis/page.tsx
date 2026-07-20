@@ -1,0 +1,56 @@
+import { requirePageUser } from "@/lib/wepacker/page-guards";
+import { getMyContext } from "@/lib/wepacker/actions/user";
+import { computeAreaScores, getIndicatorScores, getEvaluations } from "@/lib/wepacker/actions/evaluation";
+import DiagnosisPageClient from "./page-client";
+
+const MOMENTS = ["entry", "mid", "exit"] as const;
+
+export default async function DiagnosisPage() {
+  await requirePageUser();
+  const { membership } = await getMyContext();
+
+  if (!membership) {
+    return (
+      <div className="p-6 lg:p-8">
+        <h1 className="font-barlow text-2xl font-bold text-wepac-white">
+          Diagnóstico / Avaliação
+        </h1>
+        <p className="mt-4 max-w-md text-sm text-wepac-text-tertiary">
+          A tua conta ainda não está associada a uma cohort — contacta a
+          equipa WEPAC.
+        </p>
+      </div>
+    );
+  }
+
+  const membershipId = membership.membershipId;
+
+  const [areaScoresByMoment, indicatorScoresByMoment, evaluations] = await Promise.all([
+    Promise.all(MOMENTS.map((m) => computeAreaScores(membershipId, m))),
+    Promise.all(MOMENTS.map((m) => getIndicatorScores(membershipId, m))),
+    getEvaluations(membershipId),
+  ]);
+
+  const scoresByMoment = Object.fromEntries(
+    MOMENTS.map((m, i) => [m, areaScoresByMoment[i]])
+  ) as Record<(typeof MOMENTS)[number], (typeof areaScoresByMoment)[number]>;
+
+  const indicatorsByMoment = Object.fromEntries(
+    MOMENTS.map((m, i) => [m, indicatorScoresByMoment[i]])
+  ) as Record<(typeof MOMENTS)[number], (typeof indicatorScoresByMoment)[number]>;
+
+  // Only offer moments where a self or mentor evaluation actually exists.
+  const availableMoments = MOMENTS.filter((m) =>
+    evaluations.some((e) => e.moment === m)
+  );
+
+  return (
+    <DiagnosisPageClient
+      scoresByMoment={scoresByMoment}
+      indicatorsByMoment={indicatorsByMoment}
+      availableMoments={availableMoments.length > 0 ? availableMoments : ["entry"]}
+      packSlug={membership.packSlug}
+      domainLabel={membership.domainLabel}
+    />
+  );
+}
