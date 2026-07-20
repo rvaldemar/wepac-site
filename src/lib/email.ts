@@ -32,7 +32,7 @@ const FONT_BODY = "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif";
 // touching these. Never hand-derive a substitute (font render, pixel
 // inversion, file of unknown provenance) — re-export from
 // brand-assets/wepac/source/ or ask for a fresh download instead.
-const WEPAC_WORDMARK = `${APP_URL}/logo/wepac/wordmark-black.png`;
+const WEPAC_BADGE = `${APP_URL}/logo/wepac/badge-black.png`;
 const WEPACKER_LOCKUP = `${APP_URL}/logo/email/wepacker-lockup-black.png`;
 
 interface EmailShellOptions {
@@ -114,9 +114,9 @@ function heading(text: string): string {
 
 // WEPACKER emails header with the WEPACKER wordmark, so the footer signs
 // off with the parent brand mark ("by WEPAC") instead of repeating text.
-const WEPACKER_FOOTER = `<img src="${WEPAC_WORDMARK}" alt="WEPAC" width="110" style="display:block; width:110px; height:auto; border:0; margin-bottom:14px; opacity:0.8;" />From packers to WEPACkers.<br /><a href="${APP_URL}/wepacker" style="color:#999999;">wepac.pt/wepacker</a> · <a href="mailto:info@wepac.pt" style="color:#999999;">info@wepac.pt</a>`;
+const WEPACKER_FOOTER = `<img src="${WEPAC_BADGE}" alt="WEPAC" width="90" style="display:block; width:90px; height:auto; border:0; margin-bottom:14px;" />From packers to WEPACkers.<br /><a href="${APP_URL}/wepacker" style="color:#999999;">wepac.pt/wepacker</a> · <a href="mailto:info@wepac.pt" style="color:#999999;">info@wepac.pt</a>`;
 
-const WEPAC_FOOTER = `<img src="${WEPAC_WORDMARK}" alt="WEPAC" width="110" style="display:block; width:110px; height:auto; border:0; margin-bottom:14px; opacity:0.8;" /><a href="${APP_URL}" style="color:#999999;">wepac.pt</a> · <a href="mailto:info@wepac.pt" style="color:#999999;">info@wepac.pt</a>`;
+const WEPAC_FOOTER = `<img src="${WEPAC_BADGE}" alt="WEPAC" width="90" style="display:block; width:90px; height:auto; border:0; margin-bottom:14px;" /><a href="${APP_URL}" style="color:#999999;">wepac.pt</a> · <a href="mailto:info@wepac.pt" style="color:#999999;">info@wepac.pt</a>`;
 
 // ===== WEPACKER EMAILS =====
 
@@ -301,7 +301,7 @@ export async function sendLeadNotificationEmail(lead: LeadEmailData) {
       subject: `Nova lead Wessex: ${lead.name}${lead.eventType ? ` — ${lead.eventType}` : ""}`,
       html: emailShell({
         preheader: `Nova lead de ${lead.name}.`,
-        logoSrc: WEPAC_WORDMARK,
+        logoSrc: WEPAC_BADGE,
         logoAlt: "WEPAC",
         logoWidth: 140,
         bodyHtml,
