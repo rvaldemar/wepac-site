@@ -6,30 +6,63 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 
-const memberNav = [
-  { label: "Dashboard", href: "/wepacker/dashboard", icon: "◆" },
-  { label: "Diagnóstico", href: "/wepacker/diagnosis", icon: "◎" },
-  { label: "Life Plan", href: "/wepacker/ppv", icon: "◇" },
-  { label: "Trails", href: "/wepacker/trails", icon: "⟡" },
-  { label: "Plano", href: "/wepacker/plan", icon: "▣" },
-  { label: "Tarefas", href: "/wepacker/tasks", icon: "☑" },
-  { label: "Sessões", href: "/wepacker/sessions", icon: "◷" },
-  { label: "Mensagens", href: "/wepacker/messages", icon: "✉" },
-  { label: "Perfil", href: "/wepacker/profile", icon: "◉" },
+interface NavItem {
+  label: string;
+  href: string;
+  icon: string;
+}
+
+interface NavGroup {
+  header?: string;
+  items: NavItem[];
+}
+
+const memberNavGroups: NavGroup[] = [
+  {
+    items: [
+      { label: "Home", href: "/wepacker/dashboard", icon: "◆" },
+      { label: "Diagnóstico", href: "/wepacker/diagnosis", icon: "◎" },
+    ],
+  },
+  {
+    header: "Basecamp",
+    items: [
+      { label: "Life Plan", href: "/wepacker/ppv", icon: "◇" },
+      { label: "Plano", href: "/wepacker/plan", icon: "▣" },
+      { label: "Trails", href: "/wepacker/trails", icon: "⟡" },
+    ],
+  },
+  {
+    header: "Dia a dia",
+    items: [
+      { label: "Tarefas", href: "/wepacker/tasks", icon: "☑" },
+      { label: "Sessões", href: "/wepacker/sessions", icon: "◷" },
+      { label: "Mensagens", href: "/wepacker/messages", icon: "✉" },
+      { label: "Perfil", href: "/wepacker/profile", icon: "◉" },
+    ],
+  },
 ];
 
-const mentorNav = [
-  { label: "Painel Mentor", href: "/wepacker/mentor", icon: "◆" },
-  { label: "Sessões", href: "/wepacker/mentor/sessions", icon: "◷" },
-  { label: "Tarefas", href: "/wepacker/mentor/tasks", icon: "☑" },
-  { label: "Mensagens", href: "/wepacker/mentor/messages", icon: "✉" },
+const mentorNavGroups: NavGroup[] = [
+  {
+    items: [
+      { label: "Painel Mentor", href: "/wepacker/mentor", icon: "◆" },
+      { label: "Sessões", href: "/wepacker/mentor/sessions", icon: "◷" },
+      { label: "Tarefas", href: "/wepacker/mentor/tasks", icon: "☑" },
+      { label: "Mensagens", href: "/wepacker/mentor/messages", icon: "✉" },
+    ],
+  },
 ];
 
-const adminNav = [
-  { label: "Utilizadores", href: "/wepacker/admin/users", icon: "◉" },
-  { label: "Journeys", href: "/wepacker/admin/cohorts", icon: "▣" },
-  { label: "Leads", href: "/wepacker/admin/leads", icon: "◈" },
-  { label: "Configurações", href: "/wepacker/admin/settings", icon: "⚙" },
+const adminNavGroups: NavGroup[] = [
+  {
+    items: [
+      { label: "Utilizadores", href: "/wepacker/admin/users", icon: "◉" },
+      { label: "Journeys", href: "/wepacker/admin/cohorts", icon: "▣" },
+      { label: "Leads", href: "/wepacker/admin/leads", icon: "◈" },
+      { label: "Configurações", href: "/wepacker/admin/settings", icon: "⚙" },
+    ],
+  },
 ];
 
 interface SidebarProps {
@@ -49,12 +82,16 @@ export function PlatformSidebar({
   const isMentor = pathname.includes("/mentor");
   const isAdmin = pathname.includes("/admin");
 
-  let nav = memberNav;
-  if (isMentor) nav = mentorNav;
-  if (isAdmin) nav = adminNav;
+  let navGroups = memberNavGroups;
+  if (isMentor) navGroups = mentorNavGroups;
+  if (isAdmin) navGroups = adminNavGroups;
 
   const canMentor = role === "mentor" || role === "admin";
   const canAdmin = role === "admin";
+
+  function isActive(href: string): boolean {
+    return pathname === href || pathname.startsWith(href + "/");
+  }
 
   function getBadgeCount(label: string): number {
     if (label === "Mensagens") return unreadMessages;
@@ -63,25 +100,34 @@ export function PlatformSidebar({
   }
 
   const navLinks = (onNavigate?: () => void) =>
-    nav.map((item) => (
-      <Link
-        key={item.href}
-        href={item.href}
-        onClick={onNavigate}
-        className={`flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
-          pathname === item.href
-            ? "bg-wepac-white text-wepac-black"
-            : "text-wepac-text-secondary hover:bg-wepac-card hover:text-wepac-white"
-        }`}
-      >
-        <span className="text-xs opacity-60">{item.icon}</span>
-        {item.label}
-        {getBadgeCount(item.label) > 0 && (
-          <span className="ml-auto bg-wepac-white px-1.5 py-0.5 text-[10px] font-bold text-wepac-black">
-            {getBadgeCount(item.label)}
-          </span>
+    navGroups.map((group, groupIndex) => (
+      <div key={group.header ?? `group-${groupIndex}`}>
+        {group.header && (
+          <div className="px-3 pb-1 pt-4 text-[10px] font-bold uppercase tracking-wider text-wepac-text-tertiary">
+            {group.header}
+          </div>
         )}
-      </Link>
+        {group.items.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={onNavigate}
+            className={`flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
+              isActive(item.href)
+                ? "bg-wepac-white text-wepac-black"
+                : "text-wepac-text-secondary hover:bg-wepac-card hover:text-wepac-white"
+            }`}
+          >
+            <span className="text-xs opacity-60">{item.icon}</span>
+            {item.label}
+            {getBadgeCount(item.label) > 0 && (
+              <span className="ml-auto bg-wepac-white px-1.5 py-0.5 text-[10px] font-bold text-wepac-black">
+                {getBadgeCount(item.label)}
+              </span>
+            )}
+          </Link>
+        ))}
+      </div>
     ));
 
   const contextLinks = (onNavigate?: () => void) => (
