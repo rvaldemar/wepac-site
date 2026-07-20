@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { getActivePacksPublic } from "@/lib/wepacker/actions/admin";
 import { AREA_LABELS } from "@/lib/wepacker/types";
@@ -50,7 +51,14 @@ export default async function WepackerLandingPage() {
     <div className="min-h-screen bg-wepac-black">
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-6 lg:px-12">
-        <span className="font-barlow text-lg font-bold text-wepac-white">WEPACKER</span>
+        <Image
+          src="/logo/email/wepacker-lockup-white.png"
+          alt="WEPACKER"
+          width={144}
+          height={72}
+          className="h-9 w-auto"
+          priority
+        />
         <Link
           href="/wepacker/login"
           className="text-xs text-wepac-text-tertiary transition-colors hover:text-wepac-white"

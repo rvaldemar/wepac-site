@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
@@ -17,9 +18,14 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-wepac-black px-6">
       <div className="w-full max-w-sm">
         <div className="text-center">
-          <h1 className="font-barlow text-3xl font-bold text-wepac-white">
-            WEPACKER
-          </h1>
+          <Image
+            src="/logo/email/wepacker-lockup-white.png"
+            alt="WEPACKER"
+            width={160}
+            height={80}
+            className="mx-auto h-10 w-auto"
+            priority
+          />
           <p className="mt-1 text-sm text-wepac-text-tertiary">
             WEPAC
           </p>

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -124,11 +125,15 @@ export function PlatformSidebar({
     <>
       {/* Mobile header */}
       <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-wepac-black/95 px-4 py-3 backdrop-blur-md lg:hidden">
-        <Link
-          href="/wepacker/dashboard"
-          className="font-barlow text-lg font-bold text-wepac-white"
-        >
-          WEPACKER
+        <Link href="/wepacker/dashboard">
+          <Image
+            src="/logo/email/wepacker-lockup-white.png"
+            alt="WEPACKER"
+            width={112}
+            height={56}
+            className="h-7 w-auto"
+            priority
+          />
         </Link>
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
@@ -174,9 +179,13 @@ export function PlatformSidebar({
       <aside className="fixed left-0 top-0 hidden h-screen w-56 flex-col border-r border-wepac-border bg-wepac-black lg:flex">
         <div className="border-b border-wepac-border px-5 py-5">
           <Link href="/wepacker/dashboard">
-            <span className="font-barlow text-lg font-bold text-wepac-white">
-              WEPACKER
-            </span>
+            <Image
+              src="/logo/email/wepacker-lockup-white.png"
+              alt="WEPACKER"
+              width={128}
+              height={64}
+              className="h-8 w-auto"
+            />
             <span className="mt-0.5 block text-xs text-wepac-text-tertiary">
               WEPAC
             </span>

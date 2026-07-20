@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { getActivePacksPublic } from "@/lib/wepacker/actions/admin";
 import { CandidaturaFormClient } from "../[pack]/intake/page-client";
@@ -18,11 +19,15 @@ export default async function GeneralIntakePage() {
   return (
     <div className="min-h-screen bg-wepac-black">
       <header className="flex items-center justify-between px-6 py-6 lg:px-12">
-        <Link
-          href="/wepacker"
-          className="font-barlow text-lg font-bold text-wepac-white"
-        >
-          WEPACKER
+        <Link href="/wepacker">
+          <Image
+            src="/logo/email/wepacker-lockup-white.png"
+            alt="WEPACKER"
+            width={144}
+            height={72}
+            className="h-9 w-auto"
+            priority
+          />
         </Link>
         <Link
           href="/wepacker/login"
