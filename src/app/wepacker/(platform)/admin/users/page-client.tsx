@@ -73,8 +73,9 @@ export function AdminUsersPageClient({
   const [inviteEmail, setInviteEmail] = useState(prefill?.email ?? "");
   const [invitePhone, setInvitePhone] = useState(prefill?.phone ?? "");
   const [inviteRole, setInviteRole] = useState<UserRole>("member");
-  const [inviteCohortId, setInviteCohortId] = useState("");
-  const [inviteMembershipRole, setInviteMembershipRole] = useState<MembershipRole>("member");
+  const [inviteMemberships, setInviteMemberships] = useState<
+    { cohortId: string; role: MembershipRole }[]
+  >([]);
   const [submitting, setSubmitting] = useState(false);
   const [inviteError, setInviteError] = useState("");
   const [inviteResult, setInviteResult] = useState<{
@@ -113,10 +114,18 @@ export function AdminUsersPageClient({
     setInviteEmail("");
     setInvitePhone("");
     setInviteRole("member");
-    setInviteCohortId("");
-    setInviteMembershipRole("member");
+    setInviteMemberships([]);
     setInviteResult(null);
     setInviteError("");
+  }
+
+  function updateInviteMembership(
+    index: number,
+    patch: Partial<{ cohortId: string; role: MembershipRole }>
+  ) {
+    setInviteMemberships((prev) =>
+      prev.map((m, i) => (i === index ? { ...m, ...patch } : m))
+    );
   }
 
   async function handleInviteSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -129,8 +138,7 @@ export function AdminUsersPageClient({
         email: inviteEmail,
         phone: invitePhone || undefined,
         role: inviteRole,
-        cohortId: inviteCohortId || undefined,
-        membershipRole: inviteCohortId ? inviteMembershipRole : undefined,
+        memberships: inviteMemberships.filter((m) => m.cohortId),
       });
       setInviteResult({ inviteUrl: result.inviteUrl, whatsappUrl: result.whatsappUrl });
       router.refresh();
@@ -257,40 +265,82 @@ export function AdminUsersPageClient({
                     <option value="admin">Admin</option>
                   </select>
                 </div>
-                <div>
+                {/* Multi-pack / multi-cohort memberships */}
+                <div className="sm:col-span-3">
                   <label className="block text-xs text-wepac-text-tertiary">
-                    Cohort (opcional)
+                    Cohorts (opcional — a mesma pessoa pode entrar em vários
+                    packs)
                   </label>
-                  <select
-                    value={inviteCohortId}
-                    onChange={(e) => setInviteCohortId(e.target.value)}
-                    className="mt-1 w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
-                  >
-                    <option value="">Sem cohort</option>
-                    {cohorts.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.pack.name} — {c.name}
-                      </option>
+                  <div className="mt-1 space-y-2">
+                    {inviteMemberships.map((m, i) => (
+                      <div key={i} className="flex gap-2">
+                        <select
+                          value={m.cohortId}
+                          onChange={(e) =>
+                            updateInviteMembership(i, {
+                              cohortId: e.target.value,
+                            })
+                          }
+                          className="w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
+                        >
+                          <option value="">Escolher cohort…</option>
+                          {cohorts
+                            .filter(
+                              (c) =>
+                                c.id === m.cohortId ||
+                                !inviteMemberships.some(
+                                  (other, j) =>
+                                    j !== i && other.cohortId === c.id
+                                )
+                            )
+                            .map((c) => (
+                              <option key={c.id} value={c.id}>
+                                {c.pack.name} — {c.name}
+                              </option>
+                            ))}
+                        </select>
+                        <select
+                          value={m.role}
+                          onChange={(e) =>
+                            updateInviteMembership(i, {
+                              role: e.target.value as MembershipRole,
+                            })
+                          }
+                          className="w-36 bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
+                        >
+                          <option value="member">Membro</option>
+                          <option value="mentor">Mentor</option>
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setInviteMemberships((prev) =>
+                              prev.filter((_, j) => j !== i)
+                            )
+                          }
+                          className="px-2 text-wepac-text-tertiary hover:text-wepac-white"
+                          aria-label="Remover cohort"
+                        >
+                          &times;
+                        </button>
+                      </div>
                     ))}
-                  </select>
-                </div>
-                {inviteCohortId && (
-                  <div>
-                    <label className="block text-xs text-wepac-text-tertiary">
-                      Papel na cohort
-                    </label>
-                    <select
-                      value={inviteMembershipRole}
-                      onChange={(e) =>
-                        setInviteMembershipRole(e.target.value as MembershipRole)
-                      }
-                      className="mt-1 w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
-                    >
-                      <option value="member">Membro</option>
-                      <option value="mentor">Mentor</option>
-                    </select>
+                    {inviteMemberships.length < cohorts.length && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setInviteMemberships((prev) => [
+                            ...prev,
+                            { cohortId: "", role: "member" },
+                          ])
+                        }
+                        className="border border-wepac-white/20 px-3 py-1.5 text-xs text-wepac-white/60 transition-colors hover:text-wepac-white"
+                      >
+                        + Adicionar cohort
+                      </button>
+                    )}
                   </div>
-                )}
+                </div>
                 {inviteError && (
                   <p className="text-sm text-wepac-error sm:col-span-3">{inviteError}</p>
                 )}

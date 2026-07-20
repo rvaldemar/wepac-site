@@ -236,21 +236,26 @@ export async function getAllUsers() {
   return users.map((u) => ({ ...u, createdAt: u.createdAt.toISOString() }));
 }
 
-// Creates a user with an invite token and (optionally) a membership in a
-// cohort, then emails the invite link.
+// Creates a user with an invite token and any number of memberships
+// (multi-pack / multi-cohort), then emails the invite link.
 export async function createInvite(data: {
   name: string;
   email: string;
   phone?: string;
   role: UserRole;
-  cohortId?: string;
-  membershipRole?: MembershipRole;
+  memberships?: { cohortId: string; role: MembershipRole }[];
 }) {
   await requireAdmin();
 
   const email = data.email.trim().toLowerCase();
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) throw new Error("Email já registado.");
+
+  const memberships = (data.memberships ?? []).filter((m) => m.cohortId);
+  const uniqueCohorts = new Set(memberships.map((m) => m.cohortId));
+  if (uniqueCohorts.size !== memberships.length) {
+    throw new Error("Cohorts duplicadas no convite.");
+  }
 
   const token = randomUUID();
   const inviteExpiresAt = new Date();
@@ -265,13 +270,13 @@ export async function createInvite(data: {
       inviteToken: token,
       inviteExpiresAt,
       onboarded: false,
-      ...(data.cohortId
+      ...(memberships.length > 0
         ? {
             memberships: {
-              create: {
-                cohortId: data.cohortId,
-                role: data.membershipRole ?? "member",
-              },
+              create: memberships.map((m) => ({
+                cohortId: m.cohortId,
+                role: m.role,
+              })),
             },
           }
         : {}),
