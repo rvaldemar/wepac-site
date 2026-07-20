@@ -29,5 +29,10 @@ export default async function AssessmentPage() {
     );
   }
 
-  return <AssessmentPageClient packSlug={membership.packSlug} />;
+  return (
+    <AssessmentPageClient
+      packSlug={membership.packSlug}
+      membershipId={membership.membershipId}
+    />
+  );
 }
