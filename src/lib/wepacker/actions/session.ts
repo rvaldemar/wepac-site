@@ -11,7 +11,10 @@ import {
   requireUser,
 } from "@/lib/wepacker/guards";
 
-const sessionInclude = {
+// Full attendee shape — mentor-facing only. Includes every field,
+// including privateNote, so this must never be reused for a member-facing
+// read path.
+const mentorSessionInclude = {
   attendees: {
     include: {
       user: { select: { id: true, name: true } },
@@ -19,6 +22,50 @@ const sessionInclude = {
   },
   mentor: { select: { id: true, name: true } },
 } as const;
+
+// Member-facing attendee shape: scoped to the requesting user's own row
+// only (never another attendee's), and never selects privateNote — that
+// field is mentor-only and must not cross the server/client boundary.
+// sharedNote/sharedNotePublished are still selected raw here; callers
+// must run the result through `maskUnpublishedNotes` before returning.
+function ownAttendeeSessionInclude(userId: string) {
+  return {
+    attendees: {
+      where: { userId },
+      select: {
+        id: true,
+        attended: true,
+        outcome: true,
+        sharedNote: true,
+        sharedNotePublished: true,
+        user: { select: { id: true, name: true } },
+      },
+    },
+    mentor: { select: { id: true, name: true } },
+  } as const;
+}
+
+type OwnAttendeeSession = {
+  attendees: {
+    id: string;
+    attended: boolean;
+    outcome: string | null;
+    sharedNote: string | null;
+    sharedNotePublished: boolean;
+    user: { id: string; name: string };
+  }[];
+};
+
+// A member should only ever see their shared note once the mentor has
+// published it — hide it otherwise, even though it was fetched.
+function maskUnpublishedNotes<T extends OwnAttendeeSession>(session: T): T {
+  return {
+    ...session,
+    attendees: session.attendees.map((a) =>
+      a.sharedNotePublished ? a : { ...a, sharedNote: null }
+    ),
+  };
+}
 
 // A session's mentor gate: cohort-scoped sessions defer to the cohort
 // guard; a session without a cohort (a personal mentoring session) is
@@ -44,25 +91,27 @@ async function assertMentorOfSession(
 
 export async function getMySessions() {
   const { user } = await requireMembership();
-  return prisma.session.findMany({
+  const sessions = await prisma.session.findMany({
     where: {
       attendees: { some: { userId: user.id } },
     },
-    include: sessionInclude,
+    include: ownAttendeeSessionInclude(user.id),
     orderBy: { scheduledAt: "desc" },
   });
+  return sessions.map(maskUnpublishedNotes);
 }
 
 export async function getNextSession() {
   const { user } = await requireMembership();
-  return prisma.session.findFirst({
+  const session = await prisma.session.findFirst({
     where: {
       status: "scheduled",
       attendees: { some: { userId: user.id } },
     },
-    include: sessionInclude,
+    include: ownAttendeeSessionInclude(user.id),
     orderBy: { scheduledAt: "asc" },
   });
+  return session ? maskUnpublishedNotes(session) : null;
 }
 
 // Sessions across every cohort the actor mentors, plus every personal
@@ -71,7 +120,7 @@ export async function getMentoredSessions() {
   const actor = await requireUser();
   if (actor.role === "admin") {
     return prisma.session.findMany({
-      include: sessionInclude,
+      include: mentorSessionInclude,
       orderBy: { scheduledAt: "desc" },
     });
   }
@@ -80,7 +129,7 @@ export async function getMentoredSessions() {
     where: {
       OR: [{ cohortId: { in: mentoredCohortIds } }, { mentorId: actor.id }],
     },
-    include: sessionInclude,
+    include: mentorSessionInclude,
     orderBy: { scheduledAt: "desc" },
   });
 }
@@ -147,7 +196,7 @@ export async function createSession(data: {
         create: data.attendeeUserIds.map((userId) => ({ userId })),
       },
     },
-    include: sessionInclude,
+    include: mentorSessionInclude,
   });
 }
 
@@ -180,5 +229,26 @@ export async function setAttendance(
   return prisma.sessionAttendee.update({
     where: { sessionId_userId: { sessionId, userId } },
     data: { attended },
+  });
+}
+
+// Per-person session notes and outcome — the mentor-facing counterpart
+// to setAttendance. privateNote is mentor-only and never returned to the
+// member; sharedNote only reaches the member once sharedNotePublished.
+export async function updateSessionAttendee(
+  sessionId: string,
+  userId: string,
+  data: {
+    attended?: boolean;
+    privateNote?: string;
+    sharedNote?: string;
+    sharedNotePublished?: boolean;
+    outcome?: string;
+  }
+) {
+  await assertMentorOfSession(sessionId);
+  return prisma.sessionAttendee.update({
+    where: { sessionId_userId: { sessionId, userId } },
+    data,
   });
 }
