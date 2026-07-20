@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { styles } from "../../ui";
 
 type Department = { id: string; name: string };
@@ -90,6 +90,22 @@ function toInputTime(value: Date | string): string {
   return `${p.hour}:${p.minute}`;
 }
 
+// Reports whether we're past the initial (server-matching) render, without
+// an Effect. useSyncExternalStore is the React-idiomatic way to expose a
+// value that legitimately differs between the server render and the client:
+// getServerSnapshot always answers `false` (so hydration matches what the
+// server sent), while getSnapshot answers `true` on the client, so React
+// re-renders with the real value right after hydration completes — no
+// setState-in-Effect involved.
+const noopSubscribe = () => () => {};
+function useHydrated(): boolean {
+  return useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false
+  );
+}
+
 function emptyState(departments: Department[]): FormState {
   return {
     title: "",
@@ -119,10 +135,11 @@ export function EventFormClient({
   submitLabel,
 }: Props) {
   // Initial state is identical on server and client (empty / first department).
-  // Real values are populated client-side via useEffect to avoid hydration
-  // mismatches caused by locale-dependent date formatting.
+  // Real values are populated client-side (once `hydrated` flips to true) to
+  // avoid hydration mismatches caused by locale-dependent date formatting.
   const [form, setForm] = useState<FormState>(() => emptyState(departments));
-  const [hydrated, setHydrated] = useState(false);
+  const hydrated = useHydrated();
+  const [defaultsApplied, setDefaultsApplied] = useState(false);
 
   const [tiers, setTiers] = useState<Tier[]>(
     defaults
@@ -166,32 +183,35 @@ export function EventFormClient({
         ]
   );
 
-  useEffect(() => {
-    if (!defaults) {
-      setHydrated(true);
-      return;
+  // Populate the real form values once, on the first render after hydration
+  // (`hydrated` flips false -> true). This is the "adjust state during
+  // render" pattern instead of an Effect: it runs synchronously as part of
+  // rendering, before anything is painted, so there's no extra committed
+  // frame and no cascading re-render.
+  if (hydrated && !defaultsApplied) {
+    setDefaultsApplied(true);
+    if (defaults) {
+      setForm({
+        title: defaults.title ?? "",
+        subtitle: defaults.subtitle ?? "",
+        description: defaults.description ?? "",
+        departmentId: defaults.departmentId || departments[0]?.id || "",
+        brandId: defaults.brandId ?? "",
+        venue: defaults.venue ?? "",
+        address: defaults.address ?? "",
+        startsAtDate: toInputDate(defaults.startsAt),
+        startsAtTime: toInputTime(defaults.startsAt),
+        doorsAtDate: defaults.doorsAt ? toInputDate(defaults.doorsAt) : "",
+        doorsAtTime: defaults.doorsAt ? toInputTime(defaults.doorsAt) : "",
+        durationMinutes:
+          defaults.durationMinutes != null ? String(defaults.durationMinutes) : "",
+        capacity: defaults.capacity != null ? String(defaults.capacity) : "",
+        coverImage: defaults.coverImage ?? "",
+        ticketNote: defaults.ticketNote ?? "",
+        status: defaults.status || "draft",
+      });
     }
-    setForm({
-      title: defaults.title ?? "",
-      subtitle: defaults.subtitle ?? "",
-      description: defaults.description ?? "",
-      departmentId: defaults.departmentId || departments[0]?.id || "",
-      brandId: defaults.brandId ?? "",
-      venue: defaults.venue ?? "",
-      address: defaults.address ?? "",
-      startsAtDate: toInputDate(defaults.startsAt),
-      startsAtTime: toInputTime(defaults.startsAt),
-      doorsAtDate: defaults.doorsAt ? toInputDate(defaults.doorsAt) : "",
-      doorsAtTime: defaults.doorsAt ? toInputTime(defaults.doorsAt) : "",
-      durationMinutes:
-        defaults.durationMinutes != null ? String(defaults.durationMinutes) : "",
-      capacity: defaults.capacity != null ? String(defaults.capacity) : "",
-      coverImage: defaults.coverImage ?? "",
-      ticketNote: defaults.ticketNote ?? "",
-      status: defaults.status || "draft",
-    });
-    setHydrated(true);
-  }, [defaults, departments]);
+  }
 
   const filteredBrands = useMemo(
     () => brands.filter((b) => b.departmentId === form.departmentId),

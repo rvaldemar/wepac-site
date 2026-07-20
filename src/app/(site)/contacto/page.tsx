@@ -19,10 +19,22 @@ function ContactoContent() {
   const [subject, setSubject] = useState(initialSubject);
   const [message, setMessage] = useState(initialMessage);
 
-  useEffect(() => {
+  // Keep subject/message in sync with the URL search params without an
+  // Effect: this is the "adjust state when a prop changes" pattern — track
+  // the previous prop value in state and, if it changed since the last
+  // render, update the derived state synchronously during render. React
+  // re-renders immediately before committing, so this never paints a stale
+  // frame and never cascades through an Effect.
+  const [prevInitialSubject, setPrevInitialSubject] = useState(initialSubject);
+  const [prevInitialMessage, setPrevInitialMessage] = useState(initialMessage);
+  if (initialSubject !== prevInitialSubject) {
+    setPrevInitialSubject(initialSubject);
     setSubject(initialSubject);
+  }
+  if (initialMessage !== prevInitialMessage) {
+    setPrevInitialMessage(initialMessage);
     setMessage(initialMessage);
-  }, [initialSubject, initialMessage]);
+  }
 
   // Auto-scroll to form when arriving with prefilled data
   useEffect(() => {
