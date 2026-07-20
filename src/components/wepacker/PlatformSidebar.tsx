@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
+import { useMobileDrawer } from "@/lib/useMobileDrawer";
 
 interface NavItem {
   label: string;
@@ -79,6 +80,11 @@ export function PlatformSidebar({
 }: SidebarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const closeMobileMenu = () => setMobileOpen(false);
+  const { toggleRef, drawerRef } = useMobileDrawer<HTMLButtonElement, HTMLDivElement>(
+    mobileOpen,
+    closeMobileMenu
+  );
   const { data: session } = useSession();
   const role = session?.user?.role;
 
@@ -187,9 +193,12 @@ export function PlatformSidebar({
           />
         </Link>
         <button
+          ref={toggleRef}
           onClick={() => setMobileOpen(!mobileOpen)}
           className="text-wepac-white"
-          aria-label="Menu"
+          aria-expanded={mobileOpen}
+          aria-controls="mobile-sidebar-menu"
+          aria-label={mobileOpen ? "Fechar menu" : "Abrir menu"}
         >
           <svg
             className="h-6 w-6"
@@ -217,11 +226,19 @@ export function PlatformSidebar({
 
       {/* Mobile nav overlay */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-40 bg-wepac-black/95 pt-14 lg:hidden">
+        <div
+          id="mobile-sidebar-menu"
+          ref={drawerRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu de navegação"
+          tabIndex={-1}
+          className="fixed inset-0 z-40 bg-wepac-black/95 pt-14 lg:hidden"
+        >
           <nav className="flex flex-col gap-1 p-4">
-            {navLinks(() => setMobileOpen(false))}
+            {navLinks(closeMobileMenu)}
             <div className="my-4 border-t border-wepac-border" />
-            {contextLinks(() => setMobileOpen(false))}
+            {contextLinks(closeMobileMenu)}
           </nav>
         </div>
       )}
