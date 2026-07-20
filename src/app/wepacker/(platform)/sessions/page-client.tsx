@@ -24,6 +24,8 @@ interface SessionItem {
   notes: string | null;
   notesPublished: boolean;
   discussionPoints: string | null;
+  outcome: string | null;
+  sharedNote: string | null;
 }
 
 interface Props {
@@ -67,16 +69,48 @@ function SessionCard({ session, highlighted }: { session: SessionItem; highlight
           {session.mentorName}
         </span>
       </div>
-      {session.notesPublished && session.notes && (
+      {(session.outcome ||
+        session.sharedNote ||
+        (session.notesPublished && session.notes)) && (
         <div className="mt-4 border-t border-wepac-border pt-4">
-          <h4 className="text-xs font-bold uppercase text-wepac-text-tertiary">Notas do Mentor</h4>
-          <p className="mt-2 text-sm leading-relaxed text-wepac-text-secondary">{session.notes}</p>
-          {session.discussionPoints && (
+          {session.outcome && (
+            <>
+              <h4 className="text-xs font-bold uppercase text-wepac-text-tertiary">
+                O que ficou combinado
+              </h4>
+              <p className="mt-2 text-sm leading-relaxed text-wepac-text-secondary">
+                {session.outcome}
+              </p>
+            </>
+          )}
+          {session.sharedNote && (
             <>
               <h4 className="mt-3 text-xs font-bold uppercase text-wepac-text-tertiary">
-                Pontos discutidos
+                Nota do Mentor
               </h4>
-              <p className="mt-1 text-sm text-wepac-text-secondary">{session.discussionPoints}</p>
+              <p className="mt-2 text-sm leading-relaxed text-wepac-text-secondary">
+                {session.sharedNote}
+              </p>
+            </>
+          )}
+          {session.notesPublished && session.notes && (
+            <>
+              <h4 className="mt-3 text-xs font-bold uppercase text-wepac-text-tertiary">
+                Notas do Mentor
+              </h4>
+              <p className="mt-2 text-sm leading-relaxed text-wepac-text-secondary">
+                {session.notes}
+              </p>
+              {session.discussionPoints && (
+                <>
+                  <h4 className="mt-3 text-xs font-bold uppercase text-wepac-text-tertiary">
+                    Pontos discutidos
+                  </h4>
+                  <p className="mt-1 text-sm text-wepac-text-secondary">
+                    {session.discussionPoints}
+                  </p>
+                </>
+              )}
             </>
           )}
         </div>

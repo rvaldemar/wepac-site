@@ -21,17 +21,24 @@ export default async function SessionsPage() {
 
   const sessions = await getMySessions();
 
-  const serializedSessions = sessions.map((s) => ({
-    id: s.id,
-    scheduledAt: s.scheduledAt.toISOString(),
-    durationMinutes: s.durationMinutes,
-    sessionType: s.sessionType,
-    status: s.status,
-    mentorName: s.mentor.name,
-    notes: s.notes,
-    notesPublished: s.notesPublished,
-    discussionPoints: s.discussionPoints,
-  }));
+  const serializedSessions = sessions.map((s) => {
+    // getMySessions scopes `attendees` to the requesting user's own row —
+    // at most one entry, already masked server-side.
+    const own = s.attendees[0];
+    return {
+      id: s.id,
+      scheduledAt: s.scheduledAt.toISOString(),
+      durationMinutes: s.durationMinutes,
+      sessionType: s.sessionType,
+      status: s.status,
+      mentorName: s.mentor.name,
+      notes: s.notes,
+      notesPublished: s.notesPublished,
+      discussionPoints: s.discussionPoints,
+      outcome: own?.outcome ?? null,
+      sharedNote: own?.sharedNote ?? null,
+    };
+  });
 
   return <SessionsPageClient sessions={serializedSessions} />;
 }
