@@ -39,7 +39,7 @@ interface Props {
 
 export default function MessagesPageClient({ userId, conversations, contacts }: Props) {
   const router = useRouter();
-  const [activeConvo, setActiveConvo] = useState(conversations[0]?.id);
+  const [activeConvo, setActiveConvo] = useState<string | undefined>(conversations[0]?.id);
   const [newMessage, setNewMessage] = useState("");
   const [showContacts, setShowContacts] = useState(false);
   const [sending, setSending] = useState(false);
@@ -55,6 +55,15 @@ export default function MessagesPageClient({ userId, conversations, contacts }: 
     }
   }
 
+  function handleBackToList() {
+    setActiveConvo(undefined);
+  }
+
+  // Below `lg` this is a master/detail layout: the list and the open
+  // conversation never share the row — only one pane is visible at a time.
+  const listPaneClass = activeConvo ? "hidden lg:block" : "block";
+  const detailPaneClass = activeConvo ? "flex" : "hidden lg:flex";
+
   async function handleStartConversation(contactId: string) {
     await startConversation(contactId);
     setShowContacts(false);
@@ -64,7 +73,9 @@ export default function MessagesPageClient({ userId, conversations, contacts }: 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] lg:h-screen">
       {/* Conversation list */}
-      <div className="w-72 flex-shrink-0 border-r border-wepac-border bg-wepac-black">
+      <div
+        className={`${listPaneClass} w-full flex-shrink-0 border-r border-wepac-border bg-wepac-black lg:w-72`}
+      >
         <div className="flex items-center justify-between border-b border-wepac-border p-4">
           <h1 className="font-barlow text-lg font-bold text-wepac-white">Mensagens</h1>
           <button
@@ -129,9 +140,21 @@ export default function MessagesPageClient({ userId, conversations, contacts }: 
       </div>
 
       {/* Messages area */}
-      <div className="flex flex-1 flex-col bg-wepac-dark">
+      <div className={`${detailPaneClass} flex-1 flex-col bg-wepac-dark`}>
         {currentConvo ? (
           <>
+            {/* Mobile-only back control: returns to the conversation list */}
+            <div className="flex items-center gap-3 border-b border-wepac-border p-4 lg:hidden">
+              <button
+                onClick={handleBackToList}
+                className="-m-2 flex items-center gap-1 p-2 text-sm text-wepac-white hover:underline"
+              >
+                ← Voltar
+              </button>
+              <span className="truncate font-barlow text-sm font-bold text-wepac-white">
+                {currentConvo.participants.find((p) => p.id !== userId)?.name ?? "Conversa"}
+              </span>
+            </div>
             <div className="flex-1 overflow-y-auto p-6">
               <div className="space-y-4">
                 {currentConvo.messages.map((msg) => {
