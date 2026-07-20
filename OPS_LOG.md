@@ -4,6 +4,19 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-21 (branch, não deployado) — Debrief de sessão por IA (frente CAPTURE+REVIEW)
+
+Build em worktree isolado — schema + captura de transcrição + workspace de revisão do mentor + motor Anthropic. Não passou por deploy.
+
+- **Schema (migration aditiva única `20260720233529_session_debrief`):** `Session` ganha `transcript`/`transcriptUploadedAt`/`transcriptUploadedById` (mentor-only); novo modelo `SessionDebrief` (status ready/failed only — sem lock de "geração em curso", sem `reviewedAt`/`reviewedByUserId`, conforme trim do board).
+- **Fix de leak confirmado pelo board:** `ownAttendeeSessionInclude` usava `include` (todos os scalars da Session, incluindo os futuros `transcript*`) em vez de `select` — convertido para `select` explícito default-deny em `getMySessions`/`getNextSession`. Regressão coberta em teste.
+- **GDPR:** `clearSessionTranscript` apaga transcrição E o `SessionDebrief` associado (suggestions/avaliação/documento são dados pessoais derivados, possivelmente de menor) — não existe "guardar debrief, apagar transcrição".
+- **Motor (`src/lib/wepacker/debrief/`):** seam `DebriefEngine` com `AnthropicDebriefEngine` (chamada estruturada JSON via `output_config.format` para sugestões + avaliação interna; chamada separada em streaming para o documento de resultado, só para sessões individuais) e `HubDebriefEngine` (stub, TODO playbook `wepac-session-debrief`). Nunca loga transcrição/prompt/payload — só sessionId/status/contagens de caracteres (coberto por teste de grep).
+- **HITL gate NÃO resolvido:** o ficheiro de referência `WHPH/WEPAC/ppv-sessao-1-alex-resultado-2026-07-17.html` (16 secções) está em OneDrive e não foi possível ler a partir deste ambiente de build isolado (timeout a materializar o ficheiro cloud-only). O prompt da Call-B (documento de resultado) foi escrito só com o vocabulário já existente no produto (SESSION_KIND_LABELS, AREA_LABELS, imaginário do trilho) — **não foi validado contra o ficheiro de referência real**. Antes de confiar neste caminho ou o expor além do mentor: ler o ficheiro (localmente, fora deste worktree) e ajustar `resultDocumentSystemPrompt()` em `src/lib/wepacker/debrief/anthropic.ts` conforme a estrutura verificada.
+- **Sandboxing:** preview do documento de resultado só em `<iframe sandbox="">` (sem `allow-same-origin`), nunca `URL.createObjectURL` numa tab; download via `data:` URI.
+- Tasks a partir de sugestões do debrief usam `createTaskFromSession`, agora idempotente por (sessionId, membershipId, title) — dedup coberto em teste.
+
+
 ## 2026-07-21 — Imaginário no produto: SessionKind + Trilho da Expedição
 
 Quinto deploy do ciclo. A metáfora da montanha entra na UI:

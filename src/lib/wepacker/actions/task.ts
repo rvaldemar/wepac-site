@@ -115,6 +115,16 @@ export async function createTaskFromSession(data: {
     await assertMembershipAccess(membership.id);
   }
 
+  // Idempotent by (sourceSessionId, membershipId, title): the review
+  // workspace doesn't persist per-item "already approved" state, so a
+  // page refresh (or a second mentor opening the same debrief) re-renders
+  // every task suggestion as pending. Without this guard, clicking "Criar
+  // tarefa" again would INSERT a duplicate Task row.
+  const existing = await prisma.task.findFirst({
+    where: { sourceSessionId: data.sessionId, membershipId: membership.id, title: data.title },
+  });
+  if (existing) return existing;
+
   return prisma.task.create({
     data: {
       membershipId: membership.id,

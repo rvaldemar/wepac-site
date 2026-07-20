@@ -21,15 +21,38 @@ const mentorSessionInclude = {
     },
   },
   mentor: { select: { id: true, name: true } },
+  transcriptUploadedBy: { select: { id: true, name: true } },
+  // Presence-only — lets the sessions list show "Ver debrief" vs "Gerar
+  // debrief" without a second query. The payload itself is never
+  // included here.
+  debrief: { select: { id: true } },
 } as const;
 
-// Member-facing attendee shape: scoped to the requesting user's own row
-// only (never another attendee's), and never selects privateNote — that
-// field is mentor-only and must not cross the server/client boundary.
-// sharedNote/sharedNotePublished are still selected raw here; callers
-// must run the result through `maskUnpublishedNotes` before returning.
-function ownAttendeeSessionInclude(userId: string) {
+// Member-facing session shape: an explicit top-level `select` (default-
+// deny) enumerating only member-safe Session scalars, instead of an
+// `include` — an `include` returns every Session scalar column
+// automatically, which would silently leak any future sensitive column
+// (transcript, transcriptUploadedAt, transcriptUploadedById) to a member
+// the moment it's added to the schema. Attendees are scoped to the
+// requesting user's own row only (never another attendee's), and never
+// select privateNote — that field is mentor-only and must not cross the
+// server/client boundary. sharedNote/sharedNotePublished are still
+// selected raw here; callers must run the result through
+// `maskUnpublishedNotes` before returning.
+function ownAttendeeSessionSelect(userId: string) {
   return {
+    id: true,
+    cohortId: true,
+    sessionType: true,
+    kind: true,
+    scheduledAt: true,
+    durationMinutes: true,
+    status: true,
+    notes: true,
+    notesPublished: true,
+    discussionPoints: true,
+    // transcript / transcriptUploadedAt / transcriptUploadedById are
+    // deliberately NOT selected — mentor-only, never member-visible.
     attendees: {
       where: { userId },
       select: {
@@ -102,7 +125,7 @@ export async function getMySessions() {
     where: {
       attendees: { some: { userId: user.id } },
     },
-    include: ownAttendeeSessionInclude(user.id),
+    select: ownAttendeeSessionSelect(user.id),
     orderBy: { scheduledAt: "desc" },
   });
   return sessions.map(maskUnpublishedNotes);
@@ -115,10 +138,23 @@ export async function getNextSession() {
       status: "scheduled",
       attendees: { some: { userId: user.id } },
     },
-    include: ownAttendeeSessionInclude(user.id),
+    select: ownAttendeeSessionSelect(user.id),
     orderBy: { scheduledAt: "asc" },
   });
   return session ? maskUnpublishedNotes(session) : null;
+}
+
+// Single session, mentor-facing, with the transcript lifecycle metadata
+// and any existing debrief draft — powers the transcript/debrief review
+// workspace at mentor/sessions/[id]. Reuses assertMentorOfSession, so
+// only a mentor who could already write this session's per-attendee
+// notes can read its transcript/debrief.
+export async function getMentoredSessionDetail(sessionId: string) {
+  await assertMentorOfSession(sessionId);
+  return prisma.session.findUnique({
+    where: { id: sessionId },
+    include: { ...mentorSessionInclude, debrief: true },
+  });
 }
 
 // Sessions across every cohort the actor mentors, plus every personal

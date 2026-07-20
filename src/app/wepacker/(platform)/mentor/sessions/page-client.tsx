@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { SessionKind, SessionStatus, SessionType } from "@/lib/wepacker/types";
 import { SESSION_KIND_KEYS, SESSION_KIND_LABELS } from "@/lib/wepacker/types";
@@ -10,7 +11,14 @@ import {
   updateSession,
   updateSessionAttendee,
 } from "@/lib/wepacker/actions/session";
+import {
+  attachSessionTranscript,
+  clearSessionTranscript,
+} from "@/lib/wepacker/actions/session-transcript";
+import { MAX_TRANSCRIPT_CHARS } from "@/lib/wepacker/debrief/types";
 import { createTaskFromSession } from "@/lib/wepacker/actions/task";
+
+const MAX_TRANSCRIPT_FILE_BYTES = 2 * 1024 * 1024; // ~2MB
 
 const STATUS_LABELS: Record<SessionStatus, string> = {
   scheduled: "Agendada",
@@ -45,6 +53,10 @@ interface SessionRow {
   discussionPoints: string | null;
   attendees: AttendeeRow[];
   mentor: { id: string; name: string };
+  transcript: string | null;
+  transcriptUploadedAt: string | null;
+  transcriptUploadedBy: { id: string; name: string } | null;
+  debrief: { id: string } | null;
 }
 
 interface CohortMembershipRow {
@@ -303,6 +315,81 @@ export function MentorSessionsClient({
       }));
     } finally {
       setCreatingTaskKey(null);
+    }
+  }
+
+  // ===== Transcript attach/replace/remove =====
+  // Only one session's transcript editor is open at a time. Uploading a
+  // .txt/.md file reads it client-side via File.text() into the same
+  // textarea — the raw file is never sent to the server, only the
+  // resulting string via attachSessionTranscript.
+  const [transcriptEditorSessionId, setTranscriptEditorSessionId] = useState<
+    string | null
+  >(null);
+  const [transcriptDraft, setTranscriptDraft] = useState("");
+  const [transcriptError, setTranscriptError] = useState<string | null>(null);
+  const [savingTranscriptId, setSavingTranscriptId] = useState<string | null>(null);
+  const [expandedTranscriptId, setExpandedTranscriptId] = useState<string | null>(null);
+  const [removingTranscriptId, setRemovingTranscriptId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function openTranscriptEditor(sessionId: string, currentText: string) {
+    setTranscriptEditorSessionId(sessionId);
+    setTranscriptDraft(currentText);
+    setTranscriptError(null);
+  }
+
+  function cancelTranscriptEditor() {
+    setTranscriptEditorSessionId(null);
+    setTranscriptError(null);
+  }
+
+  async function handleTranscriptFile(file: File) {
+    setTranscriptError(null);
+    if (file.size > MAX_TRANSCRIPT_FILE_BYTES) {
+      setTranscriptError("Ficheiro demasiado grande.");
+      return;
+    }
+    const okExtension = /\.(txt|md)$/i.test(file.name);
+    const okMime = file.type === "text/plain" || file.type === "text/markdown" || file.type === "";
+    if (!okExtension && !okMime) {
+      setTranscriptError(
+        "Formato não suportado — usa .txt, .md ou cola o texto diretamente."
+      );
+      return;
+    }
+    const text = await file.text();
+    setTranscriptDraft(text);
+  }
+
+  async function handleSaveTranscript(sessionId: string) {
+    setSavingTranscriptId(sessionId);
+    setTranscriptError(null);
+    try {
+      await attachSessionTranscript(sessionId, transcriptDraft);
+      setTranscriptEditorSessionId(null);
+      router.refresh();
+    } catch (e) {
+      console.error("Failed to save session transcript:", e);
+      setTranscriptError("Erro ao guardar transcrição. Tenta novamente.");
+    } finally {
+      setSavingTranscriptId(null);
+    }
+  }
+
+  async function handleRemoveTranscript(sessionId: string) {
+    const confirmed = window.confirm(
+      "Isto apaga a transcrição desta sessão e o debrief gerado a partir dela (sugestões, avaliação interna e documento de resultado). Continuar?"
+    );
+    if (!confirmed) return;
+    setRemovingTranscriptId(sessionId);
+    try {
+      await clearSessionTranscript(sessionId);
+      router.refresh();
+    } catch (e) {
+      console.error("Failed to clear session transcript:", e);
+    } finally {
+      setRemovingTranscriptId(null);
     }
   }
 
@@ -747,6 +834,117 @@ export function MentorSessionsClient({
                     </div>
                   );
                 })}
+              </div>
+
+              {/* Transcrição da sessão + debrief IA */}
+              <div className="mt-3 space-y-2 border-t border-wepac-border pt-3">
+                <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
+                  Transcrição da sessão
+                </p>
+
+                {transcriptEditorSessionId === session.id ? (
+                  <div className="space-y-2">
+                    <textarea
+                      value={transcriptDraft}
+                      onChange={(e) => setTranscriptDraft(e.target.value)}
+                      rows={6}
+                      placeholder="Cola aqui a transcrição da sessão (markdown/texto simples)"
+                      className="w-full bg-wepac-input px-3 py-2 text-xs text-wepac-text-secondary"
+                    />
+                    <div className="flex flex-wrap items-center gap-2">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".txt,.md,text/plain,text/markdown"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) void handleTranscriptFile(file);
+                          e.target.value = "";
+                        }}
+                        className="text-xs text-wepac-text-tertiary"
+                      />
+                      <span className="text-[10px] text-wepac-text-tertiary">
+                        {transcriptDraft.length.toLocaleString("pt-PT")} /{" "}
+                        {MAX_TRANSCRIPT_CHARS.toLocaleString("pt-PT")} caracteres — só
+                        .txt/.md; para outros formatos, cola o texto diretamente.
+                      </span>
+                    </div>
+                    {transcriptError && (
+                      <p className="text-xs text-wepac-error">{transcriptError}</p>
+                    )}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleSaveTranscript(session.id)}
+                        disabled={savingTranscriptId === session.id}
+                        className="bg-wepac-white px-3 py-1.5 text-xs font-bold text-wepac-black disabled:opacity-30"
+                      >
+                        {savingTranscriptId === session.id
+                          ? "A guardar..."
+                          : "Guardar transcrição"}
+                      </button>
+                      <button
+                        onClick={cancelTranscriptEditor}
+                        disabled={savingTranscriptId === session.id}
+                        className="border border-wepac-border px-3 py-1.5 text-xs text-wepac-text-secondary"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                ) : session.transcript ? (
+                  <div className="space-y-2">
+                    <p className="text-xs text-wepac-text-tertiary">
+                      Transcrição anexada em{" "}
+                      {session.transcriptUploadedAt
+                        ? new Date(session.transcriptUploadedAt).toLocaleString("pt-PT")
+                        : "—"}{" "}
+                      por {session.transcriptUploadedBy?.name ?? "—"}
+                    </p>
+                    {expandedTranscriptId === session.id && (
+                      <pre className="max-h-64 overflow-y-auto whitespace-pre-wrap bg-wepac-input/40 p-3 text-xs text-wepac-text-secondary">
+                        {session.transcript}
+                      </pre>
+                    )}
+                    <div className="flex flex-wrap gap-3 text-xs">
+                      <button
+                        onClick={() =>
+                          setExpandedTranscriptId(
+                            expandedTranscriptId === session.id ? null : session.id
+                          )
+                        }
+                        className="text-wepac-white hover:underline"
+                      >
+                        {expandedTranscriptId === session.id ? "Ocultar" : "Ver"}
+                      </button>
+                      <button
+                        onClick={() => openTranscriptEditor(session.id, session.transcript ?? "")}
+                        className="text-wepac-white hover:underline"
+                      >
+                        Substituir
+                      </button>
+                      <button
+                        onClick={() => handleRemoveTranscript(session.id)}
+                        disabled={removingTranscriptId === session.id}
+                        className="text-wepac-error hover:underline disabled:opacity-30"
+                      >
+                        {removingTranscriptId === session.id ? "A remover..." : "Remover"}
+                      </button>
+                      <Link
+                        href={`/wepacker/mentor/sessions/${session.id}`}
+                        className="text-wepac-white hover:underline"
+                      >
+                        {session.debrief ? "Ver debrief" : "Gerar debrief"}
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => openTranscriptEditor(session.id, "")}
+                    className="border border-wepac-border px-3 py-1.5 text-xs text-wepac-text-secondary hover:text-wepac-white"
+                  >
+                    Colar transcrição
+                  </button>
+                )}
               </div>
 
               {/* Legacy session-level notes — read-only, no new writes */}

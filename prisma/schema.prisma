@@ -128,6 +128,16 @@ enum TrailStatus {
   abandoned
 }
 
+// Minimal status for a SessionDebrief row — drives the review UI's Error
+// state only. There is no "generating"/pending lock state: generation is
+// synchronous (a single mentor does not race themselves), so a row is
+// only ever created once the AI call has already settled, either ready
+// or failed.
+enum DebriefStatus {
+  ready
+  failed
+}
+
 // ===== WEPACKER PLATFORM — MODELS =====
 
 // A Pack is the application of the WEPAC methodology to a specific
@@ -221,6 +231,8 @@ model User {
   tasksAssigned       Task[]                    @relation("TaskAssigner")
   sessionsMentored    Session[]
   sessionAttendances  SessionAttendee[]
+  sessionTranscriptsUploaded Session[]          @relation("SessionTranscriptUploader")
+  sessionDebriefsGenerated  SessionDebrief[]
   conversationLinks   ConversationParticipant[]
   messages            Message[]
   comments            Comment[]
@@ -443,12 +455,56 @@ model Session {
   notesPublished   Boolean       @default(false)
   discussionPoints String?
 
+  // Raw meeting transcript (markdown/plain text) — pasted, or read
+  // client-side from an uploaded .txt/.md file and sent as text. Source
+  // input for the AI debrief engine. Mentor-only: must never be added to
+  // ownAttendeeSessionInclude, the member-facing select, or any other
+  // member-facing read path (see src/lib/wepacker/actions/session.ts).
+  transcript             String?
+  transcriptUploadedAt   DateTime?
+  transcriptUploadedById String?
+
   cohort       Cohort?           @relation(fields: [cohortId], references: [id], onDelete: Cascade)
   mentor       User              @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+  transcriptUploadedBy User?     @relation("SessionTranscriptUploader", fields: [transcriptUploadedById], references: [id], onDelete: SetNull)
   attendees    SessionAttendee[]
   sourcedTasks Task[]
+  debrief      SessionDebrief?
 
   @@map("sessions")
+}
+
+// One AI-generated debrief draft per session (upsert on sessionId —
+// regenerating overwrites this row rather than keeping history, matching
+// the review UI's "descartar e gerar novo" flow). Nothing here is ever
+// member-visible: approving a suggestion writes straight to the real
+// table (SessionAttendee via updateSessionAttendee, Task via
+// createTaskFromSession) — this row is scratch space for the mentor's
+// review, not a published artefact.
+model SessionDebrief {
+  id            String        @id @default(cuid())
+  sessionId     String        @unique
+  status        DebriefStatus
+  engineImpl    String? // "anthropic-direct" | "hub"
+  model         String?
+  // DebriefResult.perAttendee (src/lib/wepacker/debrief/types.ts)
+  perAttendeeSuggestions Json?
+  // DebriefResult.internalEvaluation
+  internalEvaluation     Json?
+  // DebriefResult.resultDocumentHtml — null for group sessions (v1 only
+  // generates a personal result document for individual sessions).
+  resultDocumentHtml     String?
+  // User-safe error message when status = failed (never the raw SDK
+  // error, never transcript/prompt content).
+  error         String?
+  requestedById String
+  requestedAt   DateTime      @default(now())
+  generatedAt   DateTime?
+
+  session     Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  requestedBy User    @relation(fields: [requestedById], references: [id], onDelete: Cascade)
+
+  @@map("session_debriefs")
 }
 
 model SessionAttendee {
