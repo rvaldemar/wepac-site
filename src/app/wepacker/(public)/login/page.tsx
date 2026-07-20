@@ -21,7 +21,7 @@ export default function LoginPage() {
             WEPACKER
           </h1>
           <p className="mt-1 text-sm text-wepac-text-tertiary">
-            WEPAC — Companhia de Artes
+            WEPAC
           </p>
         </div>
 

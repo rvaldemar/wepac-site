@@ -179,7 +179,7 @@ export function PlatformSidebar({
               WEPACKER
             </span>
             <span className="mt-0.5 block text-xs text-wepac-text-tertiary">
-              WEPAC — Companhia de Artes
+              WEPAC
             </span>
           </Link>
         </div>

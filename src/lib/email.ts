@@ -30,7 +30,7 @@ export async function sendInviteEmail(
           Olá ${name},
         </p>
         <p style="color: #333; line-height: 1.6;">
-          Foste convidado/a para o WEPACKER — o programa de desenvolvimento integral da WEPAC — Companhia de Artes. Estamos juntos. Juntos somos mais fortes.
+          Foste convidado/a para o WEPACKER — o caminho de desenvolvimento humano integral da WEPAC. Estamos juntos. Juntos somos mais fortes.
         </p>
         <p style="margin-top: 24px;">
           <a href="${inviteUrl}" style="display: inline-block; background: #000; color: #fff; padding: 12px 32px; text-decoration: none; font-weight: 700; font-size: 14px;">
@@ -41,7 +41,7 @@ export async function sendInviteEmail(
           Este convite expira em 7 dias. Se não esperavas este email, podes ignorá-lo.
         </p>
         <p style="margin-top: 32px; color: #999; font-size: 12px;">
-          WEPAC — Companhia de Artes
+          WEPAC
         </p>
       </div>
     `,
@@ -131,7 +131,7 @@ export async function sendLeadNotificationEmail(lead: LeadEmailData) {
             </a>
           </p>
           <p style="margin-top: 32px; color: #999; font-size: 12px;">
-            WEPAC — Companhia de Artes | Wessex Lead Management
+            WEPAC | Wessex Lead Management
           </p>
         </div>
       `,
@@ -146,7 +146,7 @@ export async function sendBetaSignupConfirmationEmail(name: string, email: strin
   const html = `
     <div style="font-family: Inter, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 24px; background: #000; color: #fff;">
       <h1 style="font-family: 'Barlow', Arial, sans-serif; font-size: 24px; font-weight: 700; margin: 0;">
-        WEPAC — Companhia de Artes
+        WEPAC
       </h1>
       <div style="margin-top: 32px;">
         <p style="font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.8);">
@@ -161,7 +161,7 @@ export async function sendBetaSignupConfirmationEmail(name: string, email: strin
       </div>
       <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);">
         <p style="font-size: 12px; color: rgba(255,255,255,0.4);">
-          WEPAC — Companhia de Artes · info@wepac.pt
+          WEPAC · info@wepac.pt
         </p>
       </div>
     </div>

@@ -192,7 +192,7 @@ export default async function WepackerLandingPage() {
       <footer className="border-t border-wepac-border px-6 py-12 lg:px-12">
         <div className="mx-auto flex max-w-4xl flex-col items-center gap-4 text-center">
           <span className="font-barlow text-2xl font-bold text-wepac-white">WEPACKER</span>
-          <p className="text-xs text-wepac-text-tertiary">WEPAC — Companhia de Artes</p>
+          <p className="text-xs text-wepac-text-tertiary">WEPAC</p>
           <Link
             href="/wepacker/login"
             className="mt-4 text-xs text-wepac-text-tertiary transition-colors hover:text-wepac-white"

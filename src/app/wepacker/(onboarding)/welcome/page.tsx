@@ -9,20 +9,22 @@ export default function WelcomePage() {
       <OnboardingStepper currentStep={0} />
       <div className="w-full max-w-lg text-center">
         <h1 className="font-barlow text-4xl font-bold text-wepac-white md:text-5xl">
-          Bem-vindo à WEPACKER.
+          Bem-vindo ao WEPACKER.
         </h1>
 
         <div className="mt-10 space-y-4 text-left text-sm leading-relaxed text-wepac-text-secondary">
           <p>
-            A WEPACKER é a plataforma do programa de desenvolvimento
-            artístico integral da WEPAC — Companhia de Artes. Um espaço de
-            mentoria, avaliação e planeamento estratégico para quem se
-            compromete a crescer a sério.
+            Ser WEPACKER é um modo de vida: carregar o teu próprio peso e
+            ainda entregar valor à comunidade. Esta é a plataforma da WEPAC
+            para o teu desenvolvimento humano integral — corpo, emoção,
+            caráter, interioridade, pensamento, comunidade e o teu domínio
+            próprio — com mentoria, exigência e comunidade.
           </p>
           <p>
-            Na plataforma vais encontrar o teu diagnóstico de
-            desenvolvimento, o teu plano de projeto de vida, o plano
-            estratégico, tarefas, sessões com o teu mentor e mensagens.
+            Aqui vais encontrar o teu Plano de Projeto de Vida — quem sou,
+            onde estou, para onde vou, porquê, e que compromissos assumo —,
+            o mapa de desenvolvimento nas sete áreas, o plano estratégico,
+            tarefas, sessões com o teu mentor e mensagens.
           </p>
           <p>
             O que esperamos de ti: presença, honestidade, compromisso e

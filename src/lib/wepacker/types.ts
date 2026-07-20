@@ -206,11 +206,13 @@ export const PHASE_LABELS: Record<MemberPhase, string> = {
   consolidation: "Consolidação",
 };
 
+// Progression ladder — canonical PT names from the WEPAC Manifesto
+// (Semente → Crescimento → Assinatura → Parceiro).
 export const LEVEL_LABELS: Record<MemberLevel, string> = {
-  seed: "Seed",
-  growth: "Growth",
-  signature: "Signature",
-  partner: "Partner",
+  seed: "Semente",
+  growth: "Crescimento",
+  signature: "Assinatura",
+  partner: "Parceiro",
 };
 
 export const MOMENT_LABELS: Record<EvaluationMoment, string> = {
