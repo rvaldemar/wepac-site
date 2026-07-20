@@ -8,9 +8,6 @@ import {
 } from "@/lib/email";
 import { requireAdmin } from "@/lib/wepacker/guards";
 
-// Sentinel packSlug for the generic WEPACKER intake (no pack chosen yet).
-export const GENERAL_INTAKE_SLUG = "wepacker";
-
 // Public candidatura — feeds the existing beta_signups pipeline, tagged
 // with the target pack or with the generic WEPACKER intake sentinel.
 export async function submitApplication(data: {
@@ -26,8 +23,9 @@ export async function submitApplication(data: {
   const email = data.email?.trim().toLowerCase();
   if (!name || !email) throw new Error("Nome e email são obrigatórios.");
 
-  let packSlug = GENERAL_INTAKE_SLUG;
-  if (data.packSlug !== GENERAL_INTAKE_SLUG) {
+  // "wepacker" is the sentinel slug of the generic intake (no pack chosen).
+  let packSlug = "wepacker";
+  if (data.packSlug !== "wepacker") {
     const pack = await prisma.pack.findUnique({
       where: { slug: data.packSlug },
       select: { slug: true, active: true },
