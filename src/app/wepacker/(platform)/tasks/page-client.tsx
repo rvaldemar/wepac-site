@@ -38,6 +38,47 @@ interface Props {
   tasks: Task[];
 }
 
+function todayISO(): string {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function parseDeadline(deadline: string): Date | null {
+  if (!deadline?.trim()) return null;
+  const parsed = new Date(deadline);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+// Overdue first (oldest deadline first), then pending by nearest deadline
+// (no-deadline pending tasks last), then completed tasks always at the bottom.
+function sortTasks(tasks: Task[]): Task[] {
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  return [...tasks].sort((a, b) => {
+    if (a.status === "done" && b.status !== "done") return 1;
+    if (b.status === "done" && a.status !== "done") return -1;
+    if (a.status === "done" && b.status === "done") return 0;
+
+    const dateA = parseDeadline(a.deadline);
+    const dateB = parseDeadline(b.deadline);
+
+    if (!dateA && !dateB) return 0;
+    if (!dateA) return 1;
+    if (!dateB) return -1;
+
+    const overdueA = dateA < todayStart;
+    const overdueB = dateB < todayStart;
+    if (overdueA && !overdueB) return -1;
+    if (!overdueA && overdueB) return 1;
+
+    return dateA.getTime() - dateB.getTime();
+  });
+}
+
 export default function TasksPageClient({ membershipId, tasks }: Props) {
   const router = useRouter();
   const [filter, setFilter] = useState<"all" | TaskStatus>("all");
@@ -46,14 +87,61 @@ export default function TasksPageClient({ membershipId, tasks }: Props) {
   const [description, setDescription] = useState("");
   const [deadline, setDeadline] = useState("");
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [taskErrors, setTaskErrors] = useState<Record<string, string>>({});
 
   const filtered = filter === "all" ? tasks : tasks.filter((t) => t.status === filter);
+  const sorted = sortTasks(filtered);
   const counts = {
     all: tasks.length,
     todo: tasks.filter((t) => t.status === "todo").length,
     in_progress: tasks.filter((t) => t.status === "in_progress").length,
     done: tasks.filter((t) => t.status === "done").length,
   };
+
+  async function handleCreate() {
+    if (!title.trim()) return;
+    setSaving(true);
+    setFormError(null);
+    try {
+      await createTask({
+        membershipId,
+        title: title.trim(),
+        description: description.trim() || undefined,
+        origin: "self",
+        deadline: deadline || todayISO(),
+      });
+      setTitle("");
+      setDescription("");
+      setDeadline("");
+      setShowForm(false);
+      router.refresh();
+    } catch (e) {
+      console.error("Failed to create task:", e);
+      setFormError("Erro ao criar tarefa. Tenta novamente.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleStatusChange(taskId: string, status: TaskStatus) {
+    setTaskErrors((prev) => {
+      if (!(taskId in prev)) return prev;
+      const next = { ...prev };
+      delete next[taskId];
+      return next;
+    });
+    try {
+      await updateTaskStatus(taskId, status);
+      router.refresh();
+    } catch (e) {
+      console.error("Failed to update task status:", e);
+      setTaskErrors((prev) => ({
+        ...prev,
+        [taskId]: "Erro ao atualizar estado. Tenta novamente.",
+      }));
+    }
+  }
 
   return (
     <div className="p-6 lg:p-8">
@@ -87,33 +175,21 @@ export default function TasksPageClient({ membershipId, tasks }: Props) {
             rows={2}
             className="w-full bg-wepac-input px-4 py-2.5 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
           />
-          <input
-            value={deadline}
-            onChange={(e) => setDeadline(e.target.value)}
-            placeholder="Prazo (ex: 2026-07-31)"
-            className="w-full bg-wepac-input px-4 py-2.5 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
-          />
+          <div>
+            <input
+              type="date"
+              value={deadline}
+              onChange={(e) => setDeadline(e.target.value)}
+              className="w-full bg-wepac-input px-4 py-2.5 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
+            />
+            <p className="mt-1 text-xs text-wepac-text-tertiary">
+              Prazo opcional — se vazio, assume-se hoje.
+            </p>
+          </div>
+          {formError && <p className="text-xs text-wepac-error">{formError}</p>}
           <button
-            disabled={saving || !title.trim() || !deadline.trim()}
-            onClick={async () => {
-              setSaving(true);
-              try {
-                await createTask({
-                  membershipId,
-                  title: title.trim(),
-                  description: description.trim() || undefined,
-                  origin: "self",
-                  deadline: deadline.trim(),
-                });
-                setTitle("");
-                setDescription("");
-                setDeadline("");
-                setShowForm(false);
-                router.refresh();
-              } finally {
-                setSaving(false);
-              }
-            }}
+            disabled={saving || !title.trim()}
+            onClick={handleCreate}
             className="bg-wepac-white px-5 py-2 text-sm font-bold text-wepac-black transition-colors hover:bg-wepac-accent-muted disabled:opacity-50"
           >
             {saving ? "A guardar..." : "Adicionar tarefa"}
@@ -140,7 +216,7 @@ export default function TasksPageClient({ membershipId, tasks }: Props) {
 
       {/* Task list */}
       <div className="mt-6 space-y-3">
-        {filtered.map((task) => (
+        {sorted.map((task) => (
           <div key={task.id} className="border border-wepac-border bg-wepac-card p-4">
             <div className="flex items-start justify-between">
               <div className="flex-1">
@@ -160,13 +236,13 @@ export default function TasksPageClient({ membershipId, tasks }: Props) {
                   </span>
                   <span className="text-xs text-wepac-text-tertiary">{task.deadline}</span>
                 </div>
+                {taskErrors[task.id] && (
+                  <p className="mt-2 text-xs text-wepac-error">{taskErrors[task.id]}</p>
+                )}
               </div>
               <select
                 value={task.status}
-                onChange={async (e) => {
-                  await updateTaskStatus(task.id, e.target.value as TaskStatus);
-                  router.refresh();
-                }}
+                onChange={(e) => handleStatusChange(task.id, e.target.value as TaskStatus)}
                 className={`ml-3 px-2 py-0.5 text-xs whitespace-nowrap ${STATUS_COLORS[task.status]}`}
               >
                 {(["todo", "in_progress", "done"] as const).map((s) => (
