@@ -29,8 +29,8 @@ export default async function MentorMemberDetailPage({
   const { id } = await params;
 
   const detail = await getMembershipDetail(id);
-  // Evaluations/plans/PPV hang on the person, not the membership — one
-  // diagnosis/PPV history per person across every pack. Tasks stay
+  // Evaluations/plans/Life Plan hang on the person, not the membership — one
+  // diagnosis/Life Plan history per person across every pack. Tasks stay
   // membership-scoped (`id`), the rest keys off `detail.user.id`.
   const userId = detail.user.id;
 

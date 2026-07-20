@@ -8,7 +8,7 @@ import { useSession, signOut } from "next-auth/react";
 const memberNav = [
   { label: "Dashboard", href: "/wepacker/dashboard", icon: "◆" },
   { label: "Diagnóstico", href: "/wepacker/diagnosis", icon: "◎" },
-  { label: "PPV", href: "/wepacker/ppv", icon: "◇" },
+  { label: "Life Plan", href: "/wepacker/ppv", icon: "◇" },
   { label: "Plano", href: "/wepacker/plan", icon: "▣" },
   { label: "Tarefas", href: "/wepacker/tasks", icon: "☑" },
   { label: "Sessões", href: "/wepacker/sessions", icon: "◷" },

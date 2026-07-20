@@ -1,6 +1,6 @@
 import { requirePageUser } from "@/lib/wepacker/page-guards";
 import { getMyContext } from "@/lib/wepacker/actions/user";
-import { getLifePlan, getStrategicPlan } from "@/lib/wepacker/actions/plan";
+import { getStrategicPlan } from "@/lib/wepacker/actions/plan";
 import PlanPageClient from "./page-client";
 
 export default async function PlanPage() {
@@ -21,21 +21,7 @@ export default async function PlanPage() {
 
   const userId = user.id;
 
-  const [lifePlan, strategicPlan] = await Promise.all([
-    getLifePlan(userId),
-    getStrategicPlan(userId),
-  ]);
-
-  const serializedLifePlan = lifePlan
-    ? {
-        whoIAm: lifePlan.whoIAm,
-        whereIAm: lifePlan.whereIAm,
-        whereIGo: lifePlan.whereIGo,
-        whyIDo: lifePlan.whyIDo,
-        commitments: lifePlan.commitments,
-        updatedAt: lifePlan.updatedAt.toISOString(),
-      }
-    : null;
+  const strategicPlan = await getStrategicPlan(userId);
 
   const serializedStrategicPlan = strategicPlan
     ? {
@@ -66,10 +52,6 @@ export default async function PlanPage() {
     : null;
 
   return (
-    <PlanPageClient
-      userId={userId}
-      lifePlan={serializedLifePlan}
-      strategicPlan={serializedStrategicPlan}
-    />
+    <PlanPageClient userId={userId} strategicPlan={serializedStrategicPlan} />
   );
 }

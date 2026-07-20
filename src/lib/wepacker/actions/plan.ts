@@ -138,7 +138,7 @@ export async function updateMonthlyActionStatus(
   });
 }
 
-// ===== STRATEGIC MAP (PPV) =====
+// ===== STRATEGIC MAP SCORE =====
 
 export async function getStrategicMapScores(userId: string) {
   await assertUserAccess(userId);

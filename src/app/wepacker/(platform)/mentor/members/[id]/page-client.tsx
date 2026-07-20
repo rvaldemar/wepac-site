@@ -531,7 +531,7 @@ export function MentorMemberDetailClient({
       <div className="mt-8 border border-wepac-border bg-wepac-card p-6">
         <div className="flex items-center justify-between">
           <h2 className="font-barlow text-lg font-bold text-wepac-white">
-            Histórico do Mapa Estratégico (PPV)
+            Histórico do Mapa Estratégico
           </h2>
           <button
             onClick={() => setShowMapForm(!showMapForm)}

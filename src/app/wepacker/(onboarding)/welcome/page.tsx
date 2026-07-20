@@ -21,8 +21,8 @@ export default function WelcomePage() {
             próprio — com mentoria, exigência e comunidade.
           </p>
           <p>
-            Aqui vais encontrar o teu Plano de Projeto de Vida — quem sou,
-            onde estou, para onde vou, porquê, e que compromissos assumo —,
+            Aqui vais encontrar o teu Life Plan — quem sou, onde estou, para
+            onde vou, porquê, e que compromissos assumo —,
             o mapa de desenvolvimento nas sete áreas, o plano estratégico,
             tarefas, sessões com o teu mentor e mensagens.
           </p>

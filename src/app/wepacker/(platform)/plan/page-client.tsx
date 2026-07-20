@@ -4,23 +4,12 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AREA_LABELS, type AreaKey } from "@/lib/wepacker/types";
 import {
-  upsertLifePlan,
   upsertStrategicPlan,
   createGoal,
   updateGoalStatus,
   createMonthlyAction,
   updateMonthlyActionStatus,
 } from "@/lib/wepacker/actions/plan";
-
-const LIFE_SECTIONS = [
-  { key: "whoIAm", title: "Quem sou", description: "Narrativa pessoal e artística." },
-  { key: "whereIAm", title: "Onde estou", description: "Situação actual: pessoal, profissional, artística." },
-  { key: "whereIGo", title: "Para onde quero ir", description: "Visão a 3–5 anos." },
-  { key: "whyIDo", title: "Porque faço o que faço", description: "Propósito, motivação profunda, missão pessoal." },
-  { key: "commitments", title: "O que me comprometo a fazer", description: "Compromissos concretos: hábitos, atitudes, prioridades." },
-] as const;
-
-type LifeSectionKey = (typeof LIFE_SECTIONS)[number]["key"];
 
 const STATUS_LABELS: Record<string, string> = {
   not_started: "Não iniciado",
@@ -89,114 +78,21 @@ interface StrategicPlan {
   monthlyActions: MonthlyAction[];
 }
 
-interface LifePlan {
-  whoIAm: string;
-  whereIAm: string;
-  whereIGo: string;
-  whyIDo: string;
-  commitments: string;
-  updatedAt: string;
-}
-
 interface Props {
   userId: string;
-  lifePlan: LifePlan | null;
   strategicPlan: StrategicPlan | null;
 }
 
-export default function PlanPageClient({ userId, lifePlan, strategicPlan }: Props) {
+export default function PlanPageClient({ userId, strategicPlan }: Props) {
   return (
     <div className="p-6 lg:p-8">
       <h1 className="font-barlow text-2xl font-bold text-wepac-white">Plano</h1>
       <p className="mt-1 text-sm text-wepac-text-tertiary">
-        O teu plano de projeto de vida e o teu plano estratégico — as escalas
-        do teu desenvolvimento.
+        O teu plano estratégico — as escalas do teu desenvolvimento.
       </p>
 
       <div className="mt-8">
-        <LifePlanSection userId={userId} plan={lifePlan} />
-      </div>
-
-      <div className="mt-12 border-t border-wepac-border pt-8">
         <StrategicPlanSection userId={userId} plan={strategicPlan} />
-      </div>
-    </div>
-  );
-}
-
-function LifePlanSection({ userId, plan }: { userId: string; plan: LifePlan | null }) {
-  const defaultValues: Record<LifeSectionKey, string> = {
-    whoIAm: plan?.whoIAm ?? "",
-    whereIAm: plan?.whereIAm ?? "",
-    whereIGo: plan?.whereIGo ?? "",
-    whyIDo: plan?.whyIDo ?? "",
-    commitments: plan?.commitments ?? "",
-  };
-
-  const [values, setValues] = useState<Record<LifeSectionKey, string>>(defaultValues);
-  const [editing, setEditing] = useState<LifeSectionKey | null>(null);
-  const [saving, setSaving] = useState(false);
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      await upsertLifePlan(userId, values);
-    } finally {
-      setSaving(false);
-      setEditing(null);
-    }
-  };
-
-  return (
-    <div>
-      <h2 className="font-barlow text-xl font-bold text-wepac-white">
-        Plano de Projeto de Vida
-      </h2>
-      <p className="mt-1 text-sm text-wepac-text-tertiary">
-        O teu documento de direcção pessoal e artística.
-      </p>
-      {plan && (
-        <p className="mt-1 text-xs text-wepac-text-tertiary">
-          Última atualização: {new Date(plan.updatedAt).toLocaleDateString("pt-PT")}
-        </p>
-      )}
-
-      <div className="mt-6 space-y-6">
-        {LIFE_SECTIONS.map((section) => {
-          const isEditing = editing === section.key;
-          return (
-            <div key={section.key} className="border border-wepac-border bg-wepac-card p-6">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-barlow text-lg font-bold text-wepac-white">
-                    {section.title}
-                  </h3>
-                  <p className="mt-0.5 text-xs text-wepac-text-tertiary">{section.description}</p>
-                </div>
-                <button
-                  onClick={() => (isEditing ? handleSave() : setEditing(section.key))}
-                  disabled={saving}
-                  className="text-xs text-wepac-white hover:underline disabled:opacity-50"
-                >
-                  {isEditing ? (saving ? "A guardar..." : "Guardar") : "Editar"}
-                </button>
-              </div>
-
-              {isEditing ? (
-                <textarea
-                  value={values[section.key]}
-                  onChange={(e) => setValues({ ...values, [section.key]: e.target.value })}
-                  rows={5}
-                  className="mt-4 w-full bg-wepac-dark px-4 py-3 text-sm leading-relaxed text-wepac-text-secondary outline-none focus:ring-1 focus:ring-wepac-white/50"
-                />
-              ) : (
-                <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-wepac-text-secondary">
-                  {values[section.key] || "Ainda por preencher."}
-                </p>
-              )}
-            </div>
-          );
-        })}
       </div>
     </div>
   );

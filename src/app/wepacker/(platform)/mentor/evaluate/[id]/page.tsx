@@ -21,7 +21,7 @@ export default async function MentorEvaluatePage({
 
   // `id` is the membershipId (route param) — resolve it to the person's
   // userId first, since evaluations now hang on the person, not the
-  // membership (one PPV/diagnosis per person across every pack).
+  // membership (one Life Plan/diagnosis per person across every pack).
   const membership = await getMembershipDetail(id);
   const evaluations = await getEvaluations(membership.user.id);
 

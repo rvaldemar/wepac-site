@@ -86,7 +86,7 @@ const PLATFORM_FEATURES = [
     hasRadar: true,
   },
   {
-    title: "Plano de Projeto de Vida",
+    title: "Life Plan",
     desc: "Quem sou. Onde estou. Para onde vou. Porquê. O que me comprometo a fazer. Cinco reflexões que definem a tua direcção.",
     hasRadar: false,
   },
@@ -427,11 +427,11 @@ export default function ArtistPage() {
                   <li>Acompanhamento psicológico e emocional</li>
                   <li>Mentoria artística e de carreira</li>
                   <li>Formação contínua</li>
-                  <li>Plano de Projeto de Vida (PPV)</li>
+                  <li>Life Plan</li>
                   <li>Plano Estratégico de Carreira</li>
                 </ul>
                 <p className="mt-4 text-xs text-white/40">
-                  Na plataforma: Diagnóstico, PPV e acompanhamento psicológico
+                  Na plataforma: Diagnóstico, Life Plan e acompanhamento psicológico
                 </p>
               </div>
             </FadeIn>

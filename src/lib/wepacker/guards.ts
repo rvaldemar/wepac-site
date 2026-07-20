@@ -124,11 +124,11 @@ export async function assertMentorOfCohort(
   return actor;
 }
 
-// ===== PERSON-LEVEL GUARDS (PPV / diagnosis / strategic plan) =====
+// ===== PERSON-LEVEL GUARDS (Life Plan / diagnosis / strategic plan) =====
 //
 // Evaluation, LifePlan, StrategicPlan and StrategicMapScore hang on the
-// User, not a CohortMembership — one person has a single diagnosis/PPV
-// history spanning every pack they join. Access follows the same shape
+// User, not a CohortMembership — one person has a single diagnosis/Life
+// Plan history spanning every pack they join. Access follows the same shape
 // as the membership guards above, keyed by userId instead: the owner
 // themselves, an admin, or a mentor of at least one of that user's
 // cohort memberships (any status — mirrors assertMembershipAccess,
@@ -158,7 +158,7 @@ export async function assertUserAccess(
 }
 
 // Like assertUserAccess but only owner or admin (no mentor) — for
-// member-authored writes (e.g. the PPV / life plan text).
+// member-authored writes (e.g. the Life Plan text).
 export async function assertUserOwner(
   userId: string
 ): Promise<{ actor: SessionUser; ownerUserId: string }> {
