@@ -265,6 +265,9 @@ export async function createManualTicketAction(
     String(formData.get("buyerEmail") || "")
       .trim()
       .toLowerCase() || "manual@wepac.pt";
+  const buyerPhone =
+    String(formData.get("buyerPhone") || "").trim() || null;
+  const marketingConsent = formData.get("marketingConsent") === "on";
   const seatsRaw = String(formData.get("seats") || "1");
 
   if (!eventId || !tierId || !buyerName) {
@@ -283,6 +286,8 @@ export async function createManualTicketAction(
       tierId,
       buyerName,
       buyerEmail,
+      buyerPhone,
+      marketingConsent,
       seats: Math.max(1, Math.min(20, Number(seatsRaw) || 1)),
       priceCents: tier.priceCents,
     },
@@ -292,7 +297,7 @@ export async function createManualTicketAction(
 }
 
 export async function checkInTicketAction(formData: FormData): Promise<void> {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = String(formData.get("id") || "");
   const eventId = String(formData.get("eventId") || "");
   if (!id) back(`/bilheteira/admin/events/${eventId}`, "Bilhete inválido.");
@@ -300,17 +305,19 @@ export async function checkInTicketAction(formData: FormData): Promise<void> {
   const ticket = await prisma.ticket.findUnique({ where: { id } });
   if (!ticket) back(`/bilheteira/admin/events/${eventId}`, "Bilhete não encontrado.");
 
-  if (ticket.checkedInAt) {
-    await prisma.ticket.update({
-      where: { id },
-      data: { checkedInAt: null, status: "pending" },
-    });
-  } else {
-    await prisma.ticket.update({
-      where: { id },
-      data: { checkedInAt: new Date(), status: "checked_in" },
-    });
-  }
+  const action = ticket.checkedInAt ? "checkout" : "checkin";
+
+  await prisma.ticket.update({
+    where: { id },
+    data: ticket.checkedInAt
+      ? { checkedInAt: null, status: "pending" }
+      : { checkedInAt: new Date(), status: "checked_in" },
+  });
+
+  await prisma.ticketCheckLog.create({
+    data: { ticketId: id, action, adminId: admin.id },
+  });
+
   revalidatePath(`/bilheteira/admin/events/${eventId}`);
   redirect(`/bilheteira/admin/events/${eventId}`);
 }

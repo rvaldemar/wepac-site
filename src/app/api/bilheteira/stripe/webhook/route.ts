@@ -36,6 +36,7 @@ async function fulfillCheckout(session: Stripe.Checkout.Session) {
       buyerName: payment.buyerName,
       buyerEmail: payment.buyerEmail,
       buyerPhone: payment.buyerPhone,
+      marketingConsent: payment.marketingConsent,
       seats: payment.seats,
       priceCents: payment.tier.priceCents,
     },

@@ -17,6 +17,7 @@ export async function reserveAction(formData: FormData): Promise<void> {
     .trim()
     .toLowerCase();
   const buyerPhone = String(formData.get("buyerPhone") || "").trim() || null;
+  const marketingConsent = formData.get("marketingConsent") === "on";
   const seatsRaw = String(formData.get("seats") || "1");
 
   const backPath = `/bilheteira/${eventSlug}`;
@@ -83,6 +84,7 @@ export async function reserveAction(formData: FormData): Promise<void> {
         buyerName,
         buyerEmail,
         buyerPhone,
+        marketingConsent,
         seats,
         priceCents: 0,
       },
@@ -132,6 +134,7 @@ export async function reserveAction(formData: FormData): Promise<void> {
       buyerName,
       buyerEmail,
       buyerPhone,
+      marketingConsent,
     },
   });
 

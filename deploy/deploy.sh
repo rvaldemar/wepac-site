@@ -45,8 +45,15 @@ RELEASE_DIR="${APP_DIR}/releases/${TIMESTAMP}"
 # Create dirs on server
 ssh ${SERVER} "mkdir -p ${RELEASE_DIR} ${APP_DIR}/shared/public"
 
-# Upload build
-rsync -avz --delete .deploy/ ${SERVER}:${RELEASE_DIR}/
+# Upload build (keepalive to prevent SSH from dropping on long transfers;
+# exclude source/dev dirs that are not needed at runtime in standalone mode)
+rsync -avz --delete \
+  --exclude='src/' \
+  --exclude='deploy/' \
+  --exclude='scripts/' \
+  --exclude='uploads/' \
+  -e "ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=20" \
+  .deploy/ ${SERVER}:${RELEASE_DIR}/
 
 # Run database migrations
 echo ""

@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import QRCode from "qrcode";
@@ -43,7 +44,10 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
       brand: true,
       tiers: { orderBy: { sortOrder: "asc" } },
       tickets: {
-        include: { tier: true },
+        include: {
+          tier: true,
+          checkLogs: { orderBy: { createdAt: "asc" } },
+        },
         orderBy: { createdAt: "desc" },
       },
       payments: {
@@ -76,6 +80,21 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
     (p) => p.status === "pending"
   ).length;
 
+  // Pre-generate QR codes for each ticket (for client-side download)
+  const base = process.env.APP_URL || "https://wepac.pt";
+  const ticketQRs: Record<string, string> = {};
+  await Promise.all(
+    event.tickets.map(async (t) => {
+      const url = `${base}/bilheteira/ticket/${t.id}`;
+      ticketQRs[t.id] = await QRCode.toString(url, {
+        type: "svg",
+        margin: 0,
+        width: 80,
+        color: { dark: "#000000", light: "#00000000" },
+      });
+    })
+  );
+
   return (
     <main style={styles.container}>
       <div style={styles.eyebrow}>
@@ -89,10 +108,23 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
         {event.brand && ` · ${event.brand.name}`} ·{" "}
         {formatEventDate(event.startsAt)} · {formatEventTime(event.startsAt)}
       </div>
-      <div style={{ marginTop: 12 }}>
+      <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
         <span style={styles.pill}>{event.status}</span>{" "}
         <Link href={`/bilheteira/${event.slug}`} style={styles.buttonGhost}>
           Ver página pública ↗
+        </Link>
+        <Link
+          href={`/bilheteira/admin/events/${id}/checkin`}
+          style={{
+            ...styles.buttonSecondary,
+            background: "#1b5e20",
+            color: "#fff",
+            padding: "6px 14px",
+            fontSize: 13,
+            fontWeight: 700,
+          }}
+        >
+          Modo Check-in
         </Link>
       </div>
 
@@ -479,103 +511,161 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
                   <th style={{ ...styles.th, textAlign: "center" }}>
                     Admitido
                   </th>
+                  <th style={{ ...styles.th, textAlign: "center" }}>QR</th>
                   <th style={styles.th}></th>
                 </tr>
               </thead>
               <tbody>
                 {event.tickets.map((t) => (
-                  <tr
-                    key={t.id}
-                    style={{
-                      background: t.checkedInAt ? "#f1f8e9" : "transparent",
-                    }}
-                  >
-                    <td
+                  <Fragment key={t.id}>
+                    <tr
                       style={{
-                        ...styles.td,
-                        fontFamily: "'Barlow', sans-serif",
-                        fontWeight: 700,
-                        letterSpacing: 1,
+                        background: t.checkedInAt ? "#f1f8e9" : "transparent",
                       }}
                     >
-                      BT-{String(t.serial).padStart(3, "0")}
-                    </td>
-                    <td style={styles.td}>{t.tier.name}</td>
-                    <td style={styles.td}>
-                      <div>{t.buyerName}</div>
-                      <div style={{ fontSize: 11, color: "#666" }}>
-                        {t.buyerEmail}
-                      </div>
-                    </td>
-                    <td style={{ ...styles.td, textAlign: "center" }}>
-                      {t.seats}
-                    </td>
-                    <td
-                      style={{
-                        ...styles.td,
-                        textAlign: "center",
-                        color: t.checkedInAt ? "#1b5e20" : "#999",
-                        fontWeight: t.checkedInAt ? 700 : 400,
-                      }}
-                    >
-                      {t.checkedInAt
-                        ? `✓ ${new Intl.DateTimeFormat("pt-PT", { hour: "2-digit", minute: "2-digit" }).format(t.checkedInAt)}`
-                        : "—"}
-                    </td>
-                    <td
-                      style={{
-                        ...styles.td,
-                        textAlign: "right",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      <div
+                      <td
                         style={{
-                          display: "inline-flex",
-                          gap: 6,
-                          flexWrap: "wrap",
-                          justifyContent: "flex-end",
+                          ...styles.td,
+                          fontFamily: "'Barlow', sans-serif",
+                          fontWeight: 700,
+                          letterSpacing: 1,
                         }}
                       >
-                        <a
-                          href={`/bilheteira/ticket/${t.id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={styles.buttonGhost}
+                        BT-{String(t.serial).padStart(3, "0")}
+                      </td>
+                      <td style={styles.td}>{t.tier.name}</td>
+                      <td style={styles.td}>
+                        <div>{t.buyerName}</div>
+                        <div style={{ fontSize: 11, color: "#666" }}>
+                          {t.buyerEmail}
+                        </div>
+                        {t.buyerPhone && (
+                          <div style={{ fontSize: 11, color: "#666" }}>
+                            {t.buyerPhone}
+                          </div>
+                        )}
+                      </td>
+                      <td style={{ ...styles.td, textAlign: "center" }}>
+                        {t.seats}
+                      </td>
+                      <td
+                        style={{
+                          ...styles.td,
+                          textAlign: "center",
+                          color: t.checkedInAt ? "#1b5e20" : "#999",
+                          fontWeight: t.checkedInAt ? 700 : 400,
+                        }}
+                      >
+                        {t.checkedInAt
+                          ? `✓ ${new Intl.DateTimeFormat("pt-PT", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Lisbon" }).format(t.checkedInAt)}`
+                          : "—"}
+                      </td>
+                      <td style={{ ...styles.td, textAlign: "center" }}>
+                        <div
+                          style={{ width: 48, height: 48, display: "inline-block" }}
+                          dangerouslySetInnerHTML={{ __html: ticketQRs[t.id] || "" }}
+                          title={`QR bilhete ${t.buyerName} — mostre ao cliente para aceder no telemóvel`}
+                        />
+                      </td>
+                      <td
+                        style={{
+                          ...styles.td,
+                          textAlign: "right",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "inline-flex",
+                            gap: 6,
+                            flexWrap: "wrap",
+                            justifyContent: "flex-end",
+                          }}
                         >
-                          Ver
-                        </a>
-                        <form
-                          action={checkInTicketAction}
-                          style={{ margin: 0 }}
+                          <a
+                            href={`/bilheteira/ticket/${t.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={styles.buttonGhost}
+                          >
+                            Ver
+                          </a>
+                          <a
+                            href={`/bilheteira/ticket/${t.id}/qr`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={styles.buttonGhost}
+                          >
+                            QR
+                          </a>
+                          <form
+                            action={checkInTicketAction}
+                            style={{ margin: 0 }}
+                          >
+                            <input type="hidden" name="id" value={t.id} />
+                            <input
+                              type="hidden"
+                              name="eventId"
+                              value={event.id}
+                            />
+                            <button type="submit" style={styles.buttonGhost}>
+                              {t.checkedInAt ? "Anular" : "Admitir"}
+                            </button>
+                          </form>
+                          <form
+                            action={deleteTicketAction}
+                            style={{ margin: 0 }}
+                          >
+                            <input type="hidden" name="id" value={t.id} />
+                            <input
+                              type="hidden"
+                              name="eventId"
+                              value={event.id}
+                            />
+                            <button type="submit" style={styles.buttonDanger}>
+                              ✕
+                            </button>
+                          </form>
+                        </div>
+                      </td>
+                    </tr>
+                    {t.checkLogs.length > 0 && (
+                      <tr
+                        key={`${t.id}-log`}
+                        style={{ background: t.checkedInAt ? "#f1f8e9" : "#fafaf7" }}
+                      >
+                        <td
+                          colSpan={7}
+                          style={{
+                            ...styles.td,
+                            paddingTop: 2,
+                            paddingBottom: 6,
+                            fontSize: 11,
+                            color: "#666",
+                          }}
                         >
-                          <input type="hidden" name="id" value={t.id} />
-                          <input
-                            type="hidden"
-                            name="eventId"
-                            value={event.id}
-                          />
-                          <button type="submit" style={styles.buttonGhost}>
-                            {t.checkedInAt ? "Anular" : "Admitir"}
-                          </button>
-                        </form>
-                        <form
-                          action={deleteTicketAction}
-                          style={{ margin: 0 }}
-                        >
-                          <input type="hidden" name="id" value={t.id} />
-                          <input
-                            type="hidden"
-                            name="eventId"
-                            value={event.id}
-                          />
-                          <button type="submit" style={styles.buttonDanger}>
-                            ✕
-                          </button>
-                        </form>
-                      </div>
-                    </td>
-                  </tr>
+                          {t.checkLogs.map((log, i) => (
+                            <span key={i} style={{ marginRight: 12 }}>
+                              <span
+                                style={{
+                                  fontWeight: 700,
+                                  color: log.action === "checkin" ? "#1b5e20" : "#c62828",
+                                }}
+                              >
+                                {log.action === "checkin" ? "✓ check-in" : "↩ check-out"}
+                              </span>{" "}
+                              {new Intl.DateTimeFormat("pt-PT", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                second: "2-digit",
+                                timeZone: "Europe/Lisbon",
+                              }).format(log.createdAt)}
+                            </span>
+                          ))}
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 ))}
               </tbody>
             </table>
@@ -605,6 +695,15 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
               />
             </div>
             <div style={styles.grid2}>
+              <input
+                type="tel"
+                name="buyerPhone"
+                placeholder="Telemóvel (opcional)"
+                style={styles.input}
+              />
+              <div />
+            </div>
+            <div style={styles.grid2}>
               <select name="tierId" required style={styles.select}>
                 {event.tiers.map((t) => (
                   <option key={t.id} value={t.id}>
@@ -621,6 +720,26 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
                 style={styles.input}
               />
             </div>
+            <label
+              style={{
+                display: "flex",
+                gap: 10,
+                alignItems: "flex-start",
+                fontSize: 13,
+                color: "#444",
+                cursor: "pointer",
+              }}
+            >
+              <input
+                type="checkbox"
+                name="marketingConsent"
+                style={{ marginTop: 2, flexShrink: 0 }}
+              />
+              <span>
+                Consentiu receber comunicações sobre futuros eventos da WEPAC
+                (RGPD)
+              </span>
+            </label>
             <button type="submit" style={styles.buttonSecondary}>
               Emitir bilhete
             </button>

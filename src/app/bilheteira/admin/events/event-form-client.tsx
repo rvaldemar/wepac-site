@@ -128,11 +128,40 @@ export function EventFormClient({
     defaults
       ? []
       : [
-          { name: "Bilhete", price: "12", description: "" },
           {
-            name: "Amigo WEPAC",
+            name: "Convite",
+            price: "0",
+            description: "",
+          },
+          {
+            name: "Bilhete Estudante",
+            price: "10",
+            description: "Com comprovativo de matrícula.",
+          },
+          {
+            name: "Bilhete com Reserva",
+            price: "12",
+            description: "Compra antecipada em wepac.pt.",
+          },
+          {
+            name: "Bilhete Normal",
+            price: "17",
+            description: "Entrada individual.",
+          },
+          {
+            name: "Bilhete Patrono",
             price: "25",
-            description: "Patrono — apoio directo ao programa.",
+            description: "Apoia a programação e sustenta a temporada.",
+          },
+          {
+            name: "Bilhete Casal",
+            price: "30",
+            description: "Dois lugares.",
+          },
+          {
+            name: "Bilhete 2026",
+            price: "60",
+            description: "Passe anual — temporada completa.",
           },
         ]
   );
