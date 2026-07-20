@@ -7,7 +7,7 @@ export default async function AdminUsersPage({
 }: {
   searchParams: Promise<{ name?: string; email?: string; phone?: string }>;
 }) {
-  await requirePageRole(["admin"]);
+  const currentUser = await requirePageRole(["admin"]);
 
   const [users, cohorts, params] = await Promise.all([
     getAllUsers(),
@@ -19,6 +19,7 @@ export default async function AdminUsersPage({
     <AdminUsersPageClient
       users={JSON.parse(JSON.stringify(users))}
       cohorts={JSON.parse(JSON.stringify(cohorts))}
+      currentUserId={currentUser.id}
       prefill={
         params.name || params.email
           ? { name: params.name ?? "", email: params.email ?? "", phone: params.phone ?? "" }

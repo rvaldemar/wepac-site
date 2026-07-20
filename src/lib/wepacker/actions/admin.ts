@@ -230,10 +230,42 @@ export async function getAllUsers() {
         where: { status: "active" },
         include: { cohort: { include: { pack: true } } },
       },
+      // Surfaced so the admin can see the cascade blast radius (sessions
+      // and evaluations are Cascade-deleted with the user, not just their
+      // own membership data) before confirming deletion.
+      _count: { select: { sessionsMentored: true, evaluationsGiven: true } },
     },
     orderBy: { name: "asc" },
   });
   return users.map((u) => ({ ...u, createdAt: u.createdAt.toISOString() }));
+}
+
+// Hard delete (RGPD-style, same pattern as leads/applications) — no soft
+// delete column exists. Cascades per schema: memberships, agreements,
+// messages, comments and password reset tokens the user owns; sessions
+// they mentored and evaluations they gave as evaluator are ALSO deleted
+// (Cascade on Session.mentorId / Evaluation.evaluatorId), which can
+// affect other members' history, not just this user's own data.
+export async function deleteUser(userId: string) {
+  const actor = await requireAdmin();
+  if (actor.id === userId) {
+    throw new Error("Não podes eliminar a tua própria conta.");
+  }
+
+  const target = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  });
+  if (!target) throw new Error("Utilizador não encontrado.");
+
+  if (target.role === "admin") {
+    const adminCount = await prisma.user.count({ where: { role: "admin" } });
+    if (adminCount <= 1) {
+      throw new Error("Não é possível eliminar o último admin.");
+    }
+  }
+
+  await prisma.user.delete({ where: { id: userId } });
 }
 
 // Creates a user with an invite token and any number of memberships

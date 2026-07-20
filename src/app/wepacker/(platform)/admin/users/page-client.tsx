@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createInvite } from "@/lib/wepacker/actions/admin";
+import { createInvite, deleteUser } from "@/lib/wepacker/actions/admin";
 import { LEVEL_LABELS, PHASE_LABELS } from "@/lib/wepacker/types";
 import type {
   MemberLevel,
@@ -47,11 +47,13 @@ interface AdminUser {
   inviteToken: string | null;
   createdAt: string;
   memberships: Membership[];
+  _count: { sessionsMentored: number; evaluationsGiven: number };
 }
 
 interface AdminUsersPageProps {
   users: AdminUser[];
   cohorts: CohortSummary[];
+  currentUserId: string;
   prefill?: { name: string; email: string; phone: string } | null;
 }
 
@@ -64,6 +66,7 @@ function buildWhatsappUrl(name: string, phone: string, inviteUrl: string) {
 export function AdminUsersPageClient({
   users: allUsers,
   cohorts,
+  currentUserId,
   prefill = null,
 }: AdminUsersPageProps) {
   const router = useRouter();
@@ -152,6 +155,37 @@ export function AdminUsersPageClient({
   function closeInviteForm() {
     setShowInviteForm(false);
     resetInviteForm();
+  }
+
+  async function handleDeleteUser(user: AdminUser) {
+    const impact: string[] = [];
+    if (user._count.sessionsMentored > 0) {
+      impact.push(
+        `${user._count.sessionsMentored} sessão(ões) que mentorou — apagadas para todos os participantes`
+      );
+    }
+    if (user._count.evaluationsGiven > 0) {
+      impact.push(
+        `${user._count.evaluationsGiven} avaliação(ões) que deu como mentor — apagadas`
+      );
+    }
+    const warning =
+      impact.length > 0
+        ? `\n\nIsto também apaga:\n- ${impact.join("\n- ")}`
+        : "";
+    if (
+      !confirm(
+        `Eliminar ${user.name} permanentemente? Esta ação não pode ser revertida.${warning}`
+      )
+    ) {
+      return;
+    }
+    try {
+      await deleteUser(user.id);
+      router.refresh();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erro ao eliminar utilizador.");
+    }
   }
 
   return (
@@ -465,6 +499,15 @@ export function AdminUsersPageClient({
                         {PHASE_LABELS[membership.currentPhase]}
                       </span>
                     </>
+                  )}
+                  {user.id !== currentUserId && (
+                    <button
+                      onClick={() => handleDeleteUser(user)}
+                      title="Eliminar utilizador (RGPD)"
+                      className="text-xs text-red-400/60 transition-colors hover:text-red-400"
+                    >
+                      Eliminar
+                    </button>
                   )}
                 </div>
               </div>
