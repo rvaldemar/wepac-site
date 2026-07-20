@@ -182,7 +182,7 @@ export default function ArtistPage() {
         <div className="relative z-10 mx-auto max-w-4xl text-center">
           <FadeIn>
             <p className="text-xs font-medium uppercase tracking-[0.3em] text-wepac-gray">
-              Programa Artistas
+              Pack Artista
             </p>
           </FadeIn>
           <FadeIn delay={0.15}>
@@ -226,7 +226,7 @@ export default function ArtistPage() {
               O Programa
             </p>
             <h2 className="mt-3 font-barlow text-3xl font-bold text-white md:text-5xl">
-              O que é o programa Artistas WEPAC
+              O que é o Pack Artista WEPAC
             </h2>
           </FadeIn>
           <FadeIn delay={0.1}>
@@ -639,7 +639,7 @@ export default function ArtistPage() {
               Candidatura
             </p>
             <h2 className="mt-3 font-barlow text-3xl font-bold text-white md:text-5xl">
-              Candidata-te ao Programa Artistas
+              Candidata-te ao Pack Artista
             </h2>
             <p className="mt-4 text-lg text-white/60">
               Preenche o formulário. A equipa analisa o teu perfil e entra em contacto.

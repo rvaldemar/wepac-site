@@ -26,7 +26,7 @@ export function Footer() {
                 { name: "Wessex", href: "/servicos" },
                 { name: "Easy Peasy", href: "/projetos/easy-peasy" },
                 { name: "Arte à Capela", href: "/projetos/arte-a-capela" },
-                { name: "Programa Artistas", href: "/artist" },
+                { name: "Pack Artista", href: "/artist" },
               ].map((item) => (
                 <li key={item.name}>
                   <Link

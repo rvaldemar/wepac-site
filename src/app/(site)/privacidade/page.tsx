@@ -56,7 +56,7 @@ export default function PrivacidadePage() {
                 nome, email, assunto, mensagem
               </li>
               <li>
-                <strong className="text-wepac-white/80">Programa Artistas:</strong>{" "}
+                <strong className="text-wepac-white/80">Pack Artista:</strong>{" "}
                 email para lista de espera
               </li>
               <li>
@@ -77,7 +77,7 @@ export default function PrivacidadePage() {
               </li>
               <li>Preparar propostas personalizadas de serviços musicais</li>
               <li>Contactar potenciais clientes para seguimento comercial</li>
-              <li>Gerir inscrições no Programa Artistas</li>
+              <li>Gerir inscrições no Pack Artista</li>
               <li>Melhorar a qualidade dos nossos serviços</li>
             </ul>
           </div>

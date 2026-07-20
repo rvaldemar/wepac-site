@@ -31,7 +31,7 @@ const departments = [
     cta: "Saber mais",
   },
   {
-    name: "Programa Artistas",
+    name: "Pack Artista",
     tagline: "Desenvolvimento Artístico",
     description:
       "Sistema integrado de desenvolvimento, ativação e consolidação de artistas. Excelência artística, estrutura humana, impacto real.",
