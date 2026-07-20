@@ -4,6 +4,20 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-20 (7) — Sessão repensada (Modelo A): notas/outcome per-pessoa + loop sessão→tarefa
+
+Quarto deploy do dia. Redesign da Sessão para o ecossistema pessoa-cêntrico (proposta completa com 3 modelos avaliados na sessão CoS; Modelo A "Sessão = Encontro" escolhido; acoplamento a Trail deliberadamente adiado até Trails terem uso real — GTM-first):
+
+- **Schema:** `SessionAttendee` ganha `privateNote` (só mentor), `sharedNote` + `sharedNotePublished` (por pessoa), `outcome` ("o que ficou combinado"); `Task.sourceSessionId` (FK SetNull). Migrations aditivas `20260720224156` + `20260720225121` aplicadas em prod. Campos legacy da Session (notes/notesPublished/discussionPoints) mantidos read-only.
+- **Privacidade (2 fixes de gate):** paths de leitura do membro nunca selecionam `privateNote` (excluído na query Prisma, não filtrado em JS) e devolvem só a própria row de attendee; notas legacy não publicadas agora mascaradas no servidor (antes atravessavam a rede e dependiam do cliente — achado do juiz).
+- **Authz (NO-SHIP → fix → re-judge SHIP):** `createTaskFromSession` inicial permitia escalada cross-cohort (task a aterrar em membership de cohort que o mentor não mentora). Corrigido: membership scoped ao cohort da sessão; sessões pessoais passam por `assertMembershipAccess`. Validação server-side 1–5 também adicionada às avaliações (achado do juiz do assessment).
+- **UI mentor:** notas privada/partilhada + outcome por attendee, publicação por pessoa, "Criar tarefa" a partir do outcome (origin=session + sourceSessionId — ativa o enum `TaskOrigin.session` que existia morto desde sempre).
+- **UI membro:** card de sessão mostra "O que ficou combinado" e a nota partilhada do mentor.
+
+Smoke 3/3; `migrate status` up to date. Decisão metodológica em aberto (não bloqueante): tipos semânticos de sessão (check-in/diagnóstico/crise/fecho) — é metodologia WEPAC, não código. Nit UX registado: attendee com membership não-ativa (ex. completed) não pode receber task de sessão.
+
+---
+
 ## 2026-07-20 (6) — Waves 2+3: placeholders honestos, a11y, tasks, contacto, L2, termos legacy
 
 Terceiro deploy do dia. Site institucional deixou de "parecer inacabado" e a base de a11y subiu:
