@@ -5,7 +5,7 @@ import PPVPageClient from "./page-client";
 
 export default async function PPVPage() {
   await requirePageUser();
-  const { membership } = await getMyContext();
+  const { user, membership } = await getMyContext();
 
   if (!membership) {
     return (
@@ -19,7 +19,7 @@ export default async function PPVPage() {
     );
   }
 
-  const scores = await getStrategicMapScores(membership.membershipId);
+  const scores = await getStrategicMapScores(user.id);
 
   const serializedScores = scores.map((s) => ({
     id: s.id,

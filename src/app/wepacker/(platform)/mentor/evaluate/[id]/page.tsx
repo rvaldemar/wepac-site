@@ -19,10 +19,11 @@ export default async function MentorEvaluatePage({
   await requirePageRole(["mentor", "admin"]);
   const { id } = await params;
 
-  const [membership, evaluations] = await Promise.all([
-    getMembershipDetail(id),
-    getEvaluations(id),
-  ]);
+  // `id` is the membershipId (route param) — resolve it to the person's
+  // userId first, since evaluations now hang on the person, not the
+  // membership (one PPV/diagnosis per person across every pack).
+  const membership = await getMembershipDetail(id);
+  const evaluations = await getEvaluations(membership.user.id);
 
   return (
     <MentorEvaluateClient

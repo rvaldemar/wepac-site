@@ -81,7 +81,7 @@ export function MentorEvaluateClient({ membership, evaluations }: EvaluatePagePr
       }
 
       await submitMentorEvaluation({
-        membershipId: membership.id,
+        userId: membership.user.id,
         moment,
         scores: scoreEntries,
       });

@@ -29,14 +29,12 @@ const membership = {
 };
 
 vi.mock("@/lib/wepacker/guards", () => ({
-  assertMembershipAccess: vi.fn(async () => ({
+  assertUserAccess: vi.fn(async () => ({
     actor: { id: "user-1", role: "member" },
-    membership,
     ownerUserId: "user-1",
   })),
-  assertMentorOfMembership: vi.fn(async () => ({
+  assertMentorOfUser: vi.fn(async () => ({
     actor: { id: "mentor-1", role: "mentor" },
-    membership,
     ownerUserId: "user-1",
   })),
   requireMembership: vi.fn(async () => ({
@@ -74,7 +72,7 @@ describe("computeAreaScores", () => {
   it("composes 40% self / 60% mentor across all 7 areas", async () => {
     findMany.mockResolvedValue([evalWith("self", 4), evalWith("mentor", 5)]);
 
-    const result = await computeAreaScores("mem-1", "mid");
+    const result = await computeAreaScores("user-1", "mid");
 
     expect(Object.keys(result).sort()).toEqual([...AREA_KEYS].sort());
     for (const area of AREA_KEYS) {
@@ -87,7 +85,7 @@ describe("computeAreaScores", () => {
 
   it("falls back to the self side when no mentor eval exists", async () => {
     findMany.mockResolvedValue([evalWith("self", 3)]);
-    const result = await computeAreaScores("mem-1", "mid");
+    const result = await computeAreaScores("user-1", "mid");
     for (const area of AREA_KEYS) {
       expect(result[area].composite).toBe(3);
       expect(result[area].mentorAvg).toBe(0);
@@ -96,7 +94,7 @@ describe("computeAreaScores", () => {
 
   it("falls back to the mentor side when no self eval exists", async () => {
     findMany.mockResolvedValue([evalWith("mentor", 2)]);
-    const result = await computeAreaScores("mem-1", "mid");
+    const result = await computeAreaScores("user-1", "mid");
     for (const area of AREA_KEYS) {
       expect(result[area].composite).toBe(2);
       expect(result[area].selfAvg).toBe(0);
@@ -105,17 +103,17 @@ describe("computeAreaScores", () => {
 
   it("returns 0 composite for an area with no scores", async () => {
     findMany.mockResolvedValue([]);
-    const result = await computeAreaScores("mem-1", "mid");
+    const result = await computeAreaScores("user-1", "mid");
     expect(result.domain.composite).toBe(0);
   });
 });
 
 describe("submitMentorEvaluation", () => {
-  it("persists a mentor evaluation on the membership with the actor as evaluator", async () => {
+  it("persists a mentor evaluation on the person with the actor as evaluator", async () => {
     create.mockResolvedValue({ id: "eval-1" });
 
     await submitMentorEvaluation({
-      membershipId: "mem-1",
+      userId: "user-1",
       moment: "mid",
       scores: [
         { area: "physical", indicator: "posture", score: 4, notes: "boa base" },
@@ -125,7 +123,7 @@ describe("submitMentorEvaluation", () => {
 
     expect(create).toHaveBeenCalledTimes(1);
     const arg = create.mock.calls[0][0];
-    expect(arg.data.membershipId).toBe("mem-1");
+    expect(arg.data.userId).toBe("user-1");
     expect(arg.data.evaluatorId).toBe("mentor-1");
     expect(arg.data.evaluationType).toBe("mentor");
     expect(arg.data.moment).toBe("mid");
@@ -140,7 +138,7 @@ describe("submitMentorEvaluation", () => {
 });
 
 describe("submitSelfEvaluation", () => {
-  it("always targets the caller's own active membership", async () => {
+  it("always targets the caller's own person-level history", async () => {
     create.mockResolvedValue({ id: "eval-2" });
 
     await submitSelfEvaluation({
@@ -149,7 +147,7 @@ describe("submitSelfEvaluation", () => {
     });
 
     const arg = create.mock.calls[0][0];
-    expect(arg.data.membershipId).toBe("mem-1");
+    expect(arg.data.userId).toBe("user-1");
     expect(arg.data.evaluatorId).toBe("user-1");
     expect(arg.data.evaluationType).toBe("self");
   });

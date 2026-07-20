@@ -7,7 +7,7 @@ const MOMENTS = ["entry", "mid", "exit"] as const;
 
 export default async function DiagnosisPage() {
   await requirePageUser();
-  const { membership } = await getMyContext();
+  const { user, membership } = await getMyContext();
 
   if (!membership) {
     return (
@@ -23,12 +23,12 @@ export default async function DiagnosisPage() {
     );
   }
 
-  const membershipId = membership.membershipId;
+  const userId = user.id;
 
   const [areaScoresByMoment, indicatorScoresByMoment, evaluations] = await Promise.all([
-    Promise.all(MOMENTS.map((m) => computeAreaScores(membershipId, m))),
-    Promise.all(MOMENTS.map((m) => getIndicatorScores(membershipId, m))),
-    getEvaluations(membershipId),
+    Promise.all(MOMENTS.map((m) => computeAreaScores(userId, m))),
+    Promise.all(MOMENTS.map((m) => getIndicatorScores(userId, m))),
+    getEvaluations(userId),
   ]);
 
   const scoresByMoment = Object.fromEntries(

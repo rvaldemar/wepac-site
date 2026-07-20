@@ -3,23 +3,20 @@
 import { prisma } from "@/lib/db";
 import type { AreaKey, GoalScope, GoalStatus, TaskStatus } from "@prisma/client";
 import {
-  assertMembershipAccess,
-  assertMembershipOwner,
-  assertMentorOfMembership,
+  assertUserAccess,
+  assertUserOwner,
+  assertMentorOfUser,
 } from "@/lib/wepacker/guards";
 
 // ===== LIFE PLAN =====
 
-export async function getLifePlan(membershipId: string) {
-  await assertMembershipAccess(membershipId);
-  return prisma.lifePlan.findFirst({
-    where: { membershipId },
-    orderBy: { updatedAt: "desc" },
-  });
+export async function getLifePlan(userId: string) {
+  await assertUserAccess(userId);
+  return prisma.lifePlan.findUnique({ where: { userId } });
 }
 
 export async function upsertLifePlan(
-  membershipId: string,
+  userId: string,
   data: {
     whoIAm: string;
     whereIAm: string;
@@ -28,20 +25,20 @@ export async function upsertLifePlan(
     commitments: string;
   }
 ) {
-  await assertMembershipOwner(membershipId);
-  const existing = await prisma.lifePlan.findFirst({ where: { membershipId } });
-  if (existing) {
-    return prisma.lifePlan.update({ where: { id: existing.id }, data });
-  }
-  return prisma.lifePlan.create({ data: { membershipId, ...data } });
+  await assertUserOwner(userId);
+  return prisma.lifePlan.upsert({
+    where: { userId },
+    update: data,
+    create: { userId, ...data },
+  });
 }
 
 // ===== STRATEGIC PLAN =====
 
-export async function getStrategicPlan(membershipId: string) {
-  await assertMembershipAccess(membershipId);
+export async function getStrategicPlan(userId: string) {
+  await assertUserAccess(userId);
   return prisma.strategicPlan.findFirst({
-    where: { membershipId },
+    where: { userId },
     include: {
       goals: { orderBy: { deadline: "asc" } },
       monthlyActions: {
@@ -54,7 +51,7 @@ export async function getStrategicPlan(membershipId: string) {
 }
 
 export async function upsertStrategicPlan(
-  membershipId: string,
+  userId: string,
   data: {
     quarter: string;
     longTermVision: string;
@@ -63,23 +60,23 @@ export async function upsertStrategicPlan(
     quarterlyReflection: string;
   }
 ) {
-  await assertMembershipAccess(membershipId);
+  await assertUserAccess(userId);
   const existing = await prisma.strategicPlan.findFirst({
-    where: { membershipId, quarter: data.quarter },
+    where: { userId, quarter: data.quarter },
   });
   if (existing) {
     return prisma.strategicPlan.update({ where: { id: existing.id }, data });
   }
-  return prisma.strategicPlan.create({ data: { membershipId, ...data } });
+  return prisma.strategicPlan.create({ data: { userId, ...data } });
 }
 
 async function assertPlanAccess(strategicPlanId: string) {
   const plan = await prisma.strategicPlan.findUnique({
     where: { id: strategicPlanId },
-    select: { membershipId: true },
+    select: { userId: true },
   });
   if (!plan) throw new Error("Plano não encontrado.");
-  await assertMembershipAccess(plan.membershipId);
+  await assertUserAccess(plan.userId);
   return plan;
 }
 
@@ -143,16 +140,16 @@ export async function updateMonthlyActionStatus(
 
 // ===== STRATEGIC MAP (PPV) =====
 
-export async function getStrategicMapScores(membershipId: string) {
-  await assertMembershipAccess(membershipId);
+export async function getStrategicMapScores(userId: string) {
+  await assertUserAccess(userId);
   return prisma.strategicMapScore.findMany({
-    where: { membershipId },
+    where: { userId },
     orderBy: { month: "asc" },
   });
 }
 
 export async function submitStrategicMapScore(data: {
-  membershipId: string;
+  userId: string;
   month: string;
   longTermScore: number;
   annualScore: number;
@@ -160,7 +157,7 @@ export async function submitStrategicMapScore(data: {
   monthlyScore: number;
   notes?: string;
 }) {
-  const { actor } = await assertMentorOfMembership(data.membershipId);
+  const { actor } = await assertMentorOfUser(data.userId);
   return prisma.strategicMapScore.create({
     data: { ...data, evaluatorId: actor.id },
   });

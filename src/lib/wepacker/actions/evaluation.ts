@@ -4,8 +4,8 @@ import { prisma } from "@/lib/db";
 import type { AreaKey, EvaluationMoment } from "@prisma/client";
 import { AREA_KEYS } from "@/lib/wepacker/types";
 import {
-  assertMembershipAccess,
-  assertMentorOfMembership,
+  assertUserAccess,
+  assertMentorOfUser,
   requireMembership,
 } from "@/lib/wepacker/guards";
 
@@ -20,16 +20,16 @@ function composite(self: number, mentor: number): number {
 }
 
 export async function computeAreaScores(
-  membershipId: string,
+  userId: string,
   moment: EvaluationMoment
 ): Promise<AreaAverages> {
-  await assertMembershipAccess(membershipId);
+  await assertUserAccess(userId);
 
   // A moment can be (re)evaluated multiple times — ordered desc so
   // .find() below grabs the most recent self/mentor submission, not
   // whichever happened to be inserted first.
   const evals = await prisma.evaluation.findMany({
-    where: { membershipId, moment },
+    where: { userId, moment },
     include: { scores: true },
     orderBy: { completedAt: "desc" },
   });
@@ -62,17 +62,17 @@ export async function computeAreaScores(
   return result;
 }
 
-export async function getEvaluations(membershipId: string) {
-  await assertMembershipAccess(membershipId);
+export async function getEvaluations(userId: string) {
+  await assertUserAccess(userId);
   return prisma.evaluation.findMany({
-    where: { membershipId },
+    where: { userId },
     include: { scores: true, evaluator: { select: { name: true } } },
     orderBy: { completedAt: "asc" },
   });
 }
 
 export async function getIndicatorScores(
-  membershipId: string,
+  userId: string,
   moment: EvaluationMoment
 ): Promise<
   Record<
@@ -80,13 +80,13 @@ export async function getIndicatorScores(
     Record<string, { selfScore: number; mentorScore: number; composite: number }>
   >
 > {
-  await assertMembershipAccess(membershipId);
+  await assertUserAccess(userId);
 
   // A moment can be (re)evaluated multiple times — ordered desc so
   // .find() below grabs the most recent self/mentor submission, not
   // whichever happened to be inserted first.
   const evals = await prisma.evaluation.findMany({
-    where: { membershipId, moment },
+    where: { userId, moment },
     include: { scores: true },
     orderBy: { completedAt: "desc" },
   });
@@ -131,15 +131,18 @@ type ScoreInput = {
   notes?: string;
 };
 
-// Self-evaluation always targets the caller's own active membership.
+// Self-evaluation always targets the caller's own person-level history.
+// Still gated on having an active membership (requireMembership) — you
+// must be enrolled in a journey to self-evaluate — but only `user.id` is
+// used to key the record.
 export async function submitSelfEvaluation(data: {
   moment: EvaluationMoment;
   scores: ScoreInput[];
 }) {
-  const { user, membership } = await requireMembership();
+  const { user } = await requireMembership();
   return prisma.evaluation.create({
     data: {
-      membershipId: membership.membershipId,
+      userId: user.id,
       evaluatorId: user.id,
       evaluationType: "self",
       moment: data.moment,
@@ -156,16 +159,16 @@ export async function submitSelfEvaluation(data: {
   });
 }
 
-// Mentor evaluation — only mentors of the member's cohort (or admin).
+// Mentor evaluation — only mentors of one of the member's cohorts (or admin).
 export async function submitMentorEvaluation(data: {
-  membershipId: string;
+  userId: string;
   moment: EvaluationMoment;
   scores: ScoreInput[];
 }) {
-  const { actor } = await assertMentorOfMembership(data.membershipId);
+  const { actor } = await assertMentorOfUser(data.userId);
   return prisma.evaluation.create({
     data: {
-      membershipId: data.membershipId,
+      userId: data.userId,
       evaluatorId: actor.id,
       evaluationType: "mentor",
       moment: data.moment,

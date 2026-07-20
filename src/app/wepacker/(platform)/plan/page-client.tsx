@@ -99,13 +99,13 @@ interface LifePlan {
 }
 
 interface Props {
-  membershipId: string;
+  userId: string;
   domainLabel: string;
   lifePlan: LifePlan | null;
   strategicPlan: StrategicPlan | null;
 }
 
-export default function PlanPageClient({ membershipId, domainLabel, lifePlan, strategicPlan }: Props) {
+export default function PlanPageClient({ userId, domainLabel, lifePlan, strategicPlan }: Props) {
   return (
     <div className="p-6 lg:p-8">
       <h1 className="font-barlow text-2xl font-bold text-wepac-white">Plano</h1>
@@ -115,12 +115,12 @@ export default function PlanPageClient({ membershipId, domainLabel, lifePlan, st
       </p>
 
       <div className="mt-8">
-        <LifePlanSection membershipId={membershipId} plan={lifePlan} />
+        <LifePlanSection userId={userId} plan={lifePlan} />
       </div>
 
       <div className="mt-12 border-t border-wepac-border pt-8">
         <StrategicPlanSection
-          membershipId={membershipId}
+          userId={userId}
           domainLabel={domainLabel}
           plan={strategicPlan}
         />
@@ -129,7 +129,7 @@ export default function PlanPageClient({ membershipId, domainLabel, lifePlan, st
   );
 }
 
-function LifePlanSection({ membershipId, plan }: { membershipId: string; plan: LifePlan | null }) {
+function LifePlanSection({ userId, plan }: { userId: string; plan: LifePlan | null }) {
   const defaultValues: Record<LifeSectionKey, string> = {
     whoIAm: plan?.whoIAm ?? "",
     whereIAm: plan?.whereIAm ?? "",
@@ -145,7 +145,7 @@ function LifePlanSection({ membershipId, plan }: { membershipId: string; plan: L
   const handleSave = async () => {
     setSaving(true);
     try {
-      await upsertLifePlan(membershipId, values);
+      await upsertLifePlan(userId, values);
     } finally {
       setSaving(false);
       setEditing(null);
@@ -208,11 +208,11 @@ function LifePlanSection({ membershipId, plan }: { membershipId: string; plan: L
 }
 
 function StrategicPlanSection({
-  membershipId,
+  userId,
   domainLabel,
   plan,
 }: {
-  membershipId: string;
+  userId: string;
   domainLabel: string;
   plan: StrategicPlan | null;
 }) {
@@ -221,7 +221,7 @@ function StrategicPlanSection({
   const [activeTab, setActiveTab] = useState<"long" | "annual" | "quarterly" | "monthly">("quarterly");
 
   if (!plan) {
-    return <StrategicPlanSetup membershipId={membershipId} areaLabels={areaLabels} onCreated={() => router.refresh()} />;
+    return <StrategicPlanSetup userId={userId} areaLabels={areaLabels} onCreated={() => router.refresh()} />;
   }
 
   const annualGoals = plan.goals.filter((g) => g.scope === "annual");
@@ -258,7 +258,7 @@ function StrategicPlanSection({
 
       <div className="mt-6">
         {activeTab === "long" && (
-          <LongTermTab membershipId={membershipId} plan={plan} onSaved={() => router.refresh()} />
+          <LongTermTab userId={userId} plan={plan} onSaved={() => router.refresh()} />
         )}
         {activeTab === "annual" && (
           <GoalsTab
@@ -271,7 +271,7 @@ function StrategicPlanSection({
         )}
         {activeTab === "quarterly" && (
           <QuarterlyTab
-            membershipId={membershipId}
+            userId={userId}
             plan={plan}
             goals={quarterlyGoals}
             areaLabels={areaLabels}
@@ -287,11 +287,11 @@ function StrategicPlanSection({
 }
 
 function StrategicPlanSetup({
-  membershipId,
+  userId,
   areaLabels,
   onCreated,
 }: {
-  membershipId: string;
+  userId: string;
   areaLabels: Record<AreaKey, string>;
   onCreated: () => void;
 }) {
@@ -374,7 +374,7 @@ function StrategicPlanSetup({
           onClick={async () => {
             setSaving(true);
             try {
-              await upsertStrategicPlan(membershipId, {
+              await upsertStrategicPlan(userId, {
                 quarter: quarter.trim(),
                 longTermVision,
                 positioning,
@@ -396,11 +396,11 @@ function StrategicPlanSetup({
 }
 
 function LongTermTab({
-  membershipId,
+  userId,
   plan,
   onSaved,
 }: {
-  membershipId: string;
+  userId: string;
   plan: StrategicPlan;
   onSaved: () => void;
 }) {
@@ -422,7 +422,7 @@ function LongTermTab({
             }
             setSaving(true);
             try {
-              await upsertStrategicPlan(membershipId, {
+              await upsertStrategicPlan(userId, {
                 quarter: plan.quarter,
                 longTermVision: value,
                 positioning: plan.positioning,
@@ -582,13 +582,13 @@ function GoalsTab({
 }
 
 function QuarterlyTab({
-  membershipId,
+  userId,
   plan,
   goals,
   areaLabels,
   onChanged,
 }: {
-  membershipId: string;
+  userId: string;
   plan: StrategicPlan;
   goals: Goal[];
   areaLabels: Record<AreaKey, string>;
@@ -644,7 +644,7 @@ function QuarterlyTab({
               }
               setSaving(true);
               try {
-                await upsertStrategicPlan(membershipId, {
+                await upsertStrategicPlan(userId, {
                   quarter: plan.quarter,
                   longTermVision: plan.longTermVision,
                   positioning: plan.positioning,

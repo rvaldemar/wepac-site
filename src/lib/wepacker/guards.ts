@@ -114,45 +114,6 @@ export async function assertMembershipAccess(
   };
 }
 
-// Like assertMembershipAccess but only owner or admin (no mentor).
-export async function assertMembershipOwner(
-  membershipId: string
-): Promise<{ actor: SessionUser; membership: MembershipContext }> {
-  const actor = await requireUser();
-  const membership = await prisma.cohortMembership.findUnique({
-    where: { id: membershipId },
-    include: membershipContextInclude,
-  });
-  if (!membership) throw new Error("Membership não encontrada.");
-  if (actor.role !== "admin" && membership.userId !== actor.id) {
-    throw new Error("Sem permissão.");
-  }
-  return { actor, membership: toContext(membership) };
-}
-
-// Mentor (of the cohort) or admin — for mentor-only writes on a member.
-export async function assertMentorOfMembership(
-  membershipId: string
-): Promise<{ actor: SessionUser; membership: MembershipContext; ownerUserId: string }> {
-  const actor = await requireUser();
-  const membership = await prisma.cohortMembership.findUnique({
-    where: { id: membershipId },
-    include: membershipContextInclude,
-  });
-  if (!membership) throw new Error("Membership não encontrada.");
-  if (actor.role !== "admin") {
-    const mentored = await getMentoredCohortIds(actor.id);
-    if (!mentored.includes(membership.cohortId)) {
-      throw new Error("Sem permissão.");
-    }
-  }
-  return {
-    actor,
-    membership: toContext(membership),
-    ownerUserId: membership.userId,
-  };
-}
-
 // Mentor of the cohort or admin — for cohort-scoped writes (sessions).
 export async function assertMentorOfCohort(
   cohortId: string
@@ -162,4 +123,63 @@ export async function assertMentorOfCohort(
   const mentored = await getMentoredCohortIds(actor.id);
   if (!mentored.includes(cohortId)) throw new Error("Sem permissão.");
   return actor;
+}
+
+// ===== PERSON-LEVEL GUARDS (PPV / diagnosis / strategic plan) =====
+//
+// Evaluation, LifePlan, StrategicPlan and StrategicMapScore hang on the
+// User, not a CohortMembership — one person has a single diagnosis/PPV
+// history spanning every pack they join. Access follows the same shape
+// as the membership guards above, keyed by userId instead: the owner
+// themselves, an admin, or a mentor of at least one of that user's
+// cohort memberships (any status — mirrors assertMembershipAccess,
+// which never filtered the target membership's own status).
+async function isMentoredUser(actorId: string, userId: string): Promise<boolean> {
+  const mentoredCohortIds = await getMentoredCohortIds(actorId);
+  if (mentoredCohortIds.length === 0) return false;
+  const membership = await prisma.cohortMembership.findFirst({
+    where: { userId, cohortId: { in: mentoredCohortIds } },
+    select: { id: true },
+  });
+  return membership !== null;
+}
+
+// Central ownership check for person-level data: accessible to its
+// owner, to admins, and to mentors of any of the owner's memberships.
+export async function assertUserAccess(
+  userId: string
+): Promise<{ actor: SessionUser; ownerUserId: string }> {
+  const actor = await requireUser();
+  if (actor.role !== "admin" && userId !== actor.id) {
+    if (!(await isMentoredUser(actor.id, userId))) {
+      throw new Error("Sem permissão.");
+    }
+  }
+  return { actor, ownerUserId: userId };
+}
+
+// Like assertUserAccess but only owner or admin (no mentor) — for
+// member-authored writes (e.g. the PPV / life plan text).
+export async function assertUserOwner(
+  userId: string
+): Promise<{ actor: SessionUser; ownerUserId: string }> {
+  const actor = await requireUser();
+  if (actor.role !== "admin" && userId !== actor.id) {
+    throw new Error("Sem permissão.");
+  }
+  return { actor, ownerUserId: userId };
+}
+
+// Mentor (of at least one of the user's memberships) or admin — for
+// mentor-only writes on a person (mentor evaluation, strategic map score).
+export async function assertMentorOfUser(
+  userId: string
+): Promise<{ actor: SessionUser; ownerUserId: string }> {
+  const actor = await requireUser();
+  if (actor.role !== "admin") {
+    if (!(await isMentoredUser(actor.id, userId))) {
+      throw new Error("Sem permissão.");
+    }
+  }
+  return { actor, ownerUserId: userId };
 }

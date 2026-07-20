@@ -29,6 +29,10 @@ export default async function MentorMemberDetailPage({
   const { id } = await params;
 
   const detail = await getMembershipDetail(id);
+  // Evaluations/plans/PPV hang on the person, not the membership — one
+  // diagnosis/PPV history per person across every pack. Tasks stay
+  // membership-scoped (`id`), the rest keys off `detail.user.id`.
+  const userId = detail.user.id;
 
   const empty: AreaScoreAvg = { selfAvg: 0, mentorAvg: 0, composite: 0 };
   const emptyScores = Object.fromEntries(
@@ -39,8 +43,8 @@ export default async function MentorMemberDetailPage({
   let previousScores: Record<AreaKey, AreaScoreAvg> = emptyScores;
   try {
     const [current, previous] = await Promise.all([
-      computeAreaScores(id, "mid"),
-      computeAreaScores(id, "entry"),
+      computeAreaScores(userId, "mid"),
+      computeAreaScores(userId, "entry"),
     ]);
     currentScores = current as Record<AreaKey, AreaScoreAvg>;
     previousScores = previous as Record<AreaKey, AreaScoreAvg>;
@@ -50,10 +54,10 @@ export default async function MentorMemberDetailPage({
 
   const [evaluations, lifePlan, strategicPlan, strategicMapScores, tasks] =
     await Promise.all([
-      getEvaluations(id),
-      getLifePlan(id),
-      getStrategicPlan(id),
-      getStrategicMapScores(id),
+      getEvaluations(userId),
+      getLifePlan(userId),
+      getStrategicPlan(userId),
+      getStrategicMapScores(userId),
       getTasksForMembership(id),
     ]);
 

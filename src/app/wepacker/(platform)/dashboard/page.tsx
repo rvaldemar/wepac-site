@@ -32,9 +32,9 @@ export default async function DashboardPage() {
     );
   }
 
-  const membershipId = membership.membershipId;
+  const userId = user.id;
 
-  const evaluations = await getEvaluations(membershipId);
+  const evaluations = await getEvaluations(userId);
   // "Actual" = the most recent moment that actually has a self or mentor
   // evaluation; "Anterior" = the one before it, if any. Was previously
   // hardcoded to mid/entry, which showed an all-zero "Actual" radar for
@@ -52,10 +52,10 @@ export default async function DashboardPage() {
 
   const [currentScores, previousScores, indicatorScores, strategicMapScores, allTasks, nextSession, conversations] =
     await Promise.all([
-      computeAreaScores(membershipId, currentMoment),
-      previousMoment ? computeAreaScores(membershipId, previousMoment) : null,
-      getIndicatorScores(membershipId, currentMoment),
-      getStrategicMapScores(membershipId),
+      computeAreaScores(userId, currentMoment),
+      previousMoment ? computeAreaScores(userId, previousMoment) : null,
+      getIndicatorScores(userId, currentMoment),
+      getStrategicMapScores(userId),
       getMyTasks(),
       getNextSession(),
       getMyConversations(),

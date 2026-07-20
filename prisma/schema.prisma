@@ -147,8 +147,10 @@ model Cohort {
 }
 
 // A person inside a cohort — either a member in development or a mentor.
-// All development artefacts (evaluations, plans, tasks) hang on the
-// membership, not the user, so one person can belong to several packs.
+// Tasks and session attendance hang on the membership (they are specific
+// to a pack cycle). The person-level development artefacts — evaluations,
+// life plan, strategic plan/map — hang on the User instead (see below),
+// so one person has a single PPV/diagnosis/plan even across several packs.
 model CohortMembership {
   id           String           @id @default(cuid())
   cohortId     String
@@ -159,12 +161,8 @@ model CohortMembership {
   currentPhase MemberPhase      @default(diagnosis)
   joinedAt     DateTime         @default(now())
 
-  cohort             Cohort              @relation(fields: [cohortId], references: [id], onDelete: Cascade)
-  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  evaluations        Evaluation[]
-  strategicMapScores StrategicMapScore[]
-  lifePlans          LifePlan[]
-  strategicPlans     StrategicPlan[]
+  cohort             Cohort            @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   tasks              Task[]
   sessionAttendances SessionAttendee[]
 
@@ -190,8 +188,12 @@ model User {
 
   memberships         CohortMembership[]
   agreements          Agreement[]
+  evaluations         Evaluation[]              @relation("EvaluationSubject")
   evaluationsGiven    Evaluation[]              @relation("EvaluationEvaluator")
+  strategicMapScores  StrategicMapScore[]       @relation("StrategicMapSubject")
   strategicMapsGiven  StrategicMapScore[]       @relation("StrategicMapEvaluator")
+  lifePlan            LifePlan?
+  strategicPlans      StrategicPlan[]
   tasksAssigned       Task[]                    @relation("TaskAssigner")
   sessionsMentored    Session[]
   conversationLinks   ConversationParticipant[]
@@ -213,18 +215,21 @@ model Agreement {
   @@map("agreements")
 }
 
+// Belongs to the person (User), not a specific CohortMembership — one
+// person has a single diagnosis history across every pack they join.
 model Evaluation {
   id             String           @id @default(cuid())
-  membershipId   String
+  userId         String
   evaluatorId    String
   evaluationType EvaluationType
   moment         EvaluationMoment
   completedAt    DateTime?
 
-  membership CohortMembership  @relation(fields: [membershipId], references: [id], onDelete: Cascade)
-  evaluator  User              @relation("EvaluationEvaluator", fields: [evaluatorId], references: [id], onDelete: Cascade)
-  scores     EvaluationScore[]
+  user      User              @relation("EvaluationSubject", fields: [userId], references: [id], onDelete: Cascade)
+  evaluator User              @relation("EvaluationEvaluator", fields: [evaluatorId], references: [id], onDelete: Cascade)
+  scores    EvaluationScore[]
 
+  @@index([userId])
   @@map("evaluations")
 }
 
@@ -241,9 +246,10 @@ model EvaluationScore {
   @@map("evaluation_scores")
 }
 
+// Belongs to the person (User), not a specific CohortMembership.
 model StrategicMapScore {
   id             String  @id @default(cuid())
-  membershipId   String
+  userId         String
   evaluatorId    String
   month          String
   longTermScore  Int
@@ -252,40 +258,46 @@ model StrategicMapScore {
   monthlyScore   Int
   notes          String?
 
-  membership CohortMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
-  evaluator  User             @relation("StrategicMapEvaluator", fields: [evaluatorId], references: [id], onDelete: Cascade)
+  user      User @relation("StrategicMapSubject", fields: [userId], references: [id], onDelete: Cascade)
+  evaluator User @relation("StrategicMapEvaluator", fields: [evaluatorId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("strategic_map_scores")
 }
 
+// Belongs to the person (User) — a single mutable PPV per person, not
+// per membership. `userId` is unique: one row per person.
 model LifePlan {
-  id           String   @id @default(cuid())
-  membershipId String
-  whoIAm       String   @default("")
-  whereIAm     String   @default("")
-  whereIGo     String   @default("")
-  whyIDo       String   @default("")
-  commitments  String   @default("")
-  updatedAt    DateTime @updatedAt
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  whoIAm      String   @default("")
+  whereIAm    String   @default("")
+  whereIGo    String   @default("")
+  whyIDo      String   @default("")
+  commitments String   @default("")
+  updatedAt   DateTime @updatedAt
 
-  membership CohortMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("life_plans")
 }
 
+// Belongs to the person (User), not a specific CohortMembership — one
+// strategic plan history per person, spanning every pack they join.
 model StrategicPlan {
   id                  String    @id @default(cuid())
-  membershipId        String
+  userId              String
   quarter             String
   longTermVision      String    @default("")
   positioning         String    @default("")
   focusAreas          AreaKey[]
   quarterlyReflection String    @default("")
 
-  membership     CohortMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   goals          Goal[]
   monthlyActions MonthlyAction[]
 
+  @@index([userId])
   @@map("strategic_plans")
 }
 

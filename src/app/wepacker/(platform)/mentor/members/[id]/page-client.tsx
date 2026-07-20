@@ -192,7 +192,7 @@ export function MentorMemberDetailClient({
     setMapError(null);
     try {
       await submitStrategicMapScore({
-        membershipId: membership.id,
+        userId: membership.user.id,
         month: mapMonth.trim(),
         ...mapScores,
         notes: mapNotes.trim() || undefined,

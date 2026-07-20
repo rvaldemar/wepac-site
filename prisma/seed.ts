@@ -237,7 +237,7 @@ async function main() {
   type AreaScores = Record<string, number[]>;
 
   async function createEvaluation(
-    membershipId: string,
+    userId: string,
     evaluatorId: string,
     evaluationType: "self" | "mentor",
     moment: "entry" | "mid",
@@ -246,7 +246,7 @@ async function main() {
   ) {
     const evaluation = await prisma.evaluation.create({
       data: {
-        membershipId,
+        userId,
         evaluatorId,
         evaluationType,
         moment,
@@ -278,7 +278,7 @@ async function main() {
     return evaluation;
   }
 
-  await createEvaluation(mem1.id, u1.id, "self", "entry", "2026-01-20T00:00:00Z", {
+  await createEvaluation(u1.id, u1.id, "self", "entry", "2026-01-20T00:00:00Z", {
     physical: [3, 4, 3, 3, 4, 3, 3],
     emotional: [3, 4, 4, 3, 2, 3, 3],
     character: [4, 4, 5, 4, 3, 4, 4],
@@ -288,7 +288,7 @@ async function main() {
     domain: [4, 3, 4, 3, 3, 3, 4],
   });
 
-  await createEvaluation(mem1.id, m1.id, "mentor", "entry", "2026-01-25T00:00:00Z", {
+  await createEvaluation(u1.id, m1.id, "mentor", "entry", "2026-01-25T00:00:00Z", {
     physical: [3, 3, 3, 2, 3, 3, 3],
     emotional: [3, 4, 3, 3, 2, 3, 2],
     character: [4, 5, 5, 4, 3, 4, 3],
@@ -298,7 +298,7 @@ async function main() {
     domain: [4, 3, 3, 3, 3, 3, 4],
   });
 
-  await createEvaluation(mem1.id, u1.id, "self", "mid", "2026-03-01T00:00:00Z", {
+  await createEvaluation(u1.id, u1.id, "self", "mid", "2026-03-01T00:00:00Z", {
     physical: [4, 4, 4, 3, 4, 4, 3],
     emotional: [4, 4, 4, 4, 3, 4, 3],
     character: [5, 5, 5, 4, 4, 5, 4],
@@ -308,7 +308,7 @@ async function main() {
     domain: [4, 4, 4, 3, 4, 3, 4],
   });
 
-  await createEvaluation(mem1.id, m1.id, "mentor", "mid", "2026-03-05T00:00:00Z", {
+  await createEvaluation(u1.id, m1.id, "mentor", "mid", "2026-03-05T00:00:00Z", {
     physical: [4, 4, 3, 3, 4, 4, 3],
     emotional: [3, 4, 4, 3, 3, 4, 3],
     character: [4, 5, 5, 4, 4, 4, 4],
@@ -321,15 +321,15 @@ async function main() {
   // ===== STRATEGIC MAP =====
   await prisma.strategicMapScore.createMany({
     data: [
-      { membershipId: mem1.id, evaluatorId: m1.id, month: "2026-02", longTermScore: 2, annualScore: 2, quarterlyScore: 3, monthlyScore: 3 },
-      { membershipId: mem1.id, evaluatorId: m1.id, month: "2026-03", longTermScore: 3, annualScore: 3, quarterlyScore: 4, monthlyScore: 4 },
+      { userId: u1.id, evaluatorId: m1.id, month: "2026-02", longTermScore: 2, annualScore: 2, quarterlyScore: 3, monthlyScore: 3 },
+      { userId: u1.id, evaluatorId: m1.id, month: "2026-03", longTermScore: 3, annualScore: 3, quarterlyScore: 4, monthlyScore: 4 },
     ],
   });
 
   // ===== LIFE PLAN =====
   await prisma.lifePlan.create({
     data: {
-      membershipId: mem1.id,
+      userId: u1.id,
       whoIAm: "Sou uma violinista de 27 anos, nascida em Braga. A música sempre fez parte da minha vida — comecei a estudar violino aos 6 anos. Formei-me no Conservatório de Música e fiz uma licenciatura em Performação Musical no ESMAE. Para além de performer, sou compositora — a minha linguagem artística vive entre o clássico e o contemporâneo.",
       whereIAm: "Atualmente dou aulas particulares de violino e faço freelance em orquestras e eventos. Não tenho um plano claro de carreira, e sinto que estou a reagir ao mercado em vez de o moldar. Financeiramente instável, mas com talento reconhecido.",
       whereIGo: "Quero construir uma carreira sustentável como solista e compositora. Imagino-me a liderar projetos artísticos próprios, com uma marca pessoal forte e um público fiel. A longo prazo, quero combinar performance com criação e educação.",
@@ -341,7 +341,7 @@ async function main() {
   // ===== STRATEGIC PLAN =====
   const sp1 = await prisma.strategicPlan.create({
     data: {
-      membershipId: mem1.id,
+      userId: u1.id,
       quarter: "2026-Q1",
       longTermVision: "Ser uma referência na cena de música de câmara em Portugal, com projetos artísticos próprios e presença internacional. Combinar performance, composição e educação como três pilares da minha carreira.",
       positioning: "Violinista e compositora contemporânea, com raízes clássicas e uma linguagem artística intimista e de alta qualidade.",

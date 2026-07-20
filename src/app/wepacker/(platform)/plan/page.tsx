@@ -5,7 +5,7 @@ import PlanPageClient from "./page-client";
 
 export default async function PlanPage() {
   await requirePageUser();
-  const { membership } = await getMyContext();
+  const { user, membership } = await getMyContext();
 
   if (!membership) {
     return (
@@ -19,11 +19,11 @@ export default async function PlanPage() {
     );
   }
 
-  const membershipId = membership.membershipId;
+  const userId = user.id;
 
   const [lifePlan, strategicPlan] = await Promise.all([
-    getLifePlan(membershipId),
-    getStrategicPlan(membershipId),
+    getLifePlan(userId),
+    getStrategicPlan(userId),
   ]);
 
   const serializedLifePlan = lifePlan
@@ -67,7 +67,7 @@ export default async function PlanPage() {
 
   return (
     <PlanPageClient
-      membershipId={membershipId}
+      userId={userId}
       domainLabel={membership.domainLabel}
       lifePlan={serializedLifePlan}
       strategicPlan={serializedStrategicPlan}
