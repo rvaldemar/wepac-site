@@ -4,6 +4,12 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-20 (3) — Inbox central de leads
+
+`/wepacker/admin/leads` passou a inbox única: leads Wessex (chat + formulário de eventos), submissões do `/contacto` e candidaturas WEPACKER, ordenadas cronologicamente com badge de origem, funil unificado (Novas/Em contacto/Ganhas/Perdidas) e ações por pipeline (estados próprios, notas e CTA de convite nas candidaturas, histórico de conversa nas leads de chat). O `/contacto` agora grava na tabela `leads` (novo valor de enum `LeadSource.contact`, migração aditiva `20260720160000`) além do email formsubmit — sucesso se um dos dois passar. `/wepacker/admin/applications` é redirect para a inbox; sidebar perdeu a entrada "Candidaturas".
+
+---
+
 ## 2026-07-20 (2) — Rebrand display "WEPAC" + copy do manifesto
 
 - Marca de display passou a ser só **"WEPAC"** em todo o site (metadata, footer, hero, bilheteira, chat Wessex, emails); subtítulos de marca usam "Cultura que transforma". Nome legal completo mantém-se na política de privacidade e nos dados históricos do Sem Nome.
