@@ -29,7 +29,7 @@ const FONT_HEADING =
 const FONT_BODY = "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif";
 
 const WEPAC_WORDMARK = `${APP_URL}/logo/email/wepac-wordmark-black.png`;
-const WEPACKER_LOCKUP = `${APP_URL}/logo/email/wepacker-lockup-black.png`;
+const WEPACKER_LOCKUP = `${APP_URL}/logo/email/wepacker-wordmark-black.png`;
 
 interface EmailShellOptions {
   preheader: string;
