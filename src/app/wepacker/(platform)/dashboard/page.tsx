@@ -95,6 +95,7 @@ export default async function DashboardPage() {
     scheduledAt: s.scheduledAt.toISOString(),
     status: s.status,
     sessionType: s.sessionType,
+    kind: s.kind,
   }));
 
   const serializedStrategicMapScores = strategicMapScores.map((s) => ({

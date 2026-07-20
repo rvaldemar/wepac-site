@@ -1,5 +1,7 @@
 "use client";
 
+import { SESSION_KIND_LABELS, type SessionKind } from "@/lib/wepacker/types";
+
 // "Trilho da Expedição" — a horizontal mountain-profile trail that plots a
 // member's sessions chronologically, so the dashboard finally SHOWS the
 // mountain imaginary instead of only describing it in copy elsewhere.
@@ -21,6 +23,7 @@ export interface ExpeditionSession {
   scheduledAt: string; // ISO date string
   status: ExpeditionSessionStatus;
   sessionType: ExpeditionSessionType;
+  kind: SessionKind;
 }
 
 interface ExpeditionTrailProps {
@@ -28,7 +31,17 @@ interface ExpeditionTrailProps {
   className?: string;
 }
 
-type WaypointKind = "completed" | "missed" | "here" | "next" | "start" | "summit";
+type WaypointKind =
+  | "completed"
+  | "missed"
+  | "here"
+  | "next"
+  | "start"
+  | "summit"
+  | "recon"
+  | "basecamp"
+  | "rescue"
+  | "kind-summit";
 
 interface Waypoint {
   kind: WaypointKind;
@@ -38,15 +51,26 @@ interface Waypoint {
 }
 
 // --- Seam ------------------------------------------------------------
-// There is no `Session.kind` (semantic session kind) in the schema yet —
-// it's being built in a parallel worktree. Once it lands, this is the
-// only function that should need to change: branch on `kind` first and
-// fall back to sessionType/status. Everything below only ever reads the
-// `WaypointKind` this returns, so the rest of the component stays put.
-function deriveWaypointKind(
-  session: ExpeditionSession
-): "completed" | "missed" {
-  return session.status === "completed" ? "completed" : "missed";
+// `Session.kind` (semantic session kind, from the mountain imaginary) now
+// exists on the schema. Branch on it first — recon/basecamp/rescue/summit
+// get their own glyph — and fall back to status for the plain
+// completed/missed dot when the kind is just a regular checkpoint.
+// Everything below only ever reads the `WaypointKind` this returns, so the
+// rest of the component stays put.
+function deriveWaypointKind(session: ExpeditionSession): WaypointKind {
+  if (session.status !== "completed") return "missed";
+  switch (session.kind) {
+    case "recon":
+      return "recon";
+    case "basecamp":
+      return "basecamp";
+    case "rescue":
+      return "rescue";
+    case "summit":
+      return "kind-summit";
+    default:
+      return "completed";
+  }
 }
 // -----------------------------------------------------------------------
 
@@ -109,6 +133,16 @@ export function ExpeditionTrail({ sessions, className = "" }: ExpeditionTrailPro
 
   const linePoints = [...waypoints, summit].map((w) => `${w.x},${w.y}`).join(" ");
 
+  // Only surface a legend entry for the special kinds actually present —
+  // no point explaining glyphs the member has never seen on their trail.
+  const presentSpecialKinds = Array.from(
+    new Set(
+      past
+        .filter((s) => s.status === "completed" && s.kind !== "checkpoint")
+        .map((s) => s.kind)
+    )
+  );
+
   return (
     <div className={`border border-wepac-border bg-wepac-card p-6 ${className}`}>
       <div className="flex items-center justify-between">
@@ -145,12 +179,75 @@ export function ExpeditionTrail({ sessions, className = "" }: ExpeditionTrailPro
           />
 
           {waypoints.map((w, i) => {
+            const kindLabel = w.session ? SESSION_KIND_LABELS[w.session.kind] : null;
+            const kindTitle = kindLabel ? `${kindLabel.label} — ${kindLabel.description}` : null;
             if (w.kind === "completed") {
-              return <circle key={i} cx={w.x} cy={w.y} r={4.5} fill="#FFFFFF" />;
+              return (
+                <circle key={i} cx={w.x} cy={w.y} r={4.5} fill="#FFFFFF">
+                  {kindTitle && <title>{kindTitle}</title>}
+                </circle>
+              );
+            }
+            if (w.kind === "recon") {
+              // Trailhead-style marker — a small pennant/flag, since recon
+              // sessions mark where the terrain first gets mapped.
+              return (
+                <g key={i}>
+                  {kindTitle && <title>{kindTitle}</title>}
+                  <line x1={w.x} y1={w.y + 6} x2={w.x} y2={w.y - 7} stroke="#FFFFFF" strokeWidth={1.25} />
+                  <path
+                    d={`M ${w.x} ${w.y - 7} L ${w.x + 7} ${w.y - 4} L ${w.x} ${w.y - 1} Z`}
+                    fill="#FFFFFF"
+                  />
+                </g>
+              );
+            }
+            if (w.kind === "basecamp") {
+              // Small tent glyph — a peaked square, for the planning stop
+              // between legs of the climb.
+              return (
+                <g key={i}>
+                  {kindTitle && <title>{kindTitle}</title>}
+                  <path
+                    d={`M ${w.x - 5} ${w.y + 5} L ${w.x} ${w.y - 5} L ${w.x + 5} ${w.y + 5} Z`}
+                    fill="none"
+                    stroke="#FFFFFF"
+                    strokeWidth={1.25}
+                  />
+                  <line x1={w.x - 5} y1={w.y + 5} x2={w.x + 5} y2={w.y + 5} stroke="#FFFFFF" strokeWidth={1.25} />
+                </g>
+              );
+            }
+            if (w.kind === "rescue") {
+              // Subtly distinct — a small cross, kept muted rather than
+              // alarming, since it's still a completed, supportive session.
+              return (
+                <g key={i}>
+                  {kindTitle && <title>{kindTitle}</title>}
+                  <circle cx={w.x} cy={w.y} r={4.5} fill="none" stroke="#DEE0DB" strokeWidth={1} />
+                  <line x1={w.x - 2.5} y1={w.y} x2={w.x + 2.5} y2={w.y} stroke="#DEE0DB" strokeWidth={1} />
+                  <line x1={w.x} y1={w.y - 2.5} x2={w.x} y2={w.y + 2.5} stroke="#DEE0DB" strokeWidth={1} />
+                </g>
+              );
+            }
+            if (w.kind === "kind-summit") {
+              // A peak glyph on the trail itself — a completed summit
+              // session — filled, to read as "reached" rather than the
+              // hollow, unlabeled aspirational summit far to the right.
+              return (
+                <g key={i}>
+                  {kindTitle && <title>{kindTitle}</title>}
+                  <path
+                    d={`M ${w.x - 6} ${w.y + 6} L ${w.x} ${w.y - 8} L ${w.x + 6} ${w.y + 6} Z`}
+                    fill="#FFFFFF"
+                  />
+                </g>
+              );
             }
             if (w.kind === "missed") {
               return (
                 <g key={i} opacity={0.5}>
+                  {kindTitle && <title>{kindTitle}</title>}
                   <circle cx={w.x} cy={w.y} r={4} fill="none" stroke="#999999" strokeWidth={1} />
                   <line
                     x1={w.x - 3}
@@ -233,6 +330,13 @@ export function ExpeditionTrail({ sessions, className = "" }: ExpeditionTrailPro
       {isEmpty && (
         <p className="mt-3 text-xs text-wepac-text-tertiary">
           A tua expedição começa em breve.
+        </p>
+      )}
+      {presentSpecialKinds.length > 0 && (
+        <p className="mt-2 text-[10px] text-wepac-text-tertiary">
+          {presentSpecialKinds
+            .map((kind) => SESSION_KIND_LABELS[kind].label)
+            .join(" · ")}
         </p>
       )}
     </div>
