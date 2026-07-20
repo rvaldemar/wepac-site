@@ -68,7 +68,7 @@ export default async function WepackerLandingPage() {
             WEPACKER é um estilo de vida que te permite atingir o teu potencial.
           </h1>
           <p className="mt-8 font-barlow text-xl font-bold text-wepac-gray sm:text-2xl">
-            Estamos juntos. Juntos somos mais fortes.
+            From packers to WEPACkers.
           </p>
           <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-wepac-text-secondary">
             Mentoria, comunidade e experiências reais para desenvolver talento, caráter,

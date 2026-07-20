@@ -110,7 +110,7 @@ function heading(text: string): string {
 
 // WEPACKER emails header with the WEPACKER wordmark, so the footer signs
 // off with the parent brand mark ("by WEPAC") instead of repeating text.
-const WEPACKER_FOOTER = `<img src="${WEPAC_WORDMARK}" alt="WEPAC" width="56" style="display:block; width:56px; height:auto; border:0; margin-bottom:12px; opacity:0.55;" />Estamos juntos. Juntos somos mais fortes.<br /><a href="${APP_URL}/wepacker" style="color:#999999;">wepac.pt/wepacker</a> · <a href="mailto:info@wepac.pt" style="color:#999999;">info@wepac.pt</a>`;
+const WEPACKER_FOOTER = `<img src="${WEPAC_WORDMARK}" alt="WEPAC" width="56" style="display:block; width:56px; height:auto; border:0; margin-bottom:12px; opacity:0.55;" />From packers to WEPACkers.<br /><a href="${APP_URL}/wepacker" style="color:#999999;">wepac.pt/wepacker</a> · <a href="mailto:info@wepac.pt" style="color:#999999;">info@wepac.pt</a>`;
 
 const WEPAC_FOOTER = `WEPAC<br /><a href="${APP_URL}" style="color:#999999;">wepac.pt</a> · <a href="mailto:info@wepac.pt" style="color:#999999;">info@wepac.pt</a>`;
 

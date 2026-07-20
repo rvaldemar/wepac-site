@@ -32,7 +32,7 @@ export default function WelcomePage() {
             procuramos verdade e evolução.
           </p>
           <p>
-            Estamos juntos. Juntos somos mais fortes. O ritmo é semanal, o
+            From packers to WEPACkers. O ritmo é semanal, o
             ciclo é trimestral — a mentoria, a comunidade e a exigência
             partilhada é o que sustenta o percurso.
           </p>

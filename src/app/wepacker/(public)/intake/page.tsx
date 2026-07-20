@@ -41,7 +41,7 @@ export default async function GeneralIntakePage() {
             Torna-te wepacker
           </h1>
           <p className="mt-4 text-lg font-medium text-wepac-gray">
-            Estamos juntos. Juntos somos mais fortes.
+            From packers to WEPACkers.
           </p>
           <p className="mt-4 text-base leading-relaxed text-wepac-text-secondary">
             Um wepacker carrega o seu próprio peso — e ainda entrega valor à
