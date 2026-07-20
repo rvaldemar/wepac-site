@@ -42,6 +42,7 @@ interface Props {
     origin: string;
     status: string;
   }>;
+  activeTrails: Array<{ id: string; title: string }>;
   nextSession: {
     id: string;
     scheduledAt: string;
@@ -66,6 +67,7 @@ export default function DashboardPageClient({
   indicatorScores,
   strategicMapScores,
   pendingTasks,
+  activeTrails,
   nextSession,
   latestMessage,
   quarterWeek,
@@ -352,6 +354,35 @@ export default function DashboardPageClient({
               Ainda sem mensagens. Podes iniciar conversa com o teu mentor.
             </p>
           )}
+        </div>
+      </div>
+
+      {/* Active Trails */}
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="border border-wepac-border bg-wepac-card p-6">
+          <div className="flex items-center justify-between">
+            <h2 className="font-barlow text-lg font-bold text-wepac-white">Trails ativos</h2>
+            <Link href="/wepacker/trails" className="text-xs text-wepac-white hover:underline">
+              Ver todos →
+            </Link>
+          </div>
+          <div className="mt-4 space-y-3">
+            {activeTrails.length === 0 ? (
+              <p className="text-sm text-wepac-text-tertiary">
+                Ainda sem Trails ativos. Define a tua próxima travessia de transformação.
+              </p>
+            ) : (
+              activeTrails.map((trail) => (
+                <Link
+                  key={trail.id}
+                  href={`/wepacker/trails/${trail.id}`}
+                  className="block border-b border-wepac-border pb-3 text-sm text-wepac-text-secondary last:border-0 hover:text-wepac-white"
+                >
+                  {trail.title}
+                </Link>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>

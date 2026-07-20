@@ -105,6 +105,19 @@ enum AreaKey {
   social
 }
 
+// A Trail is a personal transformation journey a WEPACker defines for
+// themselves — title, purpose, why it matters now, what real progress
+// would look like, which development areas it touches. Standalone from
+// Cohort/Journey in this first version: one person can run several
+// Trails across their life, each optionally overlapping a Pack's
+// Journey, but that link isn't modeled yet.
+enum TrailStatus {
+  active
+  paused
+  completed
+  abandoned
+}
+
 // ===== WEPACKER PLATFORM — MODELS =====
 
 // A Pack is the application of the WEPAC methodology to a specific
@@ -194,6 +207,7 @@ model User {
   strategicMapsGiven  StrategicMapScore[]       @relation("StrategicMapEvaluator")
   lifePlan            LifePlan?
   strategicPlans      StrategicPlan[]
+  trails              Trail[]
   tasksAssigned       Task[]                    @relation("TaskAssigner")
   sessionsMentored    Session[]
   conversationLinks   ConversationParticipant[]
@@ -280,6 +294,26 @@ model LifePlan {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("life_plans")
+}
+
+// Belongs to the person (User) — a personal transformation Trail. Not
+// linked to Cohort/Journey in this version (see enum TrailStatus above).
+model Trail {
+  id           String      @id @default(cuid())
+  userId       String
+  title        String
+  purpose      String      @default("")
+  whyItMatters String      @default("")
+  destination  String      @default("")
+  areas        AreaKey[]
+  status       TrailStatus @default(active)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("trails")
 }
 
 // Belongs to the person (User), not a specific CohortMembership — one

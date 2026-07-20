@@ -19,6 +19,7 @@ export type SessionStatus = "scheduled" | "completed" | "cancelled" | "no_show";
 export type CohortStatus = "draft" | "active" | "completed" | "archived";
 export type MembershipRole = "member" | "mentor";
 export type MembershipStatus = "active" | "paused" | "exited";
+export type TrailStatus = "active" | "paused" | "completed" | "abandoned";
 
 export const AREA_KEYS = [
   "physical",
@@ -199,6 +200,13 @@ export const MOMENT_LABELS: Record<EvaluationMoment, string> = {
   entry: "Entrada",
   mid: "Meio",
   exit: "Saída",
+};
+
+export const TRAIL_STATUS_LABELS: Record<TrailStatus, string> = {
+  active: "Ativo",
+  paused: "Pausado",
+  completed: "Concluído",
+  abandoned: "Abandonado",
 };
 
 // ===== COMPUTED TYPES =====

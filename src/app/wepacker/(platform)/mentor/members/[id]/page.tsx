@@ -7,6 +7,7 @@ import {
   getStrategicMapScores,
 } from "@/lib/wepacker/actions/plan";
 import { getTasksForMembership } from "@/lib/wepacker/actions/task";
+import { getTrails } from "@/lib/wepacker/actions/trail";
 import { AREA_LABELS, type AreaKey } from "@/lib/wepacker/types";
 import { MentorMemberDetailClient } from "./page-client";
 
@@ -53,7 +54,7 @@ export default async function MentorMemberDetailPage({
       ? availableMoments[availableMoments.length - 2]
       : null;
 
-  const [currentScores, previousScores, lifePlan, strategicPlan, strategicMapScores, tasks] =
+  const [currentScores, previousScores, lifePlan, strategicPlan, strategicMapScores, tasks, trails] =
     await Promise.all([
       computeAreaScores(userId, currentMoment),
       previousMoment ? computeAreaScores(userId, previousMoment) : null,
@@ -61,6 +62,7 @@ export default async function MentorMemberDetailPage({
       getStrategicPlan(userId),
       getStrategicMapScores(userId),
       getTasksForMembership(id),
+      getTrails(userId),
     ]);
 
   const areaLabels = AREA_LABELS;
@@ -76,6 +78,7 @@ export default async function MentorMemberDetailPage({
       strategicPlan={serialize(strategicPlan)}
       strategicMapScores={serialize(strategicMapScores)}
       tasks={serialize(tasks)}
+      trails={serialize(trails)}
     />
   );
 }

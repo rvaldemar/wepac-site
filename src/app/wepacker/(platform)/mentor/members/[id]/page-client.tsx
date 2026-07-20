@@ -11,12 +11,14 @@ import {
   MOMENT_LABELS,
   PHASE_LABELS,
   STRATEGIC_SCORE_LABELS,
+  TRAIL_STATUS_LABELS,
   type AreaKey,
   type EvaluationMoment,
   type GoalStatus,
   type MemberLevel,
   type MemberPhase,
   type TaskStatus,
+  type TrailStatus,
 } from "@/lib/wepacker/types";
 import { updateMembership } from "@/lib/wepacker/actions/admin";
 import { submitStrategicMapScore } from "@/lib/wepacker/actions/plan";
@@ -119,6 +121,16 @@ interface TaskRow {
   status: TaskStatus;
 }
 
+interface TrailRow {
+  id: string;
+  title: string;
+  purpose: string;
+  whyItMatters: string;
+  destination: string;
+  areas: AreaKey[];
+  status: TrailStatus;
+}
+
 interface MentorMemberDetailProps {
   membership: MembershipDetail;
   currentScores: Record<AreaKey, AreaScoreAvg>;
@@ -129,6 +141,7 @@ interface MentorMemberDetailProps {
   strategicPlan: StrategicPlanRow | null;
   strategicMapScores: StrategicMapScoreRow[];
   tasks: TaskRow[];
+  trails: TrailRow[];
 }
 
 export function MentorMemberDetailClient({
@@ -141,6 +154,7 @@ export function MentorMemberDetailClient({
   strategicPlan,
   strategicMapScores,
   tasks,
+  trails,
 }: MentorMemberDetailProps) {
   const router = useRouter();
 
@@ -535,6 +549,41 @@ export function MentorMemberDetailClient({
             <p className="mt-4 text-sm text-wepac-text-tertiary">
               Ainda não preenchido.
             </p>
+          )}
+        </div>
+      </div>
+
+      {/* Trails (read-only — mentor does not edit member Trails) */}
+      <div className="mt-8 border border-wepac-border bg-wepac-card p-6">
+        <h2 className="font-barlow text-lg font-bold text-wepac-white">Trails</h2>
+        <div className="mt-4 space-y-4">
+          {trails.map((trail) => (
+            <div key={trail.id} className="border-b border-wepac-border pb-4 last:border-0">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="text-sm font-bold text-wepac-white">{trail.title}</h3>
+                <span className="bg-wepac-white/10 px-2 py-0.5 text-xs text-wepac-white">
+                  {TRAIL_STATUS_LABELS[trail.status]}
+                </span>
+              </div>
+              {trail.purpose && (
+                <p className="mt-2 text-sm text-wepac-text-secondary">{trail.purpose}</p>
+              )}
+              {trail.areas.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {trail.areas.map((a) => (
+                    <span
+                      key={a}
+                      className="bg-wepac-input px-2 py-0.5 text-xs text-wepac-text-tertiary"
+                    >
+                      {areaLabels[a]}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+          {trails.length === 0 && (
+            <p className="text-sm text-wepac-text-tertiary">Ainda sem Trails.</p>
           )}
         </div>
       </div>

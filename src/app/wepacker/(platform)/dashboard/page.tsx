@@ -9,6 +9,7 @@ import { getStrategicMapScores } from "@/lib/wepacker/actions/plan";
 import { getMyTasks } from "@/lib/wepacker/actions/task";
 import { getNextSession } from "@/lib/wepacker/actions/session";
 import { getMyConversations } from "@/lib/wepacker/actions/message";
+import { getTrails } from "@/lib/wepacker/actions/trail";
 import DashboardPageClient from "./page-client";
 
 // Chronological order — mirrors the diagnosis page's moment handling.
@@ -50,7 +51,7 @@ export default async function DashboardPage() {
       ? availableMoments[availableMoments.length - 2]
       : null;
 
-  const [currentScores, previousScores, indicatorScores, strategicMapScores, allTasks, nextSession, conversations] =
+  const [currentScores, previousScores, indicatorScores, strategicMapScores, allTasks, nextSession, conversations, trails] =
     await Promise.all([
       computeAreaScores(userId, currentMoment),
       previousMoment ? computeAreaScores(userId, previousMoment) : null,
@@ -59,7 +60,13 @@ export default async function DashboardPage() {
       getMyTasks(),
       getNextSession(),
       getMyConversations(),
+      getTrails(userId),
     ]);
+
+  const activeTrails = trails
+    .filter((t) => t.status === "active")
+    .slice(0, 3)
+    .map((t) => ({ id: t.id, title: t.title }));
 
   const pendingTasks = allTasks
     .filter((t) => t.status !== "done")
@@ -113,6 +120,7 @@ export default async function DashboardPage() {
       indicatorScores={indicatorScores}
       strategicMapScores={serializedStrategicMapScores}
       pendingTasks={pendingTasks}
+      activeTrails={activeTrails}
       nextSession={serializedNextSession}
       latestMessage={
         latestMessage

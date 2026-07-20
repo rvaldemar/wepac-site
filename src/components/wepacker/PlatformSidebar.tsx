@@ -10,6 +10,7 @@ const memberNav = [
   { label: "Dashboard", href: "/wepacker/dashboard", icon: "◆" },
   { label: "Diagnóstico", href: "/wepacker/diagnosis", icon: "◎" },
   { label: "Life Plan", href: "/wepacker/ppv", icon: "◇" },
+  { label: "Trails", href: "/wepacker/trails", icon: "⟡" },
   { label: "Plano", href: "/wepacker/plan", icon: "▣" },
   { label: "Tarefas", href: "/wepacker/tasks", icon: "☑" },
   { label: "Sessões", href: "/wepacker/sessions", icon: "◷" },
@@ -186,9 +187,6 @@ export function PlatformSidebar({
               height={64}
               className="h-8 w-auto"
             />
-            <span className="mt-0.5 block text-xs text-wepac-text-tertiary">
-              WEPAC
-            </span>
           </Link>
         </div>
 
