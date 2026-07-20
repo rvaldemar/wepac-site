@@ -4,7 +4,7 @@ import { useState } from "react";
 import { RadarChart } from "@/components/wepacker/RadarChart";
 import {
   AREA_KEYS,
-  getAreaLabels,
+  AREA_LABELS,
   getIndicators,
   MOMENT_LABELS,
   SCORE_LABELS,
@@ -20,7 +20,6 @@ interface Props {
   indicatorsByMoment: Record<EvaluationMoment, IndicatorScores>;
   availableMoments: EvaluationMoment[];
   packSlug: string;
-  domainLabel: string;
 }
 
 export default function DiagnosisPageClient({
@@ -28,10 +27,9 @@ export default function DiagnosisPageClient({
   indicatorsByMoment,
   availableMoments,
   packSlug,
-  domainLabel,
 }: Props) {
   const indicatorsByArea = getIndicators(packSlug);
-  const areaLabels = getAreaLabels(domainLabel);
+  const areaLabels = AREA_LABELS;
   const [moment, setMoment] = useState<EvaluationMoment>(
     availableMoments.includes("mid") ? "mid" : availableMoments[0]
   );

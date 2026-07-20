@@ -50,7 +50,6 @@ export default async function DiagnosisPage() {
       indicatorsByMoment={indicatorsByMoment}
       availableMoments={availableMoments.length > 0 ? availableMoments : ["entry"]}
       packSlug={membership.packSlug}
-      domainLabel={membership.domainLabel}
     />
   );
 }

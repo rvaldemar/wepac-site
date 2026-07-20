@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getActivePacksPublic } from "@/lib/wepacker/actions/admin";
-import { getAreaLabels } from "@/lib/wepacker/types";
+import { AREA_LABELS } from "@/lib/wepacker/types";
 
 // The pack list comes from the DB — revalidate so the landing reflects
 // pack changes without a rebuild (it is otherwise statically prerendered
@@ -14,14 +14,6 @@ export const metadata: Metadata = {
     "WEPACKER é um estilo de vida que te permite atingir o teu potencial. Mentoria, comunidade e experiências reais para desenvolver talento, caráter, disciplina e propósito em qualquer fase da vida.",
 };
 
-// The 7th area ("domain") is legacy — the methodology now has six fixed
-// pillars; art/culture is a discipline a Pack can be built around, not a
-// pillar of its own. Filtered out here until the schema itself drops it
-// (tracked separately — this page just stops showing it).
-const ALL_AREA_LABELS = getAreaLabels("");
-const AREA_LABELS = Object.fromEntries(
-  Object.entries(ALL_AREA_LABELS).filter(([key]) => key !== "domain")
-) as Omit<typeof ALL_AREA_LABELS, "domain">;
 const AREA_DESCRIPTIONS: Record<string, string> = {
   physical: "O corpo como base de presença e energia",
   emotional: "Vida emocional e capacidade expressiva",

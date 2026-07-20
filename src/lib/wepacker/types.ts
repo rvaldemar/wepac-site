@@ -27,13 +27,11 @@ export const AREA_KEYS = [
   "spiritual",
   "intellectual",
   "social",
-  "domain",
 ] as const;
 export type AreaKey = (typeof AREA_KEYS)[number];
 
-// Base labels for the six common areas. The 7th area (`domain`) is
-// pack-specific — resolve its label with `getAreaLabels(domainLabel)`.
-const BASE_AREA_LABELS: Record<Exclude<AreaKey, "domain">, string> = {
+// The 6 development areas are universal and fixed across every pack.
+export const AREA_LABELS: Record<AreaKey, string> = {
   physical: "Físico",
   emotional: "Afetivo",
   character: "Caráter",
@@ -42,14 +40,10 @@ const BASE_AREA_LABELS: Record<Exclude<AreaKey, "domain">, string> = {
   social: "Social",
 };
 
-export function getAreaLabels(domainLabel: string): Record<AreaKey, string> {
-  return { ...BASE_AREA_LABELS, domain: domainLabel };
-}
-
 export type Indicator = { key: string; label: string };
 
 // Artist pack — integral-development indicators inherited from the
-// "Artista Alpha" pilot (7th pillar: artistic-cultural domain).
+// "Artista Alpha" pilot, across the 6 universal development areas.
 const ARTIST_INDICATORS: Record<AreaKey, Indicator[]> = {
   physical: [
     { key: "posture", label: "Postura" },
@@ -104,15 +98,6 @@ const ARTIST_INDICATORS: Record<AreaKey, Indicator[]> = {
     { key: "collaboration", label: "Colaboração / co-criação" },
     { key: "community_presence", label: "Presença comunitária" },
   ],
-  domain: [
-    { key: "creative_voice", label: "Voz criativa própria" },
-    { key: "technical_mastery", label: "Domínio técnico da linguagem" },
-    { key: "imagination", label: "Imaginação e originalidade" },
-    { key: "finish_quality", label: "Cuidado com o detalhe e acabamento" },
-    { key: "creative_courage", label: "Coragem criativa / arriscar" },
-    { key: "cultural_memory", label: "Memória cultural e referências" },
-    { key: "beauty_relationship", label: "Relação com o belo e o património" },
-  ],
 };
 
 // Default indicators — derived from the WEPAC Diagnóstico Integral
@@ -160,13 +145,6 @@ const DEFAULT_INDICATORS: Record<AreaKey, Indicator[]> = {
     { key: "belong_with_integrity", label: "Pertencer sem se submeter" },
     { key: "cooperate", label: "Cooperar e assumir o resultado" },
     { key: "support_network", label: "Rede de apoio real" },
-  ],
-  domain: [
-    { key: "create_not_only_consume", label: "Criar, não só consumir" },
-    { key: "express_self", label: "Expressar-se (corpo, voz, linguagem, arte)" },
-    { key: "attention_to_detail", label: "Atenção ao detalhe e acabamento" },
-    { key: "receive_feedback", label: "Receber feedback sem colapsar" },
-    { key: "beauty_culture", label: "Relação com beleza, património e cultura" },
   ],
 };
 
@@ -255,5 +233,4 @@ export interface MembershipContext {
   packId: string;
   packSlug: string;
   packName: string;
-  domainLabel: string;
 }

@@ -55,10 +55,7 @@ export default async function GeneralIntakePage() {
           </p>
 
           <div className="mt-10">
-            <CandidaturaFormClient
-              packSlug="wepacker"
-              domainLabel="o domínio que queres desenvolver"
-            />
+            <CandidaturaFormClient packSlug="wepacker" />
           </div>
 
           {packs.length > 0 && (

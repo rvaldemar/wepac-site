@@ -4,7 +4,6 @@ import { AREA_KEYS, type AreaKey } from "@/lib/wepacker/types";
 
 interface RadarChartProps {
   currentValues: Record<AreaKey, number>;
-  // Pack-aware labels: resolve with getAreaLabels(pack.domainLabel).
   areaLabels: Record<AreaKey, string>;
   previousValues?: Record<AreaKey, number>;
   onAreaClick?: (area: AreaKey) => void;

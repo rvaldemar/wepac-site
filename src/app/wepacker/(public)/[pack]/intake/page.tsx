@@ -63,7 +63,7 @@ export default async function CandidaturaPage({ params }: PageProps) {
           </p>
 
           <div className="mt-10">
-            <CandidaturaFormClient packSlug={pack.slug} domainLabel={pack.domainLabel} />
+            <CandidaturaFormClient packSlug={pack.slug} />
           </div>
         </div>
       </section>

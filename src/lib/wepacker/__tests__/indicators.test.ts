@@ -1,17 +1,16 @@
 import { describe, it, expect } from "vitest";
-import { AREA_KEYS, getAreaLabels, getIndicators, type AreaKey } from "@/lib/wepacker/types";
+import { AREA_KEYS, AREA_LABELS, getIndicators, type AreaKey } from "@/lib/wepacker/types";
 
 describe("getIndicators", () => {
-  it("artist pack covers all 7 areas and includes domain indicators", () => {
+  it("artist pack covers all 6 areas", () => {
     const ind = getIndicators("artist");
     expect(Object.keys(ind).sort()).toEqual([...AREA_KEYS].sort());
-    expect(ind.domain.length).toBeGreaterThan(0);
     for (const area of AREA_KEYS) {
       expect(ind[area].length).toBeGreaterThan(0);
     }
   });
 
-  it("unknown packs fall back to the default set with all 7 areas", () => {
+  it("unknown packs fall back to the default set with all 6 areas", () => {
     const ind = getIndicators("sport");
     expect(Object.keys(ind).sort()).toEqual([...AREA_KEYS].sort());
     for (const area of AREA_KEYS) {
@@ -38,11 +37,9 @@ describe("getIndicators", () => {
   });
 });
 
-describe("getAreaLabels", () => {
-  it("labels the domain area with the pack-specific label", () => {
-    const labels = getAreaLabels("Artístico-Cultural");
-    expect(labels.domain).toBe("Artístico-Cultural");
-    expect(labels.physical).toBe("Físico");
-    expect(Object.keys(labels).sort()).toEqual([...AREA_KEYS].sort());
+describe("AREA_LABELS", () => {
+  it("has a fixed label for each of the 6 universal areas", () => {
+    expect(AREA_LABELS.physical).toBe("Físico");
+    expect(Object.keys(AREA_LABELS).sort()).toEqual([...AREA_KEYS].sort());
   });
 });

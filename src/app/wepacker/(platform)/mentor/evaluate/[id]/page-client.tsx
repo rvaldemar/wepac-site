@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   AREA_KEYS,
-  getAreaLabels,
+  AREA_LABELS,
   getIndicators,
   MOMENT_LABELS,
   SCORE_LABELS,
@@ -21,7 +21,7 @@ interface MembershipDetail {
   id: string;
   user: { id: string; name: string };
   cohort: {
-    pack: { slug: string; domainLabel: string };
+    pack: { slug: string };
   };
 }
 
@@ -38,7 +38,7 @@ interface EvaluatePageProps {
 export function MentorEvaluateClient({ membership, evaluations }: EvaluatePageProps) {
   const router = useRouter();
   const indicatorsByArea = getIndicators(membership.cohort.pack.slug);
-  const areaLabels = getAreaLabels(membership.cohort.pack.domainLabel);
+  const areaLabels = AREA_LABELS;
 
   const mentorEvaluatedMoments = new Set(
     evaluations.filter((e) => e.evaluationType === "mentor").map((e) => e.moment)

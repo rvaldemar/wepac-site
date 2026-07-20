@@ -36,7 +36,6 @@ async function main() {
       tagline: "Excelência artística. Estrutura humana. Impacto real.",
       description:
         "Para artistas que precisam de estrutura humana, excelência artística, posicionamento e ativação profissional.",
-      domainLabel: "Artístico-Cultural",
       sortOrder: 0,
     },
   });
@@ -223,15 +222,6 @@ async function main() {
       "collaboration",
       "community_presence",
     ],
-    domain: [
-      "creative_voice",
-      "technical_mastery",
-      "imagination",
-      "finish_quality",
-      "creative_courage",
-      "cultural_memory",
-      "beauty_relationship",
-    ],
   };
 
   type AreaScores = Record<string, number[]>;
@@ -266,8 +256,7 @@ async function main() {
               | "character"
               | "spiritual"
               | "intellectual"
-              | "social"
-              | "domain",
+              | "social",
             indicator: keys[i] ?? `indicator_${i}`,
             score: scores[i],
           },
@@ -285,7 +274,6 @@ async function main() {
     spiritual: [2, 3, 2, 3, 2, 2],
     intellectual: [4, 3, 3, 2, 2, 3, 3],
     social: [3, 3, 3, 2, 3, 3, 2],
-    domain: [4, 3, 4, 3, 3, 3, 4],
   });
 
   await createEvaluation(u1.id, m1.id, "mentor", "entry", "2026-01-25T00:00:00Z", {
@@ -295,7 +283,6 @@ async function main() {
     spiritual: [2, 2, 2, 3, 2, 2],
     intellectual: [4, 3, 3, 2, 2, 3, 3],
     social: [3, 3, 2, 2, 2, 3, 2],
-    domain: [4, 3, 3, 3, 3, 3, 4],
   });
 
   await createEvaluation(u1.id, u1.id, "self", "mid", "2026-03-01T00:00:00Z", {
@@ -305,7 +292,6 @@ async function main() {
     spiritual: [3, 3, 3, 3, 3, 3],
     intellectual: [4, 4, 4, 3, 3, 3, 4],
     social: [4, 3, 4, 3, 3, 4, 3],
-    domain: [4, 4, 4, 3, 4, 3, 4],
   });
 
   await createEvaluation(u1.id, m1.id, "mentor", "mid", "2026-03-05T00:00:00Z", {
@@ -315,7 +301,6 @@ async function main() {
     spiritual: [3, 3, 3, 3, 3, 2],
     intellectual: [4, 4, 3, 3, 3, 3, 4],
     social: [3, 3, 3, 3, 3, 3, 3],
-    domain: [4, 4, 3, 3, 4, 3, 4],
   });
 
   // ===== STRATEGIC MAP =====

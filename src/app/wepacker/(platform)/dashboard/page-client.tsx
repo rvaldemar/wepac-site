@@ -5,7 +5,7 @@ import Link from "next/link";
 import { RadarChart } from "@/components/wepacker/RadarChart";
 import { StrategicRadar } from "@/components/wepacker/StrategicRadar";
 import {
-  getAreaLabels,
+  AREA_LABELS,
   getIndicators,
   PHASE_LABELS,
   LEVEL_LABELS,
@@ -71,7 +71,7 @@ export default function DashboardPageClient({
   quarterWeek,
 }: Props) {
   const indicatorsByArea = getIndicators(membership.packSlug);
-  const areaLabels = getAreaLabels(membership.domainLabel);
+  const areaLabels = AREA_LABELS;
   const [selectedArea, setSelectedArea] = useState<AreaKey | null>(null);
 
   const currentRadar = Object.fromEntries(

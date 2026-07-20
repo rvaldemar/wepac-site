@@ -41,7 +41,6 @@ interface Pack {
   name: string;
   tagline: string;
   description: string;
-  domainLabel: string;
   active: boolean;
   sortOrder: number;
   cohorts: CohortItem[];
@@ -76,7 +75,6 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
   const [packName, setPackName] = useState("");
   const [packTagline, setPackTagline] = useState("");
   const [packDescription, setPackDescription] = useState("");
-  const [packDomainLabel, setPackDomainLabel] = useState("");
   const [packError, setPackError] = useState("");
   const [savingPack, setSavingPack] = useState(false);
 
@@ -85,7 +83,6 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
     name: string;
     tagline: string;
     description: string;
-    domainLabel: string;
   } | null>(null);
 
   const [cohortFormPackId, setCohortFormPackId] = useState<string | null>(null);
@@ -106,7 +103,6 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
     setPackName("");
     setPackTagline("");
     setPackDescription("");
-    setPackDomainLabel("");
     setPackError("");
   }
 
@@ -120,7 +116,6 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
         name: packName,
         tagline: packTagline || undefined,
         description: packDescription || undefined,
-        domainLabel: packDomainLabel,
       });
       resetPackForm();
       setShowPackForm(false);
@@ -138,7 +133,6 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
       name: pack.name,
       tagline: pack.tagline,
       description: pack.description,
-      domainLabel: pack.domainLabel,
     });
   }
 
@@ -270,18 +264,6 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
                 className="mt-1 w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
               />
             </div>
-            <div>
-              <label className="block text-xs text-wepac-text-tertiary">
-                Label do domínio (7ª área)
-              </label>
-              <input
-                value={packDomainLabel}
-                onChange={(e) => setPackDomainLabel(e.target.value)}
-                required
-                placeholder="Artístico-Cultural"
-                className="mt-1 w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
-              />
-            </div>
             <div className="sm:col-span-2">
               <label className="block text-xs text-wepac-text-tertiary">Descrição</label>
               <textarea
@@ -320,18 +302,6 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
                     <input
                       value={editDraft.name}
                       onChange={(e) => setEditDraft({ ...editDraft, name: e.target.value })}
-                      className="mt-1 w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-wepac-text-tertiary">
-                      Label do domínio
-                    </label>
-                    <input
-                      value={editDraft.domainLabel}
-                      onChange={(e) =>
-                        setEditDraft({ ...editDraft, domainLabel: e.target.value })
-                      }
                       className="mt-1 w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none"
                     />
                   </div>
@@ -395,9 +365,6 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
                     {pack.tagline && (
                       <p className="mt-1 text-sm text-wepac-text-secondary">{pack.tagline}</p>
                     )}
-                    <p className="mt-1 text-xs text-wepac-text-tertiary">
-                      Domínio: {pack.domainLabel}
-                    </p>
                   </div>
                   <div className="flex gap-2">
                     <button

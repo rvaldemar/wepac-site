@@ -50,7 +50,7 @@ interface MembershipDetail {
   cohort: {
     id: string;
     name: string;
-    pack: { id: string; slug: string; name: string; domainLabel: string };
+    pack: { id: string; slug: string; name: string };
   };
 }
 

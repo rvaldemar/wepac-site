@@ -24,7 +24,7 @@ interface MembershipRow {
   cohort: {
     id: string;
     name: string;
-    pack: { id: string; name: string; domainLabel: string };
+    pack: { id: string; name: string };
   };
 }
 

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { getAreaLabels, type AreaKey } from "@/lib/wepacker/types";
+import { AREA_LABELS, type AreaKey } from "@/lib/wepacker/types";
 import {
   upsertLifePlan,
   upsertStrategicPlan,
@@ -100,12 +100,11 @@ interface LifePlan {
 
 interface Props {
   userId: string;
-  domainLabel: string;
   lifePlan: LifePlan | null;
   strategicPlan: StrategicPlan | null;
 }
 
-export default function PlanPageClient({ userId, domainLabel, lifePlan, strategicPlan }: Props) {
+export default function PlanPageClient({ userId, lifePlan, strategicPlan }: Props) {
   return (
     <div className="p-6 lg:p-8">
       <h1 className="font-barlow text-2xl font-bold text-wepac-white">Plano</h1>
@@ -119,11 +118,7 @@ export default function PlanPageClient({ userId, domainLabel, lifePlan, strategi
       </div>
 
       <div className="mt-12 border-t border-wepac-border pt-8">
-        <StrategicPlanSection
-          userId={userId}
-          domainLabel={domainLabel}
-          plan={strategicPlan}
-        />
+        <StrategicPlanSection userId={userId} plan={strategicPlan} />
       </div>
     </div>
   );
@@ -209,15 +204,13 @@ function LifePlanSection({ userId, plan }: { userId: string; plan: LifePlan | nu
 
 function StrategicPlanSection({
   userId,
-  domainLabel,
   plan,
 }: {
   userId: string;
-  domainLabel: string;
   plan: StrategicPlan | null;
 }) {
   const router = useRouter();
-  const areaLabels = getAreaLabels(domainLabel);
+  const areaLabels = AREA_LABELS;
   const [activeTab, setActiveTab] = useState<"long" | "annual" | "quarterly" | "monthly">("quarterly");
 
   if (!plan) {

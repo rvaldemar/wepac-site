@@ -68,7 +68,6 @@ export default async function PlanPage() {
   return (
     <PlanPageClient
       userId={userId}
-      domainLabel={membership.domainLabel}
       lifePlan={serializedLifePlan}
       strategicPlan={serializedStrategicPlan}
     />

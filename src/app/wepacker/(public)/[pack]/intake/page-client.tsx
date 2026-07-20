@@ -5,10 +5,9 @@ import { submitApplication } from "@/lib/wepacker/actions/application";
 
 interface CandidaturaFormProps {
   packSlug: string;
-  domainLabel: string;
 }
 
-export function CandidaturaFormClient({ packSlug, domainLabel }: CandidaturaFormProps) {
+export function CandidaturaFormClient({ packSlug }: CandidaturaFormProps) {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -78,7 +77,7 @@ export function CandidaturaFormClient({ packSlug, domainLabel }: CandidaturaForm
         <input
           type="text"
           name="area"
-          placeholder={`A tua área — ${domainLabel}`}
+          placeholder="A tua área de prática"
           className="border border-wepac-border bg-wepac-black px-4 py-3 text-sm text-wepac-white placeholder:text-wepac-text-tertiary focus:border-wepac-white focus:outline-none"
         />
       </div>

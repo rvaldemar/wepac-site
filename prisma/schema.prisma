@@ -103,21 +103,21 @@ enum AreaKey {
   spiritual
   intellectual
   social
-  domain
 }
 
 // ===== WEPACKER PLATFORM — MODELS =====
 
 // A Pack is the application of the WEPAC methodology to a specific
-// profile/context (e.g. artist, sport). The 7th development area is
-// pack-specific: `AreaKey.domain` labelled by `domainLabel`.
+// profile/context (e.g. artist, sport). The 6 development areas are
+// universal and fixed across every pack — art/culture (or any other
+// discipline a pack is built around) is a practice a Pack chooses, not
+// a pillar of its own.
 model Pack {
   id          String   @id @default(cuid())
   slug        String   @unique
   name        String
   tagline     String   @default("")
   description String   @default("")
-  domainLabel String
   active      Boolean  @default(true)
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())

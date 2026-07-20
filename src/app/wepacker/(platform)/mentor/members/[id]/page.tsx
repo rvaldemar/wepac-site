@@ -7,7 +7,7 @@ import {
   getStrategicMapScores,
 } from "@/lib/wepacker/actions/plan";
 import { getTasksForMembership } from "@/lib/wepacker/actions/task";
-import { AREA_KEYS, getAreaLabels, type AreaKey } from "@/lib/wepacker/types";
+import { AREA_KEYS, AREA_LABELS, type AreaKey } from "@/lib/wepacker/types";
 import { MentorMemberDetailClient } from "./page-client";
 
 // Dates coming out of Prisma need to cross the server/client boundary as
@@ -61,7 +61,7 @@ export default async function MentorMemberDetailPage({
       getTasksForMembership(id),
     ]);
 
-  const areaLabels = getAreaLabels(detail.cohort.pack.domainLabel);
+  const areaLabels = AREA_LABELS;
 
   return (
     <MentorMemberDetailClient

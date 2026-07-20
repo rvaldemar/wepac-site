@@ -29,10 +29,5 @@ export default async function AssessmentPage() {
     );
   }
 
-  return (
-    <AssessmentPageClient
-      packSlug={membership.packSlug}
-      domainLabel={membership.domainLabel}
-    />
-  );
+  return <AssessmentPageClient packSlug={membership.packSlug} />;
 }

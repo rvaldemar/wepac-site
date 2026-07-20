@@ -54,7 +54,6 @@ function toContext(m: MembershipWithCohort): MembershipContext {
     packId: m.cohort.packId,
     packSlug: m.cohort.pack.slug,
     packName: m.cohort.pack.name,
-    domainLabel: m.cohort.pack.domainLabel,
   };
 }
 

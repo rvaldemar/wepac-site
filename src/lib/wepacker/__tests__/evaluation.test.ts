@@ -25,7 +25,6 @@ const membership = {
   packId: "pack-1",
   packSlug: "artist",
   packName: "Pack Artista",
-  domainLabel: "Artístico-Cultural",
 };
 
 vi.mock("@/lib/wepacker/guards", () => ({
@@ -69,7 +68,7 @@ beforeEach(() => {
 });
 
 describe("computeAreaScores", () => {
-  it("composes 40% self / 60% mentor across all 7 areas", async () => {
+  it("composes 40% self / 60% mentor across all 6 areas", async () => {
     findMany.mockResolvedValue([evalWith("self", 4), evalWith("mentor", 5)]);
 
     const result = await computeAreaScores("user-1", "mid");
@@ -104,7 +103,7 @@ describe("computeAreaScores", () => {
   it("returns 0 composite for an area with no scores", async () => {
     findMany.mockResolvedValue([]);
     const result = await computeAreaScores("user-1", "mid");
-    expect(result.domain.composite).toBe(0);
+    expect(result.social.composite).toBe(0);
   });
 });
 
@@ -117,7 +116,7 @@ describe("submitMentorEvaluation", () => {
       moment: "mid",
       scores: [
         { area: "physical", indicator: "posture", score: 4, notes: "boa base" },
-        { area: "domain", indicator: "creative_voice", score: 5 },
+        { area: "intellectual", indicator: "technical_knowledge", score: 5 },
       ],
     });
 
@@ -132,7 +131,7 @@ describe("submitMentorEvaluation", () => {
     const created = arg.data.scores.create;
     expect(created).toEqual([
       { area: "physical", indicator: "posture", score: 4, notes: "boa base" },
-      { area: "domain", indicator: "creative_voice", score: 5, notes: undefined },
+      { area: "intellectual", indicator: "technical_knowledge", score: 5, notes: undefined },
     ]);
   });
 });

@@ -35,7 +35,6 @@ export async function getActivePacksPublic() {
       name: true,
       tagline: true,
       description: true,
-      domainLabel: true,
     },
     orderBy: { sortOrder: "asc" },
   });
@@ -46,7 +45,6 @@ export async function createPack(data: {
   name: string;
   tagline?: string;
   description?: string;
-  domainLabel: string;
 }) {
   await requireAdmin();
   return prisma.pack.create({
@@ -55,7 +53,6 @@ export async function createPack(data: {
       name: data.name.trim(),
       tagline: data.tagline ?? "",
       description: data.description ?? "",
-      domainLabel: data.domainLabel.trim(),
     },
   });
 }
@@ -66,7 +63,6 @@ export async function updatePack(
     name?: string;
     tagline?: string;
     description?: string;
-    domainLabel?: string;
     active?: boolean;
   }
 ) {

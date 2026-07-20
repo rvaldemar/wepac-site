@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { OnboardingStepper } from "@/components/wepacker/OnboardingStepper";
 import {
   AREA_KEYS,
-  getAreaLabels,
+  AREA_LABELS,
   getIndicators,
   SCORE_LABELS,
   type AreaKey,
@@ -16,14 +16,12 @@ import { friendlySubmitError } from "@/lib/stale-deployment";
 
 export default function AssessmentPageClient({
   packSlug,
-  domainLabel,
 }: {
   packSlug: string;
-  domainLabel: string;
 }) {
   const router = useRouter();
   const indicatorsByArea = getIndicators(packSlug);
-  const areaLabels = getAreaLabels(domainLabel);
+  const areaLabels = AREA_LABELS;
   const [currentArea, setCurrentArea] = useState(0);
   const [scores, setScores] = useState<Record<string, number>>({});
   const [completed, setCompleted] = useState(false);
