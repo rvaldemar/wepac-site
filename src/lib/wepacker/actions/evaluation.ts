@@ -140,6 +140,9 @@ export async function submitSelfEvaluation(data: {
   scores: ScoreInput[];
 }) {
   const { user } = await requireMembership();
+  if (data.scores.some((s) => !Number.isInteger(s.score) || s.score < 1 || s.score > 5)) {
+    throw new Error("Scores must be integers between 1 and 5");
+  }
   return prisma.evaluation.create({
     data: {
       userId: user.id,
@@ -166,6 +169,9 @@ export async function submitMentorEvaluation(data: {
   scores: ScoreInput[];
 }) {
   const { actor } = await assertMentorOfUser(data.userId);
+  if (data.scores.some((s) => !Number.isInteger(s.score) || s.score < 1 || s.score > 5)) {
+    throw new Error("Scores must be integers between 1 and 5");
+  }
   return prisma.evaluation.create({
     data: {
       userId: data.userId,
