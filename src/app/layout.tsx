@@ -97,7 +97,13 @@ export default function RootLayout({
   return (
     <html lang="pt" className={`${barlow.variable} ${inter.variable} ${ptSerif.variable}`}>
       <body className="font-inter antialiased">
-        {children}
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:rounded focus:bg-wepac-white focus:px-4 focus:py-2 focus:text-wepac-black focus:font-semibold"
+        >
+          Saltar para o conteúdo
+        </a>
+        <main id="main">{children}</main>
         <CookieConsent />
       </body>
     </html>
