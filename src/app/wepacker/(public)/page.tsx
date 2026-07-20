@@ -9,7 +9,7 @@ import { getAreaLabels } from "@/lib/wepacker/types";
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "WEPACker — plataforma de desenvolvimento humano da WEPAC",
+  title: { absolute: "WEPACker — plataforma de desenvolvimento humano da WEPAC" },
   description:
     "WEPACKER é um estilo de vida que te permite atingir o teu potencial. Mentoria, comunidade e experiências reais para desenvolver talento, caráter, disciplina e propósito em qualquer fase da vida.",
 };
