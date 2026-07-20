@@ -205,6 +205,7 @@ model User {
   strategicMapScores  StrategicMapScore[]       @relation("StrategicMapSubject")
   strategicMapsGiven  StrategicMapScore[]       @relation("StrategicMapEvaluator")
   lifePlan            LifePlan?
+  lifePlanVersions    LifePlanVersion[]
   strategicPlans      StrategicPlan[]
   trails              Trail[]
   tasksAssigned       Task[]                    @relation("TaskAssigner")
@@ -294,6 +295,25 @@ model LifePlan {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("life_plans")
+}
+
+// Append-only version history for LifePlan. A row is written with the
+// PREVIOUS state right before a LifePlan is overwritten, so no update or
+// delete should ever target this model — it exists purely to keep history.
+model LifePlanVersion {
+  id          String   @id @default(cuid())
+  userId      String
+  whoIAm      String   @default("")
+  whereIAm    String   @default("")
+  whereIGo    String   @default("")
+  whyIDo      String   @default("")
+  commitments String   @default("")
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("life_plan_versions")
 }
 
 // Belongs to the person (User) — a personal transformation Trail. Not
