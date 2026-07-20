@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     "WEPACKER é um estilo de vida que te permite atingir o teu potencial. Mentoria, comunidade e experiências reais para desenvolver talento, caráter, disciplina e propósito em qualquer fase da vida.",
 };
 
-const AREA_LABELS = getAreaLabels("Domínio específico do teu percurso");
+const AREA_LABELS = getAreaLabels("Artístico-Cultural");
 const AREA_DESCRIPTIONS: Record<string, string> = {
   physical: "O corpo como base de presença e energia",
   emotional: "Vida emocional e capacidade expressiva",
@@ -22,7 +22,7 @@ const AREA_DESCRIPTIONS: Record<string, string> = {
   spiritual: "Profundidade, propósito e sentido",
   intellectual: "Pensamento, estratégia e visão",
   social: "Relação, rede e comunidade",
-  domain: "A área concreta em que atuas — específica de cada percurso",
+  domain: "Expressão, sensibilidade estética e património — a arte como linguagem, disciplina e oferta",
 };
 
 const METHODOLOGY_STEPS = [
@@ -119,19 +119,12 @@ export default async function WepackerLandingPage() {
           {/* 7 areas */}
           <div className="mt-16">
             <p className="text-center text-sm text-wepac-text-tertiary">
-              7 áreas de desenvolvimento — 6 comuns a todos, mais o domínio específico do teu
+              7 áreas de desenvolvimento — universais, para qualquer WEPACker, em qualquer
               percurso.
             </p>
             <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {(Object.keys(AREA_LABELS) as (keyof typeof AREA_LABELS)[]).map((key) => (
-                <div
-                  key={key}
-                  className={`border p-4 ${
-                    key === "domain"
-                      ? "border-wepac-white/40 bg-wepac-white/5"
-                      : "border-wepac-border bg-wepac-black"
-                  }`}
-                >
+                <div key={key} className="border border-wepac-border bg-wepac-black p-4">
                   <p className="font-barlow text-sm font-bold text-wepac-white">
                     {AREA_LABELS[key]}
                   </p>
