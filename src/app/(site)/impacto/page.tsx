@@ -16,10 +16,11 @@ export default function ImpactoPage() {
               Impacto
             </p>
             <h1 className="mt-4 font-barlow text-4xl font-bold text-wepac-white md:text-6xl">
-              Resultados reais
+              Impacto que queremos criar
             </h1>
             <p className="mt-6 text-lg text-wepac-white/60">
-              Medimos o nosso sucesso pelo impacto que criamos nas comunidades.
+              Comprometemo-nos a medir e a reportar o impacto do nosso trabalho
+              nas comunidades, à medida que os projetos crescem.
             </p>
           </FadeIn>
         </div>

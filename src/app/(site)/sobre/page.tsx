@@ -4,7 +4,7 @@ import { FadeIn } from "@/components/FadeIn";
 export const metadata: Metadata = {
   title: "A WEPAC",
   description:
-    "A WEPAC. Missão, visão, metodologia, impacto e equipa.",
+    "A WEPAC. Missão, visão, metodologia e impacto.",
 };
 
 export default function SobrePage() {
