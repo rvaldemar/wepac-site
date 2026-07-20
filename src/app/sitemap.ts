@@ -83,12 +83,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/media`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.5,
-    },
-    {
       url: `${baseUrl}/contacto`,
       lastModified: new Date(),
       changeFrequency: "monthly",
