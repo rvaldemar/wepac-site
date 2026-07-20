@@ -29,7 +29,7 @@ const FONT_HEADING =
 const FONT_BODY = "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif";
 
 const WEPAC_WORDMARK = `${APP_URL}/logo/email/wepac-wordmark-black.png`;
-const WEPACKER_LOCKUP = `${APP_URL}/logo/email/wepacker-wordmark-black.png`;
+const WEPACKER_LOCKUP = `${APP_URL}/logo/email/wepacker-lockup-black.png`;
 
 interface EmailShellOptions {
   preheader: string;
@@ -108,7 +108,9 @@ function heading(text: string): string {
   return `<h1 style="margin:0 0 20px; font-family:${FONT_HEADING}; font-weight:700; font-size:26px; line-height:1.25; color:#000000;">${text}</h1>`;
 }
 
-const WEPACKER_FOOTER = `WEPACKER — WEPAC<br />Estamos juntos. Juntos somos mais fortes.<br /><a href="${APP_URL}/wepacker" style="color:#999999;">wepac.pt/wepacker</a> · <a href="mailto:info@wepac.pt" style="color:#999999;">info@wepac.pt</a>`;
+// WEPACKER emails header with the WEPACKER wordmark, so the footer signs
+// off with the parent brand mark ("by WEPAC") instead of repeating text.
+const WEPACKER_FOOTER = `<img src="${WEPAC_WORDMARK}" alt="WEPAC" width="56" style="display:block; width:56px; height:auto; border:0; margin-bottom:12px; opacity:0.55;" />Estamos juntos. Juntos somos mais fortes.<br /><a href="${APP_URL}/wepacker" style="color:#999999;">wepac.pt/wepacker</a> · <a href="mailto:info@wepac.pt" style="color:#999999;">info@wepac.pt</a>`;
 
 const WEPAC_FOOTER = `WEPAC<br /><a href="${APP_URL}" style="color:#999999;">wepac.pt</a> · <a href="mailto:info@wepac.pt" style="color:#999999;">info@wepac.pt</a>`;
 
