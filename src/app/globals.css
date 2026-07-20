@@ -46,6 +46,15 @@ html, body {
   overflow-x: hidden;
 }
 
+/* Keyboard focus indicator: white outline + black offset ring so it reads
+   on both dark (wepac-black) and light (wepac-white) sections. */
+:focus-visible {
+  outline: 2px solid var(--color-wepac-white);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--color-wepac-black);
+  border-radius: 2px;
+}
+
 /* Scrollbar minimal */
 ::-webkit-scrollbar {
   width: 6px;
