@@ -4,6 +4,23 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-20 (6) — Waves 2+3: placeholders honestos, a11y, tasks, contacto, L2, termos legacy
+
+Terceiro deploy do dia. Site institucional deixou de "parecer inacabado" e a base de a11y subiu:
+
+- **Placeholders honestos:** `/media` → redirect 308 para `/programacao` (fora do sitemap); menu "Wessex" aponta para `/wessex` (landing completa) em vez de `/servicos`; `/impacto` sem claims sem prova ("Impacto que queremos criar" + compromisso de medir); metadata de `/sobre` sem "equipa" (dataset vazio).
+- **A11y:** skip link global + `:focus-visible` (alvo é `div#main` — `<main>` aninhado seria inválido, fix de gate); menus mobile (Header + sidebar WEPACKER) com `aria-expanded`/dialog, trap de foco, Escape e scroll lock via hook partilhado `useMobileDrawer`.
+- **Assessment onboarding:** radios nativos com fieldset/legend, legenda 1–5 visível antes de selecionar, rascunho em localStorage (restaurado, limpo só no sucesso), resumo de indicadores em falta com salto/foco, retry sem perda. Juiz opus: SHIP. Fix de gate adicional: validação server-side 1–5 nos submits self e mentor (gap pré-existente).
+- **Tasks:** `input type=date`, erros visíveis persistentes, ordenação atrasadas→pendentes→concluídas.
+- **Contacto:** sucesso honesto (lead na BD é canónico; erro só quando ambos os backends falham, com contacto alternativo) + expectativa de resposta.
+- **L2:** histórico de versões read-only na página Life Plan (guard igual a getLifePlan).
+- **Termos legacy:** 7 ocorrências "Programa Artistas" atualizadas para terminologia WEPACKER (todas eram referências ao produto/funil live; privacidade só levou renames de labels, sem alterar significado legal).
+- **Lint baseline: 0 erros** (CookieConsent refeito com useSyncExternalStore).
+
+Smoke: 6/6 páginas 200. Em curso: redesign da Sessão (Modelo A — notas/outcome per-attendee; proposta na sessão CoS).
+
+---
+
 ## 2026-07-20 (5) — Remodelação Fase 1+2: sidebar agrupado, Life Plan versioning, microcopy, lint
 
 Segunda leva do dia (blueprint da remodelação → execução), deploy com migration:
