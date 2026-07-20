@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useMobileDrawer } from "@/lib/useMobileDrawer";
 
 const navigation = [
   { name: "A WEPAC", href: "/sobre" },
@@ -15,6 +16,11 @@ const navigation = [
 
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = () => setMenuOpen(false);
+  const { toggleRef, drawerRef } = useMobileDrawer<HTMLButtonElement, HTMLDivElement>(
+    menuOpen,
+    closeMenu
+  );
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-wepac-black/90 backdrop-blur-md">
@@ -38,9 +44,12 @@ export function Header() {
 
         {/* Mobile menu button */}
         <button
+          ref={toggleRef}
           className="lg:hidden text-wepac-white"
           onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Menu"
+          aria-expanded={menuOpen}
+          aria-controls="mobile-nav-menu"
+          aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
         >
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             {menuOpen ? (
@@ -54,14 +63,22 @@ export function Header() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="lg:hidden bg-wepac-black border-t border-white/10">
+        <div
+          id="mobile-nav-menu"
+          ref={drawerRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu de navegação"
+          tabIndex={-1}
+          className="lg:hidden bg-wepac-black border-t border-white/10"
+        >
           <div className="flex flex-col px-6 py-4 space-y-4">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
                 className="font-inter text-base text-wepac-white/70 transition-colors hover:text-wepac-white"
-                onClick={() => setMenuOpen(false)}
+                onClick={closeMenu}
               >
                 {item.name}
               </Link>
