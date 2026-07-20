@@ -4,6 +4,17 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-21 — Imaginário no produto: SessionKind + Trilho da Expedição
+
+Quinto deploy do ciclo. A metáfora da montanha entra na UI:
+
+- **SessionKind** (novo enum, separado do formato individual/grupo): `checkpoint` ("Acompanhamento regular no trilho", default), `recon` ("Reconhecimento — mapear o terreno"), `basecamp` ("Planear a próxima etapa"), `rescue` ("Resgate — apoio num momento difícil"), `summit` ("Cume — fecho e celebração de ciclo"). Migration aditiva `20260720230316` com default. Seletor no form do mentor, badge no card do membro.
+- **Trilho da Expedição** (`ExpeditionTrail.tsx`): visualização no topo do dashboard do membro — linha de trilho a subir com waypoints reais (sessões por kind com glifos próprios: bandeira/tenda/cruz/pico), "Estás aqui", próxima sessão destacada, cume à direita; linha de próxima ação por baixo (sessão > tarefa urgente > CTA mentor) — resolve o P1 "dashboard mede mas não orienta". Estado vazio: "A tua expedição começa em breve".
+
+Smoke 2/2; migrations up to date. Pipeline "transcrição→resultado" para sessões de mentoria: pedido de serviço enviado ao Agents Hub (playbook wepac-session-debrief, tenant WEPAC GDPR-restricted Anthropic-only, HITL do mentor) — ver sessão CoS; até lá corre manual (referência canónica: WHPH/WEPAC/ppv-sessao-1-alex-resultado-2026-07-17.html).
+
+---
+
 ## 2026-07-20 (7) — Sessão repensada (Modelo A): notas/outcome per-pessoa + loop sessão→tarefa
 
 Quarto deploy do dia. Redesign da Sessão para o ecossistema pessoa-cêntrico (proposta completa com 3 modelos avaliados na sessão CoS; Modelo A "Sessão = Encontro" escolhido; acoplamento a Trail deliberadamente adiado até Trails terem uso real — GTM-first):
