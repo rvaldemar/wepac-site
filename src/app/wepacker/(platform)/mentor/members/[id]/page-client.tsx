@@ -21,6 +21,7 @@ import {
 import { updateMembership } from "@/lib/wepacker/actions/admin";
 import { submitStrategicMapScore } from "@/lib/wepacker/actions/plan";
 import { createTask, updateTaskStatus } from "@/lib/wepacker/actions/task";
+import { friendlySubmitError } from "@/lib/stale-deployment";
 
 const LEVELS: MemberLevel[] = ["seed", "growth", "signature", "partner"];
 const PHASES: MemberPhase[] = [
@@ -202,7 +203,7 @@ export function MentorMemberDetailClient({
       router.refresh();
     } catch (e) {
       console.error("Failed to submit strategic map score:", e);
-      setMapError("Erro ao guardar. Tenta novamente.");
+      setMapError(friendlySubmitError(e, "Erro ao guardar. Tenta novamente."));
     } finally {
       setSavingMap(false);
     }

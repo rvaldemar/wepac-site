@@ -13,6 +13,7 @@ import {
   type EvaluationMoment,
 } from "@/lib/wepacker/types";
 import { submitMentorEvaluation } from "@/lib/wepacker/actions/evaluation";
+import { friendlySubmitError } from "@/lib/stale-deployment";
 
 const MOMENTS: EvaluationMoment[] = ["entry", "mid", "exit"];
 
@@ -89,7 +90,7 @@ export function MentorEvaluateClient({ membership, evaluations }: EvaluatePagePr
       router.push(`/wepacker/mentor/members/${membership.id}`);
     } catch (e) {
       console.error("Failed to submit evaluation:", e);
-      setError("Erro ao guardar a avaliação. Tenta novamente.");
+      setError(friendlySubmitError(e, "Erro ao guardar a avaliação. Tenta novamente."));
       setSubmitting(false);
     }
   }

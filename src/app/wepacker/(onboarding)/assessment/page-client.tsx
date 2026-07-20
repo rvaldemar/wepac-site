@@ -12,6 +12,7 @@ import {
   type AreaKey,
 } from "@/lib/wepacker/types";
 import { submitSelfEvaluation } from "@/lib/wepacker/actions/evaluation";
+import { friendlySubmitError } from "@/lib/stale-deployment";
 
 export default function AssessmentPageClient({
   packSlug,
@@ -60,7 +61,7 @@ export default function AssessmentPageClient({
       setCompleted(true);
     } catch (e) {
       console.error("Failed to submit evaluation:", e);
-      setError("Erro ao guardar a avaliação. Tenta novamente.");
+      setError(friendlySubmitError(e, "Erro ao guardar a avaliação. Tenta novamente."));
     } finally {
       setSubmitting(false);
     }
