@@ -10,6 +10,9 @@ interface NavItem {
   label: string;
   href: string;
   icon: string;
+  // Match this item only on the exact path — for index-style hrefs that are
+  // a prefix of every sibling route (e.g. /wepacker/mentor).
+  exact?: boolean;
 }
 
 interface NavGroup {
@@ -46,7 +49,7 @@ const memberNavGroups: NavGroup[] = [
 const mentorNavGroups: NavGroup[] = [
   {
     items: [
-      { label: "Painel Mentor", href: "/wepacker/mentor", icon: "◆" },
+      { label: "Painel Mentor", href: "/wepacker/mentor", icon: "◆", exact: true },
       { label: "Sessões", href: "/wepacker/mentor/sessions", icon: "◷" },
       { label: "Tarefas", href: "/wepacker/mentor/tasks", icon: "☑" },
       { label: "Mensagens", href: "/wepacker/mentor/messages", icon: "✉" },
@@ -89,8 +92,9 @@ export function PlatformSidebar({
   const canMentor = role === "mentor" || role === "admin";
   const canAdmin = role === "admin";
 
-  function isActive(href: string): boolean {
-    return pathname === href || pathname.startsWith(href + "/");
+  function isActive(item: NavItem): boolean {
+    if (item.exact) return pathname === item.href;
+    return pathname === item.href || pathname.startsWith(item.href + "/");
   }
 
   function getBadgeCount(label: string): number {
@@ -113,7 +117,7 @@ export function PlatformSidebar({
             href={item.href}
             onClick={onNavigate}
             className={`flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
-              isActive(item.href)
+              isActive(item)
                 ? "bg-wepac-white text-wepac-black"
                 : "text-wepac-text-secondary hover:bg-wepac-card hover:text-wepac-white"
             }`}
