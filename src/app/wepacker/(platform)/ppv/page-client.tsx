@@ -22,12 +22,23 @@ interface LifePlan {
   updatedAt: string;
 }
 
+interface LifePlanVersion {
+  id: string;
+  whoIAm: string;
+  whereIAm: string;
+  whereIGo: string;
+  whyIDo: string;
+  commitments: string;
+  createdAt: string;
+}
+
 interface Props {
   userId: string;
   lifePlan: LifePlan | null;
+  versions: LifePlanVersion[];
 }
 
-export default function LifePlanPageClient({ userId, lifePlan }: Props) {
+export default function LifePlanPageClient({ userId, lifePlan, versions }: Props) {
   const defaultValues: Record<LifeSectionKey, string> = {
     whoIAm: lifePlan?.whoIAm ?? "",
     whereIAm: lifePlan?.whereIAm ?? "",
@@ -99,6 +110,69 @@ export default function LifePlanPageClient({ userId, lifePlan }: Props) {
           );
         })}
       </div>
+
+      {versions.length > 0 && <VersionHistory versions={versions} />}
+    </div>
+  );
+}
+
+function VersionHistory({ versions }: { versions: LifePlanVersion[] }) {
+  const [open, setOpen] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  return (
+    <div className="mt-10 border-t border-wepac-border pt-4">
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className="flex items-center gap-2 text-xs text-wepac-text-tertiary hover:text-wepac-text-secondary"
+      >
+        <span aria-hidden="true">{open ? "▾" : "▸"}</span>
+        Versões anteriores ({versions.length})
+      </button>
+
+      {open && (
+        <div className="mt-3 space-y-2">
+          {versions.map((version) => {
+            const isExpanded = expandedId === version.id;
+            return (
+              <div key={version.id} className="border border-wepac-border bg-wepac-card">
+                <button
+                  type="button"
+                  onClick={() => setExpandedId(isExpanded ? null : version.id)}
+                  className="flex w-full items-center justify-between px-4 py-3 text-left text-xs text-wepac-text-secondary hover:text-wepac-white"
+                >
+                  <span>
+                    {new Date(version.createdAt).toLocaleDateString("pt-PT", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                  <span aria-hidden="true">{isExpanded ? "▾" : "▸"}</span>
+                </button>
+
+                {isExpanded && (
+                  <div className="space-y-4 border-t border-wepac-border px-4 py-4">
+                    {LIFE_SECTIONS.map((section) => (
+                      <div key={section.key}>
+                        <h4 className="font-barlow text-sm font-bold text-wepac-white">
+                          {section.title}
+                        </h4>
+                        <p className="mt-1 whitespace-pre-wrap text-xs leading-relaxed text-wepac-text-tertiary">
+                          {version[section.key] || "Ainda por preencher."}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

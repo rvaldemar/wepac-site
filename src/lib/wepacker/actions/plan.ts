@@ -15,6 +15,15 @@ export async function getLifePlan(userId: string) {
   return prisma.lifePlan.findUnique({ where: { userId } });
 }
 
+export async function getLifePlanVersions(userId: string) {
+  await assertUserAccess(userId);
+  return prisma.lifePlanVersion.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    take: 20,
+  });
+}
+
 export async function upsertLifePlan(
   userId: string,
   data: {
