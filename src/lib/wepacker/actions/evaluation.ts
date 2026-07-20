@@ -25,9 +25,13 @@ export async function computeAreaScores(
 ): Promise<AreaAverages> {
   await assertMembershipAccess(membershipId);
 
+  // A moment can be (re)evaluated multiple times — ordered desc so
+  // .find() below grabs the most recent self/mentor submission, not
+  // whichever happened to be inserted first.
   const evals = await prisma.evaluation.findMany({
     where: { membershipId, moment },
     include: { scores: true },
+    orderBy: { completedAt: "desc" },
   });
   const selfEval = evals.find((e) => e.evaluationType === "self");
   const mentorEval = evals.find((e) => e.evaluationType === "mentor");
@@ -78,9 +82,13 @@ export async function getIndicatorScores(
 > {
   await assertMembershipAccess(membershipId);
 
+  // A moment can be (re)evaluated multiple times — ordered desc so
+  // .find() below grabs the most recent self/mentor submission, not
+  // whichever happened to be inserted first.
   const evals = await prisma.evaluation.findMany({
     where: { membershipId, moment },
     include: { scores: true },
+    orderBy: { completedAt: "desc" },
   });
   const selfEval = evals.find((e) => e.evaluationType === "self");
   const mentorEval = evals.find((e) => e.evaluationType === "mentor");

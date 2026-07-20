@@ -51,6 +51,7 @@ enum MembershipStatus {
 enum EvaluationType {
   self
   mentor
+  professional
 }
 
 enum EvaluationMoment {
