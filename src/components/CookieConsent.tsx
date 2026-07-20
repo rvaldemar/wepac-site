@@ -1,24 +1,43 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useSyncExternalStore } from "react";
 import Link from "next/link";
 
-export function CookieConsent() {
-  const [visible, setVisible] = useState(false);
+const COOKIE_CONSENT_KEY = "cookie_consent";
 
-  useEffect(() => {
-    const consent = localStorage.getItem("cookie_consent");
-    if (!consent) setVisible(true);
-  }, []);
+type Listener = () => void;
+const listeners = new Set<Listener>();
+
+function subscribe(listener: Listener) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+function getSnapshot() {
+  return localStorage.getItem(COOKIE_CONSENT_KEY);
+}
+
+// Server (and pre-hydration) render: no consent decided yet, banner stays hidden
+// until the client store is read, matching the previous effect-based behavior.
+function getServerSnapshot() {
+  return "pending";
+}
+
+function setConsent(value: "accepted" | "rejected") {
+  localStorage.setItem(COOKIE_CONSENT_KEY, value);
+  listeners.forEach((listener) => listener());
+}
+
+export function CookieConsent() {
+  const consent = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const visible = consent === null;
 
   function handleAccept() {
-    localStorage.setItem("cookie_consent", "accepted");
-    setVisible(false);
+    setConsent("accepted");
   }
 
   function handleReject() {
-    localStorage.setItem("cookie_consent", "rejected");
-    setVisible(false);
+    setConsent("rejected");
   }
 
   if (!visible) return null;
