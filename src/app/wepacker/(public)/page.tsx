@@ -3,6 +3,11 @@ import Link from "next/link";
 import { getActivePacksPublic } from "@/lib/wepacker/actions/admin";
 import { getAreaLabels } from "@/lib/wepacker/types";
 
+// The pack list comes from the DB — revalidate so the landing reflects
+// pack changes without a rebuild (it is otherwise statically prerendered
+// with build-time data).
+export const revalidate = 300;
+
 export const metadata: Metadata = {
   title: "WEPACKER",
   description:
