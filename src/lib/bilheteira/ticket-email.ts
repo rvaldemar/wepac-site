@@ -88,7 +88,7 @@ export async function sendVerificationEmail(
           email.
         </p>
         <p style="margin-top: 32px; color:#999; font-size: 11px;">
-          WEPAC — Companhia de Artes · info@wepac.pt
+          WEPAC · info@wepac.pt
         </p>
       </div>
     `,
@@ -149,7 +149,7 @@ export async function sendTicketEmail(data: TicketEmailData) {
           </a>
         </p>
         <p style="margin-top: 32px; color:#999; font-size: 11px;">
-          WEPAC — Companhia de Artes · info@wepac.pt
+          WEPAC · info@wepac.pt
         </p>
       </div>
     `,

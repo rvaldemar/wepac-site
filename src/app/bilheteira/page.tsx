@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Bilheteira — WEPAC",
-  description: "Eventos WEPAC — Companhia de Artes.",
+  description: "Eventos WEPAC.",
 };
 
 export default async function BilheteiraPublic() {
@@ -35,7 +35,7 @@ export default async function BilheteiraPublic() {
       }
     >
       <main style={styles.container}>
-        <div style={styles.eyebrow}>WEPAC · Companhia de Artes</div>
+        <div style={styles.eyebrow}>WEPAC</div>
         <h1 style={styles.h1}>Bilheteira</h1>
         <p style={{ color: "#666", maxWidth: 620, marginBottom: 40 }}>
           Programação regular de concertos, espectáculos e experiências

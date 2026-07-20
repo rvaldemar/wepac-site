@@ -10,7 +10,7 @@ export function Footer() {
             <Link href="/" className="font-barlow text-2xl font-bold text-wepac-white">
               wepac
             </Link>
-            <p className="mt-2 text-sm text-wepac-white/50">Companhia de Artes</p>
+            <p className="mt-2 text-sm text-wepac-white/50">Cultura que transforma</p>
             <p className="mt-4 text-sm text-wepac-white/40 leading-relaxed">
               Arte, educação e impacto social.
             </p>
@@ -96,7 +96,7 @@ export function Footer() {
             Política de Privacidade
           </Link>
           <p className="text-xs text-wepac-white/30">
-            &copy; {new Date().getFullYear()} WEPAC — Companhia de Artes. Todos os direitos reservados.
+            &copy; {new Date().getFullYear()} WEPAC. Todos os direitos reservados.
           </p>
         </div>
       </div>

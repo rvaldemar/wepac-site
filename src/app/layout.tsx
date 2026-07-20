@@ -27,7 +27,7 @@ const ptSerif = PT_Serif({
 
 export const metadata: Metadata = {
   title: {
-    default: "WEPAC — Companhia de Artes",
+    default: "WEPAC",
     template: "%s | WEPAC",
   },
   description:
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.json",
   openGraph: {
-    title: "WEPAC — Companhia de Artes",
+    title: "WEPAC",
     description: "Sons que inspiram. Arte, formação e impacto social.",
     type: "website",
     locale: "pt_PT",
@@ -83,7 +83,7 @@ export const metadata: Metadata = {
         url: "/logo/og-image.png",
         width: 1200,
         height: 630,
-        alt: "WEPAC — Companhia de Artes",
+        alt: "WEPAC",
       },
     ],
   },

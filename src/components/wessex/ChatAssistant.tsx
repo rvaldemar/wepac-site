@@ -12,7 +12,7 @@ interface Message {
 const WELCOME_MESSAGE: Message = {
   role: "assistant",
   content:
-    "Olá! Sou o assistente da WEPAC — Companhia de Artes. Posso ajudar-te com informações sobre os nossos projetos (Easy Peasy, Arte à Capela, Wessex), orçamentos de serviços musicais, sugestões de repertório, ou qualquer questão sobre a WEPAC. Como posso ajudar?",
+    "Olá! Sou o assistente da WEPAC. Posso ajudar-te com informações sobre os nossos projetos (Easy Peasy, Arte à Capela, Wessex), orçamentos de serviços musicais, sugestões de repertório, ou qualquer questão sobre a WEPAC. Como posso ajudar?",
 };
 
 export function ChatAssistant() {

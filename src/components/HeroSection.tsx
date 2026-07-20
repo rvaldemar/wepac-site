@@ -23,7 +23,7 @@ export function HeroSection() {
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
           <p className="text-sm font-bold uppercase tracking-[0.3em] text-wepac-white/40">
-            Companhia de Artes
+            Cultura que transforma
           </p>
         </motion.div>
 

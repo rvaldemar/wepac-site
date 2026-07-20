@@ -9,7 +9,7 @@ import { BetaSignupForm } from "@/components/wepacker/BetaSignupForm";
 export const metadata: Metadata = {
   title: "Artistas WEPAC",
   description:
-    "O sistema integrado de desenvolvimento artístico da WEPAC — Companhia de Artes. Excelência artística. Estrutura humana. Impacto real.",
+    "O sistema integrado de desenvolvimento artístico da WEPAC. Excelência artística. Estrutura humana. Impacto real.",
 };
 
 const AREAS = [
@@ -196,8 +196,7 @@ export default function ArtistPage() {
           </FadeIn>
           <FadeIn delay={0.3}>
             <p className="mt-8 text-lg text-white/80 md:text-xl">
-              O sistema integrado de desenvolvimento artístico da WEPAC —
-              Companhia de Artes.
+              O sistema integrado de desenvolvimento artístico da WEPAC.
             </p>
           </FadeIn>
           <FadeIn delay={0.45}>
@@ -662,7 +661,7 @@ export default function ArtistPage() {
               wepac
             </span>
             <p className="mt-2 text-sm text-white/50">
-              Companhia de Artes
+              Cultura que transforma
             </p>
           </FadeIn>
           <FadeIn delay={0.1}>

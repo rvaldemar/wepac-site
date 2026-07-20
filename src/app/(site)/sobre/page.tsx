@@ -4,7 +4,7 @@ import { FadeIn } from "@/components/FadeIn";
 export const metadata: Metadata = {
   title: "A WEPAC",
   description:
-    "A WEPAC — Companhia de Artes. Missão, visão, metodologia, impacto e equipa.",
+    "A WEPAC. Missão, visão, metodologia, impacto e equipa.",
 };
 
 export default function SobrePage() {
@@ -31,7 +31,7 @@ export default function SobrePage() {
         <div className="mx-auto max-w-4xl">
           <FadeIn>
             <p className="text-lg leading-relaxed text-wepac-white/70 md:text-xl">
-              A WEPAC — Companhia de Artes é uma estrutura cultural
+              A WEPAC é uma estrutura cultural
               multidisciplinar portuguesa dedicada à criação de projetos
               artísticos, educativos e comunitários. Trabalhamos na intersecção
               entre arte, educação e impacto social, promovendo o acesso à
