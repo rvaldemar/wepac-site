@@ -9,6 +9,7 @@ import {
   updateSession,
   updateSessionAttendee,
 } from "@/lib/wepacker/actions/session";
+import { createTaskFromSession } from "@/lib/wepacker/actions/task";
 
 const STATUS_LABELS: Record<SessionStatus, string> = {
   scheduled: "Agendada",
@@ -237,6 +238,66 @@ export function MentorSessionsClient({
       }));
     } finally {
       setSavingAttendeeKey(null);
+    }
+  }
+
+  // ===== "Criar tarefa" from a saved outcome =====
+  // Only one attendee's inline task form is open at a time, keyed the
+  // same way as the notes editor (attendeeKey). Title is prefilled from
+  // the saved outcome so the mentor can create the task in one click;
+  // the deadline is optional, unlike the standard mentor task form.
+  const [taskFormKey, setTaskFormKey] = useState<string | null>(null);
+  const [taskTitle, setTaskTitle] = useState("");
+  const [taskDeadline, setTaskDeadline] = useState("");
+  const [creatingTaskKey, setCreatingTaskKey] = useState<string | null>(null);
+  const [taskFeedback, setTaskFeedback] = useState<
+    Record<string, { type: "success" | "error"; text: string } | undefined>
+  >({});
+
+  function openTaskForm(sessionId: string, attendee: AttendeeRow) {
+    const key = attendeeKey(sessionId, attendee.user.id);
+    setTaskFormKey(key);
+    setTaskTitle(attendee.outcome ?? "");
+    setTaskDeadline("");
+    setTaskFeedback((prev) => ({ ...prev, [key]: undefined }));
+  }
+
+  function cancelTaskForm() {
+    setTaskFormKey(null);
+  }
+
+  async function handleCreateTaskFromOutcome(sessionId: string, userId: string) {
+    const key = attendeeKey(sessionId, userId);
+    if (!taskTitle.trim()) {
+      setTaskFeedback((prev) => ({
+        ...prev,
+        [key]: { type: "error", text: "O título é obrigatório." },
+      }));
+      return;
+    }
+    setCreatingTaskKey(key);
+    setTaskFeedback((prev) => ({ ...prev, [key]: undefined }));
+    try {
+      await createTaskFromSession({
+        sessionId,
+        userId,
+        title: taskTitle.trim(),
+        deadline: taskDeadline,
+      });
+      setTaskFormKey(null);
+      setTaskFeedback((prev) => ({
+        ...prev,
+        [key]: { type: "success", text: "Tarefa criada." },
+      }));
+      router.refresh();
+    } catch (e) {
+      console.error("Failed to create task from session outcome:", e);
+      setTaskFeedback((prev) => ({
+        ...prev,
+        [key]: { type: "error", text: "Erro ao criar tarefa. Tenta novamente." },
+      }));
+    } finally {
+      setCreatingTaskKey(null);
     }
   }
 
@@ -558,9 +619,19 @@ export function MentorSessionsClient({
                         </div>
                       ) : (
                         <div className="mt-2 space-y-1">
-                          <p className="text-xs text-wepac-text-tertiary">
-                            Combinado: {a.outcome || "—"}
-                          </p>
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="text-xs text-wepac-text-tertiary">
+                              Combinado: {a.outcome || "—"}
+                            </p>
+                            {taskFormKey !== key && (
+                              <button
+                                onClick={() => openTaskForm(session.id, a)}
+                                className="shrink-0 text-xs text-wepac-white hover:underline"
+                              >
+                                Criar tarefa
+                              </button>
+                            )}
+                          </div>
                           <p className="text-xs text-wepac-text-tertiary">
                             Nota partilhada: {a.sharedNote || "—"}{" "}
                             {a.sharedNote && (
@@ -581,6 +652,64 @@ export function MentorSessionsClient({
                           {feedback?.type === "success" && (
                             <p className="text-xs text-wepac-success">{feedback.text}</p>
                           )}
+
+                          {taskFormKey === key && (
+                            <div className="mt-2 space-y-2 border-t border-wepac-border pt-2">
+                              <div>
+                                <label className="block text-xs text-wepac-text-tertiary">
+                                  Título da tarefa
+                                </label>
+                                <input
+                                  value={taskTitle}
+                                  onChange={(e) => setTaskTitle(e.target.value)}
+                                  className="mt-1 w-full bg-wepac-input px-3 py-2 text-xs text-wepac-white"
+                                  placeholder="Título da tarefa"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs text-wepac-text-tertiary">
+                                  Prazo (opcional)
+                                </label>
+                                <input
+                                  type="date"
+                                  value={taskDeadline}
+                                  onChange={(e) => setTaskDeadline(e.target.value)}
+                                  className="mt-1 w-full bg-wepac-input px-3 py-2 text-xs text-wepac-white"
+                                />
+                              </div>
+                              {taskFeedback[key]?.type === "error" && (
+                                <p className="text-xs text-wepac-error">
+                                  {taskFeedback[key]?.text}
+                                </p>
+                              )}
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() =>
+                                    handleCreateTaskFromOutcome(session.id, a.user.id)
+                                  }
+                                  disabled={creatingTaskKey === key}
+                                  className="bg-wepac-white px-3 py-1.5 text-xs font-bold text-wepac-black disabled:opacity-30"
+                                >
+                                  {creatingTaskKey === key
+                                    ? "A criar..."
+                                    : "Criar tarefa"}
+                                </button>
+                                <button
+                                  onClick={cancelTaskForm}
+                                  disabled={creatingTaskKey === key}
+                                  className="border border-wepac-border px-3 py-1.5 text-xs text-wepac-text-secondary"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                          {taskFeedback[key]?.type === "success" &&
+                            taskFormKey !== key && (
+                              <p className="text-xs text-wepac-success">
+                                {taskFeedback[key]?.text}
+                              </p>
+                            )}
                         </div>
                       )}
                     </div>

@@ -8,6 +8,7 @@ import {
   requireMembership,
   requireUser,
 } from "@/lib/wepacker/guards";
+import { assertMentorOfSession } from "@/lib/wepacker/actions/session";
 
 export async function getMyTasks() {
   const { membership } = await requireMembership();
@@ -64,6 +65,53 @@ export async function createTask(data: {
       origin: actor.id === ownerUserId ? data.origin : "mentor",
       goalId: data.goalId,
       deadline: data.deadline,
+    },
+  });
+}
+
+// Mentor-side task creation from a session outcome: activates the
+// otherwise-dead TaskOrigin.session by linking the task back to the
+// session it came from. Reuses the exact same mentor-of-session guard as
+// updateSessionAttendee (assertMentorOfSession), so only a mentor who
+// could already write that session's per-attendee notes can spin a task
+// off of it. Unlike createTask (which is keyed by membershipId, known
+// on the member-detail page), the sessions UI only knows the attendee's
+// userId, so this resolves the attendee's active membership itself.
+export async function createTaskFromSession(data: {
+  sessionId: string;
+  userId: string;
+  title: string;
+  description?: string;
+  deadline: string;
+}) {
+  await assertMentorOfSession(data.sessionId);
+  const actor = await requireUser();
+
+  const isAttendee = await prisma.sessionAttendee.findUnique({
+    where: { sessionId_userId: { sessionId: data.sessionId, userId: data.userId } },
+    select: { id: true },
+  });
+  if (!isAttendee) {
+    throw new Error("Esta pessoa não é participante desta sessão.");
+  }
+
+  const membership = await prisma.cohortMembership.findFirst({
+    where: { userId: data.userId, status: "active" },
+    orderBy: { joinedAt: "desc" },
+  });
+  if (!membership) {
+    throw new Error("Este membro não tem uma membership ativa.");
+  }
+
+  return prisma.task.create({
+    data: {
+      membershipId: membership.id,
+      assignedById: actor.id,
+      title: data.title,
+      description: data.description,
+      origin: "session",
+      deadline: data.deadline,
+      sourceSessionId: data.sessionId,
     },
   });
 }

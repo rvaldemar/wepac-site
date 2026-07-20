@@ -388,20 +388,24 @@ model MonthlyAction {
 }
 
 model Task {
-  id           String     @id @default(cuid())
-  membershipId String
-  assignedById String?
-  title        String
-  description  String?
-  origin       TaskOrigin @default(self)
-  goalId       String?
-  deadline     String
-  status       TaskStatus @default(todo)
+  id              String     @id @default(cuid())
+  membershipId    String
+  assignedById    String?
+  title           String
+  description     String?
+  origin          TaskOrigin @default(self)
+  goalId          String?
+  deadline        String
+  status          TaskStatus @default(todo)
+  // Set when origin is "session": the mentoring session this task was
+  // created from, for traceability back to the outcome that spawned it.
+  sourceSessionId String?
 
-  membership CohortMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
-  assignedBy User?            @relation("TaskAssigner", fields: [assignedById], references: [id], onDelete: SetNull)
-  goal       Goal?            @relation(fields: [goalId], references: [id], onDelete: SetNull)
-  comments   Comment[]        @relation("TaskComments")
+  membership    CohortMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  assignedBy    User?            @relation("TaskAssigner", fields: [assignedById], references: [id], onDelete: SetNull)
+  goal          Goal?            @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  sourceSession Session?         @relation(fields: [sourceSessionId], references: [id], onDelete: SetNull)
+  comments      Comment[]        @relation("TaskComments")
 
   @@map("tasks")
 }
@@ -428,9 +432,10 @@ model Session {
   notesPublished   Boolean       @default(false)
   discussionPoints String?
 
-  cohort    Cohort?           @relation(fields: [cohortId], references: [id], onDelete: Cascade)
-  mentor    User              @relation(fields: [mentorId], references: [id], onDelete: Cascade)
-  attendees SessionAttendee[]
+  cohort       Cohort?           @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  mentor       User              @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+  attendees    SessionAttendee[]
+  sourcedTasks Task[]
 
   @@map("sessions")
 }

@@ -74,8 +74,10 @@ function maskUnpublishedNotes<
 
 // A session's mentor gate: cohort-scoped sessions defer to the cohort
 // guard; a session without a cohort (a personal mentoring session) is
-// only editable by the mentor who created it, or an admin.
-async function assertMentorOfSession(
+// only editable by the mentor who created it, or an admin. Exported so
+// other action modules (e.g. task creation from a session outcome) can
+// reuse the exact same check instead of re-deriving it.
+export async function assertMentorOfSession(
   sessionId: string
 ): Promise<{ cohortId: string | null; mentorId: string }> {
   const session = await prisma.session.findUnique({
