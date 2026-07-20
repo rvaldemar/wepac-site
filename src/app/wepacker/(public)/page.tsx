@@ -14,7 +14,14 @@ export const metadata: Metadata = {
     "WEPACKER é um estilo de vida que te permite atingir o teu potencial. Mentoria, comunidade e experiências reais para desenvolver talento, caráter, disciplina e propósito em qualquer fase da vida.",
 };
 
-const AREA_LABELS = getAreaLabels("Artístico-Cultural");
+// The 7th area ("domain") is legacy — the methodology now has six fixed
+// pillars; art/culture is a discipline a Pack can be built around, not a
+// pillar of its own. Filtered out here until the schema itself drops it
+// (tracked separately — this page just stops showing it).
+const ALL_AREA_LABELS = getAreaLabels("");
+const AREA_LABELS = Object.fromEntries(
+  Object.entries(ALL_AREA_LABELS).filter(([key]) => key !== "domain")
+) as Omit<typeof ALL_AREA_LABELS, "domain">;
 const AREA_DESCRIPTIONS: Record<string, string> = {
   physical: "O corpo como base de presença e energia",
   emotional: "Vida emocional e capacidade expressiva",
@@ -22,13 +29,12 @@ const AREA_DESCRIPTIONS: Record<string, string> = {
   spiritual: "Profundidade, propósito e sentido",
   intellectual: "Pensamento, estratégia e visão",
   social: "Relação, rede e comunidade",
-  domain: "Expressão, sensibilidade estética e património — a arte como linguagem, disciplina e oferta",
 };
 
 const METHODOLOGY_STEPS = [
   {
     label: "Diagnóstico",
-    desc: "Um retrato honesto de onde estás, nas 7 áreas de desenvolvimento.",
+    desc: "Um retrato honesto de onde estás, nas 6 áreas de desenvolvimento.",
   },
   {
     label: "Plano",
@@ -116,13 +122,13 @@ export default async function WepackerLandingPage() {
             ))}
           </div>
 
-          {/* 7 areas */}
+          {/* 6 areas */}
           <div className="mt-16">
             <p className="text-center text-sm text-wepac-text-tertiary">
-              7 áreas de desenvolvimento — universais, para qualquer WEPACker, em qualquer
+              6 áreas de desenvolvimento — universais, para qualquer WEPACker, em qualquer
               percurso.
             </p>
-            <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {(Object.keys(AREA_LABELS) as (keyof typeof AREA_LABELS)[]).map((key) => (
                 <div key={key} className="border border-wepac-border bg-wepac-black p-4">
                   <p className="font-barlow text-sm font-bold text-wepac-white">
