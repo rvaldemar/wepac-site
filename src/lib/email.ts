@@ -15,17 +15,21 @@ const transporter = nodemailer.createTransport({
 const FROM = process.env.SMTP_FROM || "info@wepac.pt";
 const APP_URL = process.env.APP_URL || "https://wepac.pt";
 
-// ===== SHARED DARK TEMPLATE =====
+// ===== SHARED LIGHT TEMPLATE =====
 // Table-based layout for Outlook/Gmail compatibility. Brand palette only
-// (#000 / #FFF / #DEE0DB) — matches the platform's dark aesthetic instead
-// of the previous bare "WEPAC"/"WEPACKER" text heading.
+// (#000 / #FFF / #DEE0DB). Light theme deliberately, not the platform's
+// dark UI: dark-on-dark HTML email gets remapped unpredictably by Gmail/
+// Apple Mail's automatic dark-mode color injection (confirmed — the first
+// dark version rendered with muddy gray dividers in real inboxes). White
+// background with black text and hairline #DEE0DB dividers is the robust
+// choice for transactional email.
 
 const FONT_HEADING =
   "'Barlow', 'Helvetica Neue', Helvetica, Arial, sans-serif";
 const FONT_BODY = "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif";
 
-const WEPAC_WORDMARK = `${APP_URL}/logo/email/wepac-wordmark-white.png`;
-const WEPACKER_LOCKUP = `${APP_URL}/logo/email/wepacker-lockup-white.png`;
+const WEPAC_WORDMARK = `${APP_URL}/logo/email/wepac-wordmark-black.png`;
+const WEPACKER_LOCKUP = `${APP_URL}/logo/email/wepacker-lockup-black.png`;
 
 interface EmailShellOptions {
   preheader: string;
@@ -49,13 +53,15 @@ function emailShell({
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="supported-color-schemes" content="light" />
     <title>${logoAlt}</title>
   </head>
-  <body style="margin:0; padding:0; background:#000;">
+  <body style="margin:0; padding:0; background:#FFFFFF;">
     <div style="display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;">
       ${preheader}
     </div>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#000;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FFFFFF;">
       <tr>
         <td align="center" style="padding: 48px 20px;">
           <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px; width:100%;">
@@ -65,10 +71,10 @@ function emailShell({
               </td>
             </tr>
             <tr>
-              <td style="border-top: 1px solid #2a2a2a;">
+              <td style="border-top: 1px solid #DEE0DB;">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                   <tr>
-                    <td style="padding-top: 32px; font-family: ${FONT_BODY}; font-size: 14px; line-height: 1.7; color: #DEE0DB;">
+                    <td style="padding-top: 32px; font-family: ${FONT_BODY}; font-size: 14px; line-height: 1.7; color: #333333;">
                       ${bodyHtml}
                     </td>
                   </tr>
@@ -76,10 +82,10 @@ function emailShell({
               </td>
             </tr>
             <tr>
-              <td style="padding-top: 40px; border-top: 1px solid #2a2a2a; margin-top: 40px;">
+              <td style="padding-top: 40px; border-top: 1px solid #DEE0DB; margin-top: 40px;">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 24px;">
                   <tr>
-                    <td style="font-family: ${FONT_BODY}; font-size: 12px; line-height: 1.6; color: #6b6b6b;">
+                    <td style="font-family: ${FONT_BODY}; font-size: 12px; line-height: 1.6; color: #999999;">
                       ${footerHtml}
                     </td>
                   </tr>
@@ -95,16 +101,16 @@ function emailShell({
 }
 
 function ctaButton(href: string, label: string): string {
-  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top: 28px;"><tr><td style="background:#FFFFFF; border-radius:0;"><a href="${href}" style="display:inline-block; padding:14px 32px; font-family:${FONT_HEADING}; font-weight:700; font-size:13px; letter-spacing:0.5px; color:#000000; text-decoration:none;">${label}</a></td></tr></table>`;
+  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top: 28px;"><tr><td style="background:#000000; border-radius:0;"><a href="${href}" style="display:inline-block; padding:14px 32px; font-family:${FONT_HEADING}; font-weight:700; font-size:13px; letter-spacing:0.5px; color:#FFFFFF; text-decoration:none;">${label}</a></td></tr></table>`;
 }
 
 function heading(text: string): string {
-  return `<h1 style="margin:0 0 20px; font-family:${FONT_HEADING}; font-weight:700; font-size:26px; line-height:1.25; color:#FFFFFF;">${text}</h1>`;
+  return `<h1 style="margin:0 0 20px; font-family:${FONT_HEADING}; font-weight:700; font-size:26px; line-height:1.25; color:#000000;">${text}</h1>`;
 }
 
-const WEPACKER_FOOTER = `WEPACKER — WEPAC<br />Estamos juntos. Juntos somos mais fortes.<br /><a href="${APP_URL}/wepacker" style="color:#6b6b6b;">wepac.pt/wepacker</a> · <a href="mailto:info@wepac.pt" style="color:#6b6b6b;">info@wepac.pt</a>`;
+const WEPACKER_FOOTER = `WEPACKER — WEPAC<br />Estamos juntos. Juntos somos mais fortes.<br /><a href="${APP_URL}/wepacker" style="color:#999999;">wepac.pt/wepacker</a> · <a href="mailto:info@wepac.pt" style="color:#999999;">info@wepac.pt</a>`;
 
-const WEPAC_FOOTER = `WEPAC<br /><a href="${APP_URL}" style="color:#6b6b6b;">wepac.pt</a> · <a href="mailto:info@wepac.pt" style="color:#6b6b6b;">info@wepac.pt</a>`;
+const WEPAC_FOOTER = `WEPAC<br /><a href="${APP_URL}" style="color:#999999;">wepac.pt</a> · <a href="mailto:info@wepac.pt" style="color:#999999;">info@wepac.pt</a>`;
 
 // ===== WEPACKER EMAILS =====
 
@@ -122,7 +128,7 @@ export async function sendInviteEmail(
       ainda entrega valor à comunidade.
     </p>
     ${ctaButton(inviteUrl, "Criar conta")}
-    <p style="margin:28px 0 0; font-size:12px; color:#6b6b6b;">
+    <p style="margin:28px 0 0; font-size:12px; color:#999999;">
       Este convite expira em 7 dias. Se não esperavas este email, podes ignorá-lo.
     </p>
   `;
@@ -149,7 +155,7 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string) {
       Recebemos um pedido para recuperar a tua password de acesso ao WEPACKER.
     </p>
     ${ctaButton(resetUrl, "Recuperar password")}
-    <p style="margin:28px 0 0; font-size:12px; color:#6b6b6b;">
+    <p style="margin:28px 0 0; font-size:12px; color:#999999;">
       Este link expira em 1 hora. Se não pediste esta recuperação, podes ignorar este email.
     </p>
   `;
@@ -205,9 +211,9 @@ export async function sendBetaSignupNotificationEmail(
 ) {
   const bodyHtml = `
     ${heading("Nova candidatura.")}
-    <p style="margin:0 0 8px;"><strong style="color:#FFFFFF;">Nome:</strong> ${name}</p>
-    <p style="margin:0 0 8px;"><strong style="color:#FFFFFF;">Email:</strong> ${email}</p>
-    ${artisticArea ? `<p style="margin:0 0 8px;"><strong style="color:#FFFFFF;">Área:</strong> ${artisticArea}</p>` : ""}
+    <p style="margin:0 0 8px;"><strong style="color:#000000;">Nome:</strong> ${name}</p>
+    <p style="margin:0 0 8px;"><strong style="color:#000000;">Email:</strong> ${email}</p>
+    ${artisticArea ? `<p style="margin:0 0 8px;"><strong style="color:#000000;">Área:</strong> ${artisticArea}</p>` : ""}
     ${ctaButton(`${APP_URL}/wepacker/admin/leads`, "Ver no painel")}
   `;
 
@@ -267,13 +273,13 @@ export async function sendLeadNotificationEmail(lead: LeadEmailData) {
     .filter(([, value]) => value)
     .map(
       ([label, value]) =>
-        `<tr><td style="padding:10px 0; font-weight:700; color:#FFFFFF; vertical-align:top; white-space:nowrap; padding-right:16px; border-top:1px solid #2a2a2a;">${label}</td><td style="padding:10px 0; color:#DEE0DB; border-top:1px solid #2a2a2a;">${value}</td></tr>`
+        `<tr><td style="padding:10px 0; font-weight:700; color:#000000; vertical-align:top; white-space:nowrap; padding-right:16px; border-top:1px solid #DEE0DB;">${label}</td><td style="padding:10px 0; color:#333333; border-top:1px solid #DEE0DB;">${value}</td></tr>`
     )
     .join("");
 
   const bodyHtml = `
     ${heading("Nova lead Wessex.")}
-    <p style="margin:0 0 16px; color:#9a9a9a;">
+    <p style="margin:0 0 16px; color:#666666;">
       Um potencial cliente interagiu com o assistente Wessex e deixou dados de contacto.
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;">
