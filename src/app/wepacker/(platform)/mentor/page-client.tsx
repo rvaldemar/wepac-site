@@ -45,7 +45,7 @@ interface SessionRow {
   durationMinutes: number;
   attendees: {
     id: string;
-    membership: { id: string; user: { id: string; name: string } };
+    user: { id: string; name: string };
   }[];
 }
 
@@ -219,7 +219,7 @@ export function MentorDashboardClient({
         <div className="mt-4 space-y-3">
           {pendingSessions.slice(0, 5).map((session) => {
             const attendeeNames = session.attendees
-              .map((a) => a.membership.user.name)
+              .map((a) => a.user.name)
               .join(", ");
             return (
               <div

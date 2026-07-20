@@ -182,3 +182,19 @@ export async function assertMentorOfUser(
   }
   return { actor, ownerUserId: userId };
 }
+
+// Mentor of every userId in the list (or admin) — for writes that touch
+// several people at once without a shared Cohort to scope them (e.g. a
+// mentoring session not tied to a specific Journey).
+export async function assertMentorOfUsers(
+  userIds: string[]
+): Promise<SessionUser> {
+  const actor = await requireUser();
+  if (actor.role === "admin") return actor;
+  for (const userId of userIds) {
+    if (!(await isMentoredUser(actor.id, userId))) {
+      throw new Error("Sem permissão.");
+    }
+  }
+  return actor;
+}

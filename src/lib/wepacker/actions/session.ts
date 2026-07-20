@@ -4,27 +4,49 @@ import { prisma } from "@/lib/db";
 import type { SessionStatus, SessionType } from "@prisma/client";
 import {
   assertMentorOfCohort,
+  assertMentorOfUsers,
   getMentoredCohortIds,
   requireMembership,
+  requireRole,
   requireUser,
 } from "@/lib/wepacker/guards";
 
 const sessionInclude = {
   attendees: {
     include: {
-      membership: {
-        select: { id: true, user: { select: { id: true, name: true } } },
-      },
+      user: { select: { id: true, name: true } },
     },
   },
   mentor: { select: { id: true, name: true } },
 } as const;
 
+// A session's mentor gate: cohort-scoped sessions defer to the cohort
+// guard; a session without a cohort (a personal mentoring session) is
+// only editable by the mentor who created it, or an admin.
+async function assertMentorOfSession(
+  sessionId: string
+): Promise<{ cohortId: string | null; mentorId: string }> {
+  const session = await prisma.session.findUnique({
+    where: { id: sessionId },
+    select: { cohortId: true, mentorId: true },
+  });
+  if (!session) throw new Error("Sessão não encontrada.");
+  if (session.cohortId) {
+    await assertMentorOfCohort(session.cohortId);
+  } else {
+    const actor = await requireUser();
+    if (actor.role !== "admin" && actor.id !== session.mentorId) {
+      throw new Error("Sem permissão.");
+    }
+  }
+  return session;
+}
+
 export async function getMySessions() {
-  const { membership } = await requireMembership();
+  const { user } = await requireMembership();
   return prisma.session.findMany({
     where: {
-      attendees: { some: { membershipId: membership.membershipId } },
+      attendees: { some: { userId: user.id } },
     },
     include: sessionInclude,
     orderBy: { scheduledAt: "desc" },
@@ -32,48 +54,85 @@ export async function getMySessions() {
 }
 
 export async function getNextSession() {
-  const { membership } = await requireMembership();
+  const { user } = await requireMembership();
   return prisma.session.findFirst({
     where: {
       status: "scheduled",
-      attendees: { some: { membershipId: membership.membershipId } },
+      attendees: { some: { userId: user.id } },
     },
     include: sessionInclude,
     orderBy: { scheduledAt: "asc" },
   });
 }
 
-// Sessions across every cohort the actor mentors (admin sees all).
+// Sessions across every cohort the actor mentors, plus every personal
+// (cohort-less) session they created themselves (admin sees all).
 export async function getMentoredSessions() {
   const actor = await requireUser();
-  const where =
-    actor.role === "admin"
-      ? {}
-      : { cohortId: { in: await getMentoredCohortIds(actor.id) } };
+  if (actor.role === "admin") {
+    return prisma.session.findMany({
+      include: sessionInclude,
+      orderBy: { scheduledAt: "desc" },
+    });
+  }
+  const mentoredCohortIds = await getMentoredCohortIds(actor.id);
   return prisma.session.findMany({
-    where,
+    where: {
+      OR: [{ cohortId: { in: mentoredCohortIds } }, { mentorId: actor.id }],
+    },
     include: sessionInclude,
     orderBy: { scheduledAt: "desc" },
   });
 }
 
+// Every person (deduplicated) the actor mentors across every cohort —
+// used to populate the participant picker for sessions that aren't
+// scoped to one specific Journey (admin sees every member, same as
+// getCohorts).
+export async function getMentoredMembers() {
+  const actor = await requireRole(["mentor", "admin"]);
+  const where =
+    actor.role === "admin"
+      ? { role: "member" as const }
+      : {
+          role: "member" as const,
+          cohortId: { in: await getMentoredCohortIds(actor.id) },
+        };
+  const memberships = await prisma.cohortMembership.findMany({
+    where,
+    include: { user: { select: { id: true, name: true } } },
+    orderBy: { joinedAt: "asc" },
+  });
+  const byUser = new Map<string, { id: string; name: string }>();
+  for (const m of memberships) {
+    if (!byUser.has(m.userId)) byUser.set(m.userId, m.user);
+  }
+  return Array.from(byUser.values());
+}
+
 export async function createSession(data: {
-  cohortId: string;
+  cohortId?: string;
   sessionType: SessionType;
   scheduledAt: string;
   durationMinutes?: number;
   discussionPoints?: string;
-  attendeeMembershipIds: string[];
+  attendeeUserIds: string[];
 }) {
-  const actor = await assertMentorOfCohort(data.cohortId);
+  let actor;
+  if (data.cohortId) {
+    actor = await assertMentorOfCohort(data.cohortId);
 
-  // Attendees must belong to the same cohort.
-  const valid = await prisma.cohortMembership.findMany({
-    where: { id: { in: data.attendeeMembershipIds }, cohortId: data.cohortId },
-    select: { id: true },
-  });
-  if (valid.length !== data.attendeeMembershipIds.length) {
-    throw new Error("Participantes inválidos para esta Journey.");
+    // Attendees must belong to the same cohort.
+    const valid = await prisma.cohortMembership.findMany({
+      where: { userId: { in: data.attendeeUserIds }, cohortId: data.cohortId },
+      select: { userId: true },
+    });
+    const validUserIds = new Set(valid.map((v) => v.userId));
+    if (data.attendeeUserIds.some((id) => !validUserIds.has(id))) {
+      throw new Error("Participantes inválidos para esta Journey.");
+    }
+  } else {
+    actor = await assertMentorOfUsers(data.attendeeUserIds);
   }
 
   return prisma.session.create({
@@ -85,9 +144,7 @@ export async function createSession(data: {
       durationMinutes: data.durationMinutes ?? 60,
       discussionPoints: data.discussionPoints,
       attendees: {
-        create: data.attendeeMembershipIds.map((membershipId) => ({
-          membershipId,
-        })),
+        create: data.attendeeUserIds.map((userId) => ({ userId })),
       },
     },
     include: sessionInclude,
@@ -104,12 +161,7 @@ export async function updateSession(
     scheduledAt?: string;
   }
 ) {
-  const session = await prisma.session.findUnique({
-    where: { id: sessionId },
-    select: { cohortId: true },
-  });
-  if (!session) throw new Error("Sessão não encontrada.");
-  await assertMentorOfCohort(session.cohortId);
+  await assertMentorOfSession(sessionId);
   return prisma.session.update({
     where: { id: sessionId },
     data: {
@@ -121,17 +173,12 @@ export async function updateSession(
 
 export async function setAttendance(
   sessionId: string,
-  membershipId: string,
+  userId: string,
   attended: boolean
 ) {
-  const session = await prisma.session.findUnique({
-    where: { id: sessionId },
-    select: { cohortId: true },
-  });
-  if (!session) throw new Error("Sessão não encontrada.");
-  await assertMentorOfCohort(session.cohortId);
+  await assertMentorOfSession(sessionId);
   return prisma.sessionAttendee.update({
-    where: { sessionId_membershipId: { sessionId, membershipId } },
+    where: { sessionId_userId: { sessionId, userId } },
     data: { attended },
   });
 }

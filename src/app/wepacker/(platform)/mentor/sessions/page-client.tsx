@@ -19,12 +19,12 @@ const STATUS_LABELS: Record<SessionStatus, string> = {
 interface AttendeeRow {
   id: string;
   attended: boolean;
-  membership: { id: string; user: { id: string; name: string } };
+  user: { id: string; name: string };
 }
 
 interface SessionRow {
   id: string;
-  cohortId: string;
+  cohortId: string | null;
   sessionType: SessionType;
   scheduledAt: string;
   durationMinutes: number;
@@ -49,9 +49,17 @@ interface CohortRow {
   memberships: CohortMembershipRow[];
 }
 
+// A mentored person, independent of any specific Journey — used to
+// populate the participant picker when a session isn't tied to a Pack.
+interface MentoredMemberRow {
+  id: string;
+  name: string;
+}
+
 interface MentorSessionsProps {
   sessions: SessionRow[];
   cohorts: CohortRow[];
+  members: MentoredMemberRow[];
 }
 
 function toDatetimeLocalValue(date: Date): string {
@@ -61,7 +69,11 @@ function toDatetimeLocalValue(date: Date): string {
   )}:${pad(date.getMinutes())}`;
 }
 
-export function MentorSessionsClient({ sessions: rawSessions, cohorts }: MentorSessionsProps) {
+export function MentorSessionsClient({
+  sessions: rawSessions,
+  cohorts,
+  members,
+}: MentorSessionsProps) {
   const router = useRouter();
   const [showCreate, setShowCreate] = useState(false);
 
@@ -70,6 +82,9 @@ export function MentorSessionsClient({ sessions: rawSessions, cohorts }: MentorS
   );
 
   // ===== Create form state =====
+  // A Pack/Journey is just a community/context — most sessions are a
+  // personal mentoring relationship, so associating one is opt-in.
+  const [associateCohort, setAssociateCohort] = useState(false);
   const [cohortId, setCohortId] = useState(cohorts[0]?.id ?? "");
   const [sessionType, setSessionType] = useState<SessionType>("individual");
   const [scheduledAt, setScheduledAt] = useState(toDatetimeLocalValue(new Date()));
@@ -80,18 +95,28 @@ export function MentorSessionsClient({ sessions: rawSessions, cohorts }: MentorS
   const [createError, setCreateError] = useState<string | null>(null);
 
   const selectedCohort = cohorts.find((c) => c.id === cohortId);
-  const cohortMembers = (selectedCohort?.memberships ?? []).filter(
-    (m) => m.role === "member"
-  );
+  // Participants are always identified by userId — from the selected
+  // Journey's memberships when one is associated, or from every person
+  // the mentor mentors otherwise.
+  const participantOptions = associateCohort
+    ? (selectedCohort?.memberships ?? [])
+        .filter((m) => m.role === "member")
+        .map((m) => ({ userId: m.user.id, name: m.user.name }))
+    : members.map((m) => ({ userId: m.id, name: m.name }));
 
-  function toggleAttendee(id: string) {
+  function toggleAttendee(userId: string) {
     setAttendeeIds((prev) =>
-      prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]
+      prev.includes(userId) ? prev.filter((a) => a !== userId) : [...prev, userId]
     );
   }
 
+  function toggleAssociateCohort(checked: boolean) {
+    setAssociateCohort(checked);
+    setAttendeeIds([]);
+  }
+
   async function handleCreate() {
-    if (!cohortId) {
+    if (associateCohort && !cohortId) {
       setCreateError("Escolhe uma Journey.");
       return;
     }
@@ -103,12 +128,12 @@ export function MentorSessionsClient({ sessions: rawSessions, cohorts }: MentorS
     setCreateError(null);
     try {
       await createSession({
-        cohortId,
+        cohortId: associateCohort ? cohortId : undefined,
         sessionType,
         scheduledAt: new Date(scheduledAt).toISOString(),
         durationMinutes,
         discussionPoints: discussionPoints.trim() || undefined,
-        attendeeMembershipIds: attendeeIds,
+        attendeeUserIds: attendeeIds,
       });
       setShowCreate(false);
       setDiscussionPoints("");
@@ -162,9 +187,9 @@ export function MentorSessionsClient({ sessions: rawSessions, cohorts }: MentorS
     }
   }
 
-  async function handleAttendance(sessionId: string, membershipId: string, attended: boolean) {
+  async function handleAttendance(sessionId: string, userId: string, attended: boolean) {
     try {
-      await setAttendance(sessionId, membershipId, attended);
+      await setAttendance(sessionId, userId, attended);
       router.refresh();
     } catch (e) {
       console.error("Failed to update attendance:", e);
@@ -193,24 +218,34 @@ export function MentorSessionsClient({ sessions: rawSessions, cohorts }: MentorS
       {showCreate && (
         <div className="mt-6 border border-wepac-white/20 bg-wepac-card p-6">
           <h3 className="text-sm font-bold text-wepac-white">Criar Sessão</h3>
+          <label className="mt-4 flex items-center gap-1.5 text-xs text-wepac-text-tertiary">
+            <input
+              type="checkbox"
+              checked={associateCohort}
+              onChange={(e) => toggleAssociateCohort(e.target.checked)}
+            />
+            Associar a uma Journey específica
+          </label>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label className="block text-xs text-wepac-text-tertiary">Journey</label>
-              <select
-                value={cohortId}
-                onChange={(e) => {
-                  setCohortId(e.target.value);
-                  setAttendeeIds([]);
-                }}
-                className="mt-1 w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white"
-              >
-                {cohorts.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.pack.name} — {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {associateCohort && (
+              <div>
+                <label className="block text-xs text-wepac-text-tertiary">Journey</label>
+                <select
+                  value={cohortId}
+                  onChange={(e) => {
+                    setCohortId(e.target.value);
+                    setAttendeeIds([]);
+                  }}
+                  className="mt-1 w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white"
+                >
+                  {cohorts.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.pack.name} — {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div>
               <label className="block text-xs text-wepac-text-tertiary">Tipo</label>
               <select
@@ -249,23 +284,25 @@ export function MentorSessionsClient({ sessions: rawSessions, cohorts }: MentorS
                 Participantes
               </label>
               <div className="mt-1 flex flex-wrap gap-2">
-                {cohortMembers.map((m) => (
+                {participantOptions.map((m) => (
                   <button
-                    key={m.id}
+                    key={m.userId}
                     type="button"
-                    onClick={() => toggleAttendee(m.id)}
+                    onClick={() => toggleAttendee(m.userId)}
                     className={`px-3 py-1.5 text-xs transition-colors ${
-                      attendeeIds.includes(m.id)
+                      attendeeIds.includes(m.userId)
                         ? "bg-wepac-white text-wepac-black"
                         : "bg-wepac-input text-wepac-text-tertiary"
                     }`}
                   >
-                    {m.user.name}
+                    {m.name}
                   </button>
                 ))}
-                {cohortMembers.length === 0 && (
+                {participantOptions.length === 0 && (
                   <p className="text-xs text-wepac-text-tertiary">
-                    Sem membros nesta cohort.
+                    {associateCohort
+                      ? "Sem membros nesta Journey."
+                      : "Sem pessoas mentoradas."}
                   </p>
                 )}
               </div>
@@ -306,7 +343,7 @@ export function MentorSessionsClient({ sessions: rawSessions, cohorts }: MentorS
       <div className="mt-8 space-y-3">
         {sessions.map((session) => {
           const attendeeNames = session.attendees
-            .map((a) => a.membership.user.name)
+            .map((a) => a.user.name)
             .join(", ");
           const isEditing = editingId === session.id;
           return (
@@ -369,10 +406,10 @@ export function MentorSessionsClient({ sessions: rawSessions, cohorts }: MentorS
                       type="checkbox"
                       checked={a.attended}
                       onChange={(e) =>
-                        handleAttendance(session.id, a.membership.id, e.target.checked)
+                        handleAttendance(session.id, a.user.id, e.target.checked)
                       }
                     />
-                    {a.membership.user.name}
+                    {a.user.name}
                   </label>
                 ))}
               </div>

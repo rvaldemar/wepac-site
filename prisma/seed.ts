@@ -379,22 +379,22 @@ async function main() {
   const s1 = await prisma.session.create({
     data: { cohortId: cohortAlpha.id, mentorId: m1.id, sessionType: "individual", scheduledAt: new Date("2026-01-22T10:00:00Z"), durationMinutes: 60, status: "completed", notes: "Sessão de diagnóstico inicial. Ana demonstra forte consciência técnica mas revela fragilidade na clareza de propósito e visão estratégica. Boa receptividade ao feedback.", notesPublished: true, discussionPoints: "Diagnóstico inicial, expectativas do programa, objectivos pessoais" },
   });
-  await prisma.sessionAttendee.create({ data: { sessionId: s1.id, membershipId: mem1.id, attended: true } });
+  await prisma.sessionAttendee.create({ data: { sessionId: s1.id, userId: u1.id, attended: true } });
 
   const s2 = await prisma.session.create({
     data: { cohortId: cohortAlpha.id, mentorId: m1.id, sessionType: "group", scheduledAt: new Date("2026-02-05T14:00:00Z"), durationMinutes: 90, status: "completed", notes: "Sessão de grupo sobre identidade artística. Exercício de posicionamento. Todos os membros participaram activamente.", notesPublished: true, discussionPoints: "Identidade artística, posicionamento, exercício de elevator pitch" },
   });
-  await prisma.sessionAttendee.createMany({ data: [{ sessionId: s2.id, membershipId: mem1.id, attended: true }, { sessionId: s2.id, membershipId: mem2.id, attended: true }, { sessionId: s2.id, membershipId: mem3.id, attended: true }] });
+  await prisma.sessionAttendee.createMany({ data: [{ sessionId: s2.id, userId: u1.id, attended: true }, { sessionId: s2.id, userId: u2.id, attended: true }, { sessionId: s2.id, userId: u3.id, attended: true }] });
 
   const s3 = await prisma.session.create({
     data: { cohortId: cohortAlpha.id, mentorId: m1.id, sessionType: "individual", scheduledAt: new Date("2026-03-12T10:00:00Z"), durationMinutes: 60, status: "completed", notes: "Revisão de progresso. Ana está a evoluir bem no planeamento. Precisa de mais trabalho na componente espiritual — clareza de propósito.", notesPublished: true, discussionPoints: "Revisão de progresso, plano estratégico, próximos passos" },
   });
-  await prisma.sessionAttendee.create({ data: { sessionId: s3.id, membershipId: mem1.id, attended: true } });
+  await prisma.sessionAttendee.create({ data: { sessionId: s3.id, userId: u1.id, attended: true } });
 
   const s4 = await prisma.session.create({
     data: { cohortId: cohortAlpha.id, mentorId: m1.id, sessionType: "individual", scheduledAt: new Date("2026-08-26T10:00:00Z"), durationMinutes: 60, status: "scheduled", notesPublished: false },
   });
-  await prisma.sessionAttendee.create({ data: { sessionId: s4.id, membershipId: mem1.id, attended: false } });
+  await prisma.sessionAttendee.create({ data: { sessionId: s4.id, userId: u1.id, attended: false } });
 
   // ===== CONVERSATIONS =====
   const c1 = await prisma.conversation.create({ data: {} });

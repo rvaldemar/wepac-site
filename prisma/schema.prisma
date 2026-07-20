@@ -177,7 +177,6 @@ model CohortMembership {
   cohort             Cohort            @relation(fields: [cohortId], references: [id], onDelete: Cascade)
   user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   tasks              Task[]
-  sessionAttendances SessionAttendee[]
 
   @@unique([cohortId, userId])
   @@index([userId])
@@ -210,6 +209,7 @@ model User {
   trails              Trail[]
   tasksAssigned       Task[]                    @relation("TaskAssigner")
   sessionsMentored    Session[]
+  sessionAttendances  SessionAttendee[]
   conversationLinks   ConversationParticipant[]
   messages            Message[]
   comments            Comment[]
@@ -386,9 +386,15 @@ model Task {
   @@map("tasks")
 }
 
+// A Session is a mentoring session with a person (or a group of people).
+// It can optionally sit inside a Pack/Journey (`cohortId`), but a Pack is
+// just a community/context — most mentoring is a personal relationship,
+// not a Journey-scoped category, so `cohortId` is optional. Attendees are
+// people (`User`), not pack enrollments, so the same session model works
+// whether or not it belongs to a cohort.
 model Session {
   id               String        @id @default(cuid())
-  cohortId         String
+  cohortId         String?
   mentorId         String
   sessionType      SessionType
   scheduledAt      DateTime
@@ -398,7 +404,7 @@ model Session {
   notesPublished   Boolean       @default(false)
   discussionPoints String?
 
-  cohort    Cohort            @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  cohort    Cohort?           @relation(fields: [cohortId], references: [id], onDelete: Cascade)
   mentor    User              @relation(fields: [mentorId], references: [id], onDelete: Cascade)
   attendees SessionAttendee[]
 
@@ -406,15 +412,15 @@ model Session {
 }
 
 model SessionAttendee {
-  id           String  @id @default(cuid())
-  sessionId    String
-  membershipId String
-  attended     Boolean @default(false)
+  id        String  @id @default(cuid())
+  sessionId String
+  userId    String
+  attended  Boolean @default(false)
 
-  session    Session          @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  membership CohortMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([sessionId, membershipId])
+  @@unique([sessionId, userId])
   @@map("session_attendees")
 }
 
