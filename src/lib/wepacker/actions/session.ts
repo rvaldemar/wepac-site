@@ -57,10 +57,15 @@ type OwnAttendeeSession = {
 };
 
 // A member should only ever see their shared note once the mentor has
-// published it — hide it otherwise, even though it was fetched.
-function maskUnpublishedNotes<T extends OwnAttendeeSession>(session: T): T {
+// published it — hide it otherwise, even though it was fetched. The same
+// applies to the legacy session-level notes blob: unpublished notes must
+// not cross the server/client boundary at all.
+function maskUnpublishedNotes<
+  T extends OwnAttendeeSession & { notes: string | null; notesPublished: boolean },
+>(session: T): T {
   return {
     ...session,
+    notes: session.notesPublished ? session.notes : null,
     attendees: session.attendees.map((a) =>
       a.sharedNotePublished ? a : { ...a, sharedNote: null }
     ),
