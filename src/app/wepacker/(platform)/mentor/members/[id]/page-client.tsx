@@ -122,7 +122,7 @@ interface TaskRow {
 interface MentorMemberDetailProps {
   membership: MembershipDetail;
   currentScores: Record<AreaKey, AreaScoreAvg>;
-  previousScores: Record<AreaKey, AreaScoreAvg>;
+  previousScores: Record<AreaKey, AreaScoreAvg> | null;
   areaLabels: Record<AreaKey, string>;
   evaluations: EvaluationRow[];
   lifePlan: LifePlanRow | null;
@@ -147,9 +147,11 @@ export function MentorMemberDetailClient({
   const currentRadar = Object.fromEntries(
     AREA_KEYS.map((k) => [k, currentScores[k]?.composite || 1])
   ) as Record<AreaKey, number>;
-  const previousRadar = Object.fromEntries(
-    AREA_KEYS.map((k) => [k, previousScores[k]?.composite || 1])
-  ) as Record<AreaKey, number>;
+  const previousRadar = previousScores
+    ? (Object.fromEntries(
+        AREA_KEYS.map((k) => [k, previousScores[k]?.composite || 1])
+      ) as Record<AreaKey, number>)
+    : null;
 
   const latestMap = strategicMapScores[strategicMapScores.length - 1] ?? null;
 
@@ -352,9 +354,19 @@ export function MentorMemberDetailClient({
               Avaliar →
             </Link>
           </div>
+          <div className="mt-1 flex gap-4 text-xs text-wepac-text-tertiary">
+            <span className="flex items-center gap-1">
+              <span className="inline-block h-2 w-4 bg-wepac-white/20" /> Actual
+            </span>
+            {previousRadar && (
+              <span className="flex items-center gap-1">
+                <span className="inline-block h-2 w-4 border border-dashed border-wepac-border" /> Anterior
+              </span>
+            )}
+          </div>
           <RadarChart
             currentValues={currentRadar}
-            previousValues={previousRadar}
+            previousValues={previousRadar ?? undefined}
             areaLabels={areaLabels}
             className="mx-auto mt-4 w-full max-w-xs"
             size={300}

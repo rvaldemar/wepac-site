@@ -7,7 +7,7 @@ import {
   getStrategicMapScores,
 } from "@/lib/wepacker/actions/plan";
 import { getTasksForMembership } from "@/lib/wepacker/actions/task";
-import { AREA_KEYS, AREA_LABELS, type AreaKey } from "@/lib/wepacker/types";
+import { AREA_LABELS, type AreaKey } from "@/lib/wepacker/types";
 import { MentorMemberDetailClient } from "./page-client";
 
 // Dates coming out of Prisma need to cross the server/client boundary as
@@ -19,6 +19,9 @@ function serialize(data: unknown): any {
 }
 
 type AreaScoreAvg = { selfAvg: number; mentorAvg: number; composite: number };
+
+// Chronological order — mirrors the member dashboard's moment handling.
+const MOMENTS = ["entry", "mid", "exit"] as const;
 
 export default async function MentorMemberDetailPage({
   params,
@@ -34,27 +37,26 @@ export default async function MentorMemberDetailPage({
   // membership-scoped (`id`), the rest keys off `detail.user.id`.
   const userId = detail.user.id;
 
-  const empty: AreaScoreAvg = { selfAvg: 0, mentorAvg: 0, composite: 0 };
-  const emptyScores = Object.fromEntries(
-    AREA_KEYS.map((k) => [k, empty])
-  ) as Record<AreaKey, AreaScoreAvg>;
+  const evaluations = await getEvaluations(userId);
+  // "Actual" = the most recent moment that actually has a self or mentor
+  // evaluation; "Anterior" = the one before it, if any. Was previously
+  // hardcoded to mid/entry, which showed an all-zero "Actual" radar for
+  // every member who has only completed the entry self-assessment (the
+  // common case — mid only exists after a mentor's mid-point evaluation
+  // session). Mirrors the fix applied to the member's own dashboard.
+  const availableMoments = MOMENTS.filter((m) =>
+    evaluations.some((e) => e.moment === m)
+  );
+  const currentMoment = availableMoments[availableMoments.length - 1] ?? "entry";
+  const previousMoment =
+    availableMoments.length > 1
+      ? availableMoments[availableMoments.length - 2]
+      : null;
 
-  let currentScores: Record<AreaKey, AreaScoreAvg> = emptyScores;
-  let previousScores: Record<AreaKey, AreaScoreAvg> = emptyScores;
-  try {
-    const [current, previous] = await Promise.all([
-      computeAreaScores(userId, "mid"),
-      computeAreaScores(userId, "entry"),
-    ]);
-    currentScores = current as Record<AreaKey, AreaScoreAvg>;
-    previousScores = previous as Record<AreaKey, AreaScoreAvg>;
-  } catch {
-    // keep defaults
-  }
-
-  const [evaluations, lifePlan, strategicPlan, strategicMapScores, tasks] =
+  const [currentScores, previousScores, lifePlan, strategicPlan, strategicMapScores, tasks] =
     await Promise.all([
-      getEvaluations(userId),
+      computeAreaScores(userId, currentMoment),
+      previousMoment ? computeAreaScores(userId, previousMoment) : null,
       getLifePlan(userId),
       getStrategicPlan(userId),
       getStrategicMapScores(userId),
@@ -66,8 +68,8 @@ export default async function MentorMemberDetailPage({
   return (
     <MentorMemberDetailClient
       membership={serialize(detail)}
-      currentScores={currentScores}
-      previousScores={previousScores}
+      currentScores={currentScores as Record<AreaKey, AreaScoreAvg>}
+      previousScores={previousScores as Record<AreaKey, AreaScoreAvg> | null}
       areaLabels={areaLabels}
       evaluations={serialize(evaluations)}
       lifePlan={serialize(lifePlan)}
