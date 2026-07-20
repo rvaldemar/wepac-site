@@ -116,7 +116,9 @@ export default async function DashboardPage() {
       user={{ name: user.name }}
       membership={membership}
       currentScores={currentScores}
+      currentMoment={currentMoment}
       previousScores={previousScores}
+      previousMoment={previousMoment}
       indicatorScores={indicatorScores}
       strategicMapScores={serializedStrategicMapScores}
       pendingTasks={pendingTasks}

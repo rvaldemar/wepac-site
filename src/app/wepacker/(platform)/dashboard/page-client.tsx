@@ -21,13 +21,21 @@ const PHASES: Array<keyof typeof PHASE_LABELS> = [
   "consolidation",
 ];
 
+const MOMENT_LABELS: Record<"entry" | "mid" | "exit", string> = {
+  entry: "Avaliação inicial",
+  mid: "Avaliação intermédia",
+  exit: "Avaliação final",
+};
+
 type AreaScores = Record<string, { selfAvg: number; mentorAvg: number; composite: number }>;
 
 interface Props {
   user: { name: string };
   membership: MembershipContext;
   currentScores: AreaScores;
+  currentMoment: "entry" | "mid" | "exit";
   previousScores: AreaScores | null;
+  previousMoment: "entry" | "mid" | "exit" | null;
   indicatorScores: Record<string, Record<string, { selfScore: number; mentorScore: number; composite: number }>>;
   strategicMapScores: Array<{
     longTermScore: number;
@@ -63,7 +71,9 @@ export default function DashboardPageClient({
   user,
   membership,
   currentScores,
+  currentMoment,
   previousScores,
+  previousMoment,
   indicatorScores,
   strategicMapScores,
   pendingTasks,
@@ -120,11 +130,13 @@ export default function DashboardPageClient({
           </h2>
           <div className="mt-1 flex gap-4 text-xs text-wepac-text-tertiary">
             <span className="flex items-center gap-1">
-              <span className="inline-block h-2 w-4 bg-wepac-white/20" /> Actual
+              <span className="inline-block h-2 w-4 bg-wepac-white/20" />{" "}
+              {MOMENT_LABELS[currentMoment]}
             </span>
-            {previousRadar && (
+            {previousRadar && previousMoment && (
               <span className="flex items-center gap-1">
-                <span className="inline-block h-2 w-4 border border-dashed border-wepac-border" /> Anterior
+                <span className="inline-block h-2 w-4 border border-dashed border-wepac-border" />{" "}
+                {MOMENT_LABELS[previousMoment]}
               </span>
             )}
           </div>
