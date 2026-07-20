@@ -3,6 +3,7 @@
 import { useState, FormEvent, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { FadeIn } from "@/components/FadeIn";
+import { submitContactLead } from "@/lib/wepacker/actions/contact";
 
 function ContactoContent() {
   const params = useSearchParams();
@@ -43,21 +44,33 @@ function ContactoContent() {
     const form = e.currentTarget;
     const data = new FormData(form);
 
-    try {
-      const res = await fetch("https://formsubmit.co/ajax/info@wepac.pt", {
+    // Persist to the central leads inbox and send the formsubmit email in
+    // parallel — success if either lands, so neither is a single point of
+    // failure.
+    const [dbResult, mailResult] = await Promise.allSettled([
+      submitContactLead({
+        name: (data.get("name") as string) || "",
+        email: (data.get("email") as string) || "",
+        subject: (data.get("subject") as string) || undefined,
+        message: (data.get("message") as string) || "",
+        ensemble: (data.get("ensemble") as string) || undefined,
+        service: (data.get("service") as string) || undefined,
+        total: (data.get("total") as string) || undefined,
+      }),
+      fetch("https://formsubmit.co/ajax/info@wepac.pt", {
         method: "POST",
         body: data,
-      });
-      if (res.ok) {
-        setSubmitted(true);
-      } else {
-        setError(true);
-      }
-    } catch {
+      }).then((res) => {
+        if (!res.ok) throw new Error("formsubmit failed");
+      }),
+    ]);
+
+    if (dbResult.status === "fulfilled" || mailResult.status === "fulfilled") {
+      setSubmitted(true);
+    } else {
       setError(true);
-    } finally {
-      setSending(false);
     }
+    setSending(false);
   }
 
   return (

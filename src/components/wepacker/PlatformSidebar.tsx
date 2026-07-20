@@ -26,7 +26,6 @@ const mentorNav = [
 const adminNav = [
   { label: "Utilizadores", href: "/wepacker/admin/users", icon: "◉" },
   { label: "Cohorts", href: "/wepacker/admin/cohorts", icon: "▣" },
-  { label: "Candidaturas", href: "/wepacker/admin/applications", icon: "✦" },
   { label: "Leads", href: "/wepacker/admin/leads", icon: "◈" },
   { label: "Configurações", href: "/wepacker/admin/settings", icon: "⚙" },
 ];

@@ -445,6 +445,7 @@ enum LeadStatus {
 enum LeadSource {
   chat
   form
+  contact
 }
 
 model Lead {

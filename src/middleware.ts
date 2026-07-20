@@ -22,7 +22,7 @@ function legacyRedirect(pathname: string): string | null {
     return "/wepacker/mentor/members/" + rest.slice("/mentor/artists/".length);
   }
   if (rest.startsWith("/admin/beta-signups")) {
-    return "/wepacker/admin/applications";
+    return "/wepacker/admin/leads";
   }
   if (rest === "" || rest === "/") return "/wepacker";
   return "/wepacker" + rest;

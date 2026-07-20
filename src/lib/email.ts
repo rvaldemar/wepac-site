@@ -184,7 +184,7 @@ export async function sendBetaSignupNotificationEmail(name: string, email: strin
       <p><strong>Email:</strong> ${email}</p>
       ${artisticArea ? `<p><strong>Área:</strong> ${artisticArea}</p>` : ""}
       <p style="margin-top: 16px;">
-        <a href="https://wepac.pt/wepacker/admin/applications" style="color: #000; font-weight: bold;">
+        <a href="https://wepac.pt/wepacker/admin/leads" style="color: #000; font-weight: bold;">
           Ver no painel →
         </a>
       </p>
