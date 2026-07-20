@@ -148,7 +148,7 @@ export default async function WepackerLandingPage() {
       <section id="packs" className="scroll-mt-16 px-6 py-16 lg:px-12 lg:py-24">
         <div className="mx-auto max-w-5xl">
           <p className="text-center text-xs font-medium uppercase tracking-[0.2em] text-wepac-gray">
-            Percursos
+            Packs
           </p>
           <h2 className="mt-3 text-center font-barlow text-3xl font-bold text-wepac-white md:text-4xl">
             Escolhe o teu caminho
@@ -200,6 +200,7 @@ export default async function WepackerLandingPage() {
       <footer className="border-t border-wepac-border px-6 py-12 lg:px-12">
         <div className="mx-auto flex max-w-4xl flex-col items-center gap-4 text-center">
           <span className="font-barlow text-2xl font-bold text-wepac-white">WEPACKER</span>
+          <p className="text-xs font-bold text-wepac-text-secondary">From packers to WEPACkers.</p>
           <p className="text-xs text-wepac-text-tertiary">WEPAC</p>
           <Link
             href="/wepacker/login"
