@@ -27,7 +27,7 @@ interface Props {
   user: { name: string };
   membership: MembershipContext;
   currentScores: AreaScores;
-  previousScores: AreaScores;
+  previousScores: AreaScores | null;
   indicatorScores: Record<string, Record<string, { selfScore: number; mentorScore: number; composite: number }>>;
   strategicMapScores: Array<{
     longTermScore: number;
@@ -77,9 +77,11 @@ export default function DashboardPageClient({
   const currentRadar = Object.fromEntries(
     Object.entries(currentScores).map(([k, v]) => [k, v.composite])
   ) as Record<AreaKey, number>;
-  const previousRadar = Object.fromEntries(
-    Object.entries(previousScores).map(([k, v]) => [k, v.composite])
-  ) as Record<AreaKey, number>;
+  const previousRadar = previousScores
+    ? (Object.fromEntries(
+        Object.entries(previousScores).map(([k, v]) => [k, v.composite])
+      ) as Record<AreaKey, number>)
+    : null;
 
   // Strategic map
   const latestMap = strategicMapScores[strategicMapScores.length - 1];
@@ -118,13 +120,15 @@ export default function DashboardPageClient({
             <span className="flex items-center gap-1">
               <span className="inline-block h-2 w-4 bg-wepac-white/20" /> Actual
             </span>
-            <span className="flex items-center gap-1">
-              <span className="inline-block h-2 w-4 border border-dashed border-wepac-border" /> Anterior
-            </span>
+            {previousRadar && (
+              <span className="flex items-center gap-1">
+                <span className="inline-block h-2 w-4 border border-dashed border-wepac-border" /> Anterior
+              </span>
+            )}
           </div>
           <RadarChart
             currentValues={currentRadar}
-            previousValues={previousRadar}
+            previousValues={previousRadar ?? undefined}
             areaLabels={areaLabels}
             onAreaClick={(area) => setSelectedArea(area === selectedArea ? null : area)}
             className="mx-auto mt-4 w-full max-w-sm"

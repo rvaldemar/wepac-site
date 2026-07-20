@@ -1,11 +1,18 @@
 import { requirePageUser } from "@/lib/wepacker/page-guards";
 import { getMyContext } from "@/lib/wepacker/actions/user";
-import { computeAreaScores, getIndicatorScores } from "@/lib/wepacker/actions/evaluation";
+import {
+  computeAreaScores,
+  getEvaluations,
+  getIndicatorScores,
+} from "@/lib/wepacker/actions/evaluation";
 import { getStrategicMapScores } from "@/lib/wepacker/actions/plan";
 import { getMyTasks } from "@/lib/wepacker/actions/task";
 import { getNextSession } from "@/lib/wepacker/actions/session";
 import { getMyConversations } from "@/lib/wepacker/actions/message";
 import DashboardPageClient from "./page-client";
+
+// Chronological order — mirrors the diagnosis page's moment handling.
+const MOMENTS = ["entry", "mid", "exit"] as const;
 
 export default async function DashboardPage() {
   await requirePageUser();
@@ -27,11 +34,27 @@ export default async function DashboardPage() {
 
   const membershipId = membership.membershipId;
 
+  const evaluations = await getEvaluations(membershipId);
+  // "Actual" = the most recent moment that actually has a self or mentor
+  // evaluation; "Anterior" = the one before it, if any. Was previously
+  // hardcoded to mid/entry, which showed an all-zero "Actual" radar for
+  // every member who has only completed the entry self-assessment
+  // (the common case — mid only exists after a mentor's mid-point
+  // evaluation session).
+  const availableMoments = MOMENTS.filter((m) =>
+    evaluations.some((e) => e.moment === m)
+  );
+  const currentMoment = availableMoments[availableMoments.length - 1] ?? "entry";
+  const previousMoment =
+    availableMoments.length > 1
+      ? availableMoments[availableMoments.length - 2]
+      : null;
+
   const [currentScores, previousScores, indicatorScores, strategicMapScores, allTasks, nextSession, conversations] =
     await Promise.all([
-      computeAreaScores(membershipId, "mid"),
-      computeAreaScores(membershipId, "entry"),
-      getIndicatorScores(membershipId, "mid"),
+      computeAreaScores(membershipId, currentMoment),
+      previousMoment ? computeAreaScores(membershipId, previousMoment) : null,
+      getIndicatorScores(membershipId, currentMoment),
       getStrategicMapScores(membershipId),
       getMyTasks(),
       getNextSession(),
