@@ -26,10 +26,25 @@ export async function upsertLifePlan(
   }
 ) {
   await assertUserOwner(userId);
-  return prisma.lifePlan.upsert({
-    where: { userId },
-    update: data,
-    create: { userId, ...data },
+  return prisma.$transaction(async (tx) => {
+    const previous = await tx.lifePlan.findUnique({ where: { userId } });
+    if (previous) {
+      await tx.lifePlanVersion.create({
+        data: {
+          userId: previous.userId,
+          whoIAm: previous.whoIAm,
+          whereIAm: previous.whereIAm,
+          whereIGo: previous.whereIGo,
+          whyIDo: previous.whyIDo,
+          commitments: previous.commitments,
+        },
+      });
+    }
+    return tx.lifePlan.upsert({
+      where: { userId },
+      update: data,
+      create: { userId, ...data },
+    });
   });
 }
 
