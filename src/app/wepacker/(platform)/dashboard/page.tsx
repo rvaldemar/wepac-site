@@ -7,7 +7,7 @@ import {
 } from "@/lib/wepacker/actions/evaluation";
 import { getStrategicMapScores } from "@/lib/wepacker/actions/plan";
 import { getMyTasks } from "@/lib/wepacker/actions/task";
-import { getNextSession } from "@/lib/wepacker/actions/session";
+import { getMySessions, getNextSession } from "@/lib/wepacker/actions/session";
 import { getMyConversations } from "@/lib/wepacker/actions/message";
 import { getTrails } from "@/lib/wepacker/actions/trail";
 import DashboardPageClient from "./page-client";
@@ -51,7 +51,7 @@ export default async function DashboardPage() {
       ? availableMoments[availableMoments.length - 2]
       : null;
 
-  const [currentScores, previousScores, indicatorScores, strategicMapScores, allTasks, nextSession, conversations, trails] =
+  const [currentScores, previousScores, indicatorScores, strategicMapScores, allTasks, nextSession, mySessions, conversations, trails] =
     await Promise.all([
       computeAreaScores(userId, currentMoment),
       previousMoment ? computeAreaScores(userId, previousMoment) : null,
@@ -59,6 +59,7 @@ export default async function DashboardPage() {
       getStrategicMapScores(userId),
       getMyTasks(),
       getNextSession(),
+      getMySessions(),
       getMyConversations(),
       getTrails(userId),
     ]);
@@ -86,6 +87,15 @@ export default async function DashboardPage() {
         durationMinutes: nextSession.durationMinutes,
       }
     : null;
+
+  // Minimal shape for the trail visualization — chronology + status/type
+  // only, no notes/outcomes (those never need to leave the sessions page).
+  const serializedSessions = mySessions.map((s) => ({
+    id: s.id,
+    scheduledAt: s.scheduledAt.toISOString(),
+    status: s.status,
+    sessionType: s.sessionType,
+  }));
 
   const serializedStrategicMapScores = strategicMapScores.map((s) => ({
     longTermScore: s.longTermScore,
@@ -124,6 +134,7 @@ export default async function DashboardPage() {
       pendingTasks={pendingTasks}
       activeTrails={activeTrails}
       nextSession={serializedNextSession}
+      sessions={serializedSessions}
       latestMessage={
         latestMessage
           ? {

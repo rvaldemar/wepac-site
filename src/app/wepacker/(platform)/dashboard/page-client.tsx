@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { RadarChart } from "@/components/wepacker/RadarChart";
 import { StrategicRadar } from "@/components/wepacker/StrategicRadar";
+import { ExpeditionTrail, type ExpeditionSession } from "@/components/wepacker/ExpeditionTrail";
 import {
   AREA_LABELS,
   getIndicators,
@@ -57,6 +58,7 @@ interface Props {
     sessionType: string;
     durationMinutes: number;
   } | null;
+  sessions: ExpeditionSession[];
   latestMessage: {
     id: string;
     body: string;
@@ -79,6 +81,7 @@ export default function DashboardPageClient({
   pendingTasks,
   activeTrails,
   nextSession,
+  sessions,
   latestMessage,
   quarterWeek,
 }: Props) {
@@ -104,6 +107,35 @@ export default function DashboardPageClient({
 
   const currentPhaseIdx = PHASES.indexOf(membership.currentPhase);
 
+  // Compact next-action line: the single most useful thing to do next,
+  // in priority order — a confirmed session beats a pending task beats a
+  // bare CTA to reach out to the mentor.
+  const nextAction = nextSession ? (
+    <>
+      Próxima sessão:{" "}
+      <span className="text-wepac-white">
+        {new Date(nextSession.scheduledAt).toLocaleDateString("pt-PT", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+        })}{" "}
+        às{" "}
+        {new Date(nextSession.scheduledAt).toLocaleTimeString("pt-PT", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })}
+      </span>
+    </>
+  ) : pendingTasks[0] ? (
+    <>
+      Próxima ação: <span className="text-wepac-white">{pendingTasks[0].title}</span>
+    </>
+  ) : (
+    <Link href="/wepacker/messages" className="text-wepac-white hover:underline">
+      Marca uma conversa com o teu mentor →
+    </Link>
+  );
+
   return (
     <div className="p-6 lg:p-8">
       {/* Header */}
@@ -119,6 +151,12 @@ export default function DashboardPageClient({
             </span>
           </div>
         </div>
+      </div>
+
+      {/* Expedition Trail */}
+      <div className="mt-8">
+        <ExpeditionTrail sessions={sessions} />
+        <p className="mt-3 text-sm text-wepac-text-tertiary">{nextAction}</p>
       </div>
 
       {/* Radars */}
