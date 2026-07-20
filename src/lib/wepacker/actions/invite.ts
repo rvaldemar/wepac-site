@@ -35,6 +35,25 @@ export async function acceptInvite(token: string, password: string) {
       inviteExpiresAt: null,
     },
   });
+
+  // Best effort: close the loop candidatura -> convite -> conta criada.
+  // Matched by email (unique on BetaSignup) — a missing/already-rejected
+  // application never blocks account creation.
+  try {
+    const application = await prisma.betaSignup.findUnique({
+      where: { email: user.email },
+      select: { status: true },
+    });
+    if (application && application.status !== "rejected") {
+      await prisma.betaSignup.update({
+        where: { email: user.email },
+        data: { status: "joined" },
+      });
+    }
+  } catch (e) {
+    console.error("Failed to auto-advance application status on join:", e);
+  }
+
   return { userId: user.id };
 }
 

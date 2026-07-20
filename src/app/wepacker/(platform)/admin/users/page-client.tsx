@@ -54,7 +54,12 @@ interface AdminUsersPageProps {
   users: AdminUser[];
   cohorts: CohortSummary[];
   currentUserId: string;
-  prefill?: { name: string; email: string; phone: string } | null;
+  prefill?: {
+    name: string;
+    email: string;
+    phone: string;
+    applicationId?: string;
+  } | null;
 }
 
 function buildWhatsappUrl(name: string, phone: string, inviteUrl: string) {
@@ -76,6 +81,7 @@ export function AdminUsersPageClient({
   const [inviteEmail, setInviteEmail] = useState(prefill?.email ?? "");
   const [invitePhone, setInvitePhone] = useState(prefill?.phone ?? "");
   const [inviteRole, setInviteRole] = useState<UserRole>("member");
+  const [inviteMessage, setInviteMessage] = useState("");
   const [inviteMemberships, setInviteMemberships] = useState<
     { cohortId: string; role: MembershipRole }[]
   >([]);
@@ -117,6 +123,7 @@ export function AdminUsersPageClient({
     setInviteEmail("");
     setInvitePhone("");
     setInviteRole("member");
+    setInviteMessage("");
     setInviteMemberships([]);
     setInviteResult(null);
     setInviteError("");
@@ -141,6 +148,8 @@ export function AdminUsersPageClient({
         email: inviteEmail,
         phone: invitePhone || undefined,
         role: inviteRole,
+        message: inviteMessage.trim() || undefined,
+        applicationId: prefill?.applicationId,
         memberships: inviteMemberships.filter((m) => m.cohortId),
       });
       setInviteResult({ inviteUrl: result.inviteUrl, whatsappUrl: result.whatsappUrl });
@@ -215,6 +224,12 @@ export function AdminUsersPageClient({
             <h2 className="font-barlow text-lg font-bold text-wepac-white">
               Convidar Utilizador
             </h2>
+            {prefill?.applicationId && !inviteResult && (
+              <p className="mt-2 text-xs text-wepac-text-tertiary">
+                Ao enviar, a candidatura de origem passa automaticamente a{" "}
+                <span className="text-wepac-white">Convidado</span>.
+              </p>
+            )}
 
             {inviteResult ? (
               <div className="mt-4 space-y-4">
@@ -298,6 +313,18 @@ export function AdminUsersPageClient({
                     <option value="mentor">Mentor</option>
                     <option value="admin">Admin</option>
                   </select>
+                </div>
+                <div className="sm:col-span-3">
+                  <label className="block text-xs text-wepac-text-tertiary">
+                    Mensagem pessoal (opcional — aparece no email de convite)
+                  </label>
+                  <textarea
+                    value={inviteMessage}
+                    onChange={(e) => setInviteMessage(e.target.value)}
+                    rows={3}
+                    placeholder="Ex.: Vimos a tua candidatura e adorámos o teu percurso — mal podemos esperar para te ter connosco."
+                    className="mt-1 w-full resize-none bg-wepac-input px-3 py-2 text-sm text-wepac-white placeholder-wepac-text-tertiary outline-none focus:ring-1 focus:ring-wepac-white/50"
+                  />
                 </div>
                 {/* Multi-pack / multi-cohort memberships */}
                 <div className="sm:col-span-3">

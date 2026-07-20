@@ -270,12 +270,19 @@ export async function deleteUser(userId: string) {
 
 // Creates a user with an invite token and any number of memberships
 // (multi-pack / multi-cohort), then emails the invite link.
+//
+// When applicationId is set (invite created from an application's
+// "Convidar para a plataforma" CTA), that application auto-advances to
+// "invited" — closing the loop without a manual dropdown change. Best
+// effort: a missing/mismatched application never fails invite creation.
 export async function createInvite(data: {
   name: string;
   email: string;
   phone?: string;
   role: UserRole;
   memberships?: { cohortId: string; role: MembershipRole }[];
+  message?: string;
+  applicationId?: string;
 }) {
   await requireAdmin();
 
@@ -319,9 +326,20 @@ export async function createInvite(data: {
   const inviteUrl = `${appUrl}/wepacker/invite/${token}`;
 
   try {
-    await sendInviteEmail(email, data.name, inviteUrl);
+    await sendInviteEmail(email, data.name, inviteUrl, data.message);
   } catch (e) {
     console.error("Failed to send invite email:", e);
+  }
+
+  if (data.applicationId) {
+    try {
+      await prisma.betaSignup.update({
+        where: { id: data.applicationId },
+        data: { status: "invited" },
+      });
+    } catch (e) {
+      console.error("Failed to auto-advance application status:", e);
+    }
   }
 
   return {

@@ -5,7 +5,12 @@ import { AdminUsersPageClient } from "./page-client";
 export default async function AdminUsersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ name?: string; email?: string; phone?: string }>;
+  searchParams: Promise<{
+    name?: string;
+    email?: string;
+    phone?: string;
+    applicationId?: string;
+  }>;
 }) {
   const currentUser = await requirePageRole(["admin"]);
 
@@ -22,7 +27,12 @@ export default async function AdminUsersPage({
       currentUserId={currentUser.id}
       prefill={
         params.name || params.email
-          ? { name: params.name ?? "", email: params.email ?? "", phone: params.phone ?? "" }
+          ? {
+              name: params.name ?? "",
+              email: params.email ?? "",
+              phone: params.phone ?? "",
+              applicationId: params.applicationId,
+            }
           : null
       }
     />

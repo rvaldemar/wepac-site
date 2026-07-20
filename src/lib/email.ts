@@ -112,6 +112,17 @@ function heading(text: string): string {
   return `<h1 style="margin:0 0 20px; font-family:${FONT_HEADING}; font-weight:700; font-size:26px; line-height:1.25; color:#000000;">${text}</h1>`;
 }
 
+// Free-text admin input (e.g. a personal invite message) lands directly
+// in the HTML — escape it.
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 // WEPACKER emails header with the WEPACKER wordmark, so the footer signs
 // off with the parent brand mark ("by WEPAC") instead of repeating text.
 const WEPACKER_FOOTER = `<img src="${WEPAC_BADGE}" alt="WEPAC" width="90" style="display:block; width:90px; height:auto; border:0; margin-bottom:14px;" />From packers to WEPACkers.<br /><a href="${APP_URL}/wepacker" style="color:#999999;">wepac.pt/wepacker</a> · <a href="mailto:info@wepac.pt" style="color:#999999;">info@wepac.pt</a>`;
@@ -123,8 +134,15 @@ const WEPAC_FOOTER = `<img src="${WEPAC_BADGE}" alt="WEPAC" width="90" style="di
 export async function sendInviteEmail(
   to: string,
   name: string,
-  inviteUrl: string
+  inviteUrl: string,
+  message?: string
 ) {
+  const personalMessage = message?.trim()
+    ? `<p style="margin:0 0 16px; padding:16px; border-left:2px solid #000000; background:#F7F7F5; font-style:italic; color:#333333;">${escapeHtml(
+        message.trim()
+      ).replace(/\n/g, "<br />")}</p>`
+    : "";
+
   const bodyHtml = `
     ${heading("Foste convidado/a.")}
     <p style="margin:0 0 16px;">Olá ${name},</p>
@@ -133,6 +151,7 @@ export async function sendInviteEmail(
       humano integral da WEPAC. Um wepacker carrega o seu próprio peso e
       ainda entrega valor à comunidade.
     </p>
+    ${personalMessage}
     ${ctaButton(inviteUrl, "Criar conta")}
     <p style="margin:28px 0 0; font-size:12px; color:#999999;">
       Este convite expira em 7 dias. Se não esperavas este email, podes ignorá-lo.

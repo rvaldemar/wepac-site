@@ -38,7 +38,7 @@ interface Application {
   artisticArea: string | null;
   socialLinks: string | null;
   motivation: string | null;
-  status: "pending" | "contacted" | "invited" | "rejected";
+  status: "pending" | "contacted" | "invited" | "joined" | "rejected";
   notes: string | null;
   packSlug: string;
   createdAt: string;
@@ -61,7 +61,7 @@ function stageOf(item: InboxItem): Stage {
   const s = item.data.status;
   if (s === "new" || s === "pending") return "new";
   if (s === "contacted") return "contacted";
-  if (s === "converted" || s === "invited") return "won";
+  if (s === "converted" || s === "invited" || s === "joined") return "won";
   return "lost";
 }
 
@@ -108,6 +108,7 @@ const APP_STATUS_LABELS: Record<Application["status"], string> = {
   pending: "Pendente",
   contacted: "Contactado",
   invited: "Convidado",
+  joined: "Ingressou",
   rejected: "Rejeitado",
 };
 
@@ -424,8 +425,11 @@ export function AdminLeadsPageClient({
                 </select>
               </div>
 
-              {/* Invite CTA for applications */}
-              {selectedApp && selectedApp.status !== "invited" && (
+              {/* Invite CTA for applications — hidden once the person has
+                  actually joined (they already have an account). Creating
+                  the invite auto-advances this application to "invited"
+                  (and to "joined" once they accept it) via applicationId. */}
+              {selectedApp && selectedApp.status !== "joined" && (
                 <Link
                   href={`/wepacker/admin/users?name=${encodeURIComponent(
                     selectedApp.name
@@ -433,7 +437,7 @@ export function AdminLeadsPageClient({
                     selectedApp.phone
                       ? `&phone=${encodeURIComponent(selectedApp.phone)}`
                       : ""
-                  }`}
+                  }&applicationId=${encodeURIComponent(selectedApp.id)}`}
                   className="mt-4 block w-full bg-wepac-white px-4 py-2 text-center text-sm font-bold uppercase tracking-wider text-wepac-black transition-colors hover:bg-wepac-white/90"
                 >
                   Convidar para a plataforma →
