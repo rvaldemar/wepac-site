@@ -12,7 +12,7 @@ export default async function SessionsPage() {
       <div className="p-6 lg:p-8">
         <h1 className="font-barlow text-2xl font-bold text-wepac-white">Sessões</h1>
         <p className="mt-4 max-w-md text-sm text-wepac-text-tertiary">
-          A tua conta ainda não está associada a uma cohort — contacta a
+          A tua conta ainda não está associada a uma jornada — contacta a
           equipa WEPAC.
         </p>
       </div>

@@ -16,7 +16,7 @@ export default async function DiagnosisPage() {
           Diagnóstico / Avaliação
         </h1>
         <p className="mt-4 max-w-md text-sm text-wepac-text-tertiary">
-          A tua conta ainda não está associada a uma cohort — contacta a
+          A tua conta ainda não está associada a uma jornada — contacta a
           equipa WEPAC.
         </p>
       </div>

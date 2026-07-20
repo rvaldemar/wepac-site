@@ -12,10 +12,10 @@ export default async function AssessmentPage() {
         <OnboardingStepper currentStep={2} />
         <div className="w-full max-w-md text-center">
           <h1 className="font-barlow text-2xl font-bold text-wepac-white">
-            Sem cohort associada
+            Sem jornada associada
           </h1>
           <p className="mt-4 text-sm leading-relaxed text-wepac-text-secondary">
-            A tua conta ainda não está associada a uma cohort — contacta a
+            A tua conta ainda não está associada a uma jornada — contacta a
             equipa WEPAC.
           </p>
           <Link

@@ -177,7 +177,7 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
       setCohortFormPackId(null);
       router.refresh();
     } catch (err) {
-      setCohortError(err instanceof Error ? err.message : "Erro ao criar cohort.");
+      setCohortError(err instanceof Error ? err.message : "Erro ao criar jornada.");
     } finally {
       setSavingCohort(false);
     }
@@ -217,7 +217,7 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
         <div className="flex items-center justify-between">
           <div>
             <h1 className="font-barlow text-3xl font-bold text-wepac-white">
-              Packs &amp; Cohorts
+              Packs &amp; Jornadas
             </h1>
             <p className="mt-1 text-sm text-wepac-text-tertiary">
               {packs.length} packs — {packs.reduce((n, p) => n + p.cohorts.length, 0)} cohorts
@@ -419,7 +419,7 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
               {/* Cohorts */}
               <div className="mt-6 space-y-3">
                 {pack.cohorts.length === 0 && (
-                  <p className="text-xs text-wepac-text-tertiary">Sem cohorts ainda.</p>
+                  <p className="text-xs text-wepac-text-tertiary">Sem jornadas ainda.</p>
                 )}
                 {pack.cohorts.map((cohort) => (
                   <div key={cohort.id} className="border border-wepac-border bg-wepac-dark p-4">
@@ -525,7 +525,7 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
                         value={cohortName}
                         onChange={(e) => setCohortName(e.target.value)}
                         required
-                        placeholder="Cohort Verão 2026"
+                        placeholder="Jornada Verão 2026"
                         className="mt-1 bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none"
                       />
                     </div>

@@ -25,7 +25,7 @@ const mentorNav = [
 
 const adminNav = [
   { label: "Utilizadores", href: "/wepacker/admin/users", icon: "◉" },
-  { label: "Cohorts", href: "/wepacker/admin/cohorts", icon: "▣" },
+  { label: "Jornadas", href: "/wepacker/admin/cohorts", icon: "▣" },
   { label: "Leads", href: "/wepacker/admin/leads", icon: "◈" },
   { label: "Configurações", href: "/wepacker/admin/settings", icon: "⚙" },
 ];
@@ -108,7 +108,7 @@ export function PlatformSidebar({
           onClick={onNavigate}
           className="block px-3 py-2 text-xs text-wepac-text-tertiary transition-colors hover:text-wepac-text-secondary"
         >
-          ← Vista Member
+          ← Vista Membro
         </Link>
       )}
       <button

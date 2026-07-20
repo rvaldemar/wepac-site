@@ -268,7 +268,7 @@ export function AdminUsersPageClient({
                 {/* Multi-pack / multi-cohort memberships */}
                 <div className="sm:col-span-3">
                   <label className="block text-xs text-wepac-text-tertiary">
-                    Cohorts (opcional — a mesma pessoa pode entrar em vários
+                    Jornadas (opcional — a mesma pessoa pode entrar em vários
                     packs)
                   </label>
                   <div className="mt-1 space-y-2">
@@ -283,7 +283,7 @@ export function AdminUsersPageClient({
                           }
                           className="w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
                         >
-                          <option value="">Escolher cohort…</option>
+                          <option value="">Escolher jornada…</option>
                           {cohorts
                             .filter(
                               (c) =>
@@ -319,7 +319,7 @@ export function AdminUsersPageClient({
                             )
                           }
                           className="px-2 text-wepac-text-tertiary hover:text-wepac-white"
-                          aria-label="Remover cohort"
+                          aria-label="Remover jornada"
                         >
                           &times;
                         </button>

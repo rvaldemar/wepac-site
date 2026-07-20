@@ -18,7 +18,7 @@ export default async function DashboardPage() {
           Olá, {user.name}
         </h1>
         <p className="mt-4 max-w-md text-sm text-wepac-text-tertiary">
-          A tua conta ainda não está associada a uma cohort — contacta a
+          A tua conta ainda não está associada a uma jornada — contacta a
           equipa WEPAC.
         </p>
       </div>

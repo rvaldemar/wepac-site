@@ -254,7 +254,7 @@ export async function createInvite(data: {
   const memberships = (data.memberships ?? []).filter((m) => m.cohortId);
   const uniqueCohorts = new Set(memberships.map((m) => m.cohortId));
   if (uniqueCohorts.size !== memberships.length) {
-    throw new Error("Cohorts duplicadas no convite.");
+    throw new Error("Jornadas duplicadas no convite.");
   }
 
   const token = randomUUID();

@@ -89,7 +89,7 @@ export function AdminSettingsPageClient() {
               </div>
               <div>
                 <label className="block text-xs text-wepac-text-tertiary">
-                  Máx. membros por cohort
+                  Máx. wepackers por jornada
                 </label>
                 <input
                   type="number"
