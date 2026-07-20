@@ -4,6 +4,32 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-20 (5) — Remodelação Fase 1+2: sidebar agrupado, Life Plan versioning, microcopy, lint
+
+Segunda leva do dia (blueprint da remodelação → execução), deploy com migration:
+
+- **Sidebar WEPACKER reestruturado:** grupos "Basecamp" (Life Plan, Plano, Trails) e "Dia a dia" (Tarefas, Sessões, Mensagens, Perfil); "Dashboard"→"Home" (label apenas, rota `/wepacker/dashboard` inalterada); active state por prefixo (subrotas mantêm contexto de nav) com exact-match no item raiz do mentor. Grupo "Explore" NÃO criado — sem conteúdo que o justifique (decisão registada no blueprint; conceito não existe nos docs canónicos).
+- **Life Plan versioning:** tabela nova `life_plan_versions` (append-only, snapshot dos 5 campos antes de cada upsert, transacional). Migration `20260720222148_life_plan_versioning` aditiva, aplicada em prod via deploy. UI de histórico fica para fase seguinte.
+- **Landing:** "Percursos"→"Packs" + assinatura "From packers to WEPACkers." no footer.
+- **Lint baseline:** 5× `any` (mentor pages, helper `serialize` genérico) e 2× setState-in-effect (contacto, event form) corrigidos. Resta 1 erro conhecido: CookieConsent (story própria).
+- Blueprint completo com stories/DoR: scratchpad da sessão aa016bc1 (`wepacker-remodel-blueprint.md`). Decisões pendentes do Rui: hub Basecamp como página, rename da rota dashboard, reversão de versões do Life Plan, rota canónica Wessex, termos legacy no site institucional.
+
+Smoke: 3/3 páginas públicas 200; `migrate status` no servidor: "Database schema is up to date" (21 migrations).
+
+---
+
+## 2026-07-20 (4) — Correções P0 da auditoria UX/UI
+
+Aplicados os três P0 do relatório `reports/auditoria-site-ux-ui-2026-07-20.html` (agora commitado no repo) e feito deploy:
+
+- **Dashboard pós-avaliação:** a legenda do radar identifica o momento real ("Avaliação inicial/intermédia/final") em vez de "Actual/Anterior" — o fix estrutural (último momento disponível em vez de `mid` hardcoded) já tinha aterrado em `d80d85f`.
+- **Mensagens em mobile:** master/detail abaixo de `lg` — lista ou conversa em ecrã inteiro com "← Voltar"; desktop inalterado. Nota: em mobile abre na primeira conversa por default (detail-first) — aceitável, candidato a polish.
+- **Candidatura:** labels persistentes associados (htmlFor/id), obrigatórios marcados (visual + aria-required), erros por campo (aria-describedby + role="alert"), nota de privacidade com link a `/privacidade` antes do submit. Contrato do server action inalterado. Follow-up de backlog: o servidor (`application.ts`) continua sem validação de formato de email (pré-existente).
+
+Smoke pós-deploy: `/`, `/wepacker`, `/wepacker/artist/candidatura` → 200. Baseline de lint com 8 erros pré-existentes (5× `any` em mentor pages, 3× setState-in-effect) — housekeeping pendente, não é regressão.
+
+---
+
 ## 2026-07-20 (3) — Inbox central de leads
 
 `/wepacker/admin/leads` passou a inbox única: leads Wessex (chat + formulário de eventos), submissões do `/contacto` e candidaturas WEPACKER, ordenadas cronologicamente com badge de origem, funil unificado (Novas/Em contacto/Ganhas/Perdidas) e ações por pipeline (estados próprios, notas e CTA de convite nas candidaturas, histórico de conversa nas leads de chat). O `/contacto` agora grava na tabela `leads` (novo valor de enum `LeadSource.contact`, migração aditiva `20260720160000`) além do email formsubmit — sucesso se um dos dois passar. `/wepacker/admin/applications` é redirect para a inbox; sidebar perdeu a entrada "Candidaturas".
