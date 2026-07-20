@@ -420,6 +420,10 @@ model Session {
   scheduledAt      DateTime
   durationMinutes  Int           @default(60)
   status           SessionStatus @default(scheduled)
+  // Deprecated for UI writes: a single mentor->everyone blob, wrong for
+  // group sessions. Superseded by the per-attendee note fields below
+  // (privateNote / sharedNote / sharedNotePublished / outcome). Kept for
+  // backward compatibility with existing data; do not add new writers.
   notes            String?
   notesPublished   Boolean       @default(false)
   discussionPoints String?
@@ -436,6 +440,14 @@ model SessionAttendee {
   sessionId String
   userId    String
   attended  Boolean @default(false)
+
+  // Mentor-only, never shown to the member.
+  privateNote         String?
+  // Shown to the member, but only once sharedNotePublished is true.
+  sharedNote          String?
+  sharedNotePublished Boolean @default(false)
+  // What was agreed/gained in the session, for this person specifically.
+  outcome             String?
 
   session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
