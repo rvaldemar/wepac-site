@@ -4,6 +4,15 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-20 (2) — Rebrand display "WEPAC" + copy do manifesto
+
+- Marca de display passou a ser só **"WEPAC"** em todo o site (metadata, footer, hero, bilheteira, chat Wessex, emails); subtítulos de marca usam "Cultura que transforma". Nome legal completo mantém-se na política de privacidade e nos dados históricos do Sem Nome.
+- Copy da plataforma corrigida pelo manifesto (`WHPH/WEPAC/livro.md`): WEPACKER é modo de vida de desenvolvimento humano integral, não "programa de desenvolvimento artístico". Níveis de progressão em PT: Semente → Crescimento → Assinatura → Parceiro (`LEVEL_LABELS`).
+- **Gotcha de build:** o build incremental do Turbopack serviu HTML prerendered com copy antiga apesar do source alterado — páginas estáticas de `/wepacker` (login/welcome) foram para prod desatualizadas. Fix: `rm -rf .next` antes do build de deploy. Considerar adicionar ao `deploy.sh`.
+- Bootstrap prod adicional: membership `member` do Rui na cohort Alpha (experiência WEPACKER; vista mentor coberta pela role admin — a constraint unique impede member+mentor na mesma cohort).
+
+---
+
 ## 2026-07-20 — WEPACKER: rebuild completo da plataforma (substitui Artista Alpha)
 
 A área `/artists/alpha` foi reconstruída do zero como plataforma multi-pack **WEPACKER** em `/wepacker`. Leads e candidaturas (tabelas `leads` e `beta_signups`) preservadas — dados reais intocados.
