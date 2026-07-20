@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { SessionStatus, SessionType } from "@/lib/wepacker/types";
+import type { SessionKind, SessionStatus, SessionType } from "@/lib/wepacker/types";
+import { SESSION_KIND_KEYS, SESSION_KIND_LABELS } from "@/lib/wepacker/types";
 import {
   createSession,
   setAttendance,
@@ -35,6 +36,7 @@ interface SessionRow {
   id: string;
   cohortId: string | null;
   sessionType: SessionType;
+  kind: SessionKind;
   scheduledAt: string;
   durationMinutes: number;
   status: SessionStatus;
@@ -96,6 +98,7 @@ export function MentorSessionsClient({
   const [associateCohort, setAssociateCohort] = useState(false);
   const [cohortId, setCohortId] = useState(cohorts[0]?.id ?? "");
   const [sessionType, setSessionType] = useState<SessionType>("individual");
+  const [sessionKind, setSessionKind] = useState<SessionKind>("checkpoint");
   const [scheduledAt, setScheduledAt] = useState(toDatetimeLocalValue(new Date()));
   const [durationMinutes, setDurationMinutes] = useState(60);
   const [discussionPoints, setDiscussionPoints] = useState("");
@@ -139,12 +142,14 @@ export function MentorSessionsClient({
       await createSession({
         cohortId: associateCohort ? cohortId : undefined,
         sessionType,
+        kind: sessionKind,
         scheduledAt: new Date(scheduledAt).toISOString(),
         durationMinutes,
         discussionPoints: discussionPoints.trim() || undefined,
         attendeeUserIds: attendeeIds,
       });
       setShowCreate(false);
+      setSessionKind("checkpoint");
       setDiscussionPoints("");
       setAttendeeIds([]);
       router.refresh();
@@ -386,6 +391,32 @@ export function MentorSessionsClient({
             </div>
             <div className="sm:col-span-2">
               <label className="block text-xs text-wepac-text-tertiary">
+                Motivo da sessão
+              </label>
+              <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {SESSION_KIND_KEYS.map((k) => (
+                  <button
+                    key={k}
+                    type="button"
+                    onClick={() => setSessionKind(k)}
+                    className={`px-3 py-2 text-left transition-colors ${
+                      sessionKind === k
+                        ? "bg-wepac-white text-wepac-black"
+                        : "bg-wepac-input text-wepac-text-tertiary"
+                    }`}
+                  >
+                    <span className="block text-xs font-bold">
+                      {SESSION_KIND_LABELS[k].label}
+                    </span>
+                    <span className="block text-[11px] opacity-80">
+                      {SESSION_KIND_LABELS[k].description}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs text-wepac-text-tertiary">
                 Participantes
               </label>
               <div className="mt-1 flex flex-wrap gap-2">
@@ -469,6 +500,7 @@ export function MentorSessionsClient({
                   </p>
                   <p className="mt-0.5 text-xs text-wepac-text-tertiary">
                     {session.sessionType === "individual" ? "Individual" : "Grupo"} ·{" "}
+                    {SESSION_KIND_LABELS[session.kind]?.label ?? session.kind} ·{" "}
                     {attendeeNames} · {session.durationMinutes} min
                   </p>
                   {session.discussionPoints && (

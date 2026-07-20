@@ -1,5 +1,7 @@
 "use client";
 
+import { SESSION_KIND_LABELS, type SessionKind } from "@/lib/wepacker/types";
+
 const STATUS_LABELS: Record<string, string> = {
   scheduled: "Agendada",
   completed: "Realizada",
@@ -19,6 +21,7 @@ interface SessionItem {
   scheduledAt: string;
   durationMinutes: number;
   sessionType: string;
+  kind: SessionKind;
   status: string;
   mentorName: string;
   notes: string | null;
@@ -64,6 +67,9 @@ function SessionCard({ session, highlighted }: { session: SessionItem; highlight
       <div className="mt-3 flex gap-2">
         <span className="bg-wepac-input px-2 py-0.5 text-xs text-wepac-text-tertiary">
           {session.sessionType === "individual" ? "Individual" : "Grupo"}
+        </span>
+        <span className="bg-wepac-input px-2 py-0.5 text-xs text-wepac-text-tertiary">
+          {SESSION_KIND_LABELS[session.kind]?.label ?? session.kind}
         </span>
         <span className="bg-wepac-input px-2 py-0.5 text-xs text-wepac-text-tertiary">
           {session.mentorName}

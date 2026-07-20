@@ -16,6 +16,16 @@ export type TaskStatus = "todo" | "in_progress" | "done";
 export type TaskOrigin = "plan" | "session" | "mentor" | "self";
 export type SessionType = "individual" | "group";
 export type SessionStatus = "scheduled" | "completed" | "cancelled" | "no_show";
+export const SESSION_KIND_KEYS = [
+  "checkpoint",
+  "recon",
+  "basecamp",
+  "rescue",
+  "summit",
+] as const;
+// The purpose of a session, from the WEPACKER mountain imaginary —
+// orthogonal to SessionType, which stays the FORMAT (individual/group).
+export type SessionKind = (typeof SESSION_KIND_KEYS)[number];
 export type CohortStatus = "draft" | "active" | "completed" | "archived";
 export type MembershipRole = "member" | "mentor";
 export type MembershipStatus = "active" | "paused" | "exited";
@@ -207,6 +217,35 @@ export const TRAIL_STATUS_LABELS: Record<TrailStatus, string> = {
   paused: "Pausado",
   completed: "Concluído",
   abandoned: "Abandonado",
+};
+
+// Session kind — the PURPOSE of a session (why it's happening), from the
+// WEPACKER mountain imaginary. Orthogonal to SessionType, which is FORMAT
+// (individual/group) and is left untouched.
+export const SESSION_KIND_LABELS: Record<
+  SessionKind,
+  { label: string; description: string }
+> = {
+  checkpoint: {
+    label: "Checkpoint",
+    description: "Acompanhamento regular no trilho",
+  },
+  recon: {
+    label: "Reconhecimento",
+    description: "Mapear o terreno — diagnóstico",
+  },
+  basecamp: {
+    label: "Basecamp",
+    description: "Planear a próxima etapa",
+  },
+  rescue: {
+    label: "Resgate",
+    description: "Apoio num momento difícil",
+  },
+  summit: {
+    label: "Cume",
+    description: "Fecho e celebração de ciclo",
+  },
 };
 
 // ===== COMPUTED TYPES =====

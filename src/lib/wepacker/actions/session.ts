@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/db";
-import type { SessionStatus, SessionType } from "@prisma/client";
+import type { SessionKind, SessionStatus, SessionType } from "@prisma/client";
 import {
   assertMentorOfCohort,
   assertMentorOfUsers,
@@ -169,6 +169,7 @@ export async function getMentoredMembers() {
 export async function createSession(data: {
   cohortId?: string;
   sessionType: SessionType;
+  kind?: SessionKind;
   scheduledAt: string;
   durationMinutes?: number;
   discussionPoints?: string;
@@ -196,6 +197,7 @@ export async function createSession(data: {
       cohortId: data.cohortId,
       mentorId: actor.id,
       sessionType: data.sessionType,
+      kind: data.kind ?? "checkpoint",
       scheduledAt: new Date(data.scheduledAt),
       durationMinutes: data.durationMinutes ?? 60,
       discussionPoints: data.discussionPoints,
@@ -211,6 +213,7 @@ export async function updateSession(
   sessionId: string,
   data: {
     status?: SessionStatus;
+    kind?: SessionKind;
     notes?: string;
     notesPublished?: boolean;
     discussionPoints?: string;

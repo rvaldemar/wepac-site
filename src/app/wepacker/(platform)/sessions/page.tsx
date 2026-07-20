@@ -30,6 +30,7 @@ export default async function SessionsPage() {
       scheduledAt: s.scheduledAt.toISOString(),
       durationMinutes: s.durationMinutes,
       sessionType: s.sessionType,
+      kind: s.kind,
       status: s.status,
       mentorName: s.mentor.name,
       notes: s.notes,

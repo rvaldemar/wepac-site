@@ -96,6 +96,16 @@ enum SessionStatus {
   no_show
 }
 
+// The purpose of a session, from the WEPACKER mountain imaginary —
+// orthogonal to SessionType (which is FORMAT: individual/group).
+enum SessionKind {
+  checkpoint
+  recon
+  basecamp
+  rescue
+  summit
+}
+
 enum AreaKey {
   physical
   emotional
@@ -421,6 +431,7 @@ model Session {
   cohortId         String?
   mentorId         String
   sessionType      SessionType
+  kind             SessionKind   @default(checkpoint)
   scheduledAt      DateTime
   durationMinutes  Int           @default(60)
   status           SessionStatus @default(scheduled)
