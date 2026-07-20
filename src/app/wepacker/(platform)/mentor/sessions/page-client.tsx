@@ -7,6 +7,7 @@ import {
   createSession,
   setAttendance,
   updateSession,
+  updateSessionAttendee,
 } from "@/lib/wepacker/actions/session";
 
 const STATUS_LABELS: Record<SessionStatus, string> = {
@@ -19,6 +20,13 @@ const STATUS_LABELS: Record<SessionStatus, string> = {
 interface AttendeeRow {
   id: string;
   attended: boolean;
+  // Mentor-only, never shown to the member.
+  privateNote: string | null;
+  // Shown to the member only once sharedNotePublished is true.
+  sharedNote: string | null;
+  sharedNotePublished: boolean;
+  // What was agreed/gained in the session, for this person specifically.
+  outcome: string | null;
   user: { id: string; name: string };
 }
 
@@ -148,16 +156,7 @@ export function MentorSessionsClient({
   }
 
   // ===== Per-session edit state =====
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editNotes, setEditNotes] = useState("");
-  const [editPublished, setEditPublished] = useState(false);
   const [savingSessionId, setSavingSessionId] = useState<string | null>(null);
-
-  function startEdit(session: SessionRow) {
-    setEditingId(session.id);
-    setEditNotes(session.notes ?? "");
-    setEditPublished(session.notesPublished);
-  }
 
   async function handleStatusChange(sessionId: string, status: SessionStatus) {
     setSavingSessionId(sessionId);
@@ -171,28 +170,73 @@ export function MentorSessionsClient({
     }
   }
 
-  async function handleSaveNotes(sessionId: string) {
-    setSavingSessionId(sessionId);
-    try {
-      await updateSession(sessionId, {
-        notes: editNotes,
-        notesPublished: editPublished,
-      });
-      setEditingId(null);
-      router.refresh();
-    } catch (e) {
-      console.error("Failed to save session notes:", e);
-    } finally {
-      setSavingSessionId(null);
-    }
-  }
-
   async function handleAttendance(sessionId: string, userId: string, attended: boolean) {
     try {
       await setAttendance(sessionId, userId, attended);
       router.refresh();
     } catch (e) {
       console.error("Failed to update attendance:", e);
+    }
+  }
+
+  // ===== Per-attendee notes/outcome edit state =====
+  // Only one attendee row is edited at a time, identified by
+  // "<sessionId>:<userId>" — mirrors the previous single-editor pattern so
+  // an in-progress draft never gets clobbered by a router.refresh() caused
+  // by an unrelated action (status change, another attendee's checkbox).
+  function attendeeKey(sessionId: string, userId: string): string {
+    return `${sessionId}:${userId}`;
+  }
+
+  const [editingAttendeeKey, setEditingAttendeeKey] = useState<string | null>(null);
+  const [attendeePrivateNote, setAttendeePrivateNote] = useState("");
+  const [attendeeSharedNote, setAttendeeSharedNote] = useState("");
+  const [attendeeOutcome, setAttendeeOutcome] = useState("");
+  const [attendeeSharedNotePublished, setAttendeeSharedNotePublished] = useState(false);
+  const [savingAttendeeKey, setSavingAttendeeKey] = useState<string | null>(null);
+  const [attendeeFeedback, setAttendeeFeedback] = useState<
+    Record<string, { type: "success" | "error"; text: string } | undefined>
+  >({});
+
+  function startEditAttendee(sessionId: string, attendee: AttendeeRow) {
+    const key = attendeeKey(sessionId, attendee.user.id);
+    setEditingAttendeeKey(key);
+    setAttendeePrivateNote(attendee.privateNote ?? "");
+    setAttendeeSharedNote(attendee.sharedNote ?? "");
+    setAttendeeOutcome(attendee.outcome ?? "");
+    setAttendeeSharedNotePublished(attendee.sharedNotePublished);
+    setAttendeeFeedback((prev) => ({ ...prev, [key]: undefined }));
+  }
+
+  function cancelEditAttendee() {
+    setEditingAttendeeKey(null);
+  }
+
+  async function handleSaveAttendeeNotes(sessionId: string, userId: string) {
+    const key = attendeeKey(sessionId, userId);
+    setSavingAttendeeKey(key);
+    setAttendeeFeedback((prev) => ({ ...prev, [key]: undefined }));
+    try {
+      await updateSessionAttendee(sessionId, userId, {
+        privateNote: attendeePrivateNote,
+        sharedNote: attendeeSharedNote,
+        outcome: attendeeOutcome,
+        sharedNotePublished: attendeeSharedNotePublished,
+      });
+      setAttendeeFeedback((prev) => ({
+        ...prev,
+        [key]: { type: "success", text: "Notas guardadas." },
+      }));
+      setEditingAttendeeKey(null);
+      router.refresh();
+    } catch (e) {
+      console.error("Failed to save attendee notes:", e);
+      setAttendeeFeedback((prev) => ({
+        ...prev,
+        [key]: { type: "error", text: "Erro ao guardar notas. Tenta novamente." },
+      }));
+    } finally {
+      setSavingAttendeeKey(null);
     }
   }
 
@@ -345,7 +389,6 @@ export function MentorSessionsClient({
           const attendeeNames = session.attendees
             .map((a) => a.user.name)
             .join(", ");
-          const isEditing = editingId === session.id;
           return (
             <div key={session.id} className="border border-wepac-border bg-wepac-card p-4">
               <div className="flex flex-wrap items-start justify-between gap-2">
@@ -414,53 +457,144 @@ export function MentorSessionsClient({
                 ))}
               </div>
 
-              {/* Notes */}
-              {isEditing ? (
+              {/* Per-attendee notes and outcome */}
+              <div className="mt-3 space-y-2 border-t border-wepac-border pt-3">
+                <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
+                  Notas por participante
+                </p>
+                {session.attendees.map((a) => {
+                  const key = attendeeKey(session.id, a.user.id);
+                  const isEditingAttendee = editingAttendeeKey === key;
+                  const isSavingAttendee = savingAttendeeKey === key;
+                  const feedback = attendeeFeedback[key];
+                  return (
+                    <div
+                      key={a.id}
+                      className="border border-wepac-border bg-wepac-input/40 p-3"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xs font-medium text-wepac-white">
+                          {a.user.name}
+                        </p>
+                        {!isEditingAttendee && (
+                          <button
+                            onClick={() => startEditAttendee(session.id, a)}
+                            className="text-xs text-wepac-white hover:underline"
+                          >
+                            Editar notas
+                          </button>
+                        )}
+                      </div>
+
+                      {isEditingAttendee ? (
+                        <div className="mt-2 space-y-2">
+                          <div>
+                            <label className="block text-xs text-wepac-text-tertiary">
+                              Nota privada (só o mentor vê)
+                            </label>
+                            <textarea
+                              value={attendeePrivateNote}
+                              onChange={(e) => setAttendeePrivateNote(e.target.value)}
+                              rows={2}
+                              className="mt-1 w-full bg-wepac-input px-3 py-2 text-xs text-wepac-text-secondary"
+                              placeholder="Nota privada"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs text-wepac-text-tertiary">
+                              Nota partilhada com o membro
+                            </label>
+                            <textarea
+                              value={attendeeSharedNote}
+                              onChange={(e) => setAttendeeSharedNote(e.target.value)}
+                              rows={2}
+                              className="mt-1 w-full bg-wepac-input px-3 py-2 text-xs text-wepac-text-secondary"
+                              placeholder="Nota partilhada"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs text-wepac-text-tertiary">
+                              O que ficou combinado
+                            </label>
+                            <textarea
+                              value={attendeeOutcome}
+                              onChange={(e) => setAttendeeOutcome(e.target.value)}
+                              rows={2}
+                              className="mt-1 w-full bg-wepac-input px-3 py-2 text-xs text-wepac-text-secondary"
+                              placeholder="O que ficou combinado"
+                            />
+                          </div>
+                          <label className="flex items-center gap-1.5 text-xs text-wepac-text-tertiary">
+                            <input
+                              type="checkbox"
+                              checked={attendeeSharedNotePublished}
+                              onChange={(e) =>
+                                setAttendeeSharedNotePublished(e.target.checked)
+                              }
+                            />
+                            Publicar nota ao membro
+                          </label>
+                          {feedback?.type === "error" && (
+                            <p className="text-xs text-wepac-error">{feedback.text}</p>
+                          )}
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() =>
+                                handleSaveAttendeeNotes(session.id, a.user.id)
+                              }
+                              disabled={isSavingAttendee}
+                              className="bg-wepac-white px-3 py-1.5 text-xs font-bold text-wepac-black disabled:opacity-30"
+                            >
+                              {isSavingAttendee ? "A guardar..." : "Guardar"}
+                            </button>
+                            <button
+                              onClick={cancelEditAttendee}
+                              disabled={isSavingAttendee}
+                              className="border border-wepac-border px-3 py-1.5 text-xs text-wepac-text-secondary"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="mt-2 space-y-1">
+                          <p className="text-xs text-wepac-text-tertiary">
+                            Combinado: {a.outcome || "—"}
+                          </p>
+                          <p className="text-xs text-wepac-text-tertiary">
+                            Nota partilhada: {a.sharedNote || "—"}{" "}
+                            {a.sharedNote && (
+                              <span
+                                className={
+                                  a.sharedNotePublished
+                                    ? "text-wepac-success"
+                                    : "text-wepac-text-tertiary"
+                                }
+                              >
+                                ({a.sharedNotePublished ? "publicada" : "não publicada"})
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-xs text-wepac-text-tertiary">
+                            Nota privada: {a.privateNote || "—"}
+                          </p>
+                          {feedback?.type === "success" && (
+                            <p className="text-xs text-wepac-success">{feedback.text}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Legacy session-level notes — read-only, no new writes */}
+              {session.notes && (
                 <div className="mt-3 border-t border-wepac-border pt-3">
-                  <textarea
-                    value={editNotes}
-                    onChange={(e) => setEditNotes(e.target.value)}
-                    rows={3}
-                    className="w-full bg-wepac-input px-3 py-2 text-xs text-wepac-text-secondary"
-                    placeholder="Notas da sessão"
-                  />
-                  <label className="mt-2 flex items-center gap-1.5 text-xs text-wepac-text-tertiary">
-                    <input
-                      type="checkbox"
-                      checked={editPublished}
-                      onChange={(e) => setEditPublished(e.target.checked)}
-                    />
-                    Publicar notas ao membro
-                  </label>
-                  <div className="mt-2 flex gap-2">
-                    <button
-                      onClick={() => handleSaveNotes(session.id)}
-                      disabled={savingSessionId === session.id}
-                      className="bg-wepac-white px-3 py-1.5 text-xs font-bold text-wepac-black disabled:opacity-30"
-                    >
-                      Guardar
-                    </button>
-                    <button
-                      onClick={() => setEditingId(null)}
-                      className="border border-wepac-border px-3 py-1.5 text-xs text-wepac-text-secondary"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="mt-3 flex items-center justify-between border-t border-wepac-border pt-3">
-                  {session.notes ? (
-                    <p className="text-xs text-wepac-text-tertiary">{session.notes}</p>
-                  ) : (
-                    <p className="text-xs text-wepac-text-tertiary">Sem notas.</p>
-                  )}
-                  <button
-                    onClick={() => startEdit(session)}
-                    className="text-xs text-wepac-white hover:underline"
-                  >
-                    Editar notas
-                  </button>
+                  <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
+                    Notas antigas (legacy)
+                  </p>
+                  <p className="mt-1 text-xs text-wepac-text-tertiary">{session.notes}</p>
                 </div>
               )}
             </div>
