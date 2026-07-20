@@ -55,6 +55,7 @@ export function RadarChart({
     <svg
       viewBox={`0 0 ${size} ${size}`}
       className={className}
+      style={{ overflow: "visible" }}
       role="img"
       aria-label="Mapa de Desenvolvimento"
     >
@@ -112,11 +113,31 @@ export function RadarChart({
         return <circle key={area} cx={p.x} cy={p.y} r="4" fill="#FFFFFF" />;
       })}
 
-      {/* Labels + click targets */}
+      {/* Labels + click targets. Label and score are stacked in one text
+          block anchored per quadrant, so they never collide on the
+          horizontal axes. */}
       {AREAS.map((area, i) => {
-        const labelR = radius + (size > 280 ? 28 : 22);
-        const p = getPoint(i, labelR);
-        const scoreP = getPoint(i, radius + (size > 280 ? 44 : 36));
+        const angle = startAngle + i * angleStep;
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        const p = getPoint(i, radius + (size > 280 ? 14 : 10));
+
+        const anchor: "middle" | "start" | "end" =
+          Math.abs(cos) < 0.5 ? "middle" : cos > 0 ? "start" : "end";
+
+        const labelSize = size > 280 ? 11 : 9;
+        const lineHeight = labelSize * 1.3;
+        // Block of 2 lines: fully above the vertex on top, fully below on
+        // the bottom, vertically centered on the sides.
+        let firstLineY: number;
+        if (sin < -0.35) {
+          firstLineY = p.y - lineHeight;
+        } else if (sin > 0.35) {
+          firstLineY = p.y + lineHeight;
+        } else {
+          firstLineY = p.y - lineHeight / 4;
+        }
+
         return (
           <g
             key={area}
@@ -127,26 +148,22 @@ export function RadarChart({
           >
             <text
               x={p.x}
-              y={p.y}
-              textAnchor="middle"
-              dominantBaseline="middle"
+              y={firstLineY}
+              textAnchor={anchor}
               fill="#E5E5E5"
-              fontSize={size > 280 ? "11" : "9"}
+              fontSize={labelSize}
               fontFamily="Inter, sans-serif"
             >
-              {areaLabels[area]}
-            </text>
-            <text
-              x={scoreP.x}
-              y={scoreP.y}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fill="#FFFFFF"
-              fontSize={size > 280 ? "10" : "8"}
-              fontWeight="bold"
-              fontFamily="Inter, sans-serif"
-            >
-              {(currentValues[area] ?? 0).toFixed(1)}
+              <tspan>{areaLabels[area]}</tspan>
+              <tspan
+                x={p.x}
+                dy={lineHeight}
+                fill="#FFFFFF"
+                fontSize={size > 280 ? 10 : 8}
+                fontWeight="bold"
+              >
+                {(currentValues[area] ?? 0).toFixed(1)}
+              </tspan>
             </text>
           </g>
         );
