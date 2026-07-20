@@ -13,64 +13,220 @@ const transporter = nodemailer.createTransport({
 });
 
 const FROM = process.env.SMTP_FROM || "info@wepac.pt";
+const APP_URL = process.env.APP_URL || "https://wepac.pt";
+
+// ===== SHARED DARK TEMPLATE =====
+// Table-based layout for Outlook/Gmail compatibility. Brand palette only
+// (#000 / #FFF / #DEE0DB) — matches the platform's dark aesthetic instead
+// of the previous bare "WEPAC"/"WEPACKER" text heading.
+
+const FONT_HEADING =
+  "'Barlow', 'Helvetica Neue', Helvetica, Arial, sans-serif";
+const FONT_BODY = "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif";
+
+const WEPAC_WORDMARK = `${APP_URL}/logo/email/wepac-wordmark-white.png`;
+const WEPACKER_LOCKUP = `${APP_URL}/logo/email/wepacker-lockup-white.png`;
+
+interface EmailShellOptions {
+  preheader: string;
+  logoSrc: string;
+  logoAlt: string;
+  logoWidth: number;
+  bodyHtml: string;
+  footerHtml: string;
+}
+
+function emailShell({
+  preheader,
+  logoSrc,
+  logoAlt,
+  logoWidth,
+  bodyHtml,
+  footerHtml,
+}: EmailShellOptions): string {
+  return `<!doctype html>
+<html lang="pt">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${logoAlt}</title>
+  </head>
+  <body style="margin:0; padding:0; background:#000;">
+    <div style="display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;">
+      ${preheader}
+    </div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#000;">
+      <tr>
+        <td align="center" style="padding: 48px 20px;">
+          <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px; width:100%;">
+            <tr>
+              <td style="padding-bottom: 32px;">
+                <img src="${logoSrc}" alt="${logoAlt}" width="${logoWidth}" style="display:block; width:${logoWidth}px; max-width:100%; height:auto; border:0;" />
+              </td>
+            </tr>
+            <tr>
+              <td style="border-top: 1px solid #2a2a2a;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="padding-top: 32px; font-family: ${FONT_BODY}; font-size: 14px; line-height: 1.7; color: #DEE0DB;">
+                      ${bodyHtml}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding-top: 40px; border-top: 1px solid #2a2a2a; margin-top: 40px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 24px;">
+                  <tr>
+                    <td style="font-family: ${FONT_BODY}; font-size: 12px; line-height: 1.6; color: #6b6b6b;">
+                      ${footerHtml}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+}
+
+function ctaButton(href: string, label: string): string {
+  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top: 28px;"><tr><td style="background:#FFFFFF; border-radius:0;"><a href="${href}" style="display:inline-block; padding:14px 32px; font-family:${FONT_HEADING}; font-weight:700; font-size:13px; letter-spacing:0.5px; color:#000000; text-decoration:none;">${label}</a></td></tr></table>`;
+}
+
+function heading(text: string): string {
+  return `<h1 style="margin:0 0 20px; font-family:${FONT_HEADING}; font-weight:700; font-size:26px; line-height:1.25; color:#FFFFFF;">${text}</h1>`;
+}
+
+const WEPACKER_FOOTER = `WEPACKER — WEPAC<br />Estamos juntos. Juntos somos mais fortes.<br /><a href="${APP_URL}/wepacker" style="color:#6b6b6b;">wepac.pt/wepacker</a> · <a href="mailto:info@wepac.pt" style="color:#6b6b6b;">info@wepac.pt</a>`;
+
+const WEPAC_FOOTER = `WEPAC<br /><a href="${APP_URL}" style="color:#6b6b6b;">wepac.pt</a> · <a href="mailto:info@wepac.pt" style="color:#6b6b6b;">info@wepac.pt</a>`;
+
+// ===== WEPACKER EMAILS =====
 
 export async function sendInviteEmail(
   to: string,
   name: string,
   inviteUrl: string
 ) {
+  const bodyHtml = `
+    ${heading("Foste convidado/a.")}
+    <p style="margin:0 0 16px;">Olá ${name},</p>
+    <p style="margin:0 0 16px;">
+      Foste convidado/a para o WEPACKER — o caminho de desenvolvimento
+      humano integral da WEPAC. Um wepacker carrega o seu próprio peso e
+      ainda entrega valor à comunidade.
+    </p>
+    ${ctaButton(inviteUrl, "Criar conta")}
+    <p style="margin:28px 0 0; font-size:12px; color:#6b6b6b;">
+      Este convite expira em 7 dias. Se não esperavas este email, podes ignorá-lo.
+    </p>
+  `;
+
   await transporter.sendMail({
     from: FROM,
     to,
     subject: "Convite — WEPACKER | WEPAC",
-    html: `
-      <div style="font-family: Inter, sans-serif; max-width: 500px; margin: 0 auto; padding: 40px 20px;">
-        <h1 style="font-family: Barlow, sans-serif; font-size: 24px; font-weight: 700; color: #000;">WEPACKER</h1>
-        <p style="margin-top: 20px; color: #333; line-height: 1.6;">
-          Olá ${name},
-        </p>
-        <p style="color: #333; line-height: 1.6;">
-          Foste convidado/a para o WEPACKER — o caminho de desenvolvimento humano integral da WEPAC. Estamos juntos. Juntos somos mais fortes.
-        </p>
-        <p style="margin-top: 24px;">
-          <a href="${inviteUrl}" style="display: inline-block; background: #000; color: #fff; padding: 12px 32px; text-decoration: none; font-weight: 700; font-size: 14px;">
-            Criar conta
-          </a>
-        </p>
-        <p style="margin-top: 24px; color: #999; font-size: 12px;">
-          Este convite expira em 7 dias. Se não esperavas este email, podes ignorá-lo.
-        </p>
-        <p style="margin-top: 32px; color: #999; font-size: 12px;">
-          WEPAC
-        </p>
-      </div>
-    `,
+    html: emailShell({
+      preheader: `${name}, foste convidado/a para o WEPACKER.`,
+      logoSrc: WEPACKER_LOCKUP,
+      logoAlt: "WEPACKER",
+      logoWidth: 220,
+      bodyHtml,
+      footerHtml: WEPACKER_FOOTER,
+    }),
   });
 }
 
 export async function sendPasswordResetEmail(to: string, resetUrl: string) {
+  const bodyHtml = `
+    ${heading("Recuperar password.")}
+    <p style="margin:0 0 16px;">
+      Recebemos um pedido para recuperar a tua password de acesso ao WEPACKER.
+    </p>
+    ${ctaButton(resetUrl, "Recuperar password")}
+    <p style="margin:28px 0 0; font-size:12px; color:#6b6b6b;">
+      Este link expira em 1 hora. Se não pediste esta recuperação, podes ignorar este email.
+    </p>
+  `;
+
   await transporter.sendMail({
     from: FROM,
     to,
     subject: "Recuperar password — WEPACKER | WEPAC",
-    html: `
-      <div style="font-family: Inter, sans-serif; max-width: 500px; margin: 0 auto; padding: 40px 20px;">
-        <h1 style="font-family: Barlow, sans-serif; font-size: 24px; font-weight: 700; color: #000;">WEPACKER</h1>
-        <p style="margin-top: 20px; color: #333; line-height: 1.6;">
-          Recebemos um pedido para recuperar a tua password.
-        </p>
-        <p style="margin-top: 24px;">
-          <a href="${resetUrl}" style="display: inline-block; background: #000; color: #fff; padding: 12px 32px; text-decoration: none; font-weight: 700; font-size: 14px;">
-            Recuperar password
-          </a>
-        </p>
-        <p style="margin-top: 24px; color: #999; font-size: 12px;">
-          Este link expira em 1 hora. Se não pediste esta recuperação, podes ignorar este email.
-        </p>
-      </div>
-    `,
+    html: emailShell({
+      preheader: "Recebemos um pedido para recuperar a tua password.",
+      logoSrc: WEPACKER_LOCKUP,
+      logoAlt: "WEPACKER",
+      logoWidth: 220,
+      bodyHtml,
+      footerHtml: WEPACKER_FOOTER,
+    }),
   });
 }
+
+export async function sendBetaSignupConfirmationEmail(
+  name: string,
+  email: string
+) {
+  const bodyHtml = `
+    ${heading("Candidatura recebida.")}
+    <p style="margin:0 0 16px;">Olá ${name},</p>
+    <p style="margin:0 0 16px;">
+      Recebemos a tua candidatura ao WEPACKER. A nossa equipa vai analisar
+      o teu perfil e entrar em contacto em breve.
+    </p>
+    <p style="margin:0;">Obrigado pelo interesse. Até breve.</p>
+  `;
+
+  await transporter.sendMail({
+    from: FROM,
+    to: email,
+    subject: "Candidatura recebida — WEPACKER",
+    html: emailShell({
+      preheader: `${name}, recebemos a tua candidatura ao WEPACKER.`,
+      logoSrc: WEPACKER_LOCKUP,
+      logoAlt: "WEPACKER",
+      logoWidth: 220,
+      bodyHtml,
+      footerHtml: WEPACKER_FOOTER,
+    }),
+  });
+}
+
+export async function sendBetaSignupNotificationEmail(
+  name: string,
+  email: string,
+  artisticArea?: string | null
+) {
+  const bodyHtml = `
+    ${heading("Nova candidatura.")}
+    <p style="margin:0 0 8px;"><strong style="color:#FFFFFF;">Nome:</strong> ${name}</p>
+    <p style="margin:0 0 8px;"><strong style="color:#FFFFFF;">Email:</strong> ${email}</p>
+    ${artisticArea ? `<p style="margin:0 0 8px;"><strong style="color:#FFFFFF;">Área:</strong> ${artisticArea}</p>` : ""}
+    ${ctaButton(`${APP_URL}/wepacker/admin/leads`, "Ver no painel")}
+  `;
+
+  await transporter.sendMail({
+    from: FROM,
+    to: FROM,
+    subject: `Nova candidatura WEPACKER: ${name}`,
+    html: emailShell({
+      preheader: `Nova candidatura de ${name}.`,
+      logoSrc: WEPACKER_LOCKUP,
+      logoAlt: "WEPACKER",
+      logoWidth: 220,
+      bodyHtml,
+      footerHtml: WEPACKER_FOOTER,
+    }),
+  });
+}
+
+// ===== WEPAC / WESSEX EMAILS =====
 
 interface LeadEmailData {
   name: string;
@@ -87,6 +243,12 @@ interface LeadEmailData {
   source: string;
 }
 
+const LEAD_SOURCE_LABELS: Record<string, string> = {
+  chat: "Chat Wessex",
+  form: "Formulário Wessex",
+  contact: "Contacto",
+};
+
 export async function sendLeadNotificationEmail(lead: LeadEmailData) {
   const details = [
     ["Nome", lead.name],
@@ -100,101 +262,41 @@ export async function sendLeadNotificationEmail(lead: LeadEmailData) {
     ["Ensemble", lead.ensemble],
     ["Orçamento estimado", lead.estimatedBudget],
     ["Notas", lead.notes],
-    ["Origem", lead.source === "chat" ? "Chat Wessex" : "Formulário"],
+    ["Origem", LEAD_SOURCE_LABELS[lead.source] ?? lead.source],
   ]
     .filter(([, value]) => value)
     .map(
       ([label, value]) =>
-        `<tr><td style="padding:8px 12px;font-weight:700;color:#000;vertical-align:top;white-space:nowrap;">${label}</td><td style="padding:8px 12px;color:#333;">${value}</td></tr>`
+        `<tr><td style="padding:10px 0; font-weight:700; color:#FFFFFF; vertical-align:top; white-space:nowrap; padding-right:16px; border-top:1px solid #2a2a2a;">${label}</td><td style="padding:10px 0; color:#DEE0DB; border-top:1px solid #2a2a2a;">${value}</td></tr>`
     )
     .join("");
+
+  const bodyHtml = `
+    ${heading("Nova lead Wessex.")}
+    <p style="margin:0 0 16px; color:#9a9a9a;">
+      Um potencial cliente interagiu com o assistente Wessex e deixou dados de contacto.
+    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;">
+      ${details}
+    </table>
+    ${ctaButton(`${APP_URL}/wepacker/admin/leads`, "Ver no backoffice")}
+  `;
 
   try {
     await transporter.sendMail({
       from: FROM,
       to: "info@wepac.pt",
       subject: `Nova lead Wessex: ${lead.name}${lead.eventType ? ` — ${lead.eventType}` : ""}`,
-      html: `
-        <div style="font-family: Inter, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-          <h1 style="font-family: Barlow, sans-serif; font-size: 24px; font-weight: 700; color: #000;">
-            Nova Lead Wessex
-          </h1>
-          <p style="margin-top: 16px; color: #666; font-size: 14px;">
-            Um potencial cliente interagiu com o assistente Wessex e deixou dados de contacto.
-          </p>
-          <table style="margin-top: 24px; border-collapse: collapse; width: 100%; font-size: 14px;">
-            ${details}
-          </table>
-          <p style="margin-top: 32px;">
-            <a href="https://wepac.pt/wepacker/admin/leads" style="display: inline-block; background: #000; color: #fff; padding: 12px 32px; text-decoration: none; font-weight: 700; font-size: 14px;">
-              Ver no backoffice
-            </a>
-          </p>
-          <p style="margin-top: 32px; color: #999; font-size: 12px;">
-            WEPAC | Wessex Lead Management
-          </p>
-        </div>
-      `,
+      html: emailShell({
+        preheader: `Nova lead de ${lead.name}.`,
+        logoSrc: WEPAC_WORDMARK,
+        logoAlt: "WEPAC",
+        logoWidth: 140,
+        bodyHtml,
+        footerHtml: WEPAC_FOOTER,
+      }),
     });
   } catch (error) {
     console.error("Failed to send lead notification email:", error);
   }
-}
-
-export async function sendBetaSignupConfirmationEmail(name: string, email: string) {
-  const subject = "Candidatura recebida — WEPACKER";
-  const html = `
-    <div style="font-family: Inter, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 24px; background: #000; color: #fff;">
-      <h1 style="font-family: 'Barlow', Arial, sans-serif; font-size: 24px; font-weight: 700; margin: 0;">
-        WEPAC
-      </h1>
-      <div style="margin-top: 32px;">
-        <p style="font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.8);">
-          Olá ${name},
-        </p>
-        <p style="font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.8);">
-          Recebemos a tua candidatura ao WEPACKER. A nossa equipa vai analisar o teu perfil e entrar em contacto em breve.
-        </p>
-        <p style="font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.8);">
-          Obrigado pelo interesse. Até breve.
-        </p>
-      </div>
-      <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);">
-        <p style="font-size: 12px; color: rgba(255,255,255,0.4);">
-          WEPAC · info@wepac.pt
-        </p>
-      </div>
-    </div>
-  `;
-
-  await transporter.sendMail({
-    from: FROM,
-    to: email,
-    subject,
-    html,
-  });
-}
-
-export async function sendBetaSignupNotificationEmail(name: string, email: string, artisticArea?: string | null) {
-  const subject = `Nova candidatura WEPACKER: ${name}`;
-  const html = `
-    <div style="font-family: Inter, Arial, sans-serif; padding: 24px;">
-      <h2 style="margin: 0;">Nova candidatura — WEPACKER</h2>
-      <p><strong>Nome:</strong> ${name}</p>
-      <p><strong>Email:</strong> ${email}</p>
-      ${artisticArea ? `<p><strong>Área:</strong> ${artisticArea}</p>` : ""}
-      <p style="margin-top: 16px;">
-        <a href="https://wepac.pt/wepacker/admin/leads" style="color: #000; font-weight: bold;">
-          Ver no painel →
-        </a>
-      </p>
-    </div>
-  `;
-
-  await transporter.sendMail({
-    from: FROM,
-    to: FROM,
-    subject,
-    html,
-  });
 }
