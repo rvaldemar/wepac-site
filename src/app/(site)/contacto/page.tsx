@@ -77,7 +77,19 @@ function ContactoContent() {
       }),
     ]);
 
-    if (dbResult.status === "fulfilled" || mailResult.status === "fulfilled") {
+    // The DB lead is canonical (the central leads inbox — see OPS_LOG). If it
+    // lands, the message counts as delivered even when the formsubmit email
+    // notification fails; we just log that failure for follow-up.
+    if (dbResult.status === "fulfilled") {
+      if (mailResult.status === "rejected") {
+        console.error("Contact form: formsubmit notification failed", mailResult.reason);
+      }
+      setSubmitted(true);
+    } else if (mailResult.status === "fulfilled") {
+      // DB write failed but the email notification still reached WEPAC, so the
+      // lead isn't lost — show success too, but log the DB failure so it can
+      // be investigated (it means this lead is missing from the admin backoffice).
+      console.error("Contact form: lead DB write failed", dbResult.reason);
       setSubmitted(true);
     } else {
       setError(true);
@@ -187,7 +199,7 @@ function ContactoContent() {
                       Mensagem enviada!
                     </p>
                     <p className="mt-2 text-wepac-white/60">
-                      Entraremos em contacto em breve.
+                      Entraremos em contacto em breve. Respondemos em poucos dias úteis.
                     </p>
                   </div>
                 ) : (
@@ -292,7 +304,12 @@ function ContactoContent() {
                     </div>
                     {error && (
                       <p className="text-red-400 text-sm">
-                        Erro ao enviar. Tente novamente.
+                        Não foi possível enviar a mensagem. Tente novamente ou
+                        contacte-nos diretamente através de{" "}
+                        <a href="mailto:info@wepac.pt" className="underline">
+                          info@wepac.pt
+                        </a>
+                        .
                       </p>
                     )}
                     <button
