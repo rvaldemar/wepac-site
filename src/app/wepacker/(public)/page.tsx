@@ -46,7 +46,7 @@ const METHODOLOGY_STEPS = [
 
 export default async function WepackerLandingPage() {
   const packs = await getActivePacksPublic();
-  const singlePackHref = packs.length === 1 ? `/wepacker/${packs[0].slug}/candidatura` : "#packs";
+  const singlePackHref = packs.length === 1 ? `/wepacker/${packs[0].slug}/intake` : "#packs";
 
   return (
     <div className="min-h-screen bg-wepac-black">
@@ -83,7 +83,7 @@ export default async function WepackerLandingPage() {
               href={singlePackHref}
               className="inline-block border border-wepac-border bg-wepac-white px-8 py-3 text-sm font-bold text-wepac-black transition-colors hover:bg-wepac-accent-muted"
             >
-              Começar jornada WEPACKER
+              Começa a tua Journey
             </a>
           </div>
         </div>
@@ -164,7 +164,7 @@ export default async function WepackerLandingPage() {
               {packs.map((pack) => (
                 <Link
                   key={pack.slug}
-                  href={`/wepacker/${pack.slug}/candidatura`}
+                  href={`/wepacker/${pack.slug}/intake`}
                   className="flex flex-col border border-wepac-border bg-wepac-card p-8 transition-colors hover:border-wepac-white"
                 >
                   <h3 className="font-barlow text-2xl font-bold text-wepac-white">

@@ -73,7 +73,7 @@ export async function createSession(data: {
     select: { id: true },
   });
   if (valid.length !== data.attendeeMembershipIds.length) {
-    throw new Error("Participantes inválidos para esta jornada.");
+    throw new Error("Participantes inválidos para esta Journey.");
   }
 
   return prisma.session.create({

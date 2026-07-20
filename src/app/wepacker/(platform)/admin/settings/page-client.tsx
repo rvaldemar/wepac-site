@@ -89,7 +89,7 @@ export function AdminSettingsPageClient() {
               </div>
               <div>
                 <label className="block text-xs text-wepac-text-tertiary">
-                  Máx. wepackers por jornada
+                  Máx. wepackers por Journey
                 </label>
                 <input
                   type="number"

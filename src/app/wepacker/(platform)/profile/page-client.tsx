@@ -83,7 +83,7 @@ export default function ProfilePageClient({ user, membership }: Props) {
 
         {!membership && (
           <p className="text-sm text-wepac-text-tertiary">
-            Ainda sem jornada associada — contacta a equipa WEPAC.
+            Ainda sem Journey associada — contacta a equipa WEPAC.
           </p>
         )}
 

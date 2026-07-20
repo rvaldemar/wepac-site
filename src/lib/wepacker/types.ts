@@ -206,13 +206,15 @@ export const PHASE_LABELS: Record<MemberPhase, string> = {
   consolidation: "Consolidação",
 };
 
-// Progression ladder — canonical PT names from the WEPAC Manifesto
-// (Semente → Crescimento → Assinatura → Parceiro).
+// Progression ladder — brand terms closed in English (terminology
+// decision 2026-07-20). The top level displays as "Contribution"
+// (maturity stage: creating value for others); the enum value stays
+// `partner` for schema stability.
 export const LEVEL_LABELS: Record<MemberLevel, string> = {
-  seed: "Semente",
-  growth: "Crescimento",
-  signature: "Assinatura",
-  partner: "Parceiro",
+  seed: "Seed",
+  growth: "Growth",
+  signature: "Signature",
+  partner: "Contribution",
 };
 
 export const MOMENT_LABELS: Record<EvaluationMoment, string> = {

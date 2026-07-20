@@ -5,8 +5,8 @@ const PUBLIC_ROUTES = ["/wepacker", "/wepacker/login", "/wepacker/password/reset
 
 const PUBLIC_PREFIXES = ["/wepacker/invite/"];
 
-// /wepacker/<pack-slug>/candidatura is public.
-const CANDIDATURA_RE = /^\/wepacker\/[^/]+\/candidatura\/?$/;
+// /wepacker/<pack-slug>/intake is public (candidatura = legacy alias).
+const INTAKE_RE = /^\/wepacker\/[^/]+\/(intake|candidatura)\/?$/;
 
 const ONBOARDING_PATHS = [
   "/wepacker/welcome",
@@ -45,7 +45,7 @@ export default auth((req) => {
   if (PUBLIC_PREFIXES.some((p) => pathname.startsWith(p))) {
     return NextResponse.next();
   }
-  if (CANDIDATURA_RE.test(pathname)) return NextResponse.next();
+  if (INTAKE_RE.test(pathname)) return NextResponse.next();
 
   // Authentication
   const user = req.auth?.user;

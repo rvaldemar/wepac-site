@@ -92,7 +92,7 @@ export function MentorSessionsClient({ sessions: rawSessions, cohorts }: MentorS
 
   async function handleCreate() {
     if (!cohortId) {
-      setCreateError("Escolhe uma jornada.");
+      setCreateError("Escolhe uma Journey.");
       return;
     }
     if (attendeeIds.length === 0) {
@@ -195,7 +195,7 @@ export function MentorSessionsClient({ sessions: rawSessions, cohorts }: MentorS
           <h3 className="text-sm font-bold text-wepac-white">Criar Sessão</h3>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-xs text-wepac-text-tertiary">Jornada</label>
+              <label className="block text-xs text-wepac-text-tertiary">Journey</label>
               <select
                 value={cohortId}
                 onChange={(e) => {
