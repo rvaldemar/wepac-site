@@ -28,7 +28,11 @@ const FONT_HEADING =
   "'Barlow', 'Helvetica Neue', Helvetica, Arial, sans-serif";
 const FONT_BODY = "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif";
 
-const WEPAC_WORDMARK = `${APP_URL}/logo/email/wepac-wordmark-black.png`;
+// Canonical WEPAC assets — see public/logo/wepac/MANIFEST.md before
+// touching these. Never hand-derive a substitute (font render, pixel
+// inversion, file of unknown provenance) — re-export from
+// brand-assets/wepac/source/ or ask for a fresh download instead.
+const WEPAC_WORDMARK = `${APP_URL}/logo/wepac/wordmark-black.png`;
 const WEPACKER_LOCKUP = `${APP_URL}/logo/email/wepacker-lockup-black.png`;
 
 interface EmailShellOptions {
