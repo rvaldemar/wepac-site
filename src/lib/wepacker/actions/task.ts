@@ -84,7 +84,7 @@ export async function createTaskFromSession(data: {
   description?: string;
   deadline: string;
 }) {
-  await assertMentorOfSession(data.sessionId);
+  const session = await assertMentorOfSession(data.sessionId);
   const actor = await requireUser();
 
   const isAttendee = await prisma.sessionAttendee.findUnique({
@@ -95,12 +95,24 @@ export async function createTaskFromSession(data: {
     throw new Error("Esta pessoa não é participante desta sessão.");
   }
 
+  // Cohort session: the task belongs to that cohort's membership (the
+  // mentor-of-cohort check already passed in assertMentorOfSession).
+  // Personal session: resolve the latest active membership, then require
+  // the actor to pass the same membership boundary createTask enforces —
+  // otherwise a mentor could write into a cohort they do not mentor.
   const membership = await prisma.cohortMembership.findFirst({
-    where: { userId: data.userId, status: "active" },
+    where: {
+      userId: data.userId,
+      status: "active",
+      ...(session.cohortId ? { cohortId: session.cohortId } : {}),
+    },
     orderBy: { joinedAt: "desc" },
   });
   if (!membership) {
     throw new Error("Este membro não tem uma membership ativa.");
+  }
+  if (!session.cohortId) {
+    await assertMembershipAccess(membership.id);
   }
 
   return prisma.task.create({
