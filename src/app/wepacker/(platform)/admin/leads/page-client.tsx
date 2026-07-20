@@ -67,7 +67,9 @@ function stageOf(item: InboxItem): Stage {
 
 function originLabel(item: InboxItem): string {
   if (item.kind === "application") {
-    return `Candidatura · ${item.data.packSlug}`;
+    return item.data.packSlug === "wepacker"
+      ? "Candidatura · WEPACKER (geral)"
+      : `Candidatura · ${item.data.packSlug}`;
   }
   switch (item.data.source) {
     case "chat":

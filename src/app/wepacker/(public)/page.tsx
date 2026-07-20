@@ -46,7 +46,7 @@ const METHODOLOGY_STEPS = [
 
 export default async function WepackerLandingPage() {
   const packs = await getActivePacksPublic();
-  const singlePackHref = packs.length === 1 ? `/wepacker/${packs[0].slug}/intake` : "#packs";
+  const heroHref = "/wepacker/intake";
 
   return (
     <div className="min-h-screen bg-wepac-black">
@@ -80,7 +80,7 @@ export default async function WepackerLandingPage() {
           </p>
           <div className="mt-10">
             <a
-              href={singlePackHref}
+              href={heroHref}
               className="inline-block border border-wepac-border bg-wepac-white px-8 py-3 text-sm font-bold text-wepac-black transition-colors hover:bg-wepac-accent-muted"
             >
               Começa a tua Journey
@@ -185,6 +185,15 @@ export default async function WepackerLandingPage() {
               ))}
             </div>
           )}
+          <p className="mt-10 text-center text-sm text-wepac-text-tertiary">
+            Ainda não sabes o teu Pack?{" "}
+            <Link
+              href="/wepacker/intake"
+              className="text-wepac-white underline-offset-4 hover:underline"
+            >
+              Candidata-te como wepacker →
+            </Link>
+          </p>
         </div>
       </section>
 

@@ -8,8 +8,11 @@ import {
 } from "@/lib/email";
 import { requireAdmin } from "@/lib/wepacker/guards";
 
-// Public candidatura — feeds the existing beta_signups pipeline, now
-// tagged with the target pack.
+// Sentinel packSlug for the generic WEPACKER intake (no pack chosen yet).
+export const GENERAL_INTAKE_SLUG = "wepacker";
+
+// Public candidatura — feeds the existing beta_signups pipeline, tagged
+// with the target pack or with the generic WEPACKER intake sentinel.
 export async function submitApplication(data: {
   packSlug: string;
   name: string;
@@ -23,11 +26,15 @@ export async function submitApplication(data: {
   const email = data.email?.trim().toLowerCase();
   if (!name || !email) throw new Error("Nome e email são obrigatórios.");
 
-  const pack = await prisma.pack.findUnique({
-    where: { slug: data.packSlug },
-    select: { slug: true, active: true },
-  });
-  if (!pack || !pack.active) throw new Error("Pack inválido.");
+  let packSlug = GENERAL_INTAKE_SLUG;
+  if (data.packSlug !== GENERAL_INTAKE_SLUG) {
+    const pack = await prisma.pack.findUnique({
+      where: { slug: data.packSlug },
+      select: { slug: true, active: true },
+    });
+    if (!pack || !pack.active) throw new Error("Pack inválido.");
+    packSlug = pack.slug;
+  }
 
   const signup = await prisma.betaSignup.upsert({
     where: { email },
@@ -37,7 +44,7 @@ export async function submitApplication(data: {
       artisticArea: data.area || undefined,
       socialLinks: data.socialLinks || undefined,
       motivation: data.motivation || undefined,
-      packSlug: pack.slug,
+      packSlug,
     },
     create: {
       name,
@@ -46,7 +53,7 @@ export async function submitApplication(data: {
       artisticArea: data.area || null,
       socialLinks: data.socialLinks || null,
       motivation: data.motivation || null,
-      packSlug: pack.slug,
+      packSlug,
     },
   });
 
