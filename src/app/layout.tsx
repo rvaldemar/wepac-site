@@ -103,7 +103,9 @@ export default function RootLayout({
         >
           Saltar para o conteúdo
         </a>
-        <main id="main">{children}</main>
+        {/* Skip-link target only — several routes render their own <main>,
+            so this wrapper must not be a landmark itself. */}
+        <div id="main">{children}</div>
         <CookieConsent />
       </body>
     </html>
