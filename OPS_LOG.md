@@ -4,6 +4,18 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-21 (12) — Wessex seam+rate-limit, member-value wave, Cal.com PR #3
+
+Deploys 17-18. Drenagem das waves em voo (zero frentes novas por ordem do Rui):
+
+- **Wessex (17º):** seam `WESSEX_ENGINE=direct|hub` (default direct intacto) + rate limit por visitante (10/10min, 30/dia). **QA NO-SHIP → fix → verde**: o limiter lia o 1º entry do X-Forwarded-For, que o nosso próprio nginx passa do cliente — furável com header rotativo; agora prefere X-Real-IP (não-falsificável) com fallback ao entry acrescentado pelo proxy. Nota operacional: motor hub v1 não dispara save_lead — decidir antes de cutover.
+- **Member-value (18º):** painel "Preparação" no workspace do mentor (radar resumido, último combinado, histórico e tarefas de sessão POR participante — 2 ressalvas do QA fechadas: o painel degrada em vez de derrubar o workspace, e o histórico/tarefas limitam-se às sessões do próprio mentor, nunca de outros); notificações email best-effort ao membro (nova tarefa de mentor, nota partilhada publicada, nova mensagem com debounce 30min — conteúdo sensível nunca no corpo, só aviso+link); CLAUDE.md sincronizado à realidade (QA amostrou 19 claims contra o código). Suite 127/127.
+- **Cal.com: PR #3 aberto (pronto-a-mergear, decisão do Rui)** — webhook env-gated com HMAC timing-safe + idempotência P2002 + guard de relação mentor↔attendee reimposta pelo board (a assinatura prova origem, não consentimento); infra em ~/Documents/code/rvs-cal preparada e NÃO aplicada; go-live gates (OAuth/RoPA/scopes/retention/RESCHEDULED) documentados no board.
+
+Em voo: lote resiliência (backups com board + suite E2E).
+
+---
+
 ## 2026-07-21 (11) — Wave dos parqueados: Basecamp, restore do Life Plan, nits do ics
 
 16º deploy (mandato do Rui: lançar tudo o que estava parado, em paralelo):
