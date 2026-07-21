@@ -3,18 +3,20 @@ import { AnthropicDebriefEngine } from "@/lib/wepacker/debrief/anthropic";
 import { HubDebriefEngine } from "@/lib/wepacker/debrief/hub";
 
 // Two-impl seam behind generateSessionDebrief: AnthropicDirect calls the
-// Anthropic API directly (built now); HubClient is a stub for the future
-// Agents Hub playbook "wepac-session-debrief" (see OPS_LOG.md — a Hub
-// service request already exists for this, tenant WEPAC, GDPR-restricted
-// Anthropic-only, HITL).
+// Anthropic API directly; HubClient calls the Agents Hub playbook
+// "wepac-session-debrief" (code W01 — see OPS_LOG.md, tenant WEPAC,
+// GDPR-restricted Anthropic-only, HITL). Selected via env DEBRIEF_ENGINE.
 export interface DebriefEngine {
   readonly name: "anthropic-direct" | "hub";
   generateDebrief(input: DebriefInput): Promise<DebriefResult>;
 }
 
-// env WEPACKER_DEBRIEF_ENGINE, default "anthropic".
+// env DEBRIEF_ENGINE ("anthropic" | "hub"), default "anthropic". "hub"
+// fails loud at construction (not here) when its own env vars are missing
+// — see HubDebriefEngine's constructor — never a silent fallback to
+// AnthropicDirect.
 export function getDebriefEngine(): DebriefEngine {
-  const impl = process.env.WEPACKER_DEBRIEF_ENGINE;
+  const impl = process.env.DEBRIEF_ENGINE;
   if (impl === "hub") return new HubDebriefEngine();
   return new AnthropicDebriefEngine();
 }
