@@ -171,6 +171,14 @@ export function getIndicators(packSlug: string): Record<AreaKey, Indicator[]> {
   return PACK_INDICATORS[packSlug] ?? DEFAULT_INDICATORS;
 }
 
+// Whether a pack has its own dedicated indicator set, as opposed to
+// silently falling back to DEFAULT_INDICATORS. Used to gate pack/cohort
+// activation so a pack never goes live evaluated against a placeholder
+// instrument (see pack-activation-gate.test.ts).
+export function hasDedicatedIndicators(packSlug: string): boolean {
+  return packSlug in PACK_INDICATORS;
+}
+
 export const SCORE_LABELS: Record<number, string> = {
   1: "Inicial",
   2: "Emergente",

@@ -16,6 +16,7 @@ import {
   requireRole,
   requireUser,
 } from "@/lib/wepacker/guards";
+import { hasDedicatedIndicators } from "@/lib/wepacker/types";
 
 // ===== PACKS =====
 
@@ -53,6 +54,10 @@ export async function createPack(data: {
       name: data.name.trim(),
       tagline: data.tagline ?? "",
       description: data.description ?? "",
+      // Explicit override of the schema's @default(true) — a pack must
+      // never be publicly visible (getActivePacksPublic) before it has
+      // dedicated indicators and is deliberately activated via updatePack.
+      active: false,
     },
   });
 }
@@ -67,6 +72,20 @@ export async function updatePack(
   }
 ) {
   await requireAdmin();
+  if (data.active === true) {
+    // Read the slug FRESH from the DB — never trust client-supplied data —
+    // to close the dia-zero exposure gap (see pack-activation-gate.test.ts).
+    const pack = await prisma.pack.findUnique({
+      where: { id: packId },
+      select: { slug: true },
+    });
+    if (!pack) throw new Error("Pack não encontrado.");
+    if (!hasDedicatedIndicators(pack.slug)) {
+      throw new Error(
+        "Este pack ainda não tem indicadores de avaliação próprios definidos. Não pode ser ativado/publicado até os indicadores serem configurados (contacta o dev)."
+      );
+    }
+  }
   return prisma.pack.update({ where: { id: packId }, data });
 }
 
@@ -110,6 +129,21 @@ export async function createCohort(data: {
 
 export async function updateCohortStatus(cohortId: string, status: CohortStatus) {
   await requireAdmin();
+  if (status === "active") {
+    // Closes the parallel path: a cohort could go "active" — the
+    // operational signal this is really running — while its pack has no
+    // dedicated indicators, bypassing the updatePack gate entirely.
+    const cohort = await prisma.cohort.findUnique({
+      where: { id: cohortId },
+      select: { pack: { select: { slug: true, name: true } } },
+    });
+    if (!cohort) throw new Error("Cohort não encontrada.");
+    if (!hasDedicatedIndicators(cohort.pack.slug)) {
+      throw new Error(
+        `Não é possível ativar esta Journey: o pack "${cohort.pack.name}" ainda não tem indicadores de avaliação próprios.`
+      );
+    }
+  }
   return prisma.cohort.update({ where: { id: cohortId }, data: { status } });
 }
 

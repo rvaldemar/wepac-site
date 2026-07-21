@@ -98,6 +98,12 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
   const [memberError, setMemberError] = useState("");
   const [savingMember, setSavingMember] = useState(false);
 
+  // Keyed by pack.id / cohort.id so independent rows can show their own
+  // gate error (e.g. activation rejected for lacking dedicated indicators)
+  // without clobbering each other.
+  const [toggleActiveErrors, setToggleActiveErrors] = useState<Record<string, string>>({});
+  const [statusChangeErrors, setStatusChangeErrors] = useState<Record<string, string>>({});
+
   function resetPackForm() {
     setPackSlug("");
     setPackName("");
@@ -145,8 +151,16 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
   }
 
   async function handleToggleActive(pack: Pack) {
-    await updatePack(pack.id, { active: !pack.active });
-    router.refresh();
+    setToggleActiveErrors((prev) => ({ ...prev, [pack.id]: "" }));
+    try {
+      await updatePack(pack.id, { active: !pack.active });
+      router.refresh();
+    } catch (err) {
+      setToggleActiveErrors((prev) => ({
+        ...prev,
+        [pack.id]: err instanceof Error ? err.message : "Erro ao atualizar pack.",
+      }));
+    }
   }
 
   function resetCohortForm() {
@@ -178,8 +192,16 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
   }
 
   async function handleStatusChange(cohortId: string, status: CohortStatus) {
-    await updateCohortStatus(cohortId, status);
-    router.refresh();
+    setStatusChangeErrors((prev) => ({ ...prev, [cohortId]: "" }));
+    try {
+      await updateCohortStatus(cohortId, status);
+      router.refresh();
+    } catch (err) {
+      setStatusChangeErrors((prev) => ({
+        ...prev,
+        [cohortId]: err instanceof Error ? err.message : "Erro ao atualizar Journey.",
+      }));
+    }
   }
 
   function resetMemberForm() {
@@ -365,6 +387,9 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
                     {pack.tagline && (
                       <p className="mt-1 text-sm text-wepac-text-secondary">{pack.tagline}</p>
                     )}
+                    {toggleActiveErrors[pack.id] && (
+                      <p className="mt-1 text-xs text-wepac-error">{toggleActiveErrors[pack.id]}</p>
+                    )}
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -397,6 +422,11 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
                           {formatDate(cohort.startsAt)} — {formatDate(cohort.endsAt)} ·{" "}
                           {cohort._count.memberships} membros
                         </p>
+                        {statusChangeErrors[cohort.id] && (
+                          <p className="mt-1 text-xs text-wepac-error">
+                            {statusChangeErrors[cohort.id]}
+                          </p>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <span
