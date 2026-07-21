@@ -17,21 +17,7 @@ const MOMENTS = ["entry", "mid", "exit"] as const;
 
 export default async function DashboardPage() {
   await requirePageUser();
-  const { user, membership } = await getMyContext();
-
-  if (!membership) {
-    return (
-      <div className="p-6 lg:p-8">
-        <h1 className="font-barlow text-2xl font-bold text-wepac-white">
-          Olá, {user.name}
-        </h1>
-        <p className="mt-4 max-w-md text-sm text-wepac-text-tertiary">
-          A tua conta ainda não está associada a uma Journey — contacta a
-          equipa WEPAC.
-        </p>
-      </div>
-    );
-  }
+  const { user, membership, stage } = await getMyContext();
 
   const userId = user.id;
 
@@ -57,7 +43,10 @@ export default async function DashboardPage() {
       previousMoment ? computeAreaScores(userId, previousMoment) : null,
       getIndicatorScores(userId, currentMoment),
       getStrategicMapScores(userId),
-      getMyTasks(),
+      // Tasks still belong to the legacy CohortMembership model. Keep them
+      // visible while that context exists, but never make My Journey depend
+      // on it or fabricate a Cycle/Pack relationship for the person.
+      membership ? getMyTasks() : Promise.resolve([]),
       getNextSession(),
       getMySessions(),
       getMyConversations(),
@@ -114,19 +103,11 @@ export default async function DashboardPage() {
       )
     : null;
 
-  // Quarter week — 12-week trimestral cycle, same heuristic used across the platform.
-  const now = new Date();
-  const quarterMonth = Math.floor(now.getMonth() / 3) * 3;
-  const quarterStart = new Date(now.getFullYear(), quarterMonth, 1);
-  const quarterWeek = Math.min(
-    12,
-    Math.max(1, Math.ceil((now.getTime() - quarterStart.getTime()) / (7 * 24 * 60 * 60 * 1000)))
-  );
-
   return (
     <DashboardPageClient
       user={{ name: user.name }}
       membership={membership}
+      stage={stage}
       currentScores={currentScores}
       currentMoment={currentMoment}
       previousScores={previousScores}
@@ -148,7 +129,6 @@ export default async function DashboardPage() {
             }
           : null
       }
-      quarterWeek={quarterWeek}
     />
   );
 }

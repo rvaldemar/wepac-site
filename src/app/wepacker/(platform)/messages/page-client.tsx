@@ -88,7 +88,7 @@ export default function MessagesPageClient({ userId, conversations, contacts }: 
         className={`${listPaneClass} w-full flex-shrink-0 border-r border-wepac-border bg-wepac-black lg:w-72`}
       >
         <div className="flex items-center justify-between border-b border-wepac-border p-4">
-          <h1 className="font-barlow text-lg font-bold text-wepac-white">Mensagens</h1>
+          <h1 className="font-barlow text-lg font-bold text-wepac-white">Messages</h1>
           <button
             onClick={() => setShowContacts((v) => !v)}
             className="text-xs text-wepac-white hover:underline"

@@ -6,7 +6,7 @@ test("mentor creates a Checkpoint session, attaches transcript, sees ready-to-ge
 }) => {
   await loginAs(page, "ricardo@wepac.pt");
   await page.goto("/wepacker/mentor/sessions");
-  await page.getByRole("button", { name: "+ Nova Sessão" }).click();
+  await page.getByRole("button", { name: "+ New Session" }).click();
 
   // "Motivo da sessão" already defaults to "checkpoint" — clicking it is
   // redundant but explicit, and doubles as an assertion of the label.

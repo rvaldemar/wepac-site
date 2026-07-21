@@ -87,13 +87,19 @@ interface Props {
   session: SessionDetail;
   debrief: SessionDebriefView | null;
   preparation: PrepParticipant[];
+  canManagePrivateArtifacts: boolean;
 }
 
 function attendeeKey(userId: string): string {
   return userId;
 }
 
-export function SessionDebriefClient({ session, debrief: initialDebrief, preparation }: Props) {
+export function SessionDebriefClient({
+  session,
+  debrief: initialDebrief,
+  preparation,
+  canManagePrivateArtifacts,
+}: Props) {
   const router = useRouter();
   const [debrief, setDebrief] = useState<SessionDebriefView | null>(initialDebrief);
   const [generating, setGenerating] = useState(false);
@@ -279,7 +285,7 @@ export function SessionDebriefClient({ session, debrief: initialDebrief, prepara
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-barlow text-2xl font-bold text-wepac-white">
-            Debrief da sessão
+            Session Debrief
           </h1>
           <p className="mt-1 text-sm text-wepac-text-tertiary">
             {new Date(session.scheduledAt).toLocaleDateString("pt-PT")} ·{" "}
@@ -309,7 +315,7 @@ export function SessionDebriefClient({ session, debrief: initialDebrief, prepara
           href="/wepacker/mentor/sessions"
           className="text-xs text-wepac-text-tertiary hover:text-wepac-white hover:underline"
         >
-          Voltar às sessões
+          Back to Sessions
         </Link>
       </div>
 
@@ -345,7 +351,9 @@ export function SessionDebriefClient({ session, debrief: initialDebrief, prepara
                       </p>
                     </div>
 
-                    {/* Radar resumido */}
+                    {canManagePrivateArtifacts && (
+                      <>
+                    {/* Legacy Assessment summary — Admin-only until grants. */}
                     <div>
                       <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
                         Radar resumido
@@ -386,7 +394,7 @@ export function SessionDebriefClient({ session, debrief: initialDebrief, prepara
                       )}
                     </div>
 
-                    {/* Tarefas pendentes com origem sessão */}
+                    {/* Legacy Tasks — Admin-only until grants. */}
                     <div>
                       <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
                         Tarefas pendentes (de sessões)
@@ -408,11 +416,13 @@ export function SessionDebriefClient({ session, debrief: initialDebrief, prepara
                         </ul>
                       )}
                     </div>
+                      </>
+                    )}
 
                     {/* Últimas notas partilhadas / outcomes */}
                     <div>
                       <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
-                        Sessões anteriores
+                        Previous Sessions
                       </p>
                       {p.recentHistory.length === 0 ? (
                         <p className="mt-1 text-xs text-wepac-text-tertiary">
@@ -615,7 +625,9 @@ export function SessionDebriefClient({ session, debrief: initialDebrief, prepara
                     </div>
                   )}
 
-                  {suggestion && suggestion.tasks.length > 0 && (
+                  {canManagePrivateArtifacts &&
+                    suggestion &&
+                    suggestion.tasks.length > 0 && (
                     <div className="mt-3 space-y-2 border-t border-wepac-border pt-3">
                       <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
                         Tarefas sugeridas
@@ -671,7 +683,7 @@ export function SessionDebriefClient({ session, debrief: initialDebrief, prepara
           {debrief.internalEvaluation && (
             <div className="border border-wepac-border bg-wepac-card p-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-bold text-wepac-white">Avaliação interna</h2>
+                <h2 className="text-sm font-bold text-wepac-white">Internal review</h2>
                 <button
                   onClick={copyInternalEvaluation}
                   className="text-xs text-wepac-white hover:underline"

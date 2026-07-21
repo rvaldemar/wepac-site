@@ -7,6 +7,8 @@ import {
   getMentoredCohortIds,
   requireRole,
   requireUser,
+  resolveSessionAttendeeAuthorization,
+  type SessionAttendeeAuthorization,
 } from "@/lib/wepacker/guards";
 import { SESSION_KIND_LABELS } from "@/lib/wepacker/types";
 import {
@@ -117,13 +119,27 @@ function maskUnpublishedNotes<
 // reuse the exact same check instead of re-deriving it.
 export async function assertMentorOfSession(
   sessionId: string
-): Promise<{ cohortId: string | null; mentorId: string }> {
+): Promise<{
+  cohortId: string | null;
+  mentorshipId: string | null;
+  mentorId: string;
+}> {
   const session = await prisma.session.findUnique({
     where: { id: sessionId },
-    select: { cohortId: true, mentorId: true },
+    select: { cohortId: true, mentorshipId: true, mentorId: true },
   });
   if (!session) throw new Error("Sessão não encontrada.");
-  if (session.cohortId) {
+
+  // A direct Mentorship Session remains private to its organizer even when it
+  // also carries optional Cycle context. Routing it through the broad legacy
+  // Cohort guard would expose transcript, debrief, and private attendee notes
+  // to every co-mentor in that Cycle.
+  if (session.mentorshipId) {
+    const actor = await requireUser();
+    if (actor.role !== "admin" && actor.id !== session.mentorId) {
+      throw new Error("Sem permissão.");
+    }
+  } else if (session.cohortId) {
     await assertMentorOfCohort(session.cohortId);
   } else {
     const actor = await requireUser();
@@ -185,17 +201,20 @@ export async function getMentoredSessions() {
   const mentoredCohortIds = await getMentoredCohortIds(actor.id);
   return prisma.session.findMany({
     where: {
-      OR: [{ cohortId: { in: mentoredCohortIds } }, { mentorId: actor.id }],
+      OR: [
+        { cohortId: { in: mentoredCohortIds }, mentorshipId: null },
+        { mentorId: actor.id },
+      ],
     },
     include: mentorSessionInclude,
     orderBy: { scheduledAt: "desc" },
   });
 }
 
-// Every person (deduplicated) the actor mentors across every cohort —
-// used to populate the participant picker for sessions that aren't
-// scoped to one specific Journey. Admin sees every other user directly,
-// including people who don't yet have a Journey membership.
+// Every person (deduplicated) available to the actor for Session scheduling.
+// Active, fully accepted Mentorships are the primary source; active legacy
+// Cohort mentor/member pairs remain a measured compatibility fallback during
+// migration. Admin sees every other user directly.
 export async function getMentoredMembers() {
   const actor = await requireRole(["mentor", "admin"]);
   if (actor.role === "admin") {
@@ -206,14 +225,34 @@ export async function getMentoredMembers() {
     });
   }
 
-  const where = {
-    role: "member" as const,
-    status: "active" as const,
-    userId: { not: actor.id },
-    cohortId: { in: await getMentoredCohortIds(actor.id) },
-  };
+  const [mentorships, mentoredCohortIds] = await Promise.all([
+    prisma.mentorship.findMany({
+      where: {
+        mentorId: actor.id,
+        menteeId: { not: actor.id },
+        status: "active",
+        reviewRequired: false,
+        mentorAcceptedAt: { not: null },
+        menteeAcceptedAt: { not: null },
+        activatedAt: { not: null },
+        endedAt: null,
+      },
+      select: {
+        menteeId: true,
+        mentee: { select: { id: true, name: true, email: true } },
+      },
+      orderBy: { activatedAt: "asc" },
+    }),
+    getMentoredCohortIds(actor.id),
+  ]);
+
   const memberships = await prisma.cohortMembership.findMany({
-    where,
+    where: {
+      role: "member",
+      status: "active",
+      userId: { not: actor.id },
+      cohortId: { in: mentoredCohortIds },
+    },
     include: { user: { select: { id: true, name: true, email: true } } },
     orderBy: { joinedAt: "asc" },
   });
@@ -221,8 +260,23 @@ export async function getMentoredMembers() {
     string,
     { id: string; name: string; email: string }
   >();
+  for (const mentorship of mentorships) {
+    if (!byUser.has(mentorship.menteeId)) {
+      byUser.set(mentorship.menteeId, mentorship.mentee);
+    }
+  }
+
+  let legacyOnlyCount = 0;
   for (const m of memberships) {
-    if (!byUser.has(m.userId)) byUser.set(m.userId, m.user);
+    if (!byUser.has(m.userId)) {
+      byUser.set(m.userId, m.user);
+      legacyOnlyCount += 1;
+    }
+  }
+  if (legacyOnlyCount > 0) {
+    console.info("[session discovery] legacy_cohort_fallback", {
+      attendeeCount: legacyOnlyCount,
+    });
   }
   return Array.from(byUser.values());
 }
@@ -344,6 +398,122 @@ async function sendSessionCalendarEmails(
   }
 }
 
+function normalizeSessionAttendeeIds(userIds: string[]): string[] {
+  const normalized = (Array.isArray(userIds) ? userIds : [])
+    .filter((userId): userId is string => typeof userId === "string")
+    .map((userId) => userId.trim())
+    .filter(Boolean);
+  return Array.from(new Set(normalized));
+}
+
+function assertSessionAttendeeCardinality(
+  sessionType: SessionType,
+  attendeeUserIds: string[]
+): void {
+  if (attendeeUserIds.length === 0) {
+    throw new Error("Escolhe pelo menos um participante.");
+  }
+  if (sessionType === "individual" && attendeeUserIds.length !== 1) {
+    throw new Error("Uma Session individual requer exatamente um participante.");
+  }
+  if (sessionType === "group" && attendeeUserIds.length < 2) {
+    throw new Error("Uma Group Session requer pelo menos dois participantes.");
+  }
+  if (sessionType !== "individual" && sessionType !== "group") {
+    throw new Error("Formato de Session inválido.");
+  }
+}
+
+async function authorizeSessionAttendees({
+  actor,
+  attendeeUserIds,
+  legacyCohortId,
+  invalidMessage,
+}: {
+  actor: { id: string; role: "member" | "mentor" | "admin" };
+  attendeeUserIds: string[];
+  legacyCohortId?: string;
+  invalidMessage: string;
+}): Promise<{ mentorshipId: string | null }> {
+  if (attendeeUserIds.includes(actor.id)) {
+    throw new Error(invalidMessage);
+  }
+
+  // A persisted legacy Cycle context must be truthful: context never adds
+  // attendees, and neither Mentorship nor the admin role may attach a Person
+  // who is not an active participant of that exact Cycle. Cohortless Sessions
+  // continue through the Mentorship-first authorization below.
+  if (legacyCohortId) {
+    const activeParticipants = await prisma.cohortMembership.findMany({
+      where: {
+        cohortId: legacyCohortId,
+        userId: { in: attendeeUserIds, not: actor.id },
+        role: "member",
+        status: "active",
+      },
+      select: { userId: true },
+    });
+    if (
+      new Set(activeParticipants.map((membership) => membership.userId)).size !==
+      attendeeUserIds.length
+    ) {
+      throw new Error(invalidMessage);
+    }
+  }
+
+  let authorizations: SessionAttendeeAuthorization[] = [];
+  if (actor.role === "admin") {
+    const users = await prisma.user.findMany({
+      where: { id: { in: attendeeUserIds, not: actor.id } },
+      select: { id: true },
+    });
+    if (new Set(users.map((user) => user.id)).size !== attendeeUserIds.length) {
+      throw new Error(invalidMessage);
+    }
+
+    // Admin may schedule with any other Person. We still resolve a sole
+    // attendee through the same narrow predicate so a genuine active
+    // Mentorship is attached when one exists; unrelated admin Sessions stay
+    // unlinked.
+    if (attendeeUserIds.length === 1) {
+      authorizations = [
+        await resolveSessionAttendeeAuthorization(actor.id, attendeeUserIds[0], {
+          legacyCohortId,
+        }),
+      ];
+    }
+  } else {
+    authorizations = await Promise.all(
+      attendeeUserIds.map((attendeeUserId) =>
+        resolveSessionAttendeeAuthorization(actor.id, attendeeUserId, {
+          legacyCohortId,
+        })
+      )
+    );
+    if (authorizations.some((authorization) => !authorization.authorized)) {
+      throw new Error(invalidMessage);
+    }
+  }
+
+  const legacyFallbackCount = authorizations.filter(
+    (authorization) => authorization.source === "legacy_cohort"
+  ).length;
+  if (legacyFallbackCount > 0) {
+    console.info("[session authorization] legacy_cohort_fallback", {
+      attendeeCount: legacyFallbackCount,
+    });
+  }
+
+  const soleAuthorization =
+    attendeeUserIds.length === 1 ? authorizations[0] : undefined;
+  return {
+    mentorshipId:
+      soleAuthorization?.source === "mentorship"
+        ? soleAuthorization.mentorshipId
+        : null,
+  };
+}
+
 export async function createSession(data: {
   cohortId?: string;
   sessionType: SessionType;
@@ -353,60 +523,29 @@ export async function createSession(data: {
   discussionPoints?: string;
   attendeeUserIds: string[];
 }) {
+  const attendeeUserIds = normalizeSessionAttendeeIds(data.attendeeUserIds);
+  assertSessionAttendeeCardinality(data.sessionType, attendeeUserIds);
+
   let actor;
   if (data.cohortId) {
     actor = await assertMentorOfCohort(data.cohortId);
-
-    // Attendees must be active member-participants in the same cohort.
-    // A mentor/admin may not add themselves as an attendee.
-    const valid = await prisma.cohortMembership.findMany({
-      where: {
-        userId: { in: data.attendeeUserIds, not: actor.id },
-        cohortId: data.cohortId,
-        role: "member",
-        status: "active",
-      },
-      select: { userId: true },
-    });
-    const validUserIds = new Set(valid.map((v) => v.userId));
-    if (data.attendeeUserIds.some((id) => !validUserIds.has(id))) {
-      throw new Error("Participantes inválidos para esta Journey.");
-    }
   } else {
     actor = await requireRole(["mentor", "admin"]);
-
-    if (actor.role === "admin") {
-      const valid = await prisma.user.findMany({
-        where: {
-          id: { in: data.attendeeUserIds, not: actor.id },
-        },
-        select: { id: true },
-      });
-      const validUserIds = new Set(valid.map((user) => user.id));
-      if (data.attendeeUserIds.some((id) => !validUserIds.has(id))) {
-        throw new Error("Participantes inválidos para esta sessão.");
-      }
-    } else {
-      const mentoredCohortIds = await getMentoredCohortIds(actor.id);
-      const valid = await prisma.cohortMembership.findMany({
-        where: {
-          userId: { in: data.attendeeUserIds, not: actor.id },
-          cohortId: { in: mentoredCohortIds },
-          role: "member",
-          status: "active",
-        },
-        select: { userId: true },
-      });
-      const validUserIds = new Set(valid.map((membership) => membership.userId));
-      if (data.attendeeUserIds.some((id) => !validUserIds.has(id))) {
-        throw new Error("Participantes inválidos para esta sessão.");
-      }
-    }
   }
+
+  const { mentorshipId } = await authorizeSessionAttendees({
+    actor,
+    attendeeUserIds,
+    legacyCohortId: data.cohortId,
+    invalidMessage: data.cohortId
+      ? "Participantes inválidos para este Cycle."
+      : "Participantes inválidos para esta sessão.",
+  });
 
   const session = await prisma.session.create({
     data: {
       cohortId: data.cohortId,
+      mentorshipId,
       mentorId: actor.id,
       sessionType: data.sessionType,
       kind: data.kind ?? "checkpoint",
@@ -415,7 +554,7 @@ export async function createSession(data: {
       discussionPoints: data.discussionPoints,
       meetingUrl: generateMeetingUrl(),
       attendees: {
-        create: data.attendeeUserIds.map((userId) => ({ userId })),
+        create: attendeeUserIds.map((userId) => ({ userId })),
       },
     },
     include: mentorSessionInclude,
@@ -431,14 +570,10 @@ export async function createSession(data: {
 // Guard-free counterpart to createSession's write path, for the Cal.com
 // webhook receiver (src/app/api/wepacker/calcom-webhook/route.ts). There is
 // no HTTP session on a server-to-server webhook delivery, so
-// assertMentorOfCohort/assertMentorOfUsers (both requireUser()/NextAuth
-// underneath) cannot run here — the caller is expected to have already
-// verified the HMAC signature (authentication: this really came from
-// Cal.com) AND independently re-checked the mentor↔attendee relationship
-// (authorization: the signature only proves the payload's origin, not that
-// the self-asserted attendee actually has any relationship with the
-// organizer — Cal.com's booking page is public). Do not export this for
-// any caller that hasn't done both.
+// browser-session guards cannot run here. The caller must first verify the
+// Cal.com HMAC signature; this function independently re-checks organizer and
+// attendee authorization before writing because a valid signature proves only
+// payload origin, not the self-asserted attendee's relationship.
 //
 // calcomBookingUid is passed straight to `create` (not pre-checked with a
 // findFirst) so the @unique constraint is the single idempotency anchor:
@@ -456,9 +591,31 @@ export async function createSessionFromResolvedActors(data: {
   attendeeUserIds: string[];
   calcomBookingUid: string;
 }) {
+  const attendeeUserIds = normalizeSessionAttendeeIds(data.attendeeUserIds);
+  assertSessionAttendeeCardinality(data.sessionType, attendeeUserIds);
+
+  // This exported write is used by an HMAC-authenticated webhook and cannot
+  // rely on a browser/NextAuth session. Re-resolve the organizer and every
+  // attendee here so the write itself still fails closed if a caller forgets
+  // the route-level checks.
+  const actor = await prisma.user.findUnique({
+    where: { id: data.mentorId },
+    select: { id: true, role: true },
+  });
+  if (!actor || (actor.role !== "mentor" && actor.role !== "admin")) {
+    throw new Error("Organizador inválido para esta sessão.");
+  }
+  const { mentorshipId } = await authorizeSessionAttendees({
+    actor,
+    attendeeUserIds,
+    legacyCohortId: data.cohortId ?? undefined,
+    invalidMessage: "Participantes inválidos para esta sessão.",
+  });
+
   const session = await prisma.session.create({
     data: {
       cohortId: data.cohortId ?? undefined,
+      mentorshipId,
       mentorId: data.mentorId,
       sessionType: data.sessionType,
       kind: data.kind ?? "checkpoint",
@@ -467,7 +624,7 @@ export async function createSessionFromResolvedActors(data: {
       meetingUrl: generateMeetingUrl(),
       calcomBookingUid: data.calcomBookingUid,
       attendees: {
-        create: data.attendeeUserIds.map((userId) => ({ userId })),
+        create: attendeeUserIds.map((userId) => ({ userId })),
       },
     },
     include: mentorSessionInclude,

@@ -28,8 +28,8 @@ export function InvitePageClient({
             Bem-vindo à WEPACKER
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-wepac-text-secondary">
-            Olá {userName}, foste convidado para participar no programa de
-            desenvolvimento integral WEPAC. Cria a tua password para começar.
+            Olá {userName}, foste convidado a entrar na WEPACKER. Cria a tua
+            password para aceder a My Journey.
           </p>
         </div>
 

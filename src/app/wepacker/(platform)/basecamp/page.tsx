@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { requirePageUser } from "@/lib/wepacker/page-guards";
-import { getMyContext } from "@/lib/wepacker/actions/user";
 import { getLifePlan, getStrategicPlan } from "@/lib/wepacker/actions/plan";
 import { getTrails } from "@/lib/wepacker/actions/trail";
 import { TRAIL_STATUS_LABELS, type TrailStatus } from "@/lib/wepacker/types";
@@ -15,23 +14,7 @@ const TRAIL_STATUS_ORDER: TrailStatus[] = [
 ];
 
 export default async function BasecampPage() {
-  await requirePageUser();
-  const { user, membership } = await getMyContext();
-
-  if (!membership) {
-    return (
-      <div className="p-6 lg:p-8">
-        <h1 className="font-barlow text-2xl font-bold text-wepac-white">
-          Basecamp
-        </h1>
-        <p className="mt-4 max-w-md text-sm text-wepac-text-tertiary">
-          A tua conta ainda não está associada a uma Journey — contacta a
-          equipa WEPAC.
-        </p>
-      </div>
-    );
-  }
-
+  const user = await requirePageUser();
   const userId = user.id;
 
   const [lifePlan, strategicPlan, trails] = await Promise.all([
@@ -56,35 +39,35 @@ export default async function BasecampPage() {
         Basecamp
       </h1>
       <p className="mt-1 text-sm text-wepac-text-tertiary">
-        O ponto de partida do teu desenvolvimento — plano de vida, plano
-        estratégico e travessias em curso.
+        O ponto de partida do teu desenvolvimento — Life Map, Strategic Plan
+        e Trails em curso.
       </p>
 
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-3">
-        {/* Life Plan */}
+        {/* Life Map */}
         <div className="flex flex-col border border-wepac-border bg-wepac-card p-6">
           <h2 className="font-barlow text-lg font-bold text-wepac-white">
-            Life Plan
+            Life Map
           </h2>
           <p className="mt-2 flex-1 text-sm text-wepac-text-tertiary">
             {lifePlan
               ? `Última atualização: ${new Date(
                   lifePlan.updatedAt
                 ).toLocaleDateString("pt-PT")}`
-              : "Ainda não começaste o teu Life Plan."}
+              : "Ainda não começaste o teu Life Map."}
           </p>
           <Link
             href="/wepacker/ppv"
             className="mt-4 inline-block bg-wepac-white px-4 py-2 text-center text-sm font-bold text-wepac-black transition-colors hover:bg-wepac-accent-muted"
           >
-            {lifePlan ? "Ver Life Plan" : "Criar Life Plan"}
+            {lifePlan ? "Ver Life Map" : "Criar Life Map"}
           </Link>
         </div>
 
         {/* Strategic Plan */}
         <div className="flex flex-col border border-wepac-border bg-wepac-card p-6">
           <h2 className="font-barlow text-lg font-bold text-wepac-white">
-            Plano Estratégico
+            Strategic Plan
           </h2>
           <p className="mt-2 flex-1 text-sm text-wepac-text-tertiary">
             {strategicPlan
@@ -95,7 +78,7 @@ export default async function BasecampPage() {
             href="/wepacker/plan"
             className="mt-4 inline-block bg-wepac-white px-4 py-2 text-center text-sm font-bold text-wepac-black transition-colors hover:bg-wepac-accent-muted"
           >
-            {strategicPlan ? "Ver Plano" : "Criar Plano"}
+            {strategicPlan ? "Ver Strategic Plan" : "Criar Strategic Plan"}
           </Link>
         </div>
 

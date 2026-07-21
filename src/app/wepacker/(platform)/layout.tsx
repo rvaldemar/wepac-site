@@ -19,7 +19,7 @@ export default async function PlatformLayout({
   const user = await getSessionUser();
   const counts = user
     ? await getSidebarCounts()
-    : { unreadMessages: 0, pendingTasks: 0 };
+    : { unreadMessages: 0, pendingTasks: 0, pendingMentorships: 0 };
 
   return (
     <SessionProvider>
@@ -27,6 +27,7 @@ export default async function PlatformLayout({
         <PlatformSidebar
           unreadMessages={counts.unreadMessages}
           pendingTasks={counts.pendingTasks}
+          pendingMentorships={counts.pendingMentorships}
         />
         <div className="pt-14 lg:ml-56 lg:pt-0">
           <div className="min-h-screen">{children}</div>

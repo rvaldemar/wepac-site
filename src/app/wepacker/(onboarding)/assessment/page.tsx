@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { getMyContext } from "@/lib/wepacker/actions/user";
-import { OnboardingStepper } from "@/components/wepacker/OnboardingStepper";
 import { hasDedicatedIndicators } from "@/lib/wepacker/types";
 import AssessmentPageClient from "./page-client";
 
@@ -10,14 +9,13 @@ export default async function AssessmentPage() {
   if (!membership) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-wepac-black px-6 pt-16">
-        <OnboardingStepper currentStep={2} />
         <div className="w-full max-w-md text-center">
           <h1 className="font-barlow text-2xl font-bold text-wepac-white">
-            Sem Journey associada
+            Legacy Assessment unavailable
           </h1>
           <p className="mt-4 text-sm leading-relaxed text-wepac-text-secondary">
-            A tua conta ainda não está associada a uma Journey — contacta a
-            equipa WEPAC.
+            Este instrumento ainda depende de um legacy delivery record. Não
+            vamos inferir um target Cycle, Stage ou Discipline a partir dele.
           </p>
           <Link
             href="/wepacker/dashboard"
@@ -38,16 +36,14 @@ export default async function AssessmentPage() {
   if (!hasDedicatedIndicators(membership.packSlug)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-wepac-black px-6 pt-16">
-        <OnboardingStepper currentStep={2} />
         <div className="w-full max-w-md text-center">
           <h1 className="font-barlow text-2xl font-bold text-wepac-white">
-            Avaliação ainda não disponível
+            Legacy Assessment unavailable
           </h1>
           <p className="mt-4 text-sm leading-relaxed text-wepac-text-secondary">
-            O pack {membership.packName} ainda não tem indicadores de
-            avaliação próprios definidos. Contacta a equipa WEPAC — a
-            avaliação fica disponível assim que o instrumento estiver
-            configurado.
+            O legacy track {membership.packName} ainda não tem um instrumento
+            verificado. Não será apresentado como Discipline nem como
+            Stage-calibrated Assessment.
           </p>
           <Link
             href="/wepacker/dashboard"

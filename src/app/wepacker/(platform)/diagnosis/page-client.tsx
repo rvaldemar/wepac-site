@@ -53,10 +53,11 @@ export default function DiagnosisPageClient({
   return (
     <div className="p-6 lg:p-8">
       <h1 className="font-barlow text-2xl font-bold text-wepac-white">
-        Diagnóstico / Avaliação
+        Legacy Assessment
       </h1>
       <p className="mt-1 text-sm text-wepac-text-tertiary">
-        O teu mapa de desenvolvimento ao longo do programa.
+        Historical delivery-based instrument. It is not yet calibrated by a
+        verified Stage and must not be read as the target Life Map.
       </p>
 
       {/* Moment selector */}

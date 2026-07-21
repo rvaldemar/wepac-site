@@ -18,10 +18,10 @@ const STATUS_COLORS: Record<TaskStatus, string> = {
 };
 
 const ORIGIN_LABELS: Record<string, string> = {
-  plan: "Plano",
-  session: "Sessão",
+  plan: "Strategic Plan",
+  session: "Session",
   mentor: "Mentor",
-  self: "Próprio",
+  self: "Self",
 };
 
 interface Task {
@@ -147,16 +147,18 @@ export default function TasksPageClient({ membershipId, tasks }: Props) {
     <div className="p-6 lg:p-8">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="font-barlow text-2xl font-bold text-wepac-white">Tarefas</h1>
+          <h1 className="font-barlow text-2xl font-bold text-wepac-white">
+            Legacy Tasks
+          </h1>
           <p className="mt-1 text-sm text-wepac-text-tertiary">
-            As tuas tarefas e ações do programa.
+            Tasks still attached to a legacy delivery record.
           </p>
         </div>
         <button
           onClick={() => setShowForm((v) => !v)}
           className="text-xs text-wepac-white hover:underline"
         >
-          {showForm ? "Cancelar" : "+ Nova tarefa"}
+          {showForm ? "Cancel" : "+ New Task"}
         </button>
       </div>
 
@@ -192,7 +194,7 @@ export default function TasksPageClient({ membershipId, tasks }: Props) {
             onClick={handleCreate}
             className="bg-wepac-white px-5 py-2 text-sm font-bold text-wepac-black transition-colors hover:bg-wepac-accent-muted disabled:opacity-50"
           >
-            {saving ? "A guardar..." : "Adicionar tarefa"}
+            {saving ? "Saving..." : "Add Task"}
           </button>
         </div>
       )}

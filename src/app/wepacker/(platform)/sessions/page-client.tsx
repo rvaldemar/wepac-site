@@ -155,16 +155,16 @@ export default function SessionsPageClient({ sessions, calcomBookingUrl }: Props
     <div className="p-6 lg:p-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-barlow text-2xl font-bold text-wepac-white">Sessões</h1>
+          <h1 className="font-barlow text-2xl font-bold text-wepac-white">Sessions</h1>
           <p className="mt-1 text-sm text-wepac-text-tertiary">
-            Sessões passadas e futuras com o teu mentor.
+            Past and upcoming Sessions with your Mentor.
           </p>
         </div>
         <div className="flex gap-1">
           {(
             [
-              { key: "list" as const, label: "Lista" },
-              { key: "calendar" as const, label: "Calendário" },
+              { key: "list" as const, label: "List" },
+              { key: "calendar" as const, label: "Calendar" },
             ]
           ).map((tab) => (
             <button
@@ -185,10 +185,10 @@ export default function SessionsPageClient({ sessions, calcomBookingUrl }: Props
       {calcomBookingUrl && (
         <div className="mt-8 border border-wepac-border bg-wepac-card p-5">
           <h2 className="text-sm font-bold uppercase tracking-widest text-wepac-text-tertiary">
-            Marcar sessão
+            Book a Session
           </h2>
           <p className="mt-2 max-w-md text-sm text-wepac-text-secondary">
-            Marca uma sessão diretamente na agenda do teu mentor — escolhe o
+            Marca uma Session diretamente na agenda do teu Mentor — escolhe o
             dia e a hora que preferires.
           </p>
           <a
@@ -197,7 +197,7 @@ export default function SessionsPageClient({ sessions, calcomBookingUrl }: Props
             rel="noopener noreferrer"
             className="mt-4 inline-block bg-wepac-white px-4 py-2 text-sm font-medium text-wepac-black hover:opacity-90"
           >
-            Marcar sessão →
+            Book a Session →
           </a>
         </div>
       )}
@@ -217,7 +217,7 @@ export default function SessionsPageClient({ sessions, calcomBookingUrl }: Props
               />
             ) : (
               <p className="text-sm text-wepac-text-tertiary">
-                Seleciona uma sessão no calendário para ver o detalhe.
+                Seleciona uma Session no calendário para ver o detalhe.
               </p>
             )}
           </div>
@@ -227,7 +227,7 @@ export default function SessionsPageClient({ sessions, calcomBookingUrl }: Props
           {upcoming.length > 0 && (
             <div className="mt-8">
               <h2 className="text-sm font-bold uppercase tracking-widest text-wepac-text-tertiary">
-                Próximas
+                Upcoming
               </h2>
               <div className="mt-4 space-y-3">
                 {upcoming.map((session) => (
@@ -239,7 +239,7 @@ export default function SessionsPageClient({ sessions, calcomBookingUrl }: Props
 
           <div className="mt-8">
             <h2 className="text-sm font-bold uppercase tracking-widest text-wepac-text-tertiary">
-              Passadas
+              Past
             </h2>
             <div className="mt-4 space-y-3">
               {past.length === 0 ? (

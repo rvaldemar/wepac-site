@@ -72,7 +72,7 @@ describe("updatePack", () => {
     packFindUnique.mockResolvedValue({ slug: "sport" });
 
     await expect(updatePack("pack-1", { active: true })).rejects.toThrow(
-      /indicadores de avaliação próprios/
+      /legacy track has no verified Assessment instrument/
     );
     expect(packUpdate).not.toHaveBeenCalled();
   });

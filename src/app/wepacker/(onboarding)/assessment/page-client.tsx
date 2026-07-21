@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { OnboardingStepper } from "@/components/wepacker/OnboardingStepper";
 import {
   AREA_KEYS,
   AREA_LABELS,
@@ -166,17 +165,17 @@ export default function AssessmentPageClient({
   if (completed) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-wepac-black px-6 pt-16">
-        <OnboardingStepper currentStep={2} />
         <div className="w-full max-w-md text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center bg-wepac-white/10">
             <span className="text-2xl text-wepac-white">✓</span>
           </div>
           <h1 className="mt-6 font-barlow text-3xl font-bold text-wepac-white">
-            Autoavaliação completa
+            Legacy Self-Assessment complete
           </h1>
           <p className="mt-4 text-sm leading-relaxed text-wepac-text-secondary">
-            A tua autoavaliação está completa. O teu mentor vai completar o
-            diagnóstico após a primeira sessão.
+            Este legacy Self-Assessment ficou guardado em My Journey como
+            histórico. Ainda não é um Stage-calibrated Assessment. Nenhum Mentor
+            recebe acesso sem um grant específico.
           </p>
           <button
             onClick={() => router.push("/wepacker/dashboard")}
@@ -191,12 +190,11 @@ export default function AssessmentPageClient({
 
   return (
     <div className="min-h-screen bg-wepac-black px-6 pb-16 pt-16">
-      <OnboardingStepper currentStep={2} />
       <div className="mx-auto max-w-xl">
         {/* Progress */}
         <div className="mb-8">
           <div className="flex items-center justify-between text-sm text-wepac-text-tertiary">
-            <span>Autoavaliação Inicial</span>
+            <span>Legacy Initial Self-Assessment</span>
             <span>
               Área {currentArea + 1} de {totalAreas}
             </span>
@@ -312,7 +310,7 @@ export default function AssessmentPageClient({
             <p className="text-sm font-medium text-wepac-error">
               Falta responder a {missingItems.length}{" "}
               {missingItems.length === 1 ? "indicador" : "indicadores"} antes de
-              completar a autoavaliação:
+              completar o Self-Assessment:
             </p>
             <ul className="mt-2 space-y-1 text-sm text-wepac-text-secondary">
               {missingItems.map((item) => (

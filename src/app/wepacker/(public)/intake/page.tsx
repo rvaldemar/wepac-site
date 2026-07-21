@@ -7,14 +7,17 @@ import { CandidaturaFormClient } from "../[pack]/intake/page-client";
 export const metadata: Metadata = {
   title: "Intake — WEPACKER",
   description:
-    "Candidata-te ao WEPACKER — o caminho de desenvolvimento humano integral da WEPAC. Não precisas de saber o teu Pack: começa aqui.",
+    "Candidata-te ao WEPACKER — o caminho de desenvolvimento humano integral da WEPAC. Não precisas de escolher uma Discipline: começa aqui.",
 };
 
 export const revalidate = 300;
 
-// Generic intake: apply to WEPACKER itself, without choosing a Pack yet.
+// Generic intake: apply to WEPACKER itself without choosing a legacy
+// delivery Discipline first.
 export default async function GeneralIntakePage() {
-  const packs = await getActivePacksPublic();
+  const packs = (await getActivePacksPublic()).filter(
+    (pack) => pack.slug === "artist"
+  );
 
   return (
     <div className="min-h-screen bg-wepac-black">
@@ -43,14 +46,14 @@ export default async function GeneralIntakePage() {
             Intake · WEPACKER
           </p>
           <h1 className="mt-3 font-barlow text-3xl font-bold text-wepac-white md:text-5xl">
-            Torna-te wepacker
+            Torna-te WEPACker
           </h1>
           <p className="mt-4 text-lg font-medium text-wepac-gray">
             From packers to WEPACkers.
           </p>
           <p className="mt-4 text-base leading-relaxed text-wepac-text-secondary">
             Um wepacker carrega o seu próprio peso — e ainda entrega valor à
-            comunidade. Não precisas de saber já o teu Pack: conta-nos quem és
+            comunidade. Não precisas de escolher já uma Discipline: conta-nos quem és
             e o que queres desenvolver, e a equipa encontra contigo o caminho
             certo.
           </p>
@@ -66,7 +69,7 @@ export default async function GeneralIntakePage() {
           {packs.length > 0 && (
             <div className="mt-12 border-t border-wepac-border pt-8">
               <p className="text-sm text-wepac-text-tertiary">
-                Já sabes o teu Pack? Candidata-te diretamente:
+                Já sabes qual Discipline queres explorar? Escolhe-a diretamente:
               </p>
               <div className="mt-4 flex flex-wrap gap-3">
                 {packs.map((pack) => (
@@ -75,7 +78,7 @@ export default async function GeneralIntakePage() {
                     href={`/wepacker/${pack.slug}/intake`}
                     className="border border-wepac-border px-4 py-2 text-sm text-wepac-text-secondary transition-colors hover:border-wepac-white hover:text-wepac-white"
                   >
-                    {pack.name} →
+                    Arts →
                   </Link>
                 ))}
               </div>

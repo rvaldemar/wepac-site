@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createInvite, deleteUser } from "@/lib/wepacker/actions/admin";
-import { LEVEL_LABELS, PHASE_LABELS } from "@/lib/wepacker/types";
 import type {
   MemberLevel,
   MemberPhase,
@@ -12,9 +11,9 @@ import type {
 } from "@/lib/wepacker/types";
 
 const ROLE_LABELS: Record<UserRole, string> = {
-  member: "Membro",
-  mentor: "Mentor",
-  admin: "Admin",
+  member: "Standard access",
+  mentor: "Mentor workspace access",
+  admin: "Admin access",
 };
 
 interface PackSummary {
@@ -203,11 +202,11 @@ export function AdminUsersPageClient({
         <div className="flex items-center justify-between">
           <div>
             <h1 className="font-barlow text-3xl font-bold text-wepac-white">
-              Gestão de Utilizadores
+              Users
             </h1>
             <p className="mt-1 text-sm text-wepac-text-tertiary">
-              {counts.total} utilizadores — {counts.members} membros, {counts.mentors} mentores,{" "}
-              {counts.admins} admins
+              {counts.total} people — {counts.members} Standard, {counts.mentors} Mentor workspace,{" "}
+              {counts.admins} Admin access
             </p>
           </div>
           <button
@@ -222,7 +221,7 @@ export function AdminUsersPageClient({
         {showInviteForm && (
           <div className="mt-6 border border-wepac-border bg-wepac-card p-6">
             <h2 className="font-barlow text-lg font-bold text-wepac-white">
-              Convidar Utilizador
+              Invite User
             </h2>
             {prefill?.applicationId && !inviteResult && (
               <p className="mt-2 text-xs text-wepac-text-tertiary">
@@ -309,9 +308,9 @@ export function AdminUsersPageClient({
                     onChange={(e) => setInviteRole(e.target.value as UserRole)}
                     className="mt-1 w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
                   >
-                    <option value="member">Membro</option>
-                    <option value="mentor">Mentor</option>
-                    <option value="admin">Admin</option>
+                    <option value="member">Standard access</option>
+                    <option value="mentor">Mentor workspace access</option>
+                    <option value="admin">Admin access</option>
                   </select>
                 </div>
                 <div className="sm:col-span-3">
@@ -326,12 +325,15 @@ export function AdminUsersPageClient({
                     className="mt-1 w-full resize-none bg-wepac-input px-3 py-2 text-sm text-wepac-white placeholder-wepac-text-tertiary outline-none focus:ring-1 focus:ring-wepac-white/50"
                   />
                 </div>
-                {/* Multi-pack / multi-cohort memberships */}
+                {/* Legacy cohort assignments; not target Cycle Enrollment. */}
                 <div className="sm:col-span-3">
                   <label className="block text-xs text-wepac-text-tertiary">
-                    Journeys (opcional — a mesma pessoa pode entrar em vários
-                    packs)
+                    Legacy cohort assignments (optional)
                   </label>
+                  <p className="mt-1 text-xs text-wepac-warning">
+                    These write CohortMembership records. They are not target Cycle
+                    Enrollments, Cycle Facilitators, or Pack Memberships.
+                  </p>
                   <div className="mt-1 space-y-2">
                     {inviteMemberships.map((m, i) => (
                       <div key={i} className="flex gap-2">
@@ -344,7 +346,7 @@ export function AdminUsersPageClient({
                           }
                           className="w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
                         >
-                          <option value="">Escolher Journey…</option>
+                          <option value="">Choose a legacy cohort…</option>
                           {cohorts
                             .filter(
                               (c) =>
@@ -369,8 +371,8 @@ export function AdminUsersPageClient({
                           }
                           className="w-36 bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
                         >
-                          <option value="member">Membro</option>
-                          <option value="mentor">Mentor</option>
+                          <option value="member">Participant</option>
+                          <option value="mentor">Facilitator</option>
                         </select>
                         <button
                           type="button"
@@ -380,7 +382,7 @@ export function AdminUsersPageClient({
                             )
                           }
                           className="px-2 text-wepac-text-tertiary hover:text-wepac-white"
-                          aria-label="Remover Journey"
+                          aria-label="Remove legacy cohort"
                         >
                           &times;
                         </button>
@@ -397,7 +399,7 @@ export function AdminUsersPageClient({
                         }
                         className="border border-wepac-white/20 px-3 py-1.5 text-xs text-wepac-white/60 transition-colors hover:text-wepac-white"
                       >
-                        + Adicionar cohort
+                        + Add legacy cohort
                       </button>
                     )}
                   </div>
@@ -423,9 +425,9 @@ export function AdminUsersPageClient({
         <div className="mt-8 grid gap-4 sm:grid-cols-4">
           {[
             { label: "Total", value: counts.total },
-            { label: "Membros", value: counts.members },
-            { label: "Mentores", value: counts.mentors },
-            { label: "Pendentes", value: counts.notOnboarded },
+            { label: "Standard access", value: counts.members },
+            { label: "Mentor workspace", value: counts.mentors },
+            { label: "Pending", value: counts.notOnboarded },
           ].map((s) => (
             <div key={s.label} className="border border-wepac-border bg-wepac-card p-4">
               <p className="text-xs text-wepac-text-tertiary">{s.label}</p>
@@ -515,17 +517,9 @@ export function AdminUsersPageClient({
                     {ROLE_LABELS[user.role]}
                   </span>
                   {membership && (
-                    <>
-                      <span className="bg-wepac-input px-2 py-0.5 text-xs text-wepac-text-tertiary">
-                        {membership.cohort.pack.name} · {membership.cohort.name}
-                      </span>
-                      <span className="bg-wepac-input px-2 py-0.5 text-xs text-wepac-text-tertiary">
-                        {LEVEL_LABELS[membership.level]}
-                      </span>
-                      <span className="bg-wepac-white/10 px-2 py-0.5 text-xs text-wepac-accent-muted">
-                        {PHASE_LABELS[membership.currentPhase]}
-                      </span>
-                    </>
+                    <span className="bg-wepac-input px-2 py-0.5 text-xs text-wepac-text-tertiary">
+                      Legacy delivery: {membership.cohort.name}
+                    </span>
                   )}
                   {user.id !== currentUserId && (
                     <button

@@ -14,14 +14,13 @@ import {
   getMentoredCohortIds,
   requireAdmin,
   requireRole,
-  requireUser,
 } from "@/lib/wepacker/guards";
 import { hasDedicatedIndicators } from "@/lib/wepacker/types";
 
 // ===== PACKS =====
 
 export async function getPacks() {
-  await requireRole(["mentor", "admin"]);
+  await requireAdmin();
   return prisma.pack.findMany({
     include: { cohorts: { include: { _count: { select: { memberships: true } } } } },
     orderBy: { sortOrder: "asc" },
@@ -79,10 +78,10 @@ export async function updatePack(
       where: { id: packId },
       select: { slug: true },
     });
-    if (!pack) throw new Error("Pack não encontrado.");
+    if (!pack) throw new Error("Legacy track not found.");
     if (!hasDedicatedIndicators(pack.slug)) {
       throw new Error(
-        "Este pack ainda não tem indicadores de avaliação próprios definidos. Não pode ser ativado/publicado até os indicadores serem configurados (contacta o dev)."
+        "This legacy track has no verified Assessment instrument and cannot be activated."
       );
     }
   }
@@ -102,6 +101,7 @@ export async function getCohorts() {
     include: {
       pack: true,
       memberships: {
+        where: { status: "active" },
         include: { user: { select: { id: true, name: true, email: true } } },
         orderBy: { joinedAt: "asc" },
       },
@@ -137,10 +137,10 @@ export async function updateCohortStatus(cohortId: string, status: CohortStatus)
       where: { id: cohortId },
       select: { pack: { select: { slug: true, name: true } } },
     });
-    if (!cohort) throw new Error("Cohort não encontrada.");
+    if (!cohort) throw new Error("Legacy cohort not found.");
     if (!hasDedicatedIndicators(cohort.pack.slug)) {
       throw new Error(
-        `Não é possível ativar esta Journey: o pack "${cohort.pack.name}" ainda não tem indicadores de avaliação próprios.`
+        `Cannot activate this legacy cohort: legacy track "${cohort.pack.name}" has no verified Assessment instrument.`
       );
     }
   }
@@ -166,37 +166,19 @@ export async function updateMembership(
     status?: "active" | "paused" | "exited";
   }
 ) {
-  // Mentors of the cohort may update level/phase; only admin changes status.
-  const actor = await requireUser();
-  const membership = await prisma.cohortMembership.findUnique({
-    where: { id: membershipId },
-    select: { cohortId: true },
-  });
-  if (!membership) throw new Error("Membership não encontrada.");
-  if (actor.role !== "admin") {
-    const mentored = await getMentoredCohortIds(actor.id);
-    if (!mentored.includes(membership.cohortId) || data.status !== undefined) {
-      throw new Error("Sem permissão.");
-    }
-  }
+  await requireAdmin();
   return prisma.cohortMembership.update({
     where: { id: membershipId },
     data,
   });
 }
 
-// Memberships visible to the actor: all (admin) or mentored cohorts only.
+// Legacy membership records contain private contact and delivery data. They
+// are admin-only; Mentorship and shared Cohort context grant no access.
 export async function getMemberships() {
-  const actor = await requireRole(["mentor", "admin"]);
-  const where =
-    actor.role === "admin"
-      ? { role: "member" as MembershipRole }
-      : {
-          role: "member" as MembershipRole,
-          cohortId: { in: await getMentoredCohortIds(actor.id) },
-        };
+  await requireAdmin();
   return prisma.cohortMembership.findMany({
-    where,
+    where: { role: "member" as MembershipRole },
     include: {
       user: {
         select: {
@@ -215,7 +197,7 @@ export async function getMemberships() {
 }
 
 export async function getMembershipDetail(membershipId: string) {
-  const actor = await requireRole(["mentor", "admin"]);
+  await requireAdmin();
   const membership = await prisma.cohortMembership.findUnique({
     where: { id: membershipId },
     include: {
@@ -233,12 +215,6 @@ export async function getMembershipDetail(membershipId: string) {
     },
   });
   if (!membership) throw new Error("Membership não encontrada.");
-  if (actor.role !== "admin") {
-    const mentored = await getMentoredCohortIds(actor.id);
-    if (!mentored.includes(membership.cohortId)) {
-      throw new Error("Sem permissão.");
-    }
-  }
   return membership;
 }
 

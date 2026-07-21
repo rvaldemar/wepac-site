@@ -13,11 +13,11 @@ export default async function DiagnosisPage() {
     return (
       <div className="p-6 lg:p-8">
         <h1 className="font-barlow text-2xl font-bold text-wepac-white">
-          Diagnóstico / Avaliação
+          Legacy Assessment
         </h1>
         <p className="mt-4 max-w-md text-sm text-wepac-text-tertiary">
-          A tua conta ainda não está associada a uma Journey — contacta a
-          equipa WEPAC.
+          Este instrumento ainda depende de um legacy delivery record. My
+          Journey continua disponível sem esse registo.
         </p>
       </div>
     );

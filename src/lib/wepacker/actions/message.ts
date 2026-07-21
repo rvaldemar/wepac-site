@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/db";
-import { getMentoredCohortIds, requireUser } from "@/lib/wepacker/guards";
+import { requireUser } from "@/lib/wepacker/guards";
 import { sendNewMessageEmail } from "@/lib/email";
 import { logSafeError } from "@/lib/wepacker/log-safe-error";
 
@@ -122,48 +122,11 @@ export async function getMyConversations() {
   return convos.map(serialize);
 }
 
-// Users the actor can start a conversation with: people sharing a cohort,
-// plus mentors/admins for members (and members of mentored cohorts for
-// mentors). Admin can reach everyone.
+// Existing conversations remain explicit participant grants. Starting a new
+// conversation is disabled until a dedicated, consented Message grant exists.
 export async function getMessagingContacts() {
-  const user = await requireUser();
-
-  if (user.role === "admin") {
-    return prisma.user.findMany({
-      where: { id: { not: user.id } },
-      select: { id: true, name: true, role: true },
-      orderBy: { name: "asc" },
-    });
-  }
-
-  const myCohorts = await prisma.cohortMembership.findMany({
-    where: { userId: user.id, status: "active" },
-    select: { cohortId: true },
-  });
-  const cohortIds = myCohorts.map((c) => c.cohortId);
-
-  const peers = await prisma.cohortMembership.findMany({
-    where: {
-      cohortId: { in: cohortIds },
-      status: "active",
-      userId: { not: user.id },
-    },
-    select: { user: { select: { id: true, name: true, role: true } } },
-  });
-  const admins = await prisma.user.findMany({
-    where: { role: "admin" },
-    select: { id: true, name: true, role: true },
-  });
-
-  const seen = new Set<string>();
-  const contacts: { id: string; name: string; role: string }[] = [];
-  for (const c of [...peers.map((p) => p.user), ...admins]) {
-    if (c.id !== user.id && !seen.has(c.id)) {
-      seen.add(c.id);
-      contacts.push(c);
-    }
-  }
-  return contacts.sort((a, b) => a.name.localeCompare(b.name));
+  await requireUser();
+  return [] as Array<{ id: string; name: string; role: string }>;
 }
 
 export async function startConversation(withUserId: string) {
@@ -244,30 +207,9 @@ export async function markAsRead(messageId: string) {
   });
 }
 
-// Conversations of members in cohorts the actor mentors — mentor inbox view.
+// Reading conversations across People is admin-only. Mentors can still read
+// conversations in which they are explicit participants via getMyConversations.
 export async function getMentoredConversations() {
-  const actor = await requireUser();
-  if (actor.role === "admin") {
-    const convos = await prisma.conversation.findMany({
-      include: conversationInclude,
-    });
-    return convos.map(serialize);
-  }
-  const cohortIds = await getMentoredCohortIds(actor.id);
-  const memberIds = (
-    await prisma.cohortMembership.findMany({
-      where: { cohortId: { in: cohortIds } },
-      select: { userId: true },
-    })
-  ).map((m) => m.userId);
-
-  const convos = await prisma.conversation.findMany({
-    where: {
-      participants: {
-        some: { userId: { in: [...memberIds, actor.id] } },
-      },
-    },
-    include: conversationInclude,
-  });
-  return convos.map(serialize);
+  await requireUser();
+  throw new Error("Explicit Message grant required.");
 }

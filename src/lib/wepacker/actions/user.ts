@@ -7,7 +7,8 @@ import { getMyMembership, requireUser } from "@/lib/wepacker/guards";
 // user has no active membership — e.g. a freshly invited admin).
 export async function getMyContext() {
   const sessionUser = await requireUser();
-  const [user, membership] = await Promise.all([
+  const now = new Date();
+  const [user, membership, stagePlacement] = await Promise.all([
     prisma.user.findUnique({
       where: { id: sessionUser.id },
       select: {
@@ -23,6 +24,17 @@ export async function getMyContext() {
       },
     }),
     getMyMembership(),
+    prisma.stagePlacement.findFirst({
+      where: {
+        userId: sessionUser.id,
+        status: "active",
+        reviewRequired: false,
+        effectiveFrom: { lte: now },
+        OR: [{ effectiveUntil: null }, { effectiveUntil: { gt: now } }],
+      },
+      select: { stage: true },
+      orderBy: { effectiveFrom: "desc" },
+    }),
   ]);
   if (!user) throw new Error("Utilizador não encontrado.");
   return {
@@ -32,6 +44,7 @@ export async function getMyContext() {
       updatedAt: user.updatedAt.toISOString(),
     },
     membership,
+    stage: stagePlacement?.stage ?? null,
   };
 }
 
@@ -51,7 +64,7 @@ export async function updateMyProfile(data: {
 export async function getSidebarCounts() {
   const user = await requireUser();
   const membership = await getMyMembership();
-  const [unreadMessages, pendingTasks] = await Promise.all([
+  const [unreadMessages, pendingTasks, pendingMentorships] = await Promise.all([
     prisma.message.count({
       where: {
         conversation: { participants: { some: { userId: user.id } } },
@@ -67,6 +80,13 @@ export async function getSidebarCounts() {
           },
         })
       : Promise.resolve(0),
+    prisma.mentorship.count({
+      where: {
+        menteeId: user.id,
+        status: "pending",
+        reviewRequired: false,
+      },
+    }),
   ]);
-  return { unreadMessages, pendingTasks };
+  return { unreadMessages, pendingTasks, pendingMentorships };
 }

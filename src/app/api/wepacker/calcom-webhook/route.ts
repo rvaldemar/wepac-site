@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { isMentoredUser } from "@/lib/wepacker/guards";
+import { resolveSessionAttendeeAuthorization } from "@/lib/wepacker/guards";
 import {
   cancelSessionFromWebhook,
   createSessionFromResolvedActors,
@@ -93,11 +93,14 @@ async function handleBookingCreated(payload: CalcomBookingPayload) {
   // booking page is public and accepts any self-asserted attendee email,
   // so a valid signature says nothing about whether the attendee has any
   // real relationship with the resolved organizer. Every non-admin
-  // organizer must actually mentor the resolved attendee (share a cohort);
-  // admins keep the same free pass assertMentorOfUsers grants them
-  // elsewhere. Unauthorized/unresolved attendees are dropped individually;
-  // if none remain, the whole booking is skipped.
+  // organizer must have the narrow Session capability: primarily an active,
+  // fully accepted Mentorship, with an active legacy Cohort pair as a measured
+  // migration fallback. Admin may schedule with any other Person.
+  // Unauthorized/unresolved attendees are dropped individually; if none
+  // remain, the whole booking is skipped.
   const resolvedAttendeeIds: string[] = [];
+  const seenAttendeeIds = new Set<string>();
+  let legacyFallbackCount = 0;
   for (const attendee of payload.attendees ?? []) {
     if (!attendee?.email) continue;
     const user = await prisma.user.findUnique({
@@ -110,18 +113,39 @@ async function handleBookingCreated(payload: CalcomBookingPayload) {
       });
       continue;
     }
-    const authorized = mentor.role === "admin" || (await isMentoredUser(mentor.id, user.id));
+    if (user.id === mentor.id) {
+      console.error("[calcom webhook] attendee_not_authorized", {
+        emailHash: hashEmail(attendee.email),
+      });
+      continue;
+    }
+    if (seenAttendeeIds.has(user.id)) continue;
+
+    const authorization = await resolveSessionAttendeeAuthorization(
+      mentor.id,
+      user.id
+    );
+    const authorized = mentor.role === "admin" || authorization.authorized;
     if (!authorized) {
       console.error("[calcom webhook] attendee_not_authorized", {
         emailHash: hashEmail(attendee.email),
       });
       continue;
     }
+    seenAttendeeIds.add(user.id);
     resolvedAttendeeIds.push(user.id);
+    if (authorization.source === "legacy_cohort") {
+      legacyFallbackCount += 1;
+    }
   }
 
   if (resolvedAttendeeIds.length === 0) {
     return NextResponse.json({ skipped: "no_authorized_attendees" });
+  }
+  if (legacyFallbackCount > 0) {
+    console.info("[calcom webhook] legacy_cohort_fallback", {
+      attendeeCount: legacyFallbackCount,
+    });
   }
 
   const scheduledAt = new Date(payload.startTime);
@@ -132,7 +156,7 @@ async function handleBookingCreated(payload: CalcomBookingPayload) {
   try {
     await createSessionFromResolvedActors({
       mentorId: mentor.id,
-      sessionType: "individual",
+      sessionType: resolvedAttendeeIds.length === 1 ? "individual" : "group",
       kind: "checkpoint",
       scheduledAt,
       durationMinutes: computeDurationMinutes(payload.startTime, payload.endTime),

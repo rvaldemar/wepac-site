@@ -16,15 +16,14 @@ export default function WelcomePage() {
           <p>
             Ser WEPACKER é um modo de vida: carregar o teu próprio peso e
             ainda entregar valor à comunidade. Esta é a plataforma da WEPAC
-            para o teu desenvolvimento humano integral — corpo, emoção,
-            caráter, interioridade, pensamento, comunidade e o teu domínio
-            próprio — com mentoria, exigência e comunidade.
+            para o teu desenvolvimento humano integral através dos Six Pillars:
+            Physical, Emotional, Character, Spiritual, Intellectual e Social.
           </p>
           <p>
-            Aqui vais encontrar o teu Life Plan — quem sou, onde estou, para
+            Aqui vais encontrar o teu Life Map — quem sou, onde estou, para
             onde vou, porquê, e que compromissos assumo —,
-            o mapa de desenvolvimento nas sete áreas, o plano estratégico,
-            tarefas, sessões com o teu mentor e mensagens.
+            o teu Strategic Plan, Trails e Sessions. Mentorships, Cycles e Packs
+            aparecem apenas quando essas relações forem aceites explicitamente.
           </p>
           <p>
             O que esperamos de ti: presença, honestidade, compromisso e
@@ -32,9 +31,8 @@ export default function WelcomePage() {
             procuramos verdade e evolução.
           </p>
           <p>
-            From packers to WEPACkers. O ritmo é semanal, o
-            ciclo é trimestral — a mentoria, a comunidade e a exigência
-            partilhada é o que sustenta o percurso.
+            From packers to WEPACkers. My Journey acompanha a vida inteira;
+            cada Cycle, Mentorship e Pack tem o seu próprio propósito e consentimento.
           </p>
         </div>
 

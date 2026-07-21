@@ -21,6 +21,13 @@ async function main() {
   await prisma.evaluation.deleteMany();
   await prisma.agreement.deleteMany();
   await prisma.passwordResetToken.deleteMany();
+  await prisma.stagePlacement.deleteMany();
+  await prisma.cycleFacilitator.deleteMany();
+  await prisma.cycleEnrollment.deleteMany();
+  await prisma.packMembership.deleteMany();
+  await prisma.communityPack.deleteMany();
+  await prisma.mentorship.deleteMany();
+  await prisma.personConnection.deleteMany();
   await prisma.cohortMembership.deleteMany();
   await prisma.cohort.deleteMany();
   await prisma.pack.deleteMany();
@@ -28,7 +35,10 @@ async function main() {
 
   const password = hashSync("password123", 10);
 
-  // ===== PACKS & COHORTS =====
+  // ===== LEGACY DELIVERY FIXTURES =====
+  // These rows exercise compatibility only. They are deliberately not seeded
+  // into CommunityPack/CycleEnrollment/Mentorship because no relationship or
+  // target mapping may be inferred from legacy data.
   const packArtist = await prisma.pack.create({
     data: {
       slug: "artist",
@@ -385,7 +395,7 @@ async function main() {
   // ===== TASKS =====
   await prisma.task.createMany({
     data: [
-      { membershipId: mem1.id, assignedById: m1.id, title: "Completar autoavaliação de meio de percurso", description: "Preencher a autoavaliação das 7 áreas para o momento intermédio.", origin: "mentor", deadline: "2026-03-05", status: "done" },
+      { membershipId: mem1.id, assignedById: m1.id, title: "Completar legacy Self-Assessment de meio de percurso", description: "Preencher o legacy Self-Assessment dos Six Pillars para o momento intermédio.", origin: "mentor", deadline: "2026-03-05", status: "done" },
       { membershipId: mem1.id, assignedById: m1.id, title: "Escrever reflexão sobre sessão de grupo", description: "Reflexão pessoal sobre insights da última sessão de grupo.", origin: "session", deadline: "2026-03-20", status: "done" },
       { membershipId: mem1.id, title: "Preparar repertório para showcase", description: "Seleccionar e ensaiar 3 peças para o showcase interno.", origin: "plan", goalId: g1.id, deadline: "2026-03-28", status: "in_progress" },
       { membershipId: mem1.id, assignedById: m1.id, title: "Enviar fotos profissionais para branding", origin: "mentor", deadline: "2026-04-05", status: "todo" },

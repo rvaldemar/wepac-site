@@ -30,6 +30,13 @@ export type CohortStatus = "draft" | "active" | "completed" | "archived";
 export type MembershipRole = "member" | "mentor";
 export type MembershipStatus = "active" | "paused" | "exited";
 export type TrailStatus = "active" | "paused" | "completed" | "abandoned";
+export type StageKey = "easy_peasy" | "step_up" | "yup";
+
+export const STAGE_LABELS: Record<StageKey, string> = {
+  easy_peasy: "Easy Peasy",
+  step_up: "Step Up",
+  yup: "YUP",
+};
 
 export const AREA_KEYS = [
   "physical",
@@ -41,13 +48,14 @@ export const AREA_KEYS = [
 ] as const;
 export type AreaKey = (typeof AREA_KEYS)[number];
 
-// The 6 development areas are universal and fixed across every pack.
+// The six Pillars are universal. `AreaKey` remains the legacy technical
+// name during the additive migration, while product labels are English-first.
 export const AREA_LABELS: Record<AreaKey, string> = {
-  physical: "Físico",
-  emotional: "Afetivo",
-  character: "Caráter",
-  spiritual: "Espiritual",
-  intellectual: "Intelectual",
+  physical: "Physical",
+  emotional: "Emotional",
+  character: "Character",
+  spiritual: "Spiritual",
+  intellectual: "Intellectual",
   social: "Social",
 };
 
@@ -217,9 +225,9 @@ export const LEVEL_LABELS: Record<MemberLevel, string> = {
 };
 
 export const MOMENT_LABELS: Record<EvaluationMoment, string> = {
-  entry: "Entrada",
-  mid: "Meio",
-  exit: "Saída",
+  entry: "Entry",
+  mid: "Midpoint",
+  exit: "Exit",
 };
 
 export const TRAIL_STATUS_LABELS: Record<TrailStatus, string> = {
@@ -241,7 +249,7 @@ export const SESSION_KIND_LABELS: Record<
     description: "Acompanhamento regular no trilho",
   },
   recon: {
-    label: "Reconhecimento",
+    label: "Recon",
     description: "Mapear o terreno — diagnóstico",
   },
   basecamp: {
@@ -249,12 +257,12 @@ export const SESSION_KIND_LABELS: Record<
     description: "Planear a próxima etapa",
   },
   rescue: {
-    label: "Resgate",
+    label: "Rescue",
     description: "Apoio num momento difícil",
   },
   summit: {
-    label: "Cume",
-    description: "Fecho e celebração de ciclo",
+    label: "Summit",
+    description: "Fecho e celebração de uma etapa",
   },
 };
 

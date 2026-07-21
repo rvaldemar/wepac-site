@@ -71,12 +71,12 @@ interface CohortMembershipRow {
 interface CohortRow {
   id: string;
   name: string;
-  pack: { id: string; name: string };
+  pack: { id: string; slug: string; name: string };
   memberships: CohortMembershipRow[];
 }
 
-// A mentored person, independent of any specific Journey — used to
-// populate the participant picker when a session isn't tied to a Pack.
+// A mentored person, independent of any specific Cycle — used to populate the
+// participant picker when a Session has no Cycle/Discipline context.
 interface MentoredMemberRow {
   id: string;
   name: string;
@@ -88,6 +88,7 @@ interface MentorSessionsProps {
   cohorts: CohortRow[];
   members: MentoredMemberRow[];
   currentUserId: string;
+  canManagePrivateArtifacts: boolean;
 }
 
 function toDatetimeLocalValue(date: Date): string {
@@ -102,6 +103,7 @@ export function MentorSessionsClient({
   cohorts,
   members,
   currentUserId,
+  canManagePrivateArtifacts,
 }: MentorSessionsProps) {
   const router = useRouter();
   const [showCreate, setShowCreate] = useState(false);
@@ -114,8 +116,8 @@ export function MentorSessionsClient({
   const selectedSession = sessions.find((s) => s.id === selectedSessionId) ?? null;
 
   // ===== Create form state =====
-  // A Pack/Journey is just a community/context — most sessions are a
-  // personal mentoring relationship, so associating one is opt-in.
+  // A legacy cohort is optional compatibility context. Attendance always
+  // comes from the people explicitly selected below.
   const [associateCohort, setAssociateCohort] = useState(false);
   const [cohortId, setCohortId] = useState(cohorts[0]?.id ?? "");
   const [sessionType, setSessionType] = useState<SessionType>("individual");
@@ -129,8 +131,8 @@ export function MentorSessionsClient({
 
   const selectedCohort = cohorts.find((c) => c.id === cohortId);
   // Participants are always identified by userId — from the selected
-  // Journey's memberships when one is associated, or from every person
-  // the mentor mentors otherwise.
+  // legacy cohort participants when one is associated, or from every person
+  // available through active Mentorship + the measured legacy fallback.
   const participantOptions = associateCohort
     ? (selectedCohort?.memberships ?? [])
         .filter(
@@ -147,9 +149,14 @@ export function MentorSessionsClient({
     : members.map((m) => ({ userId: m.id, name: m.name, email: m.email }));
 
   function toggleAttendee(userId: string) {
-    setAttendeeIds((prev) =>
-      prev.includes(userId) ? prev.filter((a) => a !== userId) : [...prev, userId]
-    );
+    setAttendeeIds((prev) => {
+      if (sessionType === "individual") {
+        return prev.includes(userId) ? [] : [userId];
+      }
+      return prev.includes(userId)
+        ? prev.filter((attendeeId) => attendeeId !== userId)
+        : [...prev, userId];
+    });
   }
 
   function toggleAssociateCohort(checked: boolean) {
@@ -159,11 +166,19 @@ export function MentorSessionsClient({
 
   async function handleCreate() {
     if (associateCohort && !cohortId) {
-      setCreateError("Escolhe uma Journey.");
+      setCreateError("Choose a legacy cohort.");
       return;
     }
     if (attendeeIds.length === 0) {
       setCreateError("Escolhe pelo menos um participante.");
+      return;
+    }
+    if (sessionType === "individual" && attendeeIds.length !== 1) {
+      setCreateError("Uma Session individual requer exatamente um participante.");
+      return;
+    }
+    if (sessionType === "group" && attendeeIds.length < 2) {
+      setCreateError("Uma Group Session requer pelo menos dois participantes.");
       return;
     }
     setCreating(true);
@@ -485,7 +500,7 @@ export function MentorSessionsClient({
               })}
             </p>
             <p className="mt-0.5 text-xs text-wepac-text-tertiary">
-              {session.sessionType === "individual" ? "Individual" : "Grupo"} ·{" "}
+              {session.sessionType === "individual" ? "Individual" : "Group"} ·{" "}
               {SESSION_KIND_LABELS[session.kind]?.label ?? session.kind} ·{" "}
               {attendeeNames} · {session.durationMinutes} min
             </p>
@@ -706,7 +721,7 @@ export function MentorSessionsClient({
                       <p className="text-xs text-wepac-text-tertiary">
                         Combinado: {a.outcome || "—"}
                       </p>
-                      {taskFormKey !== key && (
+                      {canManagePrivateArtifacts && taskFormKey !== key && (
                         <button
                           onClick={() => openTaskForm(session.id, a)}
                           className="shrink-0 text-xs text-wepac-white hover:underline"
@@ -736,7 +751,7 @@ export function MentorSessionsClient({
                       <p className="text-xs text-wepac-success">{feedback.text}</p>
                     )}
 
-                    {taskFormKey === key && (
+                    {canManagePrivateArtifacts && taskFormKey === key && (
                       <div className="mt-2 space-y-2 border-t border-wepac-border pt-2">
                         <div>
                           <label className="block text-xs text-wepac-text-tertiary">
@@ -800,10 +815,10 @@ export function MentorSessionsClient({
           })}
         </div>
 
-        {/* Transcrição da sessão + debrief IA */}
+        {/* Session Transcript + AI debrief */}
         <div className="mt-3 space-y-2 border-t border-wepac-border pt-3">
           <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
-            Transcrição da sessão
+            Session Transcript
           </p>
 
           {transcriptEditorSessionId === session.id ? (
@@ -929,10 +944,11 @@ export function MentorSessionsClient({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-barlow text-2xl font-bold text-wepac-white">
-            Sessões
+            Sessions
           </h1>
           <p className="mt-1 text-sm text-wepac-text-tertiary">
-            Gestão de sessões com membros.
+            Manage Mentorship Sessions. A legacy cohort can be attached only as
+            measured compatibility context; it is not a target Cycle.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -960,26 +976,28 @@ export function MentorSessionsClient({
             onClick={() => setShowCreate(!showCreate)}
             className="bg-wepac-white px-4 py-2 text-sm font-bold text-wepac-black"
           >
-            + Nova Sessão
+            + New Session
           </button>
         </div>
       </div>
 
       {showCreate && (
         <div className="mt-6 border border-wepac-white/20 bg-wepac-card p-6">
-          <h3 className="text-sm font-bold text-wepac-white">Criar Sessão</h3>
+          <h3 className="text-sm font-bold text-wepac-white">Create Session</h3>
           <label className="mt-4 flex items-center gap-1.5 text-xs text-wepac-text-tertiary">
             <input
               type="checkbox"
               checked={associateCohort}
               onChange={(e) => toggleAssociateCohort(e.target.checked)}
             />
-            Associar a uma Journey específica
+            Attach legacy cohort context
           </label>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {associateCohort && (
               <div>
-                <label className="block text-xs text-wepac-text-tertiary">Journey</label>
+                <label className="block text-xs text-wepac-text-tertiary">
+                  Legacy cohort
+                </label>
                 <select
                   value={cohortId}
                   onChange={(e) => {
@@ -990,21 +1008,27 @@ export function MentorSessionsClient({
                 >
                   {cohorts.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.pack.name} — {c.name}
+                      {c.name} — legacy track: {c.pack.name}
                     </option>
                   ))}
                 </select>
               </div>
             )}
             <div>
-              <label className="block text-xs text-wepac-text-tertiary">Tipo</label>
+              <label className="block text-xs text-wepac-text-tertiary">Format</label>
               <select
                 value={sessionType}
-                onChange={(e) => setSessionType(e.target.value as SessionType)}
+                onChange={(e) => {
+                  const nextType = e.target.value as SessionType;
+                  setSessionType(nextType);
+                  if (nextType === "individual") {
+                    setAttendeeIds((current) => current.slice(0, 1));
+                  }
+                }}
                 className="mt-1 w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white"
               >
                 <option value="individual">Individual</option>
-                <option value="group">Grupo</option>
+                <option value="group">Group</option>
               </select>
             </div>
             <div>
@@ -1031,7 +1055,7 @@ export function MentorSessionsClient({
             </div>
             <div className="sm:col-span-2">
               <label className="block text-xs text-wepac-text-tertiary">
-                Motivo da sessão
+                Session purpose
               </label>
               <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {SESSION_KIND_KEYS.map((k) => (
@@ -1077,8 +1101,8 @@ export function MentorSessionsClient({
                 {participantOptions.length === 0 && (
                   <p className="text-xs text-wepac-text-tertiary">
                     {associateCohort
-                      ? "Sem membros nesta Journey."
-                      : "Sem pessoas mentoradas."}
+                      ? "No active participants in this legacy cohort."
+                      : "Sem Mentees disponíveis."}
                   </p>
                 )}
               </div>

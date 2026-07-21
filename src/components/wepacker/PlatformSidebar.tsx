@@ -11,6 +11,7 @@ interface NavItem {
   label: string;
   href: string;
   icon: string;
+  nested?: boolean;
   // Match this item only on the exact path — for index-style hrefs that are
   // a prefix of every sibling route (e.g. /wepacker/mentor).
   exact?: boolean;
@@ -24,26 +25,22 @@ interface NavGroup {
 const memberNavGroups: NavGroup[] = [
   {
     items: [
-      { label: "Home", href: "/wepacker/dashboard", icon: "◆" },
-      { label: "Diagnóstico", href: "/wepacker/diagnosis", icon: "◎" },
+      { label: "My Journey", href: "/wepacker/dashboard", icon: "◆" },
+      { label: "Basecamp", href: "/wepacker/basecamp", icon: "◫", nested: true },
+      { label: "Legacy Assessment", href: "/wepacker/diagnosis", icon: "◎", nested: true },
+      { label: "Life Map", href: "/wepacker/ppv", icon: "◇", nested: true },
+      { label: "Strategic Plan", href: "/wepacker/plan", icon: "▣", nested: true },
+      { label: "Trails", href: "/wepacker/trails", icon: "⟡", nested: true },
     ],
   },
   {
-    header: "Basecamp",
+    header: "Activity",
     items: [
-      { label: "Visão geral", href: "/wepacker/basecamp", icon: "◫", exact: true },
-      { label: "Life Plan", href: "/wepacker/ppv", icon: "◇" },
-      { label: "Plano", href: "/wepacker/plan", icon: "▣" },
-      { label: "Trails", href: "/wepacker/trails", icon: "⟡" },
-    ],
-  },
-  {
-    header: "Dia a dia",
-    items: [
-      { label: "Tarefas", href: "/wepacker/tasks", icon: "☑" },
-      { label: "Sessões", href: "/wepacker/sessions", icon: "◷" },
-      { label: "Mensagens", href: "/wepacker/messages", icon: "✉" },
-      { label: "Perfil", href: "/wepacker/profile", icon: "◉" },
+      { label: "Legacy Tasks", href: "/wepacker/tasks", icon: "☑" },
+      { label: "Sessions", href: "/wepacker/sessions", icon: "◷" },
+      { label: "Mentorships", href: "/wepacker/mentorships", icon: "↗" },
+      { label: "Messages", href: "/wepacker/messages", icon: "✉" },
+      { label: "Profile", href: "/wepacker/profile", icon: "◉" },
     ],
   },
 ];
@@ -51,10 +48,9 @@ const memberNavGroups: NavGroup[] = [
 const mentorNavGroups: NavGroup[] = [
   {
     items: [
-      { label: "Painel Mentor", href: "/wepacker/mentor", icon: "◆", exact: true },
-      { label: "Sessões", href: "/wepacker/mentor/sessions", icon: "◷" },
-      { label: "Tarefas", href: "/wepacker/mentor/tasks", icon: "☑" },
-      { label: "Mensagens", href: "/wepacker/mentor/messages", icon: "✉" },
+      { label: "Mentor Dashboard", href: "/wepacker/mentor", icon: "◆", exact: true },
+      { label: "Mentorships", href: "/wepacker/mentorships", icon: "↗" },
+      { label: "Sessions", href: "/wepacker/mentor/sessions", icon: "◷" },
     ],
   },
 ];
@@ -62,10 +58,10 @@ const mentorNavGroups: NavGroup[] = [
 const adminNavGroups: NavGroup[] = [
   {
     items: [
-      { label: "Utilizadores", href: "/wepacker/admin/users", icon: "◉" },
-      { label: "Journeys", href: "/wepacker/admin/cohorts", icon: "▣" },
+      { label: "Users", href: "/wepacker/admin/users", icon: "◉" },
+      { label: "Legacy Delivery", href: "/wepacker/admin/cohorts", icon: "▣" },
       { label: "Leads", href: "/wepacker/admin/leads", icon: "◈" },
-      { label: "Configurações", href: "/wepacker/admin/settings", icon: "⚙" },
+      { label: "Settings", href: "/wepacker/admin/settings", icon: "⚙" },
     ],
   },
 ];
@@ -73,11 +69,13 @@ const adminNavGroups: NavGroup[] = [
 interface SidebarProps {
   unreadMessages?: number;
   pendingTasks?: number;
+  pendingMentorships?: number;
 }
 
 export function PlatformSidebar({
   unreadMessages = 0,
   pendingTasks = 0,
+  pendingMentorships = 0,
 }: SidebarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -105,8 +103,9 @@ export function PlatformSidebar({
   }
 
   function getBadgeCount(label: string): number {
-    if (label === "Mensagens") return unreadMessages;
-    if (label === "Tarefas") return pendingTasks;
+    if (label === "Messages") return unreadMessages;
+    if (label === "Tasks") return pendingTasks;
+    if (label === "Mentorships") return pendingMentorships;
     return 0;
   }
 
@@ -123,7 +122,9 @@ export function PlatformSidebar({
             key={item.href}
             href={item.href}
             onClick={onNavigate}
-            className={`flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
+            className={`flex items-center gap-3 py-2.5 pr-3 text-sm transition-colors ${
+              item.nested ? "pl-9" : "pl-3"
+            } ${
               isActive(item)
                 ? "bg-wepac-white text-wepac-black"
                 : "text-wepac-text-secondary hover:bg-wepac-card hover:text-wepac-white"
@@ -149,7 +150,7 @@ export function PlatformSidebar({
           onClick={onNavigate}
           className="block px-3 py-2 text-xs text-wepac-text-tertiary transition-colors hover:text-wepac-text-secondary"
         >
-          Vista Mentor →
+          Mentor Dashboard →
         </Link>
       )}
       {!isMentor && !isAdmin && canAdmin && (
@@ -167,7 +168,7 @@ export function PlatformSidebar({
           onClick={onNavigate}
           className="block px-3 py-2 text-xs text-wepac-text-tertiary transition-colors hover:text-wepac-text-secondary"
         >
-          ← Vista Membro
+          ← My Journey
         </Link>
       )}
       <button

@@ -86,7 +86,7 @@ interface Props {
 export default function PlanPageClient({ userId, strategicPlan }: Props) {
   return (
     <div className="p-6 lg:p-8">
-      <h1 className="font-barlow text-2xl font-bold text-wepac-white">Plano</h1>
+      <h1 className="font-barlow text-2xl font-bold text-wepac-white">Strategic Plan</h1>
       <p className="mt-1 text-sm text-wepac-text-tertiary">
         O teu plano estratégico — as escalas do teu desenvolvimento.
       </p>
@@ -118,7 +118,7 @@ function StrategicPlanSection({
 
   return (
     <div>
-      <h2 className="font-barlow text-xl font-bold text-wepac-white">Plano Estratégico</h2>
+      <h2 className="font-barlow text-xl font-bold text-wepac-white">Strategic Plan</h2>
       <p className="mt-1 text-sm text-wepac-text-tertiary">
         {plan.quarter} — As quatro escalas do teu plano.
       </p>
@@ -197,7 +197,7 @@ function StrategicPlanSetup({
 
   return (
     <div>
-      <h2 className="font-barlow text-xl font-bold text-wepac-white">Plano Estratégico</h2>
+      <h2 className="font-barlow text-xl font-bold text-wepac-white">Strategic Plan</h2>
       <p className="mt-1 text-sm text-wepac-text-tertiary">
         Ainda sem plano estratégico definido para este trimestre. Cria o
         ponto de partida.

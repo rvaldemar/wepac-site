@@ -3,14 +3,7 @@
 import { prisma } from "@/lib/db";
 import { assertMentorOfSession } from "@/lib/wepacker/actions/session";
 import { requireUser } from "@/lib/wepacker/guards";
-import { computeAreaScores } from "@/lib/wepacker/actions/evaluation";
-import { AREA_KEYS, AREA_LABELS } from "@/lib/wepacker/types";
-import type { AreaKey, EvaluationMoment, SessionKind, TaskStatus } from "@/lib/wepacker/types";
-
-// Chronological order — mirrors the mentor member detail page's
-// "most recent moment that actually has data" pattern (see
-// src/app/wepacker/(platform)/mentor/members/[id]/page.tsx).
-const MOMENTS: EvaluationMoment[] = ["entry", "mid", "exit"];
+import type { AreaKey, SessionKind, TaskStatus } from "@/lib/wepacker/types";
 
 export interface SessionPrepAreaSummary {
   area: AreaKey;
@@ -44,45 +37,6 @@ export interface SessionPrepParticipant {
   pendingTasks: SessionPrepPendingTask[];
 }
 
-// Radar summary for one participant: top-2 / bottom-2 development areas by
-// composite score, from whichever evaluation moment is most recently
-// populated. Returns null when the person has no evaluation at all yet
-// (common right after onboarding) — the caller renders an empty state
-// instead of a misleading all-zero radar.
-async function radarSummary(userId: string): Promise<{
-  strengths: SessionPrepAreaSummary[];
-  growthAreas: SessionPrepAreaSummary[];
-} | null> {
-  const evals = await prisma.evaluation.findMany({
-    where: { userId },
-    select: { moment: true },
-  });
-  const availableMoments = MOMENTS.filter((m) => evals.some((e) => e.moment === m));
-  const moment = availableMoments[availableMoments.length - 1];
-  if (!moment) return null;
-
-  let scores;
-  try {
-    scores = await computeAreaScores(userId, moment);
-  } catch {
-    // assertUserAccess inside computeAreaScores is stricter than the
-    // session-level guard (e.g. cohort-less personal sessions after
-    // membership churn) — the prep panel degrades, never crashes the
-    // debrief workspace.
-    return null;
-  }
-  const ranked = AREA_KEYS.map((area) => ({
-    area,
-    label: AREA_LABELS[area],
-    composite: scores[area]?.composite ?? 0,
-  })).sort((a, b) => b.composite - a.composite);
-
-  return {
-    strengths: ranked.slice(0, 2),
-    growthAreas: ranked.slice(-2).reverse(),
-  };
-}
-
 // Preparation panel for a mentor about to run a session — one summary
 // per participant, assembled entirely from data that already exists
 // (evaluations, prior sessions, tasks). Read-only, so it's harmless to
@@ -105,46 +59,29 @@ export async function getSessionPreparation(
 
   return Promise.all(
     session.attendees.map(async ({ user }) => {
-      const [radar, priorAttendances, pendingTasks] = await Promise.all([
-        radarSummary(user.id),
+      const priorAttendances = await prisma.sessionAttendee.findMany({
         // Prior sessions this same person attended, excluding the current
         // one, most recent first — source for both the "last agreed
         // outcome" highlight and the shared-note/outcome history strip.
-        prisma.sessionAttendee.findMany({
-          where: {
-            userId: user.id,
-            sessionId: { not: sessionId },
-            // Privacy boundary: only sessions THIS mentor conducted with
-            // the person — never another mentor's notes/outcomes.
-            session: {
-              scheduledAt: { lt: session.scheduledAt },
-              mentorId: actor.id,
-            },
+        where: {
+          userId: user.id,
+          sessionId: { not: sessionId },
+          // Privacy boundary: only sessions THIS mentor conducted with
+          // the person — never another mentor's notes/outcomes.
+          session: {
+            scheduledAt: { lt: session.scheduledAt },
+            mentorId: actor.id,
           },
-          select: {
-            outcome: true,
-            sharedNote: true,
-            session: { select: { id: true, scheduledAt: true, kind: true } },
-          },
-          orderBy: { session: { scheduledAt: "desc" } },
-          take: 3,
-        }),
-        // Session-born tasks still open — the concrete follow-through to
-        // check on before the session even starts.
-        prisma.task.findMany({
-          where: {
-            origin: "session",
-            status: { not: "done" },
-            membership: { userId: user.id },
-            // Same privacy boundary: only tasks born from this mentor's
-            // own sessions with the person.
-            sourceSession: { mentorId: actor.id },
-          },
-          select: { id: true, title: true, deadline: true, status: true },
-          orderBy: { deadline: "asc" },
-          take: 5,
-        }),
-      ]);
+        },
+        select: {
+          outcome: true,
+          sharedNote: true,
+          session: { select: { id: true, scheduledAt: true, kind: true } },
+        },
+        orderBy: { session: { scheduledAt: "desc" } },
+        take: 3,
+      });
+      const pendingTasks: SessionPrepPendingTask[] = [];
 
       const recentHistory: SessionPrepHistoryEntry[] = priorAttendances.map((a) => ({
         sessionId: a.session.id,
@@ -157,9 +94,9 @@ export async function getSessionPreparation(
       return {
         userId: user.id,
         name: user.name,
-        hasEvaluation: radar !== null,
-        strengths: radar?.strengths ?? [],
-        growthAreas: radar?.growthAreas ?? [],
+        hasEvaluation: false,
+        strengths: [],
+        growthAreas: [],
         lastOutcome: recentHistory[0]?.outcome ?? null,
         recentHistory,
         pendingTasks,

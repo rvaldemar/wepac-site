@@ -7,14 +7,13 @@ import { acceptAgreement } from "@/lib/wepacker/actions/invite";
 import { OnboardingStepper } from "@/components/wepacker/OnboardingStepper";
 
 const COMMITMENTS = [
-  "Comprometo-me a estar presente nas sessões agendadas, salvo motivo de força maior comunicado com antecedência.",
-  "Comprometo-me a ser pontual em todas as interações do programa.",
+  "Comprometo-me a estar presente nas Sessions que aceitei, salvo motivo de força maior comunicado com antecedência.",
+  "Comprometo-me a ser pontual nas interações que aceitei.",
   "Comprometo-me a dar e receber feedback com honestidade e respeito.",
-  "Comprometo-me a completar as tarefas e reflexões dentro dos prazos acordados.",
+  "Comprometo-me a cumprir os compromissos e reflexões que assumir.",
   "Comprometo-me a manter uma atitude aberta ao crescimento e ao confronto construtivo.",
-  "Comprometo-me a respeitar a confidencialidade de tudo o que é partilhado no programa.",
-  "Comprometo-me a cuidar da minha imagem e postura como representante do programa.",
-  "Comprometo-me a concluir o ciclo trimestral completo.",
+  "Comprometo-me a respeitar a confidencialidade do que outras pessoas partilham comigo.",
+  "Comprometo-me a tratar cada pessoa e comunidade com cuidado e responsabilidade.",
 ];
 
 export default function AgreementPage() {
@@ -28,7 +27,7 @@ export default function AgreementPage() {
       <OnboardingStepper currentStep={1} />
       <div className="w-full max-w-lg">
         <h1 className="font-barlow text-3xl font-bold text-wepac-white md:text-4xl">
-          Acordo de Participação
+          Participation Agreement
         </h1>
         <p className="mt-4 text-sm text-wepac-text-secondary">
           Para participar na WEPACKER, pedimos que leias e aceites os
@@ -80,7 +79,7 @@ export default function AgreementPage() {
                   // stranding the member in a welcome/assessment redirect
                   // loop after finishing onboarding.
                   await update({});
-                  router.push("/wepacker/assessment");
+                  router.push("/wepacker/dashboard");
                 } catch {
                   setLoading(false);
                 }
@@ -91,7 +90,7 @@ export default function AgreementPage() {
                   : "cursor-not-allowed bg-wepac-input text-wepac-text-tertiary"
               } disabled:opacity-50`}
             >
-              {loading ? "A processar..." : "Aceitar e continuar"}
+              {loading ? "A processar..." : "Accept and open My Journey"}
             </button>
           </div>
         </div>
