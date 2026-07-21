@@ -231,8 +231,17 @@ export async function getMentoredMembers() {
   return Array.from(byUser.values());
 }
 
-function safeErrorMessage(err: unknown): string {
-  return err instanceof Error ? err.message : "unknown error";
+// SMTP rejections routinely embed the recipient address in the server
+// response line, so raw err.message must never reach the logs (GDPR).
+// Log only the error class and, when present, the SMTP response code.
+function logSafeError(err: unknown): { kind: string; smtpCode: number | null } {
+  return {
+    kind: err instanceof Error ? err.name : "unknown",
+    smtpCode:
+      typeof (err as { responseCode?: unknown })?.responseCode === "number"
+        ? ((err as { responseCode: number }).responseCode)
+        : null,
+  };
 }
 
 interface CalendarPerson extends IcsPerson {
@@ -300,7 +309,13 @@ async function sendSessionCalendarEmails(
       scheduledAt: ctx.scheduledAt,
       durationMinutes: ctx.durationMinutes,
       meetingUrl: ctx.meetingUrl,
-      organizer: ctx.mentor,
+      // Must match the sending mailbox (SMTP_FROM) — Exchange/Outlook
+      // validate that the iMIP sender equals ORGANIZER and may otherwise
+      // drop the invite. The mentor is already among the attendees.
+      organizer: {
+        name: "WEPAC",
+        email: (process.env.SMTP_FROM || "info@wepac.pt").replace(/^.*<|>.*$/g, ""),
+      },
       attendees: recipients,
       sequence,
     };
@@ -323,7 +338,7 @@ async function sendSessionCalendarEmails(
         }).catch((err) => {
           console.error("Session calendar email failed", {
             sessionId,
-            message: safeErrorMessage(err),
+            ...logSafeError(err),
           });
         })
       )
@@ -331,7 +346,7 @@ async function sendSessionCalendarEmails(
   } catch (err) {
     console.error("Session calendar email failed", {
       sessionId,
-      message: safeErrorMessage(err),
+      ...logSafeError(err),
     });
   }
 }
