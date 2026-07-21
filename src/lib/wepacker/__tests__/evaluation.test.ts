@@ -5,12 +5,16 @@ import { AREA_KEYS } from "@/lib/wepacker/types";
 // computation and persistence shape, not the auth layer.
 const findMany = vi.fn();
 const create = vi.fn();
+const membershipFindFirst = vi.fn();
 
 vi.mock("@/lib/db", () => ({
   prisma: {
     evaluation: {
       findMany: (...args: unknown[]) => findMany(...args),
       create: (...args: unknown[]) => create(...args),
+    },
+    cohortMembership: {
+      findFirst: (...args: unknown[]) => membershipFindFirst(...args),
     },
   },
 }));
@@ -65,6 +69,11 @@ function evalWith(
 beforeEach(() => {
   findMany.mockReset();
   create.mockReset();
+  membershipFindFirst.mockReset();
+  // Default: subject has an active membership on the artist pack, which
+  // has dedicated indicators — keeps the existing submitMentorEvaluation
+  // test un-gated unless a test overrides this.
+  membershipFindFirst.mockResolvedValue({ cohort: { pack: { slug: "artist" } } });
 });
 
 describe("computeAreaScores", () => {

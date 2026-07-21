@@ -2,12 +2,18 @@
 
 import { prisma } from "@/lib/db";
 import type { AreaKey, EvaluationMoment } from "@prisma/client";
-import { AREA_KEYS } from "@/lib/wepacker/types";
+import { AREA_KEYS, hasDedicatedIndicators } from "@/lib/wepacker/types";
 import {
   assertUserAccess,
   assertMentorOfUser,
   requireMembership,
 } from "@/lib/wepacker/guards";
+
+// Shown when an assessment is attempted against a pack that has no
+// dedicated indicator set — running it would silently score the member
+// against DEFAULT_INDICATORS, measuring the wrong domain.
+const ASSESSMENT_BLOCKED_MESSAGE =
+  "Este pack ainda não tem indicadores de avaliação próprios definidos — a avaliação está bloqueada até isso ser configurado.";
 
 type AreaAverages = Record<
   string,
@@ -139,7 +145,13 @@ export async function submitSelfEvaluation(data: {
   moment: EvaluationMoment;
   scores: ScoreInput[];
 }) {
-  const { user } = await requireMembership();
+  // requireMembership() re-reads the active membership from the DB on
+  // every call (no cached/passed-in value), so this check is inherently
+  // anti-TOCTOU — the pack it gates on is always fresh.
+  const { user, membership } = await requireMembership();
+  if (!hasDedicatedIndicators(membership.packSlug)) {
+    throw new Error(ASSESSMENT_BLOCKED_MESSAGE);
+  }
   if (data.scores.some((s) => !Number.isInteger(s.score) || s.score < 1 || s.score > 5)) {
     throw new Error("Scores must be integers between 1 and 5");
   }
@@ -169,6 +181,26 @@ export async function submitMentorEvaluation(data: {
   scores: ScoreInput[];
 }) {
   const { actor } = await assertMentorOfUser(data.userId);
+
+  // Anti-TOCTOU: re-read the SUBJECT's active membership pack fresh from
+  // the DB right before gating — never trust a pack/indicator set
+  // resolved earlier in the request (mirrors the pack-activation gate's
+  // pattern of re-fetching the pack instead of trusting a passed-in
+  // value). A member with no active membership isn't covered by this
+  // gate — membership/invite is deliberately not gated (see admin.ts) —
+  // so we only block when we can identify the pack in play.
+  const subjectMembership = await prisma.cohortMembership.findFirst({
+    where: { userId: data.userId, status: "active" },
+    orderBy: { joinedAt: "desc" },
+    select: { cohort: { select: { pack: { select: { slug: true } } } } },
+  });
+  if (
+    subjectMembership &&
+    !hasDedicatedIndicators(subjectMembership.cohort.pack.slug)
+  ) {
+    throw new Error(ASSESSMENT_BLOCKED_MESSAGE);
+  }
+
   if (data.scores.some((s) => !Number.isInteger(s.score) || s.score < 1 || s.score > 5)) {
     throw new Error("Scores must be integers between 1 and 5");
   }

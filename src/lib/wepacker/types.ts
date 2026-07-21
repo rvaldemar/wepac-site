@@ -172,9 +172,11 @@ export function getIndicators(packSlug: string): Record<AreaKey, Indicator[]> {
 }
 
 // Whether a pack has its own dedicated indicator set, as opposed to
-// silently falling back to DEFAULT_INDICATORS. Used to gate pack/cohort
-// activation so a pack never goes live evaluated against a placeholder
-// instrument (see pack-activation-gate.test.ts).
+// silently falling back to DEFAULT_INDICATORS. A pack without dedicated
+// indicators has not had its domain instrument defined yet — activating
+// it or assessing against it would measure the wrong dimensions, so
+// callers gate pack/cohort activation (admin.ts) and assessments
+// (evaluation.ts) on this. See pack-activation-gate.test.ts.
 export function hasDedicatedIndicators(packSlug: string): boolean {
   return packSlug in PACK_INDICATORS;
 }
