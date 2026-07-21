@@ -31,6 +31,7 @@ const memberNavGroups: NavGroup[] = [
   {
     header: "Basecamp",
     items: [
+      { label: "Visão geral", href: "/wepacker/basecamp", icon: "◫", exact: true },
       { label: "Life Plan", href: "/wepacker/ppv", icon: "◇" },
       { label: "Plano", href: "/wepacker/plan", icon: "▣" },
       { label: "Trails", href: "/wepacker/trails", icon: "⟡" },
