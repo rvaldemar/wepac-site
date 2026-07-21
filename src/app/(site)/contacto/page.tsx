@@ -102,7 +102,7 @@ function ContactoContent() {
       <section className="bg-wepac-black px-6 py-24 lg:px-8 lg:py-32">
         <div className="mx-auto max-w-4xl">
           <FadeIn>
-            <p className="text-sm font-bold uppercase tracking-widest text-wepac-white/40">
+            <p className="text-sm font-bold uppercase tracking-widest text-wepac-white/50">
               Contacto
             </p>
             <h1 className="mt-4 font-barlow text-4xl font-bold text-wepac-white md:text-6xl">
@@ -123,7 +123,7 @@ function ContactoContent() {
                 </h2>
                 <div className="mt-8 space-y-6">
                   <div>
-                    <p className="text-sm font-bold uppercase tracking-wider text-wepac-white/40">
+                    <p className="text-sm font-bold uppercase tracking-wider text-wepac-white/50">
                       Email
                     </p>
                     <p className="mt-1 text-lg text-wepac-white">
@@ -133,7 +133,7 @@ function ContactoContent() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-bold uppercase tracking-wider text-wepac-white/40">
+                    <p className="text-sm font-bold uppercase tracking-wider text-wepac-white/50">
                       Telefones
                     </p>
                     <p className="mt-1 text-lg text-wepac-white">
@@ -150,7 +150,7 @@ function ContactoContent() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-bold uppercase tracking-wider text-wepac-white/40">
+                    <p className="text-sm font-bold uppercase tracking-wider text-wepac-white/50">
                       Instagram
                     </p>
                     <p className="mt-1 text-lg text-wepac-white">
@@ -175,7 +175,7 @@ function ContactoContent() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-bold uppercase tracking-wider text-wepac-white/40">
+                    <p className="text-sm font-bold uppercase tracking-wider text-wepac-white/50">
                       Localização
                     </p>
                     <p className="mt-1 text-lg text-wepac-white">
@@ -227,7 +227,7 @@ function ContactoContent() {
                     <div>
                       <label
                         htmlFor="name"
-                        className="block text-sm font-bold uppercase tracking-wider text-wepac-white/40"
+                        className="block text-sm font-bold uppercase tracking-wider text-wepac-white/50"
                       >
                         Nome
                       </label>
@@ -242,7 +242,7 @@ function ContactoContent() {
                     <div>
                       <label
                         htmlFor="email"
-                        className="block text-sm font-bold uppercase tracking-wider text-wepac-white/40"
+                        className="block text-sm font-bold uppercase tracking-wider text-wepac-white/50"
                       >
                         Email
                       </label>
@@ -257,7 +257,7 @@ function ContactoContent() {
                     <div>
                       <label
                         htmlFor="subject"
-                        className="block text-sm font-bold uppercase tracking-wider text-wepac-white/40"
+                        className="block text-sm font-bold uppercase tracking-wider text-wepac-white/50"
                       >
                         Assunto
                       </label>
@@ -288,7 +288,7 @@ function ContactoContent() {
                     <div>
                       <label
                         htmlFor="message"
-                        className="block text-sm font-bold uppercase tracking-wider text-wepac-white/40"
+                        className="block text-sm font-bold uppercase tracking-wider text-wepac-white/50"
                       >
                         Mensagem
                       </label>

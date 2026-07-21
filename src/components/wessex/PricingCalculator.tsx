@@ -39,7 +39,7 @@ export function PricingCalculator() {
     <div className="space-y-8">
       {/* Ensemble select */}
       <div>
-        <label className="block text-sm font-bold uppercase tracking-wider text-wepac-white/40">
+        <label className="block text-sm font-bold uppercase tracking-wider text-wepac-white/50">
           Ensemble
         </label>
         <select
@@ -83,7 +83,7 @@ export function PricingCalculator() {
       {/* Service type select */}
       {selected && !selected.quoteOnly && (
         <div>
-          <label className="block text-sm font-bold uppercase tracking-wider text-wepac-white/40">
+          <label className="block text-sm font-bold uppercase tracking-wider text-wepac-white/50">
             Tipo de Serviço
           </label>
           <select
@@ -107,7 +107,7 @@ export function PricingCalculator() {
             })}
           </select>
           {selected.category === "band" && (
-            <p className="mt-2 text-sm text-wepac-white/40">
+            <p className="mt-2 text-sm text-wepac-white/50">
               As bandas atuam apenas em formato Cocktails / Copo d&apos;Água (2
               horas).
             </p>
@@ -133,7 +133,7 @@ export function PricingCalculator() {
       {/* Quote-only display for custom services */}
       {selected?.quoteOnly && (
         <div className="border border-wepac-white/10 p-5 md:p-8 text-center">
-          <p className="text-sm font-bold uppercase tracking-wider text-wepac-white/40">
+          <p className="text-sm font-bold uppercase tracking-wider text-wepac-white/50">
             Orçamento sob consulta
           </p>
           <p className="mt-4 text-wepac-white/60 leading-relaxed">
@@ -153,23 +153,23 @@ export function PricingCalculator() {
       {/* Price display */}
       {showPrice && (
         <div className="border border-wepac-white/10 p-5 md:p-8 text-center">
-          <p className="text-sm font-bold uppercase tracking-wider text-wepac-white/40">
+          <p className="text-sm font-bold uppercase tracking-wider text-wepac-white/50">
             Valor estimado
           </p>
           <p className="mt-3 font-barlow text-4xl md:text-5xl font-bold text-wepac-white">
             {totalPrice}€
           </p>
           {selected.duration && (
-            <p className="mt-2 text-sm text-wepac-white/40">
+            <p className="mt-2 text-sm text-wepac-white/50">
               Preço para {selected.duration} de performance
             </p>
           )}
           {addSom && (
-            <p className="mt-1 text-sm text-wepac-white/40">
+            <p className="mt-1 text-sm text-wepac-white/50">
               Inclui Equipa de Som (200€)
             </p>
           )}
-          <p className="mt-4 text-xs text-wepac-white/30">
+          <p className="mt-4 text-xs text-wepac-white/50">
             Eventos fora de Lisboa: taxa de deslocação calculada via{" "}
             <a
               href="https://www.viamichelin.pt/"
