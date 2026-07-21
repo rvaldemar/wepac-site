@@ -171,6 +171,15 @@ export function getIndicators(packSlug: string): Record<AreaKey, Indicator[]> {
   return PACK_INDICATORS[packSlug] ?? DEFAULT_INDICATORS;
 }
 
+// Whether a pack has its own indicator set rather than silently falling
+// back to DEFAULT_INDICATORS. A pack without dedicated indicators has not
+// had its domain instrument defined yet — running an assessment against
+// it would measure the wrong dimensions and produce a diagnosis nobody can
+// act on, so callers use this to gate assessments (see evaluation.ts).
+export function hasDedicatedIndicators(packSlug: string): boolean {
+  return packSlug in PACK_INDICATORS;
+}
+
 export const SCORE_LABELS: Record<number, string> = {
   1: "Inicial",
   2: "Emergente",

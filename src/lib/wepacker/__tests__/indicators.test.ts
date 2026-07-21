@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { AREA_KEYS, AREA_LABELS, getIndicators, type AreaKey } from "@/lib/wepacker/types";
+import {
+  AREA_KEYS,
+  AREA_LABELS,
+  getIndicators,
+  hasDedicatedIndicators,
+  type AreaKey,
+} from "@/lib/wepacker/types";
 
 describe("getIndicators", () => {
   it("artist pack covers all 6 areas", () => {
@@ -34,6 +40,17 @@ describe("getIndicators", () => {
         }
       }
     }
+  });
+});
+
+describe("hasDedicatedIndicators", () => {
+  it("is true for the artist pack", () => {
+    expect(hasDedicatedIndicators("artist")).toBe(true);
+  });
+
+  it("is false for packs that fall back to the default set", () => {
+    expect(hasDedicatedIndicators("sport")).toBe(false);
+    expect(hasDedicatedIndicators("anything-else")).toBe(false);
   });
 });
 
