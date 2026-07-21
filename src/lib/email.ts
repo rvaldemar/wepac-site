@@ -257,6 +257,120 @@ export async function sendBetaSignupNotificationEmail(
   });
 }
 
+// ===== WEPACKER SESSION CALENDAR INVITES =====
+
+const LISBON_TZ = "Europe/Lisbon";
+
+// Sessions happen on WEPAC's own clock (Portugal) regardless of the
+// recipient's browser locale — same convention as the bilheteira module.
+function formatSessionDateTime(date: Date): string {
+  return new Intl.DateTimeFormat("pt-PT", {
+    dateStyle: "long",
+    timeStyle: "short",
+    timeZone: LISBON_TZ,
+  }).format(date);
+}
+
+interface SessionCalendarEmailParams {
+  to: string;
+  recipientName: string;
+  kindLabel: string;
+  scheduledAt: Date;
+  meetingUrl?: string | null;
+  ics: string;
+}
+
+// One session update = one invite email with the .ics attached as
+// text/calendar; method=REQUEST, which calendar clients (Gmail, Outlook,
+// Apple Mail) recognize as "add/update this event" rather than a generic
+// attachment. Reused for both the initial createSession invite and any
+// updateSession reschedule — the UID inside the ics is what tells the
+// client to replace the prior version instead of duplicating it.
+export async function sendSessionInviteEmail({
+  to,
+  recipientName,
+  kindLabel,
+  scheduledAt,
+  meetingUrl,
+  ics,
+}: SessionCalendarEmailParams) {
+  const when = formatSessionDateTime(scheduledAt);
+  const bodyHtml = `
+    ${heading("Sessão agendada.")}
+    <p style="margin:0 0 16px;">Olá ${recipientName},</p>
+    <p style="margin:0 0 16px;">
+      Tens uma sessão WEPACKER (${kindLabel}) marcada para
+      <strong style="color:#000000;">${when}</strong>.
+    </p>
+    ${meetingUrl ? ctaButton(meetingUrl, "Entrar na sessão") : ""}
+    <p style="margin:28px 0 0; font-size:12px; color:#999999;">
+      Convite de calendário em anexo — aceita para adicionar à tua agenda.
+    </p>
+  `;
+
+  await transporter.sendMail({
+    from: FROM,
+    to,
+    subject: `Sessão agendada — ${kindLabel} | WEPACKER`,
+    html: emailShell({
+      preheader: `Sessão WEPACKER (${kindLabel}) marcada para ${when}.`,
+      logoSrc: WEPACKER_LOCKUP,
+      logoAlt: "WEPACKER",
+      logoWidth: 220,
+      bodyHtml,
+      footerHtml: WEPACKER_FOOTER,
+    }),
+    icalEvent: {
+      method: "REQUEST",
+      filename: "sessao-wepacker.ics",
+      content: ics,
+    },
+  });
+}
+
+// Cancellation counterpart — same UID, METHOD:CANCEL, which is what
+// makes calendar clients remove the event instead of leaving a stale
+// entry on the recipient's agenda.
+export async function sendSessionCancelEmail({
+  to,
+  recipientName,
+  kindLabel,
+  scheduledAt,
+  ics,
+}: SessionCalendarEmailParams) {
+  const when = formatSessionDateTime(scheduledAt);
+  const bodyHtml = `
+    ${heading("Sessão cancelada.")}
+    <p style="margin:0 0 16px;">Olá ${recipientName},</p>
+    <p style="margin:0 0 16px;">
+      A sessão WEPACKER (${kindLabel}) marcada para
+      <strong style="color:#000000;">${when}</strong> foi cancelada.
+    </p>
+    <p style="margin:28px 0 0; font-size:12px; color:#999999;">
+      O evento foi removido da tua agenda.
+    </p>
+  `;
+
+  await transporter.sendMail({
+    from: FROM,
+    to,
+    subject: `Sessão cancelada — ${kindLabel} | WEPACKER`,
+    html: emailShell({
+      preheader: `Sessão WEPACKER (${kindLabel}) cancelada.`,
+      logoSrc: WEPACKER_LOCKUP,
+      logoAlt: "WEPACKER",
+      logoWidth: 220,
+      bodyHtml,
+      footerHtml: WEPACKER_FOOTER,
+    }),
+    icalEvent: {
+      method: "CANCEL",
+      filename: "sessao-wepacker.ics",
+      content: ics,
+    },
+  });
+}
+
 // ===== WEPAC / WESSEX EMAILS =====
 
 interface LeadEmailData {
