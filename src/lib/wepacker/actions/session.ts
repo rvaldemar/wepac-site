@@ -11,6 +11,14 @@ import {
   requireRole,
   requireUser,
 } from "@/lib/wepacker/guards";
+import { SESSION_KIND_LABELS } from "@/lib/wepacker/types";
+import {
+  buildSessionCancelIcs,
+  buildSessionInviteIcs,
+  nextIcsSequence,
+  type IcsPerson,
+} from "@/lib/wepacker/ics";
+import { sendSessionCancelEmail, sendSessionInviteEmail } from "@/lib/email";
 
 // Defaults to the public Jitsi instance — see .env.example. Will migrate to
 // a self-hosted instance later; reading this at call time (not module load)
@@ -223,6 +231,126 @@ export async function getMentoredMembers() {
   return Array.from(byUser.values());
 }
 
+// SMTP rejections routinely embed the recipient address in the server
+// response line, so raw err.message must never reach the logs (GDPR).
+// Log only the error class and, when present, the SMTP response code.
+function logSafeError(err: unknown): { kind: string; smtpCode: number | null } {
+  return {
+    kind: err instanceof Error ? err.name : "unknown",
+    smtpCode:
+      typeof (err as { responseCode?: unknown })?.responseCode === "number"
+        ? ((err as { responseCode: number }).responseCode)
+        : null,
+  };
+}
+
+interface CalendarPerson extends IcsPerson {
+  id: string;
+  name: string;
+  email: string;
+}
+
+// Minimal, email-sending-only read of a session — deliberately separate
+// from mentorSessionInclude/ownAttendeeSessionSelect above so that adding
+// `email` here never leaks into any mentor- or member-facing query
+// result; this data only ever feeds an outbound calendar invite.
+async function getSessionCalendarContext(sessionId: string): Promise<{
+  mentor: CalendarPerson;
+  attendees: CalendarPerson[];
+  kind: SessionKind;
+  scheduledAt: Date;
+  durationMinutes: number;
+  meetingUrl: string | null;
+} | null> {
+  const session = await prisma.session.findUnique({
+    where: { id: sessionId },
+    select: {
+      kind: true,
+      scheduledAt: true,
+      durationMinutes: true,
+      meetingUrl: true,
+      mentor: { select: { id: true, name: true, email: true } },
+      attendees: {
+        select: { user: { select: { id: true, name: true, email: true } } },
+      },
+    },
+  });
+  if (!session) return null;
+  return {
+    mentor: session.mentor,
+    attendees: session.attendees.map((a) => a.user),
+    kind: session.kind,
+    scheduledAt: session.scheduledAt,
+    durationMinutes: session.durationMinutes,
+    meetingUrl: session.meetingUrl,
+  };
+}
+
+// Best-effort calendar invite fan-out for createSession (new booking) and
+// updateSession (reschedule/cancel). Never throws — a flaky SMTP relay
+// must never roll back or block a session action — and never logs
+// anything beyond the sessionId and a scrubbed error message (no
+// attendee name/email in the log line).
+async function sendSessionCalendarEmails(
+  sessionId: string,
+  method: "REQUEST" | "CANCEL"
+): Promise<void> {
+  try {
+    const ctx = await getSessionCalendarContext(sessionId);
+    if (!ctx) return;
+
+    const recipients: CalendarPerson[] = [ctx.mentor, ...ctx.attendees];
+    const sequence = nextIcsSequence();
+    const kindLabel = SESSION_KIND_LABELS[ctx.kind]?.label ?? ctx.kind;
+
+    const icsInput = {
+      sessionId,
+      kind: ctx.kind,
+      scheduledAt: ctx.scheduledAt,
+      durationMinutes: ctx.durationMinutes,
+      meetingUrl: ctx.meetingUrl,
+      // Must match the sending mailbox (SMTP_FROM) — Exchange/Outlook
+      // validate that the iMIP sender equals ORGANIZER and may otherwise
+      // drop the invite. The mentor is already among the attendees.
+      organizer: {
+        name: "WEPAC",
+        email: (process.env.SMTP_FROM || "info@wepac.pt").replace(/^.*<|>.*$/g, ""),
+      },
+      attendees: recipients,
+      sequence,
+    };
+    const ics =
+      method === "REQUEST"
+        ? buildSessionInviteIcs(icsInput)
+        : buildSessionCancelIcs(icsInput);
+    const sendOne =
+      method === "REQUEST" ? sendSessionInviteEmail : sendSessionCancelEmail;
+
+    await Promise.all(
+      recipients.map((person) =>
+        sendOne({
+          to: person.email,
+          recipientName: person.name,
+          kindLabel,
+          scheduledAt: ctx.scheduledAt,
+          meetingUrl: ctx.meetingUrl,
+          ics,
+        }).catch((err) => {
+          console.error("Session calendar email failed", {
+            sessionId,
+            ...logSafeError(err),
+          });
+        })
+      )
+    );
+  } catch (err) {
+    console.error("Session calendar email failed", {
+      sessionId,
+      ...logSafeError(err),
+    });
+  }
+}
+
 export async function createSession(data: {
   cohortId?: string;
   sessionType: SessionType;
@@ -249,7 +377,7 @@ export async function createSession(data: {
     actor = await assertMentorOfUsers(data.attendeeUserIds);
   }
 
-  return prisma.session.create({
+  const session = await prisma.session.create({
     data: {
       cohortId: data.cohortId,
       mentorId: actor.id,
@@ -265,6 +393,12 @@ export async function createSession(data: {
     },
     include: mentorSessionInclude,
   });
+
+  // Fire-and-forget — see sendSessionCalendarEmails; never blocks or
+  // fails session creation.
+  void sendSessionCalendarEmails(session.id, "REQUEST");
+
+  return session;
 }
 
 export async function updateSession(
@@ -282,13 +416,48 @@ export async function updateSession(
   }
 ) {
   await assertMentorOfSession(sessionId);
-  return prisma.session.update({
+
+  // Snapshot taken before the write so we can tell whether this call
+  // actually changed the schedule/status (vs. e.g. only editing notes),
+  // and only send a calendar email when it did.
+  const needsBeforeSnapshot =
+    data.scheduledAt !== undefined || data.status !== undefined;
+  const before = needsBeforeSnapshot
+    ? await prisma.session.findUnique({
+        where: { id: sessionId },
+        select: { scheduledAt: true, status: true },
+      })
+    : null;
+
+  const updated = await prisma.session.update({
     where: { id: sessionId },
     data: {
       ...data,
       scheduledAt: data.scheduledAt ? new Date(data.scheduledAt) : undefined,
     },
   });
+
+  const justCancelled =
+    data.status === "cancelled" &&
+    before !== null &&
+    before.status !== "cancelled";
+  const rescheduled =
+    !justCancelled &&
+    data.scheduledAt !== undefined &&
+    before !== null &&
+    before.scheduledAt.getTime() !== updated.scheduledAt.getTime();
+
+  // Fire-and-forget — see sendSessionCalendarEmails; never blocks or
+  // fails the update. Cancellation takes priority: if both status and
+  // scheduledAt changed in the same call, send only the CANCEL, not a
+  // REQUEST immediately followed by a CANCEL.
+  if (justCancelled) {
+    void sendSessionCalendarEmails(sessionId, "CANCEL");
+  } else if (rescheduled) {
+    void sendSessionCalendarEmails(sessionId, "REQUEST");
+  }
+
+  return updated;
 }
 
 export async function setAttendance(
