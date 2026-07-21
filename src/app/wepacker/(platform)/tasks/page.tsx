@@ -10,10 +10,12 @@ export default async function TasksPage() {
   if (!membership) {
     return (
       <div className="p-6 lg:p-8">
-        <h1 className="font-barlow text-2xl font-bold text-wepac-white">Tarefas</h1>
+        <h1 className="font-barlow text-2xl font-bold text-wepac-white">
+          Legacy Tasks
+        </h1>
         <p className="mt-4 max-w-md text-sm text-wepac-text-tertiary">
-          A tua conta ainda não está associada a uma Journey — contacta a
-          equipa WEPAC.
+          Legacy Tasks still depend on a legacy delivery record. My Journey
+          and Sessions do not require one.
         </p>
       </div>
     );

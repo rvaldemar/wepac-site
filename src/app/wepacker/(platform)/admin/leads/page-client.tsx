@@ -69,7 +69,9 @@ function originLabel(item: InboxItem): string {
   if (item.kind === "application") {
     return item.data.packSlug === "wepacker"
       ? "Candidatura · WEPACKER (geral)"
-      : `Candidatura · ${item.data.packSlug}`;
+      : item.data.packSlug === "artist"
+        ? "Candidatura · Discipline: Arts"
+        : `Candidatura · legacy source: ${item.data.packSlug}`;
   }
   switch (item.data.source) {
     case "chat":
@@ -382,7 +384,7 @@ export function AdminLeadsPageClient({
                   : ([
                       ["Email", selectedApp!.email],
                       ["Telefone", selectedApp!.phone],
-                      ["Pack", selectedApp!.packSlug],
+                      ["Legacy application source", selectedApp!.packSlug],
                       ["Área", selectedApp!.artisticArea],
                       ["Redes sociais", selectedApp!.socialLinks],
                       ["Motivação", selectedApp!.motivation],

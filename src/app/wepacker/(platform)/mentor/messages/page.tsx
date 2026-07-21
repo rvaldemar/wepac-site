@@ -3,7 +3,7 @@ import { getMyConversations, getMessagingContacts } from "@/lib/wepacker/actions
 import { MentorMessagesClient } from "./page-client";
 
 export default async function MentorMessagesPage() {
-  const user = await requirePageRole(["mentor", "admin"]);
+  const user = await requirePageRole(["admin"]);
 
   const [conversations, contacts] = await Promise.all([
     getMyConversations(),

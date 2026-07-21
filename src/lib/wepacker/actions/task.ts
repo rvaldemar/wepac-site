@@ -4,11 +4,9 @@ import { prisma } from "@/lib/db";
 import type { TaskOrigin, TaskStatus } from "@prisma/client";
 import {
   assertMembershipAccess,
-  getMentoredCohortIds,
   requireMembership,
   requireUser,
 } from "@/lib/wepacker/guards";
-import { assertMentorOfSession } from "@/lib/wepacker/actions/session";
 import { sendTaskCreatedEmail } from "@/lib/email";
 import { logSafeError } from "@/lib/wepacker/log-safe-error";
 
@@ -63,22 +61,10 @@ export async function getTasksForMembership(membershipId: string) {
   });
 }
 
-// Tasks across every membership the actor mentors (admin sees all).
+// Cross-person Task access is disabled until an explicit Task grant exists.
 export async function getMentoredTasks() {
-  const actor = await requireUser();
-  const where =
-    actor.role === "admin"
-      ? {}
-      : { membership: { cohortId: { in: await getMentoredCohortIds(actor.id) } } };
-  return prisma.task.findMany({
-    where,
-    include: {
-      membership: {
-        select: { id: true, user: { select: { id: true, name: true } } },
-      },
-    },
-    orderBy: { deadline: "asc" },
-  });
+  await requireUser();
+  throw new Error("Explicit Task grant required.");
 }
 
 export async function createTask(data: {
@@ -120,14 +106,9 @@ export async function createTask(data: {
   return task;
 }
 
-// Mentor-side task creation from a session outcome: activates the
-// otherwise-dead TaskOrigin.session by linking the task back to the
-// session it came from. Reuses the exact same mentor-of-session guard as
-// updateSessionAttendee (assertMentorOfSession), so only a mentor who
-// could already write that session's per-attendee notes can spin a task
-// off of it. Unlike createTask (which is keyed by membershipId, known
-// on the member-detail page), the sessions UI only knows the attendee's
-// userId, so this resolves the attendee's active membership itself.
+// Session access is intentionally not a Task grant. Keep this legacy server
+// action fail-closed until an explicit, accepted and revocable Task grant is
+// implemented.
 export async function createTaskFromSession(data: {
   sessionId: string;
   userId: string;
@@ -135,70 +116,9 @@ export async function createTaskFromSession(data: {
   description?: string;
   deadline: string;
 }) {
-  const session = await assertMentorOfSession(data.sessionId);
-  const actor = await requireUser();
-
-  const isAttendee = await prisma.sessionAttendee.findUnique({
-    where: { sessionId_userId: { sessionId: data.sessionId, userId: data.userId } },
-    select: { id: true },
-  });
-  if (!isAttendee) {
-    throw new Error("Esta pessoa não é participante desta sessão.");
-  }
-
-  // Cohort session: the task belongs to that cohort's membership (the
-  // mentor-of-cohort check already passed in assertMentorOfSession).
-  // Personal session: resolve the latest active membership, then require
-  // the actor to pass the same membership boundary createTask enforces —
-  // otherwise a mentor could write into a cohort they do not mentor.
-  const membership = await prisma.cohortMembership.findFirst({
-    where: {
-      userId: data.userId,
-      status: "active",
-      ...(session.cohortId ? { cohortId: session.cohortId } : {}),
-    },
-    orderBy: { joinedAt: "desc" },
-  });
-  if (!membership) {
-    throw new Error("Este membro não tem uma membership ativa.");
-  }
-  if (!session.cohortId) {
-    await assertMembershipAccess(membership.id);
-  }
-
-  // Idempotent by (sourceSessionId, membershipId, title): the review
-  // workspace doesn't persist per-item "already approved" state, so a
-  // page refresh (or a second mentor opening the same debrief) re-renders
-  // every task suggestion as pending. Without this guard, clicking "Criar
-  // tarefa" again would INSERT a duplicate Task row.
-  const existing = await prisma.task.findFirst({
-    where: { sourceSessionId: data.sessionId, membershipId: membership.id, title: data.title },
-  });
-  if (existing) return existing;
-
-  const task = await prisma.task.create({
-    data: {
-      membershipId: membership.id,
-      assignedById: actor.id,
-      title: data.title,
-      description: data.description,
-      origin: "session",
-      deadline: data.deadline,
-      sourceSessionId: data.sessionId,
-    },
-  });
-
-  // Fire-and-forget — see sendTaskCreatedNotification; a session-derived
-  // task is mentor-created by definition, so always notify (unlike
-  // createTask's self-created path, which never fires this).
-  void sendTaskCreatedNotification({
-    taskId: task.id,
-    ownerUserId: data.userId,
-    title: task.title,
-    deadline: task.deadline,
-  });
-
-  return task;
+  await requireUser();
+  void data;
+  throw new Error("Explicit Task grant required.");
 }
 
 export async function updateTaskStatus(taskId: string, status: TaskStatus) {

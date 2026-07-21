@@ -2,7 +2,7 @@
 
 ## Projeto
 
-WEPAC — Companhia de Artes. Site institucional + plataforma "WEPACKER" (desenvolvimento humano integral multi-pack — mentoria, avaliações, planeamento estratégico e comunidade; o Pack Artista substitui o antigo programa "Artista Alpha").
+WEPAC — Companhia de Artes. Site institucional + plataforma WEPACKER para desenvolvimento humano integral. O target domain graph é centrado na Person/WEPACker; `docs/architecture/domain-graph-v2.md` é a referência canónica. As tabelas físicas `Pack`, `Cohort` e `CohortMembership` são legacy delivery durante a migração e não podem ser relabeladas como Community Pack, Cycle/Enrollment ou Discipline sem mapping revisto.
 
 ## Stack
 
@@ -66,9 +66,9 @@ Ver `.env.example`. Variáveis obrigatórias:
 
 **WEPACKER** (`/wepacker/`):
 - Públicas: landing `/wepacker`, candidatura `/wepacker/[pack]/intake` (formulário público por pack; `/wepacker/[pack]/candidatura` é alias legacy que redireciona para `/intake`), login, password reset, invite
-- Onboarding: welcome → agreement → assessment (gate obrigatória antes de `onboarded=true`)
-- Member: dashboard, diagnosis, basecamp (visão geral de Life Plan + Plano Estratégico + Trails), ppv (Life Plan), plan, trails (`/wepacker/trails/[id]`), tasks, sessions, messages, profile
-- Mentor: `/wepacker/mentor/*` — painel, `evaluate/[id]`, `members/[id]` (detalhe por membershipId), `sessions` e `sessions/[id]` (workspace de detalhe com debrief AI), `tasks`, `messages`
+- Onboarding universal: welcome → agreement; legacy Assessment is optional and never inferred as a gate
+- Person/My Journey: dashboard, Basecamp, Life Map (`ppv` physical legacy route), Strategic Plan, Trails, Sessions, Mentorships, explicit Messages, profile; legacy Assessment/Tasks are labelled as such
+- Mentor workspace: Mentorships + authorized Sessions. Legacy member/evaluate/tasks/messages routes are Admin-only until artifact-specific grants exist
 - Admin: `/wepacker/admin/{users,cohorts,applications,leads,settings}`
 - Legacy: `/artists/alpha/*` redireciona 308 para os equivalentes novos
 
@@ -76,18 +76,20 @@ Ver `.env.example`. Variáveis obrigatórias:
 
 ## Features produto
 
-- **Arquitetura:** Pack → Cohort → CohortMembership; artefactos de desenvolvimento pendurados na membership (multi-pack por pessoa). Life Plan, Plano Estratégico, Avaliação e Sessões já não estão presos a uma membership/pack — pendurados no `User` (histórico único de vida da pessoa através de vários packs); só as candidaturas/inscrições (`packSlug`) e cohorts permanecem pack-scoped.
-- **Roles:** member, mentor, admin (middleware + guards por action protegem por role e ownership — ver `src/lib/wepacker/guards.ts`)
-- **Onboarding:** welcome → agreement → assessment (gate obrigatória)
-- **Avaliação:** auto + mentor, 6 áreas universais de desenvolvimento (física, emocional, carácter, espiritual, intelectual, social), em 3 momentos (entrada, meio, saída). A 7ª área "domínio do pack" (`Pack.domainLabel`) foi removida do modelo — a disciplina de um pack (ex.: arte/cultura) é uma prática que o pack escolhe, já não uma dimensão universal da pessoa
-- **Gates de packs/avaliação:** `hasDedicatedIndicators(packSlug)` (`src/lib/wepacker/types.ts`) decide se um pack tem o seu próprio conjunto de indicadores por área ou cai no `DEFAULT_INDICATORS` genérico. Um pack/Journey só pode ser ativado (`updatePack`/`updateCohortStatus`) se o pack tiver indicadores dedicados; sem eles, submeter auto-avaliação ou avaliação de mentor (`submitSelfEvaluation`/`submitMentorEvaluation`) é recusado com erro PT-PT claro
+- **Target architecture:** Person/WEPACker at the centre; one whole-life My Journey containing current Stage, Life Map, Trails and historical evidence. Independent edges: Connection, directed Mentorship, Community Pack Membership, Cycle Enrollment and Cycle Facilitator. See the accepted ADR.
+- **Legacy architecture:** physical `Pack → Cohort → CohortMembership` remains only for compatibility. It must stay visibly labelled legacy until explicit mapping/cutover.
+- **Roles:** `member`, `mentor`, `admin` remain account-access implementation values, not Person identities or relationship proof. Only an accepted directed Mentorship authorizes discovery + explicit Sessions in the first slice.
+- **Onboarding:** welcome → agreement. Assessment is not a universal gate.
+- **Assessment:** the existing instrument is explicitly legacy and delivery-based. The target has Six Pillars (Physical, Emotional, Character, Spiritual, Intellectual, Social), calibrated by verified Stage and optionally Discipline; it is not yet implemented as a target write flow.
+- **Legacy delivery gates:** `hasDedicatedIndicators(packSlug)` protects activation and Assessment writes on legacy track/cohort rows. These checks do not make those rows target Discipline/Cycle records.
 - **Planeamento:** plano de vida (Life Plan), plano estratégico trimestral, goals, ações mensais. `LifePlanVersion` guarda histórico append-only (snapshot do estado anterior antes de cada overwrite); restore disponível só para o próprio dono (`assertUserOwner`, nunca mentor) — restaurar não apaga nada, só faz upsert do snapshot escolhido, que por sua vez gera nova versão do estado atual
-- **Sessões:** individuais/grupo com mentor, tracking de presença. Já não exigem Journey/Pack — `Session.cohortId` é opcional e `SessionAttendee` liga-se ao `User` (não à `CohortMembership`), para sessões de mentoria pessoal fora de qualquer cohort (`assertMentorOfUsers`). Cada sessão nasce com sala de vídeo própria (`Session.meetingUrl`, ver `MEETING_BASE_URL`); convites/remarcações/cancelamentos enviam email com evento `.ics` anexo (RFC 5545, UID estável, `SEQUENCE` crescente, `ORGANIZER` = mailbox de envio); vista Lista/Calendário (grid mensal próprio, zero dependências); `SessionKind` categoriza o propósito da sessão no imaginário de montanha (`checkpoint`, `recon`, `basecamp`, `rescue`, `summit` — ortogonal ao `SessionType` individual/grupo); debrief AI pós-sessão via `DebriefEngine` (seam `anthropic`/`hub`, ver Env vars)
+- **Sessions:** explicit attendees; no Pack/Cycle required. Cohortless scheduling is authorized by a fully accepted active Mentorship, with a measured active legacy-cohort fallback. Optional `cohortId` remains legacy context; exact active participation is revalidated. `Session.mentorshipId` scopes direct sessions to its organizer. Calendar emails use one `.ics` per recipient to avoid attendee PII disclosure. Raw Session Transcripts and draft Debriefs are organizer-only; text imports accept strict UTF-8 `.txt`, `.md`, `.vtt`, or `.srt`, retain no original file, and never ride in list/member payloads.
+- **View as:** never swap identity, role, JWT, or cookies. The enabled slice is a read-only `Preview attendee view` for one organizer-owned Session and one explicit attendee, using the member-safe projection. Person-wide Mentor preview requires Artifact Grants; Admin requires audited, reasoned, time-boxed break-glass.
 - **Trilho da Expedição:** componente `ExpeditionTrail` no dashboard — traço horizontal em perfil de montanha que plota cronologicamente as sessões do membro (posição atual, próxima sessão, histórico)
 - **Trails:** entidade `Trail` — jornada de transformação pessoal definida pelo próprio WEPACker (título, propósito, porquê agora, o que seria progresso real, áreas de desenvolvimento tocadas), autónoma de Cohort/Journey; uma pessoa pode ter vários Trails ao longo da vida (`/wepacker/trails`)
 - **Basecamp:** `/wepacker/basecamp` — visão geral com Life Plan, Plano Estratégico e Trails num só ecrã, reaproveitando as actions guardadas existentes
-- **Messaging:** conversas entre membros e mentores (contactos limitados a quem partilha cohort + admins)
-- **Tasks:** com origem (plan, session, mentor, self) e status tracking
+- **Messaging:** existing explicit Conversation participants can read/send. Shared Cohort, Mentorship or Admin access does not create contact/read permission; new contact discovery/start is disabled until a dedicated grant exists.
+- **Tasks:** physical legacy membership-scoped feature. Owner-only; Mentorship, Sessions and Admin access do not grant Task access or cross-person creation.
 - **Leads:** formulário + chat → backoffice admin, com status pipeline
 - **Chat Wessex:** integração Claude API
 - **Candidaturas:** formulário público por pack em `/wepacker/[pack]/intake` (`candidatura` é alias legacy) → pipeline `beta_signups` (com `packSlug`) no backoffice admin
@@ -95,7 +97,7 @@ Ver `.env.example`. Variáveis obrigatórias:
 
 ## Convenções
 
-- Língua da UI: Português (PT-PT)
+- Canonical product/domain terms: English. Supporting UI prose may remain PT-PT.
 - Cores: preto (#000), branco (#FFF), accent (#DEE0DB)
 - Tipografia: Barlow Bold (títulos), Inter (corpo)
 - Código/commits/comentários: inglês

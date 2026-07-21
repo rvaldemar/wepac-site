@@ -1,6 +1,6 @@
 # WEPAC — Companhia de Artes
 
-Site institucional e plataforma **Artista Alpha** da WEPAC. Programa de desenvolvimento artístico integral com mentoria, avaliações e planeamento estratégico.
+Site institucional e plataforma **WEPACKER** de desenvolvimento humano integral. O target domain graph é Person-centred; see [`docs/architecture/domain-graph-v2.md`](docs/architecture/domain-graph-v2.md). `Pack`, `Cohort` and `CohortMembership` remain legacy delivery tables during the additive migration and are not target community/Cycle semantics.
 
 **Departamentos:** Wessex (performance), Easy Peasy (educação artística), Arte à Capela (património/espaços sagrados).
 
@@ -41,7 +41,8 @@ A app fica disponível em `http://localhost:3000`.
 src/
 ├── app/
 │   ├── (site)/          # Site público (home, sobre, serviços, projetos, ...)
-│   ├── artists/alpha/   # Plataforma Artista Alpha (protegida)
+│   ├── wepacker/        # WEPACKER platform
+│   ├── artists/alpha/   # Legacy redirects
 │   └── api/             # API routes (auth, wessex chat)
 ├── components/          # React components
 ├── lib/                 # Auth, DB, email, server actions, types
@@ -54,18 +55,21 @@ deploy/
 └── deploy.sh            # Build local + rsync para servidor
 ```
 
-## Plataforma Artista Alpha
+## WEPACKER
 
-Sistema multi-role (artista, mentor, admin) com:
-
-- **Onboarding** — welcome, agreement, assessment (obrigatório)
-- **Avaliação** — auto + mentor, 6 dimensões, 3 momentos
-- **Planeamento** — plano de vida, plano estratégico, goals, ações mensais
-- **Sessões** — individuais/grupo com mentor
-- **Messaging** — conversas artista-mentor
-- **Tasks** — origem (plan, session, mentor, self), status tracking
+- **My Journey** — one whole-life view per Person/WEPACker
+- **Stage** — Easy Peasy, Step Up or YUP; never inferred without verified data
+- **Life Map and Trails** — Person-owned private artifacts
+- **Mentorship** — directed, bilateral and independent from Packs/Cycles
+- **Sessions** — explicit attendees; direct active Mentorship supports cohortless scheduling
+- **Session Transcript** — organizer-private UTF-8 text import (`.txt`, `.md`, `.vtt`, `.srt`); original file is not retained
+- **Preview attendee view** — read-only, Session-scoped support preview; never identity impersonation
+- **Packs** — target communities only; separate from legacy `Pack` rows
+- **Cycles** — time-bounded delivery with separate Enrollment and Facilitator edges
+- **Privacy** — Mentorship grants Session capability only; no implicit Life Map, Assessment, Task or Message access
+- **Legacy Assessment/Tasks** — visibly contained until target Stage-calibrated flows are implemented
 - **Leads** — pipeline de contactos (formulário + chat)
-- **Admin** — gestão de settings e leads
+- **Admin** — gestão de settings e leads; no implicit access to private Journey artifacts
 
 ## Deploy
 
@@ -80,7 +84,7 @@ sudo systemctl restart wepac
 
 ## Convenções
 
-- UI em Português (PT-PT)
+- Canonical product/domain terms in English; supporting prose may be PT-PT
 - Cores: `#000`, `#FFF`, `#DEE0DB`
 - Tipografia: Barlow Bold (títulos), Inter (corpo)
 - Código, commits e comentários em inglês

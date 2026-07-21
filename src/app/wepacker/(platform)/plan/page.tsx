@@ -1,24 +1,9 @@
 import { requirePageUser } from "@/lib/wepacker/page-guards";
-import { getMyContext } from "@/lib/wepacker/actions/user";
 import { getStrategicPlan } from "@/lib/wepacker/actions/plan";
 import PlanPageClient from "./page-client";
 
 export default async function PlanPage() {
-  await requirePageUser();
-  const { user, membership } = await getMyContext();
-
-  if (!membership) {
-    return (
-      <div className="p-6 lg:p-8">
-        <h1 className="font-barlow text-2xl font-bold text-wepac-white">Plano</h1>
-        <p className="mt-4 max-w-md text-sm text-wepac-text-tertiary">
-          A tua conta ainda não está associada a uma Journey — contacta a
-          equipa WEPAC.
-        </p>
-      </div>
-    );
-  }
-
+  const user = await requirePageUser();
   const userId = user.id;
 
   const strategicPlan = await getStrategicPlan(userId);

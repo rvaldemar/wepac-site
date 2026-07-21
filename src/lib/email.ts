@@ -200,6 +200,84 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string) {
   });
 }
 
+export async function sendMentorshipInvitationEmail({
+  to,
+  recipientName,
+  mentorName,
+}: {
+  to: string;
+  recipientName: string;
+  mentorName: string;
+}) {
+  const mentorshipsUrl = `${APP_URL}/wepacker/mentorships`;
+  const safeRecipientName = escapeHtml(recipientName);
+  const safeMentorName = escapeHtml(mentorName);
+  const bodyHtml = `
+    ${heading("Mentorship invitation.")}
+    <p style="margin:0 0 16px;">Olá ${safeRecipientName},</p>
+    <p style="margin:0 0 16px;">
+      ${safeMentorName} convidou-te para uma relação de Mentorship na WEPACKER.
+      A relação só fica ativa depois da tua aceitação.
+    </p>
+    <p style="margin:0 0 16px; color:#666666;">
+      Nesta primeira fase, uma Mentorship ativa permite apenas descobrir a outra
+      pessoa e propor Sessions. Não abre o teu Life Map, Trails ou Assessments.
+    </p>
+    ${ctaButton(mentorshipsUrl, "Review invitation")}
+  `;
+
+  await transporter.sendMail({
+    from: FROM,
+    to,
+    subject: "Mentorship invitation — WEPACKER",
+    html: emailShell({
+      preheader: `${safeMentorName} convidou-te para uma Mentorship.`,
+      logoSrc: WEPACKER_LOCKUP,
+      logoAlt: "WEPACKER",
+      logoWidth: 220,
+      bodyHtml,
+      footerHtml: WEPACKER_FOOTER,
+    }),
+  });
+}
+
+export async function sendMentorshipAcceptedEmail({
+  to,
+  recipientName,
+  menteeName,
+}: {
+  to: string;
+  recipientName: string;
+  menteeName: string;
+}) {
+  const sessionsUrl = `${APP_URL}/wepacker/mentor/sessions`;
+  const safeRecipientName = escapeHtml(recipientName);
+  const safeMenteeName = escapeHtml(menteeName);
+  const bodyHtml = `
+    ${heading("Mentorship accepted.")}
+    <p style="margin:0 0 16px;">Olá ${safeRecipientName},</p>
+    <p style="margin:0 0 16px;">
+      ${safeMenteeName} aceitou a tua invitation. Já podes propor uma Session
+      sem criar um Cycle Enrollment ou Pack Membership.
+    </p>
+    ${ctaButton(sessionsUrl, "Schedule Session")}
+  `;
+
+  await transporter.sendMail({
+    from: FROM,
+    to,
+    subject: "Mentorship accepted — WEPACKER",
+    html: emailShell({
+      preheader: `${safeMenteeName} aceitou a tua Mentorship invitation.`,
+      logoSrc: WEPACKER_LOCKUP,
+      logoAlt: "WEPACKER",
+      logoWidth: 220,
+      bodyHtml,
+      footerHtml: WEPACKER_FOOTER,
+    }),
+  });
+}
+
 export async function sendBetaSignupConfirmationEmail(
   name: string,
   email: string
@@ -296,13 +374,13 @@ export async function sendSessionInviteEmail({
 }: SessionCalendarEmailParams) {
   const when = formatSessionDateTime(scheduledAt);
   const bodyHtml = `
-    ${heading("Sessão agendada.")}
+    ${heading("Session scheduled.")}
     <p style="margin:0 0 16px;">Olá ${recipientName},</p>
     <p style="margin:0 0 16px;">
-      Tens uma sessão WEPACKER (${kindLabel}) marcada para
+      Tens uma Session WEPACKER (${kindLabel}) marcada para
       <strong style="color:#000000;">${when}</strong>.
     </p>
-    ${meetingUrl ? ctaButton(meetingUrl, "Entrar na sessão") : ""}
+    ${meetingUrl ? ctaButton(meetingUrl, "Join Session") : ""}
     <p style="margin:28px 0 0; font-size:12px; color:#999999;">
       Convite de calendário em anexo — aceita para adicionar à tua agenda.
     </p>
@@ -311,9 +389,9 @@ export async function sendSessionInviteEmail({
   await transporter.sendMail({
     from: FROM,
     to,
-    subject: `Sessão agendada — ${kindLabel} | WEPACKER`,
+    subject: `Session scheduled — ${kindLabel} | WEPACKER`,
     html: emailShell({
-      preheader: `Sessão WEPACKER (${kindLabel}) marcada para ${when}.`,
+      preheader: `Session WEPACKER (${kindLabel}) marcada para ${when}.`,
       logoSrc: WEPACKER_LOCKUP,
       logoAlt: "WEPACKER",
       logoWidth: 220,
@@ -340,10 +418,10 @@ export async function sendSessionCancelEmail({
 }: SessionCalendarEmailParams) {
   const when = formatSessionDateTime(scheduledAt);
   const bodyHtml = `
-    ${heading("Sessão cancelada.")}
+    ${heading("Session cancelled.")}
     <p style="margin:0 0 16px;">Olá ${recipientName},</p>
     <p style="margin:0 0 16px;">
-      A sessão WEPACKER (${kindLabel}) marcada para
+      A Session WEPACKER (${kindLabel}) marcada para
       <strong style="color:#000000;">${when}</strong> foi cancelada.
     </p>
     <p style="margin:28px 0 0; font-size:12px; color:#999999;">
@@ -354,9 +432,9 @@ export async function sendSessionCancelEmail({
   await transporter.sendMail({
     from: FROM,
     to,
-    subject: `Sessão cancelada — ${kindLabel} | WEPACKER`,
+    subject: `Session cancelled — ${kindLabel} | WEPACKER`,
     html: emailShell({
-      preheader: `Sessão WEPACKER (${kindLabel}) cancelada.`,
+      preheader: `Session WEPACKER (${kindLabel}) cancelada.`,
       logoSrc: WEPACKER_LOCKUP,
       logoAlt: "WEPACKER",
       logoWidth: 220,
@@ -391,22 +469,22 @@ export async function sendTaskCreatedEmail({
 }) {
   const tasksUrl = `${APP_URL}/wepacker/tasks`;
   const bodyHtml = `
-    ${heading("Nova tarefa.")}
+    ${heading("New Task.")}
     <p style="margin:0 0 16px;">Olá ${recipientName},</p>
     <p style="margin:0 0 16px;">
-      O teu mentor atribuiu-te uma nova tarefa:
+      O teu Mentor atribuiu-te uma nova Task:
       <strong style="color:#000000;">${escapeHtml(title)}</strong>.
     </p>
     <p style="margin:0 0 16px; color:#666666;">Prazo: ${escapeHtml(deadline)}</p>
-    ${ctaButton(tasksUrl, "Ver tarefa")}
+    ${ctaButton(tasksUrl, "View Task")}
   `;
 
   await transporter.sendMail({
     from: FROM,
     to,
-    subject: `Nova tarefa — ${title}`,
+    subject: `New Task — ${title}`,
     html: emailShell({
-      preheader: `${recipientName}, tens uma nova tarefa: ${title}.`,
+      preheader: `${recipientName}, tens uma nova Task: ${title}.`,
       logoSrc: WEPACKER_LOCKUP,
       logoAlt: "WEPACKER",
       logoWidth: 220,
@@ -428,9 +506,9 @@ export async function sendSharedNotePublishedEmail({
     ${heading("Nova nota do teu mentor.")}
     <p style="margin:0 0 16px;">Olá ${recipientName},</p>
     <p style="margin:0 0 16px;">
-      O teu mentor partilhou uma nota sobre uma sessão recente.
+      O teu Mentor partilhou uma nota sobre uma Session recente.
     </p>
-    ${ctaButton(sessionsUrl, "Ver sessão")}
+    ${ctaButton(sessionsUrl, "View Session")}
   `;
 
   await transporter.sendMail({

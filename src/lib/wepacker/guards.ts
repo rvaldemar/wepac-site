@@ -87,9 +87,8 @@ export async function getMentoredCohortIds(userId: string): Promise<string[]> {
   return rows.map((r) => r.cohortId);
 }
 
-// Central ownership check: a membership is accessible to its owner, to
-// admins, and to mentors of the same cohort. Returns the membership with
-// cohort+pack context or throws.
+// Legacy membership artifacts are private to their owner. Admin status is not
+// an artifact grant or an implicit break-glass path.
 export async function assertMembershipAccess(
   membershipId: string
 ): Promise<{ actor: SessionUser; membership: MembershipContext; ownerUserId: string }> {
@@ -100,11 +99,8 @@ export async function assertMembershipAccess(
   });
   if (!membership) throw new Error("Membership não encontrada.");
 
-  if (actor.role !== "admin" && membership.userId !== actor.id) {
-    const mentored = await getMentoredCohortIds(actor.id);
-    if (!mentored.includes(membership.cohortId)) {
-      throw new Error("Sem permissão.");
-    }
+  if (membership.userId !== actor.id) {
+    throw new Error("Sem permissão.");
   }
   return {
     actor,
@@ -124,20 +120,101 @@ export async function assertMentorOfCohort(
   return actor;
 }
 
-// ===== PERSON-LEVEL GUARDS (Life Plan / diagnosis / strategic plan) =====
+// ===== SESSION-ONLY MENTORING AUTHORIZATION =====
 //
-// Evaluation, LifePlan, StrategicPlan and StrategicMapScore hang on the
-// User, not a CohortMembership — one person has a single diagnosis/Life
-// Plan history spanning every pack they join. Access follows the same shape
-// as the membership guards above, keyed by userId instead: the owner
-// themselves, an admin, or a mentor of at least one of that user's
-// cohort memberships (any status — mirrors assertMembershipAccess,
-// which never filtered the target membership's own status).
-// Exported (not just used internally below) so callers with no HTTP
-// session to check against requireUser() — e.g. the Cal.com webhook
-// receiver, which authenticates via HMAC signature instead of NextAuth —
-// can still reimpose the same mentor↔attendee relationship check. This
-// function itself never touches auth(); it is already guard-free.
+// This resolver is deliberately separate from isMentoredUser and the generic
+// person-data guards below. An active Mentorship grants only the minimum
+// capability needed to discover a Mentee for scheduling and create an explicit
+// Session with them. It must never become an implicit grant for Life Map,
+// Trails, Assessments, Tasks, Messages, or any other personal data.
+export type SessionAttendeeAuthorization =
+  | {
+      authorized: true;
+      source: "mentorship";
+      mentorshipId: string;
+    }
+  | {
+      authorized: true;
+      source: "legacy_cohort";
+      mentorshipId: null;
+    }
+  | {
+      authorized: false;
+      source: null;
+      mentorshipId: null;
+    };
+
+export async function resolveSessionAttendeeAuthorization(
+  mentorId: string,
+  attendeeUserId: string,
+  options: { legacyCohortId?: string } = {}
+): Promise<SessionAttendeeAuthorization> {
+  if (mentorId === attendeeUserId) {
+    return { authorized: false, source: null, mentorshipId: null };
+  }
+
+  const mentorship = await prisma.mentorship.findFirst({
+    where: {
+      mentorId,
+      menteeId: attendeeUserId,
+      status: "active",
+      reviewRequired: false,
+      mentorAcceptedAt: { not: null },
+      menteeAcceptedAt: { not: null },
+      activatedAt: { not: null },
+      endedAt: null,
+    },
+    select: { id: true },
+  });
+  if (mentorship) {
+    return {
+      authorized: true,
+      source: "mentorship",
+      mentorshipId: mentorship.id,
+    };
+  }
+
+  const mentoredCohortIds = options.legacyCohortId
+    ? [options.legacyCohortId]
+    : await getMentoredCohortIds(mentorId);
+  if (mentoredCohortIds.length === 0) {
+    return { authorized: false, source: null, mentorshipId: null };
+  }
+
+  // Transitional compatibility only: both ends of the legacy relationship
+  // must still be active, and the attendee must be a member participant. The
+  // result identifies its source so callers can measure and eventually remove
+  // this fallback without widening any generic access guard.
+  const legacyMembership = await prisma.cohortMembership.findFirst({
+    where: {
+      userId: attendeeUserId,
+      role: "member",
+      status: "active",
+      cohortId: { in: mentoredCohortIds },
+      cohort: {
+        memberships: {
+          some: {
+            userId: mentorId,
+            role: "mentor",
+            status: "active",
+          },
+        },
+      },
+    },
+    select: { id: true },
+  });
+
+  return legacyMembership
+    ? { authorized: true, source: "legacy_cohort", mentorshipId: null }
+    : { authorized: false, source: null, mentorshipId: null };
+}
+
+// ===== LEGACY RELATIONSHIP LOOKUP =====
+//
+// Retained only for measured transitional compatibility where a caller names
+// that legacy source explicitly. It is not a capability resolver and must not
+// be used for Life Map, Trails, Assessments, Tasks, Messages, or other private
+// Person data.
 export async function isMentoredUser(actorId: string, userId: string): Promise<boolean> {
   const mentoredCohortIds = await getMentoredCohortIds(actorId);
   if (mentoredCohortIds.length === 0) return false;
@@ -148,58 +225,47 @@ export async function isMentoredUser(actorId: string, userId: string): Promise<b
   return membership !== null;
 }
 
-// Central ownership check for person-level data: accessible to its
-// owner, to admins, and to mentors of any of the owner's memberships.
+// Person-level data is owner-only until a dedicated, accepted and revocable
+// artifact grant exists. Admin, Mentorship and Cycle context are not grants.
 export async function assertUserAccess(
   userId: string
 ): Promise<{ actor: SessionUser; ownerUserId: string }> {
   const actor = await requireUser();
-  if (actor.role !== "admin" && userId !== actor.id) {
-    if (!(await isMentoredUser(actor.id, userId))) {
-      throw new Error("Sem permissão.");
-    }
-  }
-  return { actor, ownerUserId: userId };
-}
-
-// Like assertUserAccess but only owner or admin (no mentor) — for
-// member-authored writes (e.g. the Life Plan text).
-export async function assertUserOwner(
-  userId: string
-): Promise<{ actor: SessionUser; ownerUserId: string }> {
-  const actor = await requireUser();
-  if (actor.role !== "admin" && userId !== actor.id) {
+  if (userId !== actor.id) {
     throw new Error("Sem permissão.");
   }
   return { actor, ownerUserId: userId };
 }
 
-// Mentor (of at least one of the user's memberships) or admin — for
-// mentor-only writes on a person (mentor evaluation, strategic map score).
-export async function assertMentorOfUser(
+// Owner-only guard for Person-authored writes such as Life Map text.
+export async function assertUserOwner(
   userId: string
 ): Promise<{ actor: SessionUser; ownerUserId: string }> {
   const actor = await requireUser();
-  if (actor.role !== "admin") {
-    if (!(await isMentoredUser(actor.id, userId))) {
-      throw new Error("Sem permissão.");
-    }
+  if (userId !== actor.id) {
+    throw new Error("Sem permissão.");
   }
   return { actor, ownerUserId: userId };
 }
 
-// Mentor of every userId in the list (or admin) — for writes that touch
-// several people at once without a shared Cohort to scope them (e.g. a
-// mentoring session not tied to a specific Journey).
+// Cross-person writes are disabled until explicit artifact grants exist. The
+// legacy name remains only to keep call sites fail-closed during migration.
+export async function assertMentorOfUser(
+  userId: string
+): Promise<{ actor: SessionUser; ownerUserId: string }> {
+  const actor = await requireUser();
+  void actor;
+  void userId;
+  throw new Error("Explicit artifact grant required.");
+}
+
+// Disabled cross-person guard. Session authorization has its own resolver and
+// must never rely on this generic function.
 export async function assertMentorOfUsers(
   userIds: string[]
 ): Promise<SessionUser> {
   const actor = await requireUser();
-  if (actor.role === "admin") return actor;
-  for (const userId of userIds) {
-    if (!(await isMentoredUser(actor.id, userId))) {
-      throw new Error("Sem permissão.");
-    }
-  }
-  return actor;
+  void actor;
+  void userIds;
+  throw new Error("Explicit artifact grant required.");
 }

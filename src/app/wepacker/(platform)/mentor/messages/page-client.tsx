@@ -103,7 +103,7 @@ export function MentorMessagesClient({
       <div className="w-72 flex-shrink-0 border-r border-wepac-border bg-wepac-black">
         <div className="flex items-center justify-between border-b border-wepac-border p-4">
           <h1 className="font-barlow text-lg font-bold text-wepac-white">
-            Mensagens
+            Messages
           </h1>
           <button
             onClick={() => setShowContacts(!showContacts)}

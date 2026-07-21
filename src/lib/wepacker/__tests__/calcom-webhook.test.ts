@@ -13,13 +13,17 @@ import { Prisma } from "@prisma/client";
 const WEBHOOK_SECRET = "test-calcom-secret";
 
 const userFindUnique = vi.fn();
+const userFindMany = vi.fn();
 const sessionCreate = vi.fn();
 const sessionUpdate = vi.fn();
 const sessionFindUnique = vi.fn();
 
 vi.mock("@/lib/db", () => ({
   prisma: {
-    user: { findUnique: (...args: unknown[]) => userFindUnique(...args) },
+    user: {
+      findUnique: (...args: unknown[]) => userFindUnique(...args),
+      findMany: (...args: unknown[]) => userFindMany(...args),
+    },
     session: {
       create: (...args: unknown[]) => sessionCreate(...args),
       update: (...args: unknown[]) => sessionUpdate(...args),
@@ -28,9 +32,10 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
-const isMentoredUser = vi.fn();
+const resolveSessionAttendeeAuthorization = vi.fn();
 vi.mock("@/lib/wepacker/guards", () => ({
-  isMentoredUser: (...args: unknown[]) => isMentoredUser(...args),
+  resolveSessionAttendeeAuthorization: (...args: unknown[]) =>
+    resolveSessionAttendeeAuthorization(...args),
   assertMentorOfCohort: vi.fn(),
   assertMentorOfUsers: vi.fn(),
   getMentoredCohortIds: vi.fn(async () => []),
@@ -39,11 +44,15 @@ vi.mock("@/lib/wepacker/guards", () => ({
   requireUser: vi.fn(),
 }));
 
-const sendSessionInviteEmail = vi.fn(async (..._args: unknown[]) => undefined);
-const sendSessionCancelEmail = vi.fn(async (..._args: unknown[]) => undefined);
+const sendSessionInviteEmail = vi.fn(async (input: unknown) => {
+  void input;
+});
+const sendSessionCancelEmail = vi.fn(async (input: unknown) => {
+  void input;
+});
 vi.mock("@/lib/email", () => ({
-  sendSessionInviteEmail: (...args: unknown[]) => sendSessionInviteEmail(...args),
-  sendSessionCancelEmail: (...args: unknown[]) => sendSessionCancelEmail(...args),
+  sendSessionInviteEmail: (input: unknown) => sendSessionInviteEmail(input),
+  sendSessionCancelEmail: (input: unknown) => sendSessionCancelEmail(input),
 }));
 
 vi.mock("@/lib/wepacker/ics", () => ({
@@ -100,8 +109,16 @@ afterAll(() => {
 });
 
 beforeEach(() => {
-  vi.clearAllMocks();
+  vi.resetAllMocks();
   process.env.CALCOM_WEBHOOK_SECRET = WEBHOOK_SECRET;
+  sendSessionInviteEmail.mockResolvedValue(undefined);
+  sendSessionCancelEmail.mockResolvedValue(undefined);
+  resolveSessionAttendeeAuthorization.mockResolvedValue({
+    authorized: false,
+    source: null,
+    mentorshipId: null,
+  });
+  userFindMany.mockResolvedValue([]);
 });
 
 describe("POST /api/wepacker/calcom-webhook", () => {
@@ -133,8 +150,19 @@ describe("POST /api/wepacker/calcom-webhook", () => {
     it("resolves organizer + relationship-checked attendee and creates a Session with our own meetingUrl and calcomBookingUid", async () => {
       userFindUnique
         .mockResolvedValueOnce(mentorRow) // organizer lookup
-        .mockResolvedValueOnce(attendeeRow); // attendee lookup
-      isMentoredUser.mockResolvedValueOnce(true);
+        .mockResolvedValueOnce(attendeeRow) // attendee lookup
+        .mockResolvedValueOnce(mentorRow); // write-path organizer revalidation
+      resolveSessionAttendeeAuthorization
+        .mockResolvedValueOnce({
+          authorized: true,
+          source: "mentorship",
+          mentorshipId: "mentorship-1",
+        })
+        .mockResolvedValueOnce({
+          authorized: true,
+          source: "mentorship",
+          mentorshipId: "mentorship-1",
+        });
       sessionCreate.mockResolvedValueOnce({
         id: "session-1",
         mentor: { id: "mentor-1", name: "Ana Mentor" },
@@ -158,11 +186,17 @@ describe("POST /api/wepacker/calcom-webhook", () => {
 
       expect(res.status).toBe(200);
       expect(json).toEqual({ created: true });
-      expect(isMentoredUser).toHaveBeenCalledWith("mentor-1", "member-1");
+      expect(resolveSessionAttendeeAuthorization).toHaveBeenCalledTimes(2);
+      expect(resolveSessionAttendeeAuthorization).toHaveBeenCalledWith(
+        "mentor-1",
+        "member-1"
+      );
 
       const createArgs = sessionCreate.mock.calls[0][0];
       expect(createArgs.data.calcomBookingUid).toBe("booking-uid-1");
       expect(createArgs.data.mentorId).toBe("mentor-1");
+      expect(createArgs.data.mentorshipId).toBe("mentorship-1");
+      expect(createArgs.data.sessionType).toBe("individual");
       expect(createArgs.data.durationMinutes).toBe(45);
       // Our own generated link, never anything read off the Cal.com payload
       // (which doesn't even carry one here) — mandate is to always mint a
@@ -201,7 +235,11 @@ describe("POST /api/wepacker/calcom-webhook", () => {
       userFindUnique
         .mockResolvedValueOnce(mentorRow) // organizer
         .mockResolvedValueOnce(attendeeRow); // attendee resolves...
-      isMentoredUser.mockResolvedValueOnce(false); // ...but isn't actually mentored by this organizer
+      resolveSessionAttendeeAuthorization.mockResolvedValueOnce({
+        authorized: false,
+        source: null,
+        mentorshipId: null,
+      });
 
       const res = await POST(makeRequest(bookingCreatedBody));
       const json = await res.json();
@@ -211,9 +249,130 @@ describe("POST /api/wepacker/calcom-webhook", () => {
       expect(sessionCreate).not.toHaveBeenCalled();
     });
 
+    it("dedupes resolved People and derives Group from the unique attendee count", async () => {
+      const groupBody = {
+        ...bookingCreatedBody,
+        payload: {
+          ...bookingCreatedBody.payload,
+          uid: "booking-group-1",
+          attendees: [
+            { email: "one@wepac.pt" },
+            { email: "one+duplicate@wepac.pt" },
+            { email: "two@wepac.pt" },
+          ],
+        },
+      };
+      const personOne = { id: "person-1" };
+      const personTwo = { id: "person-2" };
+      userFindUnique
+        .mockResolvedValueOnce(mentorRow)
+        .mockResolvedValueOnce(personOne)
+        .mockResolvedValueOnce(personOne)
+        .mockResolvedValueOnce(personTwo)
+        .mockResolvedValueOnce(mentorRow);
+      resolveSessionAttendeeAuthorization
+        .mockResolvedValueOnce({
+          authorized: true,
+          source: "mentorship",
+          mentorshipId: "mentorship-1",
+        })
+        .mockResolvedValueOnce({
+          authorized: true,
+          source: "mentorship",
+          mentorshipId: "mentorship-2",
+        })
+        .mockResolvedValueOnce({
+          authorized: true,
+          source: "mentorship",
+          mentorshipId: "mentorship-1",
+        })
+        .mockResolvedValueOnce({
+          authorized: true,
+          source: "mentorship",
+          mentorshipId: "mentorship-2",
+        });
+      sessionCreate.mockResolvedValueOnce({ id: "session-group-1" });
+      sessionFindUnique.mockResolvedValueOnce(null);
+
+      const res = await POST(makeRequest(groupBody));
+
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ created: true });
+      expect(resolveSessionAttendeeAuthorization).toHaveBeenCalledTimes(4);
+      expect(sessionCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            sessionType: "group",
+            mentorshipId: null,
+            attendees: {
+              create: [{ userId: "person-1" }, { userId: "person-2" }],
+            },
+          }),
+        })
+      );
+    });
+
+    it("excludes the organizer from attendees even when Cal.com sends the same User", async () => {
+      const selfBody = {
+        ...bookingCreatedBody,
+        payload: {
+          ...bookingCreatedBody.payload,
+          attendees: [{ email: "mentor@wepac.pt" }],
+        },
+      };
+      userFindUnique
+        .mockResolvedValueOnce(mentorRow)
+        .mockResolvedValueOnce({ id: "mentor-1" });
+
+      const res = await POST(makeRequest(selfBody));
+
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ skipped: "no_authorized_attendees" });
+      expect(resolveSessionAttendeeAuthorization).not.toHaveBeenCalled();
+      expect(sessionCreate).not.toHaveBeenCalled();
+    });
+
+    it("lets an admin schedule with any other existing Person without inventing a Mentorship", async () => {
+      const adminRow = { id: "admin-1", role: "admin" };
+      userFindUnique
+        .mockResolvedValueOnce(adminRow)
+        .mockResolvedValueOnce(attendeeRow)
+        .mockResolvedValueOnce(adminRow);
+      userFindMany.mockResolvedValueOnce([{ id: "member-1" }]);
+      sessionCreate.mockResolvedValueOnce({ id: "session-admin-1" });
+      sessionFindUnique.mockResolvedValueOnce(null);
+
+      const res = await POST(makeRequest(bookingCreatedBody));
+
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ created: true });
+      expect(sessionCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            mentorId: "admin-1",
+            mentorshipId: null,
+            attendees: { create: [{ userId: "member-1" }] },
+          }),
+        })
+      );
+    });
+
     it("responds 200 { duplicate: true } and does not retry-storm when two concurrent deliveries race into the @unique constraint", async () => {
-      userFindUnique.mockResolvedValueOnce(mentorRow).mockResolvedValueOnce(attendeeRow);
-      isMentoredUser.mockResolvedValueOnce(true);
+      userFindUnique
+        .mockResolvedValueOnce(mentorRow)
+        .mockResolvedValueOnce(attendeeRow)
+        .mockResolvedValueOnce(mentorRow);
+      resolveSessionAttendeeAuthorization
+        .mockResolvedValueOnce({
+          authorized: true,
+          source: "mentorship",
+          mentorshipId: "mentorship-1",
+        })
+        .mockResolvedValueOnce({
+          authorized: true,
+          source: "mentorship",
+          mentorshipId: "mentorship-1",
+        });
       sessionCreate.mockRejectedValueOnce(
         new Prisma.PrismaClientKnownRequestError("Unique constraint failed", {
           code: "P2002",

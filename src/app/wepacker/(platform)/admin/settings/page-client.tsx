@@ -52,7 +52,7 @@ export function AdminSettingsPageClient() {
     <div className="min-h-screen bg-wepac-dark px-6 py-10 lg:px-12">
       <div className="mx-auto max-w-3xl">
         <h1 className="font-barlow text-3xl font-bold text-wepac-white">
-          Configurações da Plataforma
+          Platform Settings
         </h1>
         <p className="mt-1 text-sm text-wepac-text-tertiary">
           Gestão de parâmetros gerais do WEPACKER.
@@ -89,7 +89,7 @@ export function AdminSettingsPageClient() {
               </div>
               <div>
                 <label className="block text-xs text-wepac-text-tertiary">
-                  Máx. wepackers por Journey
+                  Legacy max participants per cohort
                 </label>
                 <input
                   type="number"
@@ -103,7 +103,7 @@ export function AdminSettingsPageClient() {
               </div>
               <div>
                 <label className="block text-xs text-wepac-text-tertiary">
-                  Duração Sessão (minutos)
+                  Session duration (minutes)
                 </label>
                 <input
                   type="number"
@@ -194,7 +194,7 @@ export function AdminSettingsPageClient() {
           {/* Evaluation Moments */}
           <section className="border border-wepac-border bg-wepac-card p-6">
             <h2 className="font-barlow text-lg font-bold text-wepac-white">
-              Momentos de Avaliação
+              Assessment Moments
             </h2>
             <div className="mt-4 space-y-3">
               {settings.evaluationMoments.map((em, idx) => (

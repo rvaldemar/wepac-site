@@ -1,9 +1,13 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { SessionKind, SessionStatus, SessionType } from "@/lib/wepacker/types";
+import type {
+  SessionKind,
+  SessionStatus,
+  SessionType,
+} from "@/lib/wepacker/types";
 import { SESSION_KIND_KEYS, SESSION_KIND_LABELS } from "@/lib/wepacker/types";
 import { SessionsCalendar } from "@/components/wepacker/SessionsCalendar";
 import {
@@ -12,14 +16,7 @@ import {
   updateSession,
   updateSessionAttendee,
 } from "@/lib/wepacker/actions/session";
-import {
-  attachSessionTranscript,
-  clearSessionTranscript,
-} from "@/lib/wepacker/actions/session-transcript";
-import { MAX_TRANSCRIPT_CHARS } from "@/lib/wepacker/debrief/types";
 import { createTaskFromSession } from "@/lib/wepacker/actions/task";
-
-const MAX_TRANSCRIPT_FILE_BYTES = 2 * 1024 * 1024; // ~2MB
 
 const STATUS_LABELS: Record<SessionStatus, string> = {
   scheduled: "Agendada",
@@ -55,9 +52,7 @@ interface SessionRow {
   meetingUrl: string | null;
   attendees: AttendeeRow[];
   mentor: { id: string; name: string };
-  transcript: string | null;
   transcriptUploadedAt: string | null;
-  transcriptUploadedBy: { id: string; name: string } | null;
   debrief: { id: string } | null;
 }
 
@@ -71,12 +66,12 @@ interface CohortMembershipRow {
 interface CohortRow {
   id: string;
   name: string;
-  pack: { id: string; name: string };
+  pack: { id: string; slug: string; name: string };
   memberships: CohortMembershipRow[];
 }
 
-// A mentored person, independent of any specific Journey — used to
-// populate the participant picker when a session isn't tied to a Pack.
+// A mentored person, independent of any specific Cycle — used to populate the
+// participant picker when a Session has no Cycle/Discipline context.
 interface MentoredMemberRow {
   id: string;
   name: string;
@@ -88,12 +83,13 @@ interface MentorSessionsProps {
   cohorts: CohortRow[];
   members: MentoredMemberRow[];
   currentUserId: string;
+  canManagePrivateArtifacts: boolean;
 }
 
 function toDatetimeLocalValue(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(
-    date.getHours()
+    date.getHours(),
   )}:${pad(date.getMinutes())}`;
 }
 
@@ -102,25 +98,32 @@ export function MentorSessionsClient({
   cohorts,
   members,
   currentUserId,
+  canManagePrivateArtifacts,
 }: MentorSessionsProps) {
   const router = useRouter();
   const [showCreate, setShowCreate] = useState(false);
   const [view, setView] = useState<"list" | "calendar">("list");
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
+    null,
+  );
 
   const sessions = [...rawSessions].sort(
-    (a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime()
+    (a, b) =>
+      new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime(),
   );
-  const selectedSession = sessions.find((s) => s.id === selectedSessionId) ?? null;
+  const selectedSession =
+    sessions.find((s) => s.id === selectedSessionId) ?? null;
 
   // ===== Create form state =====
-  // A Pack/Journey is just a community/context — most sessions are a
-  // personal mentoring relationship, so associating one is opt-in.
+  // A legacy cohort is optional compatibility context. Attendance always
+  // comes from the people explicitly selected below.
   const [associateCohort, setAssociateCohort] = useState(false);
   const [cohortId, setCohortId] = useState(cohorts[0]?.id ?? "");
   const [sessionType, setSessionType] = useState<SessionType>("individual");
   const [sessionKind, setSessionKind] = useState<SessionKind>("checkpoint");
-  const [scheduledAt, setScheduledAt] = useState(toDatetimeLocalValue(new Date()));
+  const [scheduledAt, setScheduledAt] = useState(
+    toDatetimeLocalValue(new Date()),
+  );
   const [durationMinutes, setDurationMinutes] = useState(60);
   const [discussionPoints, setDiscussionPoints] = useState("");
   const [attendeeIds, setAttendeeIds] = useState<string[]>([]);
@@ -129,15 +132,15 @@ export function MentorSessionsClient({
 
   const selectedCohort = cohorts.find((c) => c.id === cohortId);
   // Participants are always identified by userId — from the selected
-  // Journey's memberships when one is associated, or from every person
-  // the mentor mentors otherwise.
+  // legacy cohort participants when one is associated, or from every person
+  // available through active Mentorship + the measured legacy fallback.
   const participantOptions = associateCohort
     ? (selectedCohort?.memberships ?? [])
         .filter(
           (m) =>
             m.role === "member" &&
             m.status === "active" &&
-            m.user.id !== currentUserId
+            m.user.id !== currentUserId,
         )
         .map((m) => ({
           userId: m.user.id,
@@ -147,9 +150,14 @@ export function MentorSessionsClient({
     : members.map((m) => ({ userId: m.id, name: m.name, email: m.email }));
 
   function toggleAttendee(userId: string) {
-    setAttendeeIds((prev) =>
-      prev.includes(userId) ? prev.filter((a) => a !== userId) : [...prev, userId]
-    );
+    setAttendeeIds((prev) => {
+      if (sessionType === "individual") {
+        return prev.includes(userId) ? [] : [userId];
+      }
+      return prev.includes(userId)
+        ? prev.filter((attendeeId) => attendeeId !== userId)
+        : [...prev, userId];
+    });
   }
 
   function toggleAssociateCohort(checked: boolean) {
@@ -159,11 +167,21 @@ export function MentorSessionsClient({
 
   async function handleCreate() {
     if (associateCohort && !cohortId) {
-      setCreateError("Escolhe uma Journey.");
+      setCreateError("Choose a legacy cohort.");
       return;
     }
     if (attendeeIds.length === 0) {
       setCreateError("Escolhe pelo menos um participante.");
+      return;
+    }
+    if (sessionType === "individual" && attendeeIds.length !== 1) {
+      setCreateError(
+        "Uma Session individual requer exatamente um participante.",
+      );
+      return;
+    }
+    if (sessionType === "group" && attendeeIds.length < 2) {
+      setCreateError("Uma Group Session requer pelo menos dois participantes.");
       return;
     }
     setCreating(true);
@@ -206,7 +224,11 @@ export function MentorSessionsClient({
     }
   }
 
-  async function handleAttendance(sessionId: string, userId: string, attended: boolean) {
+  async function handleAttendance(
+    sessionId: string,
+    userId: string,
+    attended: boolean,
+  ) {
     try {
       await setAttendance(sessionId, userId, attended);
       router.refresh();
@@ -219,10 +241,16 @@ export function MentorSessionsClient({
   // Only one session's link editor is open at a time. Copying uses the
   // clipboard API with a brief inline confirmation (PT-PT), matching the
   // rest of the page's per-action feedback pattern.
-  const [copiedLinkSessionId, setCopiedLinkSessionId] = useState<string | null>(null);
-  const [linkEditorSessionId, setLinkEditorSessionId] = useState<string | null>(null);
+  const [copiedLinkSessionId, setCopiedLinkSessionId] = useState<string | null>(
+    null,
+  );
+  const [linkEditorSessionId, setLinkEditorSessionId] = useState<string | null>(
+    null,
+  );
   const [meetingUrlDraft, setMeetingUrlDraft] = useState("");
-  const [savingMeetingUrlId, setSavingMeetingUrlId] = useState<string | null>(null);
+  const [savingMeetingUrlId, setSavingMeetingUrlId] = useState<string | null>(
+    null,
+  );
   const [meetingUrlError, setMeetingUrlError] = useState<string | null>(null);
 
   async function handleCopyMeetingUrl(sessionId: string, url: string) {
@@ -276,12 +304,17 @@ export function MentorSessionsClient({
     return `${sessionId}:${userId}`;
   }
 
-  const [editingAttendeeKey, setEditingAttendeeKey] = useState<string | null>(null);
+  const [editingAttendeeKey, setEditingAttendeeKey] = useState<string | null>(
+    null,
+  );
   const [attendeePrivateNote, setAttendeePrivateNote] = useState("");
   const [attendeeSharedNote, setAttendeeSharedNote] = useState("");
   const [attendeeOutcome, setAttendeeOutcome] = useState("");
-  const [attendeeSharedNotePublished, setAttendeeSharedNotePublished] = useState(false);
-  const [savingAttendeeKey, setSavingAttendeeKey] = useState<string | null>(null);
+  const [attendeeSharedNotePublished, setAttendeeSharedNotePublished] =
+    useState(false);
+  const [savingAttendeeKey, setSavingAttendeeKey] = useState<string | null>(
+    null,
+  );
   const [attendeeFeedback, setAttendeeFeedback] = useState<
     Record<string, { type: "success" | "error"; text: string } | undefined>
   >({});
@@ -321,7 +354,10 @@ export function MentorSessionsClient({
       console.error("Failed to save attendee notes:", e);
       setAttendeeFeedback((prev) => ({
         ...prev,
-        [key]: { type: "error", text: "Erro ao guardar notas. Tenta novamente." },
+        [key]: {
+          type: "error",
+          text: "Erro ao guardar notas. Tenta novamente.",
+        },
       }));
     } finally {
       setSavingAttendeeKey(null);
@@ -353,7 +389,10 @@ export function MentorSessionsClient({
     setTaskFormKey(null);
   }
 
-  async function handleCreateTaskFromOutcome(sessionId: string, userId: string) {
+  async function handleCreateTaskFromOutcome(
+    sessionId: string,
+    userId: string,
+  ) {
     const key = attendeeKey(sessionId, userId);
     if (!taskTitle.trim()) {
       setTaskFeedback((prev) => ({
@@ -381,94 +420,23 @@ export function MentorSessionsClient({
       console.error("Failed to create task from session outcome:", e);
       setTaskFeedback((prev) => ({
         ...prev,
-        [key]: { type: "error", text: "Erro ao criar tarefa. Tenta novamente." },
+        [key]: {
+          type: "error",
+          text: "Erro ao criar tarefa. Tenta novamente.",
+        },
       }));
     } finally {
       setCreatingTaskKey(null);
     }
   }
 
-  // ===== Transcript attach/replace/remove =====
-  // Only one session's transcript editor is open at a time. Uploading a
-  // .txt/.md file reads it client-side via File.text() into the same
-  // textarea — the raw file is never sent to the server, only the
-  // resulting string via attachSessionTranscript.
-  const [transcriptEditorSessionId, setTranscriptEditorSessionId] = useState<
-    string | null
-  >(null);
-  const [transcriptDraft, setTranscriptDraft] = useState("");
-  const [transcriptError, setTranscriptError] = useState<string | null>(null);
-  const [savingTranscriptId, setSavingTranscriptId] = useState<string | null>(null);
-  const [expandedTranscriptId, setExpandedTranscriptId] = useState<string | null>(null);
-  const [removingTranscriptId, setRemovingTranscriptId] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  function openTranscriptEditor(sessionId: string, currentText: string) {
-    setTranscriptEditorSessionId(sessionId);
-    setTranscriptDraft(currentText);
-    setTranscriptError(null);
-  }
-
-  function cancelTranscriptEditor() {
-    setTranscriptEditorSessionId(null);
-    setTranscriptError(null);
-  }
-
-  async function handleTranscriptFile(file: File) {
-    setTranscriptError(null);
-    if (file.size > MAX_TRANSCRIPT_FILE_BYTES) {
-      setTranscriptError("Ficheiro demasiado grande.");
-      return;
-    }
-    const okExtension = /\.(txt|md)$/i.test(file.name);
-    const okMime = file.type === "text/plain" || file.type === "text/markdown" || file.type === "";
-    if (!okExtension && !okMime) {
-      setTranscriptError(
-        "Formato não suportado — usa .txt, .md ou cola o texto diretamente."
-      );
-      return;
-    }
-    const text = await file.text();
-    setTranscriptDraft(text);
-  }
-
-  async function handleSaveTranscript(sessionId: string) {
-    setSavingTranscriptId(sessionId);
-    setTranscriptError(null);
-    try {
-      await attachSessionTranscript(sessionId, transcriptDraft);
-      setTranscriptEditorSessionId(null);
-      router.refresh();
-    } catch (e) {
-      console.error("Failed to save session transcript:", e);
-      setTranscriptError("Erro ao guardar transcrição. Tenta novamente.");
-    } finally {
-      setSavingTranscriptId(null);
-    }
-  }
-
-  async function handleRemoveTranscript(sessionId: string) {
-    const confirmed = window.confirm(
-      "Isto apaga a transcrição desta sessão e o debrief gerado a partir dela (sugestões, avaliação interna e documento de resultado). Continuar?"
-    );
-    if (!confirmed) return;
-    setRemovingTranscriptId(sessionId);
-    try {
-      await clearSessionTranscript(sessionId);
-      router.refresh();
-    } catch (e) {
-      console.error("Failed to clear session transcript:", e);
-    } finally {
-      setRemovingTranscriptId(null);
-    }
-  }
-
   function renderSessionCard(session: SessionRow) {
-    const attendeeNames = session.attendees
-      .map((a) => a.user.name)
-      .join(", ");
+    const attendeeNames = session.attendees.map((a) => a.user.name).join(", ");
     return (
-      <div key={session.id} className="border border-wepac-border bg-wepac-card p-4">
+      <div
+        key={session.id}
+        className="border border-wepac-border bg-wepac-card p-4"
+      >
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div>
             <p className="text-sm font-medium text-wepac-white">
@@ -485,7 +453,7 @@ export function MentorSessionsClient({
               })}
             </p>
             <p className="mt-0.5 text-xs text-wepac-text-tertiary">
-              {session.sessionType === "individual" ? "Individual" : "Grupo"} ·{" "}
+              {session.sessionType === "individual" ? "Individual" : "Group"} ·{" "}
               {SESSION_KIND_LABELS[session.kind]?.label ?? session.kind} ·{" "}
               {attendeeNames} · {session.durationMinutes} min
             </p>
@@ -539,7 +507,9 @@ export function MentorSessionsClient({
                   disabled={savingMeetingUrlId === session.id}
                   className="bg-wepac-white px-3 py-1.5 text-xs font-bold text-wepac-black disabled:opacity-30"
                 >
-                  {savingMeetingUrlId === session.id ? "A guardar..." : "Guardar"}
+                  {savingMeetingUrlId === session.id
+                    ? "A guardar..."
+                    : "Guardar"}
                 </button>
                 <button
                   onClick={cancelLinkEditor}
@@ -563,7 +533,9 @@ export function MentorSessionsClient({
                     Entrar na chamada →
                   </a>
                   <button
-                    onClick={() => handleCopyMeetingUrl(session.id, session.meetingUrl!)}
+                    onClick={() =>
+                      handleCopyMeetingUrl(session.id, session.meetingUrl!)
+                    }
                     className="text-wepac-text-secondary hover:underline"
                   >
                     {copiedLinkSessionId === session.id
@@ -573,7 +545,9 @@ export function MentorSessionsClient({
                 </>
               )}
               <button
-                onClick={() => openLinkEditor(session.id, session.meetingUrl ?? "")}
+                onClick={() =>
+                  openLinkEditor(session.id, session.meetingUrl ?? "")
+                }
                 className="text-wepac-text-secondary hover:underline"
               >
                 {session.meetingUrl ? "Substituir link" : "Adicionar link"}
@@ -679,7 +653,9 @@ export function MentorSessionsClient({
                       Publicar nota ao membro
                     </label>
                     {feedback?.type === "error" && (
-                      <p className="text-xs text-wepac-error">{feedback.text}</p>
+                      <p className="text-xs text-wepac-error">
+                        {feedback.text}
+                      </p>
                     )}
                     <div className="flex gap-2">
                       <button
@@ -706,7 +682,7 @@ export function MentorSessionsClient({
                       <p className="text-xs text-wepac-text-tertiary">
                         Combinado: {a.outcome || "—"}
                       </p>
-                      {taskFormKey !== key && (
+                      {canManagePrivateArtifacts && taskFormKey !== key && (
                         <button
                           onClick={() => openTaskForm(session.id, a)}
                           className="shrink-0 text-xs text-wepac-white hover:underline"
@@ -725,7 +701,11 @@ export function MentorSessionsClient({
                               : "text-wepac-text-tertiary"
                           }
                         >
-                          ({a.sharedNotePublished ? "publicada" : "não publicada"})
+                          (
+                          {a.sharedNotePublished
+                            ? "publicada"
+                            : "não publicada"}
+                          )
                         </span>
                       )}
                     </p>
@@ -733,10 +713,12 @@ export function MentorSessionsClient({
                       Nota privada: {a.privateNote || "—"}
                     </p>
                     {feedback?.type === "success" && (
-                      <p className="text-xs text-wepac-success">{feedback.text}</p>
+                      <p className="text-xs text-wepac-success">
+                        {feedback.text}
+                      </p>
                     )}
 
-                    {taskFormKey === key && (
+                    {canManagePrivateArtifacts && taskFormKey === key && (
                       <div className="mt-2 space-y-2 border-t border-wepac-border pt-2">
                         <div>
                           <label className="block text-xs text-wepac-text-tertiary">
@@ -800,114 +782,34 @@ export function MentorSessionsClient({
           })}
         </div>
 
-        {/* Transcrição da sessão + debrief IA */}
-        <div className="mt-3 space-y-2 border-t border-wepac-border pt-3">
-          <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
-            Transcrição da sessão
-          </p>
-
-          {transcriptEditorSessionId === session.id ? (
-            <div className="space-y-2">
-              <textarea
-                value={transcriptDraft}
-                onChange={(e) => setTranscriptDraft(e.target.value)}
-                rows={6}
-                placeholder="Cola aqui a transcrição da sessão (markdown/texto simples)"
-                className="w-full bg-wepac-input px-3 py-2 text-xs text-wepac-text-secondary"
-              />
-              <div className="flex flex-wrap items-center gap-2">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".txt,.md,text/plain,text/markdown"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) void handleTranscriptFile(file);
-                    e.target.value = "";
-                  }}
-                  className="text-xs text-wepac-text-tertiary"
-                />
-                <span className="text-[10px] text-wepac-text-tertiary">
-                  {transcriptDraft.length.toLocaleString("pt-PT")} /{" "}
-                  {MAX_TRANSCRIPT_CHARS.toLocaleString("pt-PT")} caracteres — só
-                  .txt/.md; para outros formatos, cola o texto diretamente.
-                </span>
-              </div>
-              {transcriptError && (
-                <p className="text-xs text-wepac-error">{transcriptError}</p>
-              )}
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleSaveTranscript(session.id)}
-                  disabled={savingTranscriptId === session.id}
-                  className="bg-wepac-white px-3 py-1.5 text-xs font-bold text-wepac-black disabled:opacity-30"
-                >
-                  {savingTranscriptId === session.id
-                    ? "A guardar..."
-                    : "Guardar transcrição"}
-                </button>
-                <button
-                  onClick={cancelTranscriptEditor}
-                  disabled={savingTranscriptId === session.id}
-                  className="border border-wepac-border px-3 py-1.5 text-xs text-wepac-text-secondary"
-                >
-                  Cancelar
-                </button>
-              </div>
-            </div>
-          ) : session.transcript ? (
-            <div className="space-y-2">
-              <p className="text-xs text-wepac-text-tertiary">
-                Transcrição anexada em{" "}
-                {session.transcriptUploadedAt
-                  ? new Date(session.transcriptUploadedAt).toLocaleString("pt-PT")
-                  : "—"}{" "}
-                por {session.transcriptUploadedBy?.name ?? "—"}
-              </p>
-              {expandedTranscriptId === session.id && (
-                <pre className="max-h-64 overflow-y-auto whitespace-pre-wrap bg-wepac-input/40 p-3 text-xs text-wepac-text-secondary">
-                  {session.transcript}
-                </pre>
-              )}
-              <div className="flex flex-wrap gap-3 text-xs">
-                <button
-                  onClick={() =>
-                    setExpandedTranscriptId(
-                      expandedTranscriptId === session.id ? null : session.id
-                    )
-                  }
-                  className="text-wepac-white hover:underline"
-                >
-                  {expandedTranscriptId === session.id ? "Ocultar" : "Ver"}
-                </button>
-                <button
-                  onClick={() => openTranscriptEditor(session.id, session.transcript ?? "")}
-                  className="text-wepac-white hover:underline"
-                >
-                  Substituir
-                </button>
-                <button
-                  onClick={() => handleRemoveTranscript(session.id)}
-                  disabled={removingTranscriptId === session.id}
-                  className="text-wepac-error hover:underline disabled:opacity-30"
-                >
-                  {removingTranscriptId === session.id ? "A remover..." : "Remover"}
-                </button>
-                <Link
-                  href={`/wepacker/mentor/sessions/${session.id}`}
-                  className="text-wepac-white hover:underline"
-                >
-                  {session.debrief ? "Ver debrief" : "Gerar debrief"}
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <button
-              onClick={() => openTranscriptEditor(session.id, "")}
+        {/* Raw transcript content belongs only in the dedicated Session
+            workspace; the list carries lifecycle metadata, never the body. */}
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-wepac-border pt-3">
+          <div>
+            <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
+              Session Transcript
+            </p>
+            <p className="mt-1 text-xs text-wepac-text-tertiary">
+              {session.transcriptUploadedAt
+                ? `Attached ${new Date(session.transcriptUploadedAt).toLocaleString("pt-PT")}`
+                : "No transcript attached"}
+            </p>
+          </div>
+          {session.mentor.id === currentUserId ? (
+            <Link
+              href={`/wepacker/mentor/sessions/${session.id}`}
               className="border border-wepac-border px-3 py-1.5 text-xs text-wepac-text-secondary hover:text-wepac-white"
             >
-              Colar transcrição
-            </button>
+              {session.transcriptUploadedAt
+                ? session.debrief
+                  ? "Open Debrief"
+                  : "Open Transcript"
+                : "Attach Transcript"}
+            </Link>
+          ) : (
+            <span className="border border-wepac-border px-3 py-1.5 text-xs text-wepac-text-tertiary">
+              Organizer only
+            </span>
           )}
         </div>
 
@@ -917,7 +819,9 @@ export function MentorSessionsClient({
             <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
               Notas antigas (legacy)
             </p>
-            <p className="mt-1 text-xs text-wepac-text-tertiary">{session.notes}</p>
+            <p className="mt-1 text-xs text-wepac-text-tertiary">
+              {session.notes}
+            </p>
           </div>
         )}
       </div>
@@ -929,20 +833,19 @@ export function MentorSessionsClient({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-barlow text-2xl font-bold text-wepac-white">
-            Sessões
+            Sessions
           </h1>
           <p className="mt-1 text-sm text-wepac-text-tertiary">
-            Gestão de sessões com membros.
+            Manage Mentorship Sessions. A legacy cohort can be attached only as
+            measured compatibility context; it is not a target Cycle.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex gap-1">
-            {(
-              [
-                { key: "list" as const, label: "Lista" },
-                { key: "calendar" as const, label: "Calendário" },
-              ]
-            ).map((tab) => (
+            {[
+              { key: "list" as const, label: "Lista" },
+              { key: "calendar" as const, label: "Calendário" },
+            ].map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setView(tab.key)}
@@ -960,26 +863,28 @@ export function MentorSessionsClient({
             onClick={() => setShowCreate(!showCreate)}
             className="bg-wepac-white px-4 py-2 text-sm font-bold text-wepac-black"
           >
-            + Nova Sessão
+            + New Session
           </button>
         </div>
       </div>
 
       {showCreate && (
         <div className="mt-6 border border-wepac-white/20 bg-wepac-card p-6">
-          <h3 className="text-sm font-bold text-wepac-white">Criar Sessão</h3>
+          <h3 className="text-sm font-bold text-wepac-white">Create Session</h3>
           <label className="mt-4 flex items-center gap-1.5 text-xs text-wepac-text-tertiary">
             <input
               type="checkbox"
               checked={associateCohort}
               onChange={(e) => toggleAssociateCohort(e.target.checked)}
             />
-            Associar a uma Journey específica
+            Attach legacy cohort context
           </label>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {associateCohort && (
               <div>
-                <label className="block text-xs text-wepac-text-tertiary">Journey</label>
+                <label className="block text-xs text-wepac-text-tertiary">
+                  Legacy cohort
+                </label>
                 <select
                   value={cohortId}
                   onChange={(e) => {
@@ -990,21 +895,29 @@ export function MentorSessionsClient({
                 >
                   {cohorts.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.pack.name} — {c.name}
+                      {c.name} — legacy track: {c.pack.name}
                     </option>
                   ))}
                 </select>
               </div>
             )}
             <div>
-              <label className="block text-xs text-wepac-text-tertiary">Tipo</label>
+              <label className="block text-xs text-wepac-text-tertiary">
+                Format
+              </label>
               <select
                 value={sessionType}
-                onChange={(e) => setSessionType(e.target.value as SessionType)}
+                onChange={(e) => {
+                  const nextType = e.target.value as SessionType;
+                  setSessionType(nextType);
+                  if (nextType === "individual") {
+                    setAttendeeIds((current) => current.slice(0, 1));
+                  }
+                }}
                 className="mt-1 w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white"
               >
                 <option value="individual">Individual</option>
-                <option value="group">Grupo</option>
+                <option value="group">Group</option>
               </select>
             </div>
             <div>
@@ -1031,7 +944,7 @@ export function MentorSessionsClient({
             </div>
             <div className="sm:col-span-2">
               <label className="block text-xs text-wepac-text-tertiary">
-                Motivo da sessão
+                Session purpose
               </label>
               <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {SESSION_KIND_KEYS.map((k) => (
@@ -1077,8 +990,8 @@ export function MentorSessionsClient({
                 {participantOptions.length === 0 && (
                   <p className="text-xs text-wepac-text-tertiary">
                     {associateCohort
-                      ? "Sem membros nesta Journey."
-                      : "Sem pessoas mentoradas."}
+                      ? "No active participants in this legacy cohort."
+                      : "Sem Mentees disponíveis."}
                   </p>
                 )}
               </div>
@@ -1137,7 +1050,9 @@ export function MentorSessionsClient({
         <div className="mt-8 space-y-3">
           {sessions.map((session) => renderSessionCard(session))}
           {sessions.length === 0 && (
-            <p className="text-sm text-wepac-text-tertiary">Sem sessões ainda.</p>
+            <p className="text-sm text-wepac-text-tertiary">
+              Sem sessões ainda.
+            </p>
           )}
         </div>
       )}

@@ -197,7 +197,7 @@ function TrailSetupForm({
         />
       </div>
       <div>
-        <label className="block text-sm text-wepac-text-secondary">Pilares tocados</label>
+        <label className="block text-sm text-wepac-text-secondary">Pillars touched</label>
         <div className="mt-2 flex flex-wrap gap-2">
           {(Object.keys(AREA_LABELS) as AreaKey[]).map((area) => (
             <button

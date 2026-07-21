@@ -37,6 +37,7 @@ export default async function MentorSessionsPage() {
       cohorts={serialize(cohorts)}
       members={serialize(members)}
       currentUserId={actor.id}
+      canManagePrivateArtifacts={false}
     />
   );
 }

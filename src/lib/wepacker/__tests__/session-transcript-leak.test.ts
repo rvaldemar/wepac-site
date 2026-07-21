@@ -35,7 +35,11 @@ vi.mock("@/lib/wepacker/guards", () => ({
   getMentoredCohortIds: vi.fn(async () => []),
 }));
 
-import { getMySessions, getNextSession } from "@/lib/wepacker/actions/session";
+import {
+  getMentoredSessions,
+  getMySessions,
+  getNextSession,
+} from "@/lib/wepacker/actions/session";
 
 const fakeRow = {
   id: "session-1",
@@ -80,7 +84,7 @@ describe("member session reads never leak the transcript", () => {
     // The query itself must use a top-level `select` (default-deny),
     // never an `include` — an `include` would return every Session
     // scalar automatically regardless of what the mock returns.
-    const callArgs = findMany.mock.calls[0]?.[0];
+    const callArgs = findMany.mock.calls.at(-1)?.[0];
     expect(callArgs).toHaveProperty("select");
     expect(callArgs).not.toHaveProperty("include");
     expect(callArgs.select).not.toHaveProperty("transcript");
@@ -106,5 +110,36 @@ describe("member session reads never leak the transcript", () => {
     findFirst.mockResolvedValueOnce(null);
     const row = await getNextSession();
     expect(row).toBeNull();
+  });
+
+  it("removes unpublished legacy discussion points from the member payload", async () => {
+    findMany.mockResolvedValueOnce([
+      {
+        ...fakeRow,
+        notes: "private note",
+        notesPublished: false,
+        discussionPoints: "private discussion points",
+      },
+    ]);
+
+    const [row] = await getMySessions();
+
+    expect(row.notes).toBeNull();
+    expect(row.discussionPoints).toBeNull();
+  });
+
+  it("mentor/admin Session lists carry metadata but never raw transcript content", async () => {
+    requireUser.mockResolvedValueOnce({ id: "admin-1", role: "admin" });
+    findMany.mockResolvedValueOnce([]);
+
+    await getMentoredSessions();
+
+    const callArgs = findMany.mock.calls.at(-1)?.[0];
+    expect(callArgs).toHaveProperty("select");
+    expect(callArgs).not.toHaveProperty("include");
+    expect(callArgs.select).not.toHaveProperty("transcript");
+    expect(callArgs.select).not.toHaveProperty("transcriptUploadedById");
+    expect(callArgs.select).not.toHaveProperty("transcriptUploadedBy");
+    expect(callArgs.select.transcriptUploadedAt).toBe(true);
   });
 });

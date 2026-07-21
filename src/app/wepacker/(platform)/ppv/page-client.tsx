@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { upsertLifePlan, restoreLifePlanVersion } from "@/lib/wepacker/actions/plan";
 
 const LIFE_SECTIONS = [
-  { key: "whoIAm", title: "Quem sou", description: "Narrativa pessoal e artística." },
-  { key: "whereIAm", title: "Onde estou", description: "Situação actual: pessoal, profissional, artística." },
+  { key: "whoIAm", title: "Quem sou", description: "Identidade, história e o que reconheço em mim." },
+  { key: "whereIAm", title: "Onde estou", description: "Situação atual, relações, trabalho, prática e contexto." },
   { key: "whereIGo", title: "Para onde quero ir", description: "Visão a 3–5 anos." },
   { key: "whyIDo", title: "Porque faço o que faço", description: "Propósito, motivação profunda, missão pessoal." },
   { key: "commitments", title: "O que me comprometo a fazer", description: "Compromissos concretos: hábitos, atitudes, prioridades." },
@@ -64,9 +64,9 @@ export default function LifePlanPageClient({ userId, lifePlan, versions }: Props
 
   return (
     <div className="p-6 lg:p-8">
-      <h1 className="font-barlow text-2xl font-bold text-wepac-white">Life Plan</h1>
+      <h1 className="font-barlow text-2xl font-bold text-wepac-white">Life Map</h1>
       <p className="mt-1 text-sm text-wepac-text-tertiary">
-        O teu documento de direcção pessoal e artística.
+        O teu mapa vivo de direção, identidade e compromissos.
       </p>
       {lifePlan && (
         <p className="mt-1 text-xs text-wepac-text-tertiary">

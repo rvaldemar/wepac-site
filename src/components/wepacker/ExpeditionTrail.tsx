@@ -147,7 +147,7 @@ export function ExpeditionTrail({ sessions, className = "" }: ExpeditionTrailPro
     <div className={`border border-wepac-border bg-wepac-card p-6 ${className}`}>
       <div className="flex items-center justify-between">
         <h2 className="font-barlow text-lg font-bold text-wepac-white">
-          Trilho da Expedição
+          Session Timeline
         </h2>
       </div>
       <div className="mt-4 overflow-x-auto bg-wepac-black">
@@ -158,7 +158,7 @@ export function ExpeditionTrail({ sessions, className = "" }: ExpeditionTrailPro
           className="block"
           style={{ minWidth: width }}
           role="img"
-          aria-label="Trilho da expedição: sessões passadas, posição atual e próxima sessão"
+          aria-label="Session Timeline: sessões passadas, posição atual e próxima sessão"
         >
           {/* The trail line itself — thin, irregular, rising. */}
           <polyline
@@ -169,7 +169,7 @@ export function ExpeditionTrail({ sessions, className = "" }: ExpeditionTrailPro
             strokeWidth={1}
           />
 
-          {/* Summit — the Journey's end, aspirational and unlabeled. */}
+          {/* Summit — a visual endpoint for this Session timeline. */}
           <path
             d={`M ${summit.x - 14} ${summit.y + 22} L ${summit.x} ${summit.y - 20} L ${summit.x + 14} ${summit.y + 22} Z`}
             fill="none"

@@ -55,8 +55,15 @@ describe("hasDedicatedIndicators", () => {
 });
 
 describe("AREA_LABELS", () => {
-  it("has a fixed label for each of the 6 universal areas", () => {
-    expect(AREA_LABELS.physical).toBe("Físico");
+  it("uses canonical English-first labels for the six universal Pillars", () => {
+    expect(AREA_LABELS).toEqual({
+      physical: "Physical",
+      emotional: "Emotional",
+      character: "Character",
+      spiritual: "Spiritual",
+      intellectual: "Intellectual",
+      social: "Social",
+    });
     expect(Object.keys(AREA_LABELS).sort()).toEqual([...AREA_KEYS].sort());
   });
 });

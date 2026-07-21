@@ -1,6 +1,6 @@
 "use client";
 
-const STEPS = ["Boas-vindas", "Acordo", "Autoavaliação"];
+const STEPS = ["Welcome", "Agreement"];
 
 export function OnboardingStepper({ currentStep }: { currentStep: number }) {
   return (

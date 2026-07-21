@@ -12,10 +12,10 @@ import {
 import type { CohortStatus, MembershipRole, UserRole } from "@/lib/wepacker/types";
 
 const STATUS_LABELS: Record<CohortStatus, string> = {
-  draft: "Rascunho",
-  active: "Ativa",
-  completed: "Concluída",
-  archived: "Arquivada",
+  draft: "Draft",
+  active: "Active",
+  completed: "Completed",
+  archived: "Archived",
 };
 
 const STATUS_COLORS: Record<CohortStatus, string> = {
@@ -127,7 +127,7 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
       setShowPackForm(false);
       router.refresh();
     } catch (err) {
-      setPackError(err instanceof Error ? err.message : "Erro ao criar pack.");
+      setPackError(err instanceof Error ? err.message : "Could not create legacy track.");
     } finally {
       setSavingPack(false);
     }
@@ -158,7 +158,7 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
     } catch (err) {
       setToggleActiveErrors((prev) => ({
         ...prev,
-        [pack.id]: err instanceof Error ? err.message : "Erro ao atualizar pack.",
+        [pack.id]: err instanceof Error ? err.message : "Could not update legacy track.",
       }));
     }
   }
@@ -185,7 +185,7 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
       setCohortFormPackId(null);
       router.refresh();
     } catch (err) {
-      setCohortError(err instanceof Error ? err.message : "Erro ao criar Journey.");
+      setCohortError(err instanceof Error ? err.message : "Could not create legacy cohort.");
     } finally {
       setSavingCohort(false);
     }
@@ -199,7 +199,7 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
     } catch (err) {
       setStatusChangeErrors((prev) => ({
         ...prev,
-        [cohortId]: err instanceof Error ? err.message : "Erro ao atualizar Journey.",
+        [cohortId]: err instanceof Error ? err.message : "Could not update legacy cohort.",
       }));
     }
   }
@@ -221,7 +221,7 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
       setMemberFormCohortId(null);
       router.refresh();
     } catch (err) {
-      setMemberError(err instanceof Error ? err.message : "Erro ao adicionar membro.");
+      setMemberError(err instanceof Error ? err.message : "Could not add person to legacy cohort.");
     } finally {
       setSavingMember(false);
     }
@@ -233,10 +233,10 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
         <div className="flex items-center justify-between">
           <div>
             <h1 className="font-barlow text-3xl font-bold text-wepac-white">
-              Packs &amp; Journeys
+              Legacy Delivery
             </h1>
             <p className="mt-1 text-sm text-wepac-text-tertiary">
-              {packs.length} packs — {packs.reduce((n, p) => n + p.cohorts.length, 0)} cohorts
+              {packs.length} legacy tracks — {packs.reduce((n, p) => n + p.cohorts.length, 0)} legacy cohorts
             </p>
           </div>
           <button
@@ -246,18 +246,25 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
             }}
             className="bg-wepac-white px-4 py-2 text-sm font-bold text-wepac-black"
           >
-            {showPackForm ? "Cancelar" : "+ Novo Pack"}
+            {showPackForm ? "Cancel" : "+ New legacy track"}
           </button>
         </div>
 
-        {/* Create pack */}
+        <p className="mt-5 border border-wepac-warning/40 bg-wepac-warning-bg p-4 text-sm text-wepac-warning">
+          This screen operates the old Pack → Cohort → CohortMembership tables.
+          These records are not Community Packs, target Cycles, Cycle Enrollments,
+          Cycle Facilitators, or verified Disciplines. Keep them explicit until the
+          reviewed migration maps each record.
+        </p>
+
+        {/* Create a row in the legacy delivery model without target relabelling. */}
         {showPackForm && (
           <form
             onSubmit={handleCreatePack}
             className="mt-6 grid gap-4 border border-wepac-border bg-wepac-card p-6 sm:grid-cols-2"
           >
             <h2 className="font-barlow text-lg font-bold text-wepac-white sm:col-span-2">
-              Novo Pack
+              New legacy track
             </h2>
             <div>
               <label className="block text-xs text-wepac-text-tertiary">Slug</label>
@@ -270,7 +277,7 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
               />
             </div>
             <div>
-              <label className="block text-xs text-wepac-text-tertiary">Nome</label>
+              <label className="block text-xs text-wepac-text-tertiary">Name</label>
               <input
                 value={packName}
                 onChange={(e) => setPackName(e.target.value)}
@@ -287,7 +294,7 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
               />
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-xs text-wepac-text-tertiary">Descrição</label>
+              <label className="block text-xs text-wepac-text-tertiary">Description</label>
               <textarea
                 value={packDescription}
                 onChange={(e) => setPackDescription(e.target.value)}
@@ -302,17 +309,17 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
                 disabled={savingPack}
                 className="bg-wepac-white px-6 py-2 text-sm font-bold text-wepac-black disabled:opacity-50"
               >
-                {savingPack ? "A criar..." : "Criar Pack"}
+                {savingPack ? "Creating..." : "Create legacy track"}
               </button>
             </div>
           </form>
         )}
 
-        {/* Packs */}
+        {/* Rows backed by the legacy packs table during expand. */}
         <div className="mt-8 space-y-6">
           {packs.length === 0 && (
             <p className="py-8 text-center text-sm text-wepac-text-tertiary">
-              Nenhum pack criado ainda.
+              No legacy tracks yet.
             </p>
           )}
           {packs.map((pack) => (
@@ -374,6 +381,11 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
                       <span className="bg-wepac-input px-2 py-0.5 text-xs text-wepac-text-tertiary">
                         {pack.slug}
                       </span>
+                      {pack.slug === "artist" && (
+                        <span className="bg-wepac-info-bg px-2 py-0.5 text-xs text-wepac-info">
+                          Candidate Discipline mapping: Arts
+                        </span>
+                      )}
                       <span
                         className={`px-2 py-0.5 text-xs font-medium ${
                           pack.active
@@ -381,7 +393,7 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
                             : "bg-wepac-input text-wepac-text-tertiary"
                         }`}
                       >
-                        {pack.active ? "Ativo" : "Inativo"}
+                        {pack.active ? "Active" : "Inactive"}
                       </span>
                     </div>
                     {pack.tagline && (
@@ -396,22 +408,22 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
                       onClick={() => handleToggleActive(pack)}
                       className="border border-wepac-border px-3 py-1.5 text-xs text-wepac-text-secondary hover:text-wepac-white"
                     >
-                      {pack.active ? "Desativar" : "Ativar"}
+                      {pack.active ? "Deactivate" : "Activate"}
                     </button>
                     <button
                       onClick={() => startEditPack(pack)}
                       className="border border-wepac-border px-3 py-1.5 text-xs text-wepac-text-secondary hover:text-wepac-white"
                     >
-                      Editar
+                      Edit
                     </button>
                   </div>
                 </div>
               )}
 
-              {/* Cohorts */}
+              {/* Legacy cohorts */}
               <div className="mt-6 space-y-3">
                 {pack.cohorts.length === 0 && (
-                  <p className="text-xs text-wepac-text-tertiary">Sem Journeys ainda.</p>
+                  <p className="text-xs text-wepac-text-tertiary">No legacy cohorts yet.</p>
                 )}
                 {pack.cohorts.map((cohort) => (
                   <div key={cohort.id} className="border border-wepac-border bg-wepac-dark p-4">
@@ -420,7 +432,7 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
                         <p className="text-sm font-medium text-wepac-white">{cohort.name}</p>
                         <p className="mt-0.5 text-xs text-wepac-text-tertiary">
                           {formatDate(cohort.startsAt)} — {formatDate(cohort.endsAt)} ·{" "}
-                          {cohort._count.memberships} membros
+                          {cohort._count.memberships} legacy participant records
                         </p>
                         {statusChangeErrors[cohort.id] && (
                           <p className="mt-1 text-xs text-wepac-error">
@@ -456,7 +468,7 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
                           }}
                           className="border border-wepac-border px-2 py-1 text-xs text-wepac-text-secondary hover:text-wepac-white"
                         >
-                          + Membro
+                          + Participant
                         </button>
                       </div>
                     </div>
@@ -468,7 +480,7 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
                       >
                         <div>
                           <label className="block text-xs text-wepac-text-tertiary">
-                            Utilizador
+                            User
                           </label>
                           <select
                             value={memberUserId}
@@ -476,7 +488,7 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
                             required
                             className="mt-1 min-w-[220px] bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none"
                           >
-                            <option value="">Selecionar...</option>
+                            <option value="">Select...</option>
                             {users.map((u) => (
                               <option key={u.id} value={u.id}>
                                 {u.name} ({u.email})
@@ -485,14 +497,14 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
                           </select>
                         </div>
                         <div>
-                          <label className="block text-xs text-wepac-text-tertiary">Papel</label>
+                          <label className="block text-xs text-wepac-text-tertiary">Legacy cohort role</label>
                           <select
                             value={memberRole}
                             onChange={(e) => setMemberRole(e.target.value as MembershipRole)}
                             className="mt-1 bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none"
                           >
-                            <option value="member">Membro</option>
-                            <option value="mentor">Mentor</option>
+                            <option value="member">Participant</option>
+                            <option value="mentor">Facilitator</option>
                           </select>
                         </div>
                         <button
@@ -500,7 +512,7 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
                           disabled={savingMember}
                           className="bg-wepac-white px-4 py-2 text-xs font-bold text-wepac-black disabled:opacity-50"
                         >
-                          {savingMember ? "A adicionar..." : "Adicionar"}
+                          {savingMember ? "Adding..." : "Add"}
                         </button>
                         {memberError && (
                           <p className="w-full text-xs text-wepac-error">{memberError}</p>
@@ -510,7 +522,7 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
                   </div>
                 ))}
 
-                {/* New cohort */}
+                {/* New legacy cohort */}
                 {cohortFormPackId === pack.id ? (
                   <form
                     onSubmit={(e) => handleCreateCohort(e, pack.id)}
@@ -522,7 +534,7 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
                         value={cohortName}
                         onChange={(e) => setCohortName(e.target.value)}
                         required
-                        placeholder="Journey Verão 2026"
+                        placeholder="Artist pilot 2026"
                         className="mt-1 bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none"
                       />
                     </div>
@@ -573,7 +585,7 @@ export function AdminCohortsPageClient({ packs, users }: AdminCohortsPageProps) 
                     }}
                     className="border border-wepac-border px-3 py-1.5 text-xs text-wepac-text-secondary hover:text-wepac-white"
                   >
-                    + Nova Cohort
+                    + New legacy cohort
                   </button>
                 )}
               </div>

@@ -10,8 +10,13 @@ interface PageProps {
 }
 
 async function resolvePack(slug: string) {
+  if (slug !== "artist") return null;
   const packs = await getActivePacksPublic();
   return packs.find((p) => p.slug === slug) ?? null;
+}
+
+function disciplineName(): string {
+  return "Arts";
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -19,7 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const pack = await resolvePack(slug);
   if (!pack) return { title: "WEPACKER" };
   return {
-    title: `Intake — ${pack.name}`,
+    title: `Intake — ${disciplineName()}`,
     description: pack.tagline || pack.description || undefined,
   };
 }
@@ -28,6 +33,7 @@ export default async function CandidaturaPage({ params }: PageProps) {
   const { pack: slug } = await params;
   const pack = await resolvePack(slug);
   if (!pack) notFound();
+  const displayName = disciplineName();
 
   return (
     <div className="min-h-screen bg-wepac-black">
@@ -53,10 +59,10 @@ export default async function CandidaturaPage({ params }: PageProps) {
       <section className="px-6 py-12 lg:px-12 lg:py-20">
         <div className="mx-auto max-w-2xl">
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-wepac-gray">
-            Intake · {pack.name}
+            Intake · {displayName}
           </p>
           <h1 className="mt-3 font-barlow text-3xl font-bold text-wepac-white md:text-5xl">
-            Candidata-te ao percurso {pack.name}
+            Explora a Discipline {displayName}
           </h1>
           {pack.tagline && (
             <p className="mt-4 text-lg font-medium text-wepac-gray">{pack.tagline}</p>

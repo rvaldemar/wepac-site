@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import { updateMyProfile } from "@/lib/wepacker/actions/user";
-import { LEVEL_LABELS, PHASE_LABELS, type MembershipContext } from "@/lib/wepacker/types";
+import {
+  STAGE_LABELS,
+  type MembershipContext,
+  type StageKey,
+} from "@/lib/wepacker/types";
 
 interface Props {
   user: {
@@ -14,9 +18,10 @@ interface Props {
     phone: string | null;
   };
   membership: MembershipContext | null;
+  stage: StageKey | null;
 }
 
-export default function ProfilePageClient({ user, membership }: Props) {
+export default function ProfilePageClient({ user, membership, stage }: Props) {
   const [name, setName] = useState(user.name);
   const [bio, setBio] = useState(user.bio ?? "");
   const [phone, setPhone] = useState(user.phone ?? "");
@@ -36,7 +41,7 @@ export default function ProfilePageClient({ user, membership }: Props) {
 
   return (
     <div className="p-6 lg:p-8">
-      <h1 className="font-barlow text-2xl font-bold text-wepac-white">Perfil</h1>
+      <h1 className="font-barlow text-2xl font-bold text-wepac-white">Profile</h1>
       <p className="mt-1 text-sm text-wepac-text-tertiary">
         Os teus dados pessoais e de desenvolvimento.
       </p>
@@ -55,34 +60,30 @@ export default function ProfilePageClient({ user, membership }: Props) {
           <div>
             <p className="text-sm font-medium text-wepac-white">{user.name}</p>
             <p className="text-xs text-wepac-text-tertiary">{user.email}</p>
-            {membership && (
-              <div className="mt-1 flex gap-2">
-                <span className="bg-wepac-white/10 px-2 py-0.5 text-xs text-wepac-white">
-                  {LEVEL_LABELS[membership.level]}
-                </span>
-                <span className="bg-wepac-input px-2 py-0.5 text-xs text-wepac-text-tertiary">
-                  {PHASE_LABELS[membership.currentPhase]}
-                </span>
-              </div>
-            )}
+            <div className="mt-1 flex gap-2">
+              <span className="bg-wepac-white/10 px-2 py-0.5 text-xs text-wepac-white">
+                Stage: {stage ? STAGE_LABELS[stage] : "Not set"}
+              </span>
+            </div>
           </div>
         </div>
 
         {membership && (
           <div className="border border-wepac-border bg-wepac-card p-5">
-            <h2 className="text-sm font-bold text-wepac-white">A tua membership</h2>
+            <h2 className="text-sm font-bold text-wepac-white">Legacy delivery record</h2>
             <div className="mt-3 space-y-1 text-sm text-wepac-text-secondary">
-              <p>Pack: {membership.packName}</p>
-              <p>Cohort: {membership.cohortName}</p>
-              <p>Nível: {LEVEL_LABELS[membership.level]}</p>
-              <p>Fase: {PHASE_LABELS[membership.currentPhase]}</p>
+              <p>{membership.cohortName}</p>
+              <p className="text-xs text-wepac-text-tertiary">
+                Este registo ainda não é um target Cycle Enrollment nem uma Pack
+                Membership.
+              </p>
             </div>
           </div>
         )}
 
         {!membership && (
           <p className="text-sm text-wepac-text-tertiary">
-            Ainda sem Journey associada — contacta a equipa WEPAC.
+            No legacy delivery record. This does not affect My Journey.
           </p>
         )}
 

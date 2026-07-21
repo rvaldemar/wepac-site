@@ -45,6 +45,7 @@ export default async function MentorSessionDebriefPage({
       session={serialize(session)}
       debrief={debrief ? serialize(debrief) : null}
       preparation={serialize(preparation)}
+      canManagePrivateArtifacts={false}
     />
   );
 }

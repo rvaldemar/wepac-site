@@ -48,6 +48,100 @@ enum MembershipStatus {
   exited
 }
 
+// Origin metadata for Domain Graph v2 records. `legacy_inference` is
+// intentionally explicit: inferred records must also set reviewRequired=true
+// and are never created by this migration. Database checks quarantine every
+// reviewRequired record from an active status until a human clears the flag.
+enum DomainRecordSource {
+  explicit
+  invitation
+  admin
+  system
+  legacy_inference
+}
+
+enum PersonConnectionType {
+  friend
+  family
+  partner
+  professional
+  collaborator
+  other
+}
+
+enum PersonConnectionStatus {
+  pending
+  active
+  declined
+  ended
+  blocked
+}
+
+enum MentorshipStatus {
+  pending
+  active
+  paused
+  declined
+  ended
+}
+
+enum PackMembershipRole {
+  owner
+  moderator
+  member
+}
+
+enum PackMembershipStatus {
+  invited
+  active
+  paused
+  left
+  removed
+}
+
+enum CommunityPackStatus {
+  draft
+  active
+  archived
+}
+
+enum CycleEnrollmentStatus {
+  invited
+  active
+  paused
+  completed
+  withdrawn
+  removed
+}
+
+enum CycleFacilitatorRole {
+  lead
+  facilitator
+}
+
+enum CycleFacilitatorStatus {
+  invited
+  active
+  paused
+  declined
+  ended
+  removed
+}
+
+enum StageKey {
+  easy_peasy
+  step_up
+  yup
+}
+
+enum StagePlacementStatus {
+  pending_review
+  active
+  completed
+  superseded
+  voided
+}
+
 enum EvaluationType {
   self
   mentor
@@ -115,12 +209,8 @@ enum AreaKey {
   social
 }
 
-// A Trail is a personal transformation journey a WEPACker defines for
-// themselves — title, purpose, why it matters now, what real progress
-// would look like, which development areas it touches. Standalone from
-// Cohort/Journey in this first version: one person can run several
-// Trails across their life, each optionally overlapping a Pack's
-// Journey, but that link isn't modeled yet.
+// A Trail is a bounded personal transformation a WEPACker defines and owns.
+// It belongs to My Journey and remains independent from legacy delivery rows.
 enum TrailStatus {
   active
   paused
@@ -140,11 +230,9 @@ enum DebriefStatus {
 
 // ===== WEPACKER PLATFORM — MODELS =====
 
-// A Pack is the application of the WEPAC methodology to a specific
-// profile/context (e.g. artist, sport). The 6 development areas are
-// universal and fixed across every pack — art/culture (or any other
-// discipline a pack is built around) is a practice a Pack chooses, not
-// a pillar of its own.
+// LEGACY DELIVERY MODEL. These rows historically mixed audience, practice
+// and product concepts. They are not target Community Packs or verified
+// Disciplines; see CommunityPack and the Domain Graph v2 ADR.
 model Pack {
   id          String   @id @default(cuid())
   slug        String   @unique
@@ -161,7 +249,8 @@ model Pack {
   @@map("packs")
 }
 
-// A Cohort is a closed accompaniment cycle within a Pack.
+// LEGACY DELIVERY MODEL. A Cohort is not a target Cycle until reviewed and
+// explicitly mapped.
 model Cohort {
   id        String       @id @default(cuid())
   packId    String
@@ -172,18 +261,18 @@ model Cohort {
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 
-  pack        Pack               @relation(fields: [packId], references: [id], onDelete: Cascade)
-  memberships CohortMembership[]
-  sessions    Session[]
+  pack              Pack               @relation(fields: [packId], references: [id], onDelete: Cascade)
+  memberships       CohortMembership[]
+  cycleEnrollments  CycleEnrollment[]
+  cycleFacilitators CycleFacilitator[]
+  sessions          Session[]
 
   @@map("cohorts")
 }
 
-// A person inside a cohort — either a member in development or a mentor.
-// Tasks and session attendance hang on the membership (they are specific
-// to a pack cycle). The person-level development artefacts — evaluations,
-// life plan, strategic plan/map — hang on the User instead (see below),
-// so one person has a single PPV/diagnosis/plan even across several packs.
+// LEGACY DELIVERY MODEL. This row is not target Cycle Enrollment, Cycle
+// Facilitator, Pack Membership, Connection or Mentorship. Tasks remain here
+// only as contained legacy data during migration.
 model CohortMembership {
   id           String           @id @default(cuid())
   cohortId     String
@@ -194,9 +283,9 @@ model CohortMembership {
   currentPhase MemberPhase      @default(diagnosis)
   joinedAt     DateTime         @default(now())
 
-  cohort             Cohort            @relation(fields: [cohortId], references: [id], onDelete: Cascade)
-  user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tasks              Task[]
+  cohort Cohort @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks  Task[]
 
   @@unique([cohortId, userId])
   @@index([userId])
@@ -218,27 +307,235 @@ model User {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  memberships         CohortMembership[]
-  agreements          Agreement[]
-  evaluations         Evaluation[]              @relation("EvaluationSubject")
-  evaluationsGiven    Evaluation[]              @relation("EvaluationEvaluator")
-  strategicMapScores  StrategicMapScore[]       @relation("StrategicMapSubject")
-  strategicMapsGiven  StrategicMapScore[]       @relation("StrategicMapEvaluator")
-  lifePlan            LifePlan?
-  lifePlanVersions    LifePlanVersion[]
-  strategicPlans      StrategicPlan[]
-  trails              Trail[]
-  tasksAssigned       Task[]                    @relation("TaskAssigner")
-  sessionsMentored    Session[]
-  sessionAttendances  SessionAttendee[]
-  sessionTranscriptsUploaded Session[]          @relation("SessionTranscriptUploader")
-  sessionDebriefsGenerated  SessionDebrief[]
-  conversationLinks   ConversationParticipant[]
-  messages            Message[]
-  comments            Comment[]
-  passwordResetTokens PasswordResetToken[]
+  memberships                CohortMembership[]
+  agreements                 Agreement[]
+  evaluations                Evaluation[]              @relation("EvaluationSubject")
+  evaluationsGiven           Evaluation[]              @relation("EvaluationEvaluator")
+  strategicMapScores         StrategicMapScore[]       @relation("StrategicMapSubject")
+  strategicMapsGiven         StrategicMapScore[]       @relation("StrategicMapEvaluator")
+  lifePlan                   LifePlan?
+  lifePlanVersions           LifePlanVersion[]
+  strategicPlans             StrategicPlan[]
+  trails                     Trail[]
+  tasksAssigned              Task[]                    @relation("TaskAssigner")
+  sessionsMentored           Session[]
+  sessionAttendances         SessionAttendee[]
+  sessionTranscriptsUploaded Session[]                 @relation("SessionTranscriptUploader")
+  sessionDebriefsGenerated   SessionDebrief[]
+  conversationLinks          ConversationParticipant[]
+  messages                   Message[]
+  comments                   Comment[]
+  passwordResetTokens        PasswordResetToken[]
+  connectionsAsFirst         PersonConnection[]        @relation("PersonConnectionFirstUser")
+  connectionsAsSecond        PersonConnection[]        @relation("PersonConnectionSecondUser")
+  connectionsRequested       PersonConnection[]        @relation("PersonConnectionRequestedBy")
+  mentorshipsAsMentor        Mentorship[]              @relation("MentorshipMentor")
+  mentorshipsAsMentee        Mentorship[]              @relation("MentorshipMentee")
+  mentorshipInvitationsSent  Mentorship[]              @relation("MentorshipInvitedBy")
+  communityPacksCreated      CommunityPack[]           @relation("CommunityPackCreator")
+  packMemberships            PackMembership[]
+  packInvitationsSent        PackMembership[]          @relation("PackMembershipInvitedBy")
+  cycleEnrollments           CycleEnrollment[]
+  cycleFacilitations         CycleFacilitator[]
+  stagePlacements            StagePlacement[]          @relation("StagePlacementSubject")
+  stagePlacementsMade        StagePlacement[]          @relation("StagePlacementPlacedBy")
 
   @@map("users")
+}
+
+// A consented person-to-person connection. The two user IDs form an
+// unordered pair: the database check keeps them in canonical lexical order,
+// allowing one durable connection record per pair. The optional per-person
+// labels support asymmetric real-world relationships without overloading
+// Mentorship, which has its own directed model below. Consent/history endpoints
+// use Restrict; future erasure must be an explicit, policy-reviewed
+// anonymization workflow rather than an accidental cascade.
+model PersonConnection {
+  id                 String                 @id @default(cuid())
+  firstUserId        String
+  secondUserId       String
+  requestedById      String?
+  type               PersonConnectionType
+  status             PersonConnectionStatus @default(pending)
+  labelForFirstUser  String?
+  labelForSecondUser String?
+  source             DomainRecordSource     @default(explicit)
+  reviewRequired     Boolean                @default(false)
+  requestedAt        DateTime               @default(now())
+  acceptedAt         DateTime?
+  endedAt            DateTime?
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+
+  firstUser   User  @relation("PersonConnectionFirstUser", fields: [firstUserId], references: [id], onDelete: Restrict)
+  secondUser  User  @relation("PersonConnectionSecondUser", fields: [secondUserId], references: [id], onDelete: Restrict)
+  requestedBy User? @relation("PersonConnectionRequestedBy", fields: [requestedById], references: [id], onDelete: Restrict)
+
+  @@unique([firstUserId, secondUserId])
+  @@index([firstUserId, status])
+  @@index([secondUserId, status])
+  @@index([requestedById])
+  @@map("person_connections")
+}
+
+// A directed, consented mentor -> mentee relationship. It is independent
+// from Packs and Cycles: a personal mentoring relationship exists without
+// requiring either kind of membership.
+model Mentorship {
+  id               String             @id @default(cuid())
+  mentorId         String
+  menteeId         String
+  invitedById      String
+  status           MentorshipStatus   @default(pending)
+  source           DomainRecordSource @default(explicit)
+  reviewRequired   Boolean            @default(false)
+  invitedAt        DateTime           @default(now())
+  mentorAcceptedAt DateTime?
+  menteeAcceptedAt DateTime?
+  activatedAt      DateTime?
+  pausedAt         DateTime?
+  endedAt          DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  mentor    User      @relation("MentorshipMentor", fields: [mentorId], references: [id], onDelete: Restrict)
+  mentee    User      @relation("MentorshipMentee", fields: [menteeId], references: [id], onDelete: Restrict)
+  invitedBy User      @relation("MentorshipInvitedBy", fields: [invitedById], references: [id], onDelete: Restrict)
+  sessions  Session[]
+
+  @@index([mentorId, menteeId])
+  @@index([mentorId, status])
+  @@index([menteeId, status])
+  @@index([invitedById])
+  @@map("mentorships")
+}
+
+// Target community aggregate. It is intentionally separate from legacy Pack,
+// whose current rows describe profile/practice concepts such as Artist. No
+// legacy Pack row is reused or inferred as a CommunityPack by this migration.
+model CommunityPack {
+  id             String              @id @default(cuid())
+  slug           String              @unique
+  name           String
+  description    String              @default("")
+  status         CommunityPackStatus @default(draft)
+  source         DomainRecordSource  @default(explicit)
+  reviewRequired Boolean             @default(false)
+  createdById    String
+  activatedAt    DateTime?
+  archivedAt     DateTime?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  createdBy   User             @relation("CommunityPackCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  memberships PackMembership[]
+
+  @@index([status])
+  @@index([createdById])
+  @@map("community_packs")
+}
+
+// Community belonging only. This deliberately has no relationship to legacy
+// Pack or CohortMembership: delivery participation must never silently become
+// community belonging.
+model PackMembership {
+  id              String               @id @default(cuid())
+  communityPackId String
+  userId          String
+  invitedById     String
+  role            PackMembershipRole   @default(member)
+  status          PackMembershipStatus @default(invited)
+  source          DomainRecordSource   @default(explicit)
+  reviewRequired  Boolean              @default(false)
+  invitedAt       DateTime             @default(now())
+  joinedAt        DateTime?
+  endedAt         DateTime?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  communityPack CommunityPack @relation(fields: [communityPackId], references: [id], onDelete: Restrict)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  invitedBy     User          @relation("PackMembershipInvitedBy", fields: [invitedById], references: [id], onDelete: Restrict)
+
+  @@unique([communityPackId, userId])
+  @@index([communityPackId, status])
+  @@index([userId, status])
+  @@index([invitedById])
+  @@map("pack_memberships")
+}
+
+// Participant consent edge for a product-facing Cycle, temporarily backed by
+// the legacy Cohort container. It is intentionally distinct from facilitation.
+model CycleEnrollment {
+  id             String                @id @default(cuid())
+  cohortId       String
+  userId         String
+  status         CycleEnrollmentStatus @default(invited)
+  source         DomainRecordSource    @default(explicit)
+  reviewRequired Boolean               @default(false)
+  invitedAt      DateTime              @default(now())
+  joinedAt       DateTime?
+  completedAt    DateTime?
+  endedAt        DateTime?
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  cohort Cohort @relation(fields: [cohortId], references: [id], onDelete: Restrict)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([cohortId, userId])
+  @@index([cohortId, status])
+  @@index([userId, status])
+  @@map("cycle_enrollments")
+}
+
+// Operational facilitation edge for a Cycle. A Person may simultaneously have
+// a CycleEnrollment; separate tables prevent one role from overwriting the
+// other and keep authorization scopes independent.
+model CycleFacilitator {
+  id             String                 @id @default(cuid())
+  cohortId       String
+  userId         String
+  role           CycleFacilitatorRole   @default(facilitator)
+  status         CycleFacilitatorStatus @default(invited)
+  source         DomainRecordSource     @default(explicit)
+  reviewRequired Boolean                @default(false)
+  invitedAt      DateTime               @default(now())
+  acceptedAt     DateTime?
+  endedAt        DateTime?
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  cohort Cohort @relation(fields: [cohortId], references: [id], onDelete: Restrict)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([cohortId, userId])
+  @@index([cohortId, status])
+  @@index([userId, status])
+  @@map("cycle_facilitators")
+}
+
+// Historical placement in one of the three lifelong Stages. A partial unique
+// index in the migration enforces at most one active placement per person.
+model StagePlacement {
+  id             String               @id @default(cuid())
+  userId         String
+  stage          StageKey
+  status         StagePlacementStatus @default(active)
+  source         DomainRecordSource   @default(explicit)
+  reviewRequired Boolean              @default(false)
+  placedById     String?
+  effectiveFrom  DateTime             @default(now())
+  effectiveUntil DateTime?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  user     User  @relation("StagePlacementSubject", fields: [userId], references: [id], onDelete: Restrict)
+  placedBy User? @relation("StagePlacementPlacedBy", fields: [placedById], references: [id], onDelete: Restrict)
+
+  @@index([userId, status])
+  @@index([placedById])
+  @@map("stage_placements")
 }
 
 model Agreement {
@@ -432,15 +729,13 @@ model Task {
   @@map("tasks")
 }
 
-// A Session is a mentoring session with a person (or a group of people).
-// It can optionally sit inside a Pack/Journey (`cohortId`), but a Pack is
-// just a community/context — most mentoring is a personal relationship,
-// not a Journey-scoped category, so `cohortId` is optional. Attendees are
-// people (`User`), not pack enrollments, so the same session model works
-// whether or not it belongs to a cohort.
+// A Session has explicit attendees. It can optionally reference legacy
+// delivery context (`cohortId`), but that is not a target Cycle mapping.
+// Attendees are people (`User`), never inferred from a container.
 model Session {
   id               String        @id @default(cuid())
   cohortId         String?
+  mentorshipId     String?
   mentorId         String
   sessionType      SessionType
   kind             SessionKind   @default(checkpoint)
@@ -475,16 +770,21 @@ model Session {
   // ownAttendeeSessionInclude, the member-facing select, or any other
   // member-facing read path (see src/lib/wepacker/actions/session.ts).
   transcript             String?
+  // Monotonic source version for debrief generation. Content hashes alone
+  // cannot distinguish a same-content replacement or an A -> B -> A cycle.
+  transcriptRevision     Int       @default(0)
   transcriptUploadedAt   DateTime?
   transcriptUploadedById String?
 
-  cohort       Cohort?           @relation(fields: [cohortId], references: [id], onDelete: Cascade)
-  mentor       User              @relation(fields: [mentorId], references: [id], onDelete: Cascade)
-  transcriptUploadedBy User?     @relation("SessionTranscriptUploader", fields: [transcriptUploadedById], references: [id], onDelete: SetNull)
-  attendees    SessionAttendee[]
-  sourcedTasks Task[]
-  debrief      SessionDebrief?
+  cohort               Cohort?           @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  mentorship           Mentorship?       @relation(fields: [mentorshipId], references: [id], onDelete: SetNull)
+  mentor               User              @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+  transcriptUploadedBy User?             @relation("SessionTranscriptUploader", fields: [transcriptUploadedById], references: [id], onDelete: SetNull)
+  attendees            SessionAttendee[]
+  sourcedTasks         Task[]
+  debrief              SessionDebrief?
 
+  @@index([mentorshipId])
   @@map("sessions")
 }
 
@@ -496,11 +796,11 @@ model Session {
 // createTaskFromSession) — this row is scratch space for the mentor's
 // review, not a published artefact.
 model SessionDebrief {
-  id            String        @id @default(cuid())
-  sessionId     String        @unique
-  status        DebriefStatus
-  engineImpl    String? // "anthropic-direct" | "hub"
-  model         String?
+  id                     String        @id @default(cuid())
+  sessionId              String        @unique
+  status                 DebriefStatus
+  engineImpl             String? // "anthropic-direct" | "hub"
+  model                  String?
   // DebriefResult.perAttendee (src/lib/wepacker/debrief/types.ts)
   perAttendeeSuggestions Json?
   // DebriefResult.internalEvaluation
@@ -510,10 +810,10 @@ model SessionDebrief {
   resultDocumentHtml     String?
   // User-safe error message when status = failed (never the raw SDK
   // error, never transcript/prompt content).
-  error         String?
-  requestedById String
-  requestedAt   DateTime      @default(now())
-  generatedAt   DateTime?
+  error                  String?
+  requestedById          String
+  requestedAt            DateTime      @default(now())
+  generatedAt            DateTime?
 
   session     Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   requestedBy User    @relation(fields: [requestedById], references: [id], onDelete: Cascade)
@@ -730,8 +1030,8 @@ model Department {
   description String?
   createdAt   DateTime @default(now())
 
-  brands      Brand[]
-  events      Event[]
+  brands Brand[]
+  events Event[]
 
   @@map("departments")
 }
@@ -743,8 +1043,8 @@ model Brand {
   departmentId String
   createdAt    DateTime @default(now())
 
-  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
-  events       Event[]
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  events     Event[]
 
   @@map("brands")
 }
@@ -800,21 +1100,21 @@ model TicketTier {
 }
 
 model Ticket {
-  id          String       @id @default(cuid())
-  serial      Int          @unique @default(autoincrement())
-  eventId     String
-  tierId      String
-  paymentId   String?      @unique
-  buyerName         String
-  buyerEmail        String
-  buyerPhone        String?
-  marketingConsent  Boolean      @default(false)
-  seats             Int          @default(1)
-  priceCents        Int          @default(0)
-  status            TicketStatus @default(pending)
-  notes             String?
-  checkedInAt       DateTime?
-  createdAt         DateTime     @default(now())
+  id               String       @id @default(cuid())
+  serial           Int          @unique @default(autoincrement())
+  eventId          String
+  tierId           String
+  paymentId        String?      @unique
+  buyerName        String
+  buyerEmail       String
+  buyerPhone       String?
+  marketingConsent Boolean      @default(false)
+  seats            Int          @default(1)
+  priceCents       Int          @default(0)
+  status           TicketStatus @default(pending)
+  notes            String?
+  checkedInAt      DateTime?
+  createdAt        DateTime     @default(now())
 
   event     Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
   tier      TicketTier       @relation(fields: [tierId], references: [id])
@@ -828,7 +1128,7 @@ model Ticket {
 model TicketCheckLog {
   id        String   @id @default(cuid())
   ticketId  String
-  action    String   // "checkin" | "checkout"
+  action    String // "checkin" | "checkout"
   adminId   String?
   createdAt DateTime @default(now())
 
@@ -839,24 +1139,24 @@ model TicketCheckLog {
 }
 
 model Payment {
-  id          String        @id @default(cuid())
-  provider    String        @default("stripe")
-  providerRef String        @unique
-  amountCents Int
-  currency    String        @default("eur")
-  status      PaymentStatus @default(pending)
-  eventId     String
-  tierId      String
-  seats       Int           @default(1)
-  buyerName         String
-  buyerEmail        String
-  buyerPhone        String?
-  marketingConsent  Boolean       @default(false)
-  metadata          Json?
-  paidAt      DateTime?
-  failedAt    DateTime?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id               String        @id @default(cuid())
+  provider         String        @default("stripe")
+  providerRef      String        @unique
+  amountCents      Int
+  currency         String        @default("eur")
+  status           PaymentStatus @default(pending)
+  eventId          String
+  tierId           String
+  seats            Int           @default(1)
+  buyerName        String
+  buyerEmail       String
+  buyerPhone       String?
+  marketingConsent Boolean       @default(false)
+  metadata         Json?
+  paidAt           DateTime?
+  failedAt         DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
   event  Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
   tier   TicketTier @relation(fields: [tierId], references: [id])

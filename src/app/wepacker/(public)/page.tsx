@@ -4,15 +4,14 @@ import Link from "next/link";
 import { getActivePacksPublic } from "@/lib/wepacker/actions/admin";
 import { AREA_LABELS } from "@/lib/wepacker/types";
 
-// The pack list comes from the DB — revalidate so the landing reflects
-// pack changes without a rebuild (it is otherwise statically prerendered
-// with build-time data).
+// During expand, this list still comes from the legacy `packs` table, whose
+// rows describe development disciplines rather than community Packs.
 export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: { absolute: "WEPACker — plataforma de desenvolvimento humano da WEPAC" },
   description:
-    "WEPACKER é um estilo de vida que te permite atingir o teu potencial. Mentoria, comunidade e experiências reais para desenvolver talento, caráter, disciplina e propósito em qualquer fase da vida.",
+    "WEPACKER é um estilo de vida que te permite atingir o teu potencial. Relações de Mentorship, comunidade e experiências reais para desenvolver talento, caráter, disciplina e propósito em qualquer fase da vida.",
 };
 
 const AREA_DESCRIPTIONS: Record<string, string> = {
@@ -26,25 +25,29 @@ const AREA_DESCRIPTIONS: Record<string, string> = {
 
 const METHODOLOGY_STEPS = [
   {
-    label: "Diagnóstico",
-    desc: "Um retrato honesto de onde estás, nas 6 áreas de desenvolvimento.",
+    label: "Assessment",
+    desc: "Um retrato honesto de onde estás, através dos Six Pillars.",
   },
   {
-    label: "Plano",
+    label: "Life Map",
     desc: "Direção clara — quem és, para onde vais e o que te comprometes a fazer.",
   },
   {
-    label: "Mentoria",
-    desc: "Acompanhamento próximo, individual e em grupo, ao longo do percurso.",
+    label: "Mentorship",
+    desc: "Relação direta e consentida entre Mentor e Mentee, com Sessions explícitas.",
   },
   {
-    label: "Ativação",
-    desc: "Estrutura que se transforma em ação, hábito e resultado real.",
+    label: "Trails",
+    desc: "Transformações concretas que ganham forma em ação, hábito e resultado real.",
   },
 ];
 
 export default async function WepackerLandingPage() {
-  const packs = await getActivePacksPublic();
+  // Only the legacy Artist row has a reviewed target mapping (Arts). Unknown
+  // legacy rows stay private until their Discipline meaning is verified.
+  const packs = (await getActivePacksPublic()).filter(
+    (pack) => pack.slug === "artist"
+  );
   const heroHref = "/wepacker/intake";
 
   return (
@@ -77,8 +80,8 @@ export default async function WepackerLandingPage() {
             From packers to WEPACkers.
           </p>
           <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-wepac-text-secondary">
-            Mentoria, comunidade e experiências reais para desenvolver talento, caráter,
-            disciplina e propósito em qualquer fase da vida.
+            Relações de Mentorship, comunidade e experiências reais para desenvolver talento,
+            caráter, disciplina e propósito em qualquer fase da vida.
           </p>
           <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-wepac-text-tertiary">
             Não é só sobre vencer, criar ou performar. É sobre crescer como pessoa e transformar
@@ -89,7 +92,7 @@ export default async function WepackerLandingPage() {
               href={heroHref}
               className="inline-block border border-wepac-border bg-wepac-white px-8 py-3 text-sm font-bold text-wepac-black transition-colors hover:bg-wepac-accent-muted"
             >
-              Começa a tua Journey
+              Apply to WEPACKER
             </a>
           </div>
         </div>
@@ -99,7 +102,7 @@ export default async function WepackerLandingPage() {
       <section className="border-t border-wepac-border bg-wepac-dark px-6 py-16 lg:px-12 lg:py-24">
         <div className="mx-auto max-w-6xl">
           <p className="text-center text-xs font-medium uppercase tracking-[0.2em] text-wepac-gray">
-            Método
+            Method
           </p>
           <h2 className="mt-3 text-center font-barlow text-3xl font-bold text-wepac-white md:text-4xl">
             Um caminho, não uma promessa
@@ -122,11 +125,11 @@ export default async function WepackerLandingPage() {
             ))}
           </div>
 
-          {/* 6 areas */}
+          {/* Six universal Pillars */}
           <div className="mt-16">
             <p className="text-center text-sm text-wepac-text-tertiary">
-              6 áreas de desenvolvimento — universais, para qualquer WEPACker, em qualquer
-              percurso.
+              Six Pillars — universais, para qualquer WEPACker, em qualquer momento de
+              My Journey.
             </p>
             <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {(Object.keys(AREA_LABELS) as (keyof typeof AREA_LABELS)[]).map((key) => (
@@ -144,11 +147,11 @@ export default async function WepackerLandingPage() {
         </div>
       </section>
 
-      {/* Packs */}
-      <section id="packs" className="scroll-mt-16 px-6 py-16 lg:px-12 lg:py-24">
+      {/* Legacy delivery rows are presented as Disciplines, never community Packs. */}
+      <section id="disciplines" className="scroll-mt-16 px-6 py-16 lg:px-12 lg:py-24">
         <div className="mx-auto max-w-5xl">
           <p className="text-center text-xs font-medium uppercase tracking-[0.2em] text-wepac-gray">
-            Packs
+            Disciplines
           </p>
           <h2 className="mt-3 text-center font-barlow text-3xl font-bold text-wepac-white md:text-4xl">
             Escolhe o teu caminho
@@ -167,7 +170,7 @@ export default async function WepackerLandingPage() {
                   className="flex flex-col border border-wepac-border bg-wepac-card p-8 transition-colors hover:border-wepac-white"
                 >
                   <h3 className="font-barlow text-2xl font-bold text-wepac-white">
-                    {pack.name}
+                    Arts
                   </h3>
                   {pack.tagline && (
                     <p className="mt-2 text-sm font-medium text-wepac-gray">{pack.tagline}</p>
@@ -178,19 +181,19 @@ export default async function WepackerLandingPage() {
                     </p>
                   )}
                   <span className="mt-6 text-sm font-bold text-wepac-white">
-                    Candidatar-me →
+                    Apply →
                   </span>
                 </Link>
               ))}
             </div>
           )}
           <p className="mt-10 text-center text-sm text-wepac-text-tertiary">
-            Ainda não sabes o teu Pack?{" "}
+            Ainda não sabes por onde começar?{" "}
             <Link
               href="/wepacker/intake"
               className="text-wepac-white underline-offset-4 hover:underline"
             >
-              Candidata-te como wepacker →
+              Start here →
             </Link>
           </p>
         </div>
@@ -206,7 +209,7 @@ export default async function WepackerLandingPage() {
             href="/wepacker/login"
             className="mt-4 text-xs text-wepac-text-tertiary transition-colors hover:text-wepac-white"
           >
-            Já és membro? Entrar
+            Já tens conta? Entrar
           </Link>
         </div>
       </footer>
