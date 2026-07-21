@@ -11,6 +11,7 @@ const findUnique = vi.fn();
 const findFirstMembership = vi.fn();
 const findFirstTask = vi.fn();
 const create = vi.fn();
+const findUniqueUser = vi.fn();
 
 vi.mock("@/lib/db", () => ({
   prisma: {
@@ -24,7 +25,15 @@ vi.mock("@/lib/db", () => ({
       findFirst: (...args: unknown[]) => findFirstTask(...args),
       create: (...args: unknown[]) => create(...args),
     },
+    user: {
+      findUnique: (...args: unknown[]) => findUniqueUser(...args),
+    },
   },
+}));
+
+const sendTaskCreatedEmail = vi.fn(async (..._args: unknown[]) => undefined);
+vi.mock("@/lib/email", () => ({
+  sendTaskCreatedEmail: (...args: unknown[]) => sendTaskCreatedEmail(...args),
 }));
 
 vi.mock("@/lib/wepacker/actions/session", () => ({
@@ -58,6 +67,7 @@ const createdTask = {
   id: "task-1",
   membershipId: "membership-1",
   title: baseArgs.title,
+  deadline: baseArgs.deadline,
   sourceSessionId: baseArgs.sessionId,
 };
 
@@ -66,6 +76,7 @@ describe("createTaskFromSession idempotency", () => {
     vi.clearAllMocks();
     findUnique.mockResolvedValue({ id: "attendee-1" });
     findFirstMembership.mockResolvedValue({ id: "membership-1" });
+    findUniqueUser.mockResolvedValue({ name: "Member One", email: "member1@wepac.pt" });
   });
 
   it("creates exactly one Task row when called twice with the same sessionId/userId/title", async () => {
@@ -92,5 +103,35 @@ describe("createTaskFromSession idempotency", () => {
 
     await createTaskFromSession({ ...baseArgs, title: "Outra tarefa" });
     expect(create).toHaveBeenCalledTimes(1);
+  });
+
+  it("sends a 'new task' email to the member for a freshly created task", async () => {
+    findFirstTask.mockResolvedValueOnce(null);
+    create.mockResolvedValueOnce(createdTask);
+
+    await createTaskFromSession(baseArgs);
+
+    await vi.waitFor(() => {
+      expect(sendTaskCreatedEmail).toHaveBeenCalledTimes(1);
+    });
+    expect(sendTaskCreatedEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: "member1@wepac.pt",
+        recipientName: "Member One",
+        title: baseArgs.title,
+        deadline: baseArgs.deadline,
+      })
+    );
+  });
+
+  it("does not send an email again on the idempotent (already-created) path", async () => {
+    findFirstTask.mockResolvedValueOnce(createdTask);
+
+    await createTaskFromSession(baseArgs);
+
+    expect(create).not.toHaveBeenCalled();
+    // Give any (incorrectly) fired fan-off a tick to happen before asserting.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(sendTaskCreatedEmail).not.toHaveBeenCalled();
   });
 });

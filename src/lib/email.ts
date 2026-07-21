@@ -371,6 +371,118 @@ export async function sendSessionCancelEmail({
   });
 }
 
+// ===== WEPACKER MEMBER NOTIFICATIONS =====
+// Best-effort, member-facing notifications for events initiated by a
+// mentor or a peer: a new task assignment, a shared session note going
+// live, or a new message. Callers fire-and-forget these the same way as
+// sendSessionCalendarEmails above — a flaky SMTP relay must never block
+// or fail the action that triggered the notification.
+
+export async function sendTaskCreatedEmail({
+  to,
+  recipientName,
+  title,
+  deadline,
+}: {
+  to: string;
+  recipientName: string;
+  title: string;
+  deadline: string;
+}) {
+  const tasksUrl = `${APP_URL}/wepacker/tasks`;
+  const bodyHtml = `
+    ${heading("Nova tarefa.")}
+    <p style="margin:0 0 16px;">Olá ${recipientName},</p>
+    <p style="margin:0 0 16px;">
+      O teu mentor atribuiu-te uma nova tarefa:
+      <strong style="color:#000000;">${escapeHtml(title)}</strong>.
+    </p>
+    <p style="margin:0 0 16px; color:#666666;">Prazo: ${escapeHtml(deadline)}</p>
+    ${ctaButton(tasksUrl, "Ver tarefa")}
+  `;
+
+  await transporter.sendMail({
+    from: FROM,
+    to,
+    subject: `Nova tarefa — ${title}`,
+    html: emailShell({
+      preheader: `${recipientName}, tens uma nova tarefa: ${title}.`,
+      logoSrc: WEPACKER_LOCKUP,
+      logoAlt: "WEPACKER",
+      logoWidth: 220,
+      bodyHtml,
+      footerHtml: WEPACKER_FOOTER,
+    }),
+  });
+}
+
+export async function sendSharedNotePublishedEmail({
+  to,
+  recipientName,
+}: {
+  to: string;
+  recipientName: string;
+}) {
+  const sessionsUrl = `${APP_URL}/wepacker/sessions`;
+  const bodyHtml = `
+    ${heading("Nova nota do teu mentor.")}
+    <p style="margin:0 0 16px;">Olá ${recipientName},</p>
+    <p style="margin:0 0 16px;">
+      O teu mentor partilhou uma nota sobre uma sessão recente.
+    </p>
+    ${ctaButton(sessionsUrl, "Ver sessão")}
+  `;
+
+  await transporter.sendMail({
+    from: FROM,
+    to,
+    subject: "O teu mentor partilhou uma nota — WEPACKER",
+    html: emailShell({
+      preheader: `${recipientName}, o teu mentor partilhou uma nota.`,
+      logoSrc: WEPACKER_LOCKUP,
+      logoAlt: "WEPACKER",
+      logoWidth: 220,
+      bodyHtml,
+      footerHtml: WEPACKER_FOOTER,
+    }),
+  });
+}
+
+export async function sendNewMessageEmail({
+  to,
+  recipientName,
+  senderName,
+}: {
+  to: string;
+  recipientName: string;
+  senderName: string;
+}) {
+  const messagesUrl = `${APP_URL}/wepacker/messages`;
+  const bodyHtml = `
+    ${heading("Nova mensagem.")}
+    <p style="margin:0 0 16px;">Olá ${recipientName},</p>
+    <p style="margin:0 0 16px;">
+      Recebeste uma nova mensagem de
+      <strong style="color:#000000;">${escapeHtml(senderName)}</strong>.
+    </p>
+    ${ctaButton(messagesUrl, "Ver mensagem")}
+  `;
+
+  await transporter.sendMail({
+    from: FROM,
+    to,
+    subject: `Nova mensagem de ${senderName} — WEPACKER`,
+    html: emailShell({
+      preheader: `${recipientName}, recebeste uma nova mensagem de ${senderName}.`,
+      logoSrc: WEPACKER_LOCKUP,
+      logoAlt: "WEPACKER",
+      logoWidth: 220,
+      bodyHtml,
+      footerHtml: WEPACKER_FOOTER,
+    }),
+  });
+}
+
 // ===== WEPAC / WESSEX EMAILS =====
 
 interface LeadEmailData {
