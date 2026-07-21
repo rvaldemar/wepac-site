@@ -4,6 +4,19 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-21 (3) — Member experience (contraste AA, mensagens list-first, gate de packs) + board de receita
+
+Oitavo deploy do ciclo (fábrica: 4 leads → reconciliador de ownership → 3 dev-teams → QA opus; board CFO/CISO/CTO só no epic de dinheiro):
+
+- **Contraste AA:** text-wepac-white/30 e /40 → /50 em contacto, PricingCalculator e Footer (ratios verificados: 2.46-3.77:1 → 5.28-5.33:1, passa AA 4.5:1). QA SHIP.
+- **Mensagens:** mobile abre na lista (list-first via useLayoutEffect pós-mount, sem hydration mismatch); desktop mantém seleção automática. Prop morta `avatarUrl` removida do profile e do select de getMyContext (coluna fica na BD). QA SHIP c/ ressalvas não-bloqueantes.
+- **Gate de packs:** `hasDedicatedIndicators()` em types.ts; createPack força active:false; updatePack/updateCohortStatus recusam ativação de packs sem indicadores próprios (fresh-read anti-TOCTOU); admin recebe erro PT-PT claro; Pack Artista intacto. Teste novo pack-activation-gate. QA SHIP, 29/29.
+- **Board de receita (Stripe live mode): go_with_constraints.** Defeito CRÍTICO confirmado no source: caminho Multibanco fulfila bilhete válido/scanável em checkout.session.completed com payment_status unpaid e nunca revoga se não pagar. 3 stories must-fix (S1 payment_status gate no webhook; S2 cancelar Ticket em async_failed/expired; S3 anti phantom sold-out com age-filter de pendings + cleanup de Payment órfão) — em construção PR-ready em worktree; **merge e flip para live mode são decisão do Rui (Tier 3)**. Arquitetura de resto sólida: assinatura webhook obrigatória, idempotência por @unique paymentId, preço server-side. Unit economics sãs (Stripe PT ~1.5%+€0.25).
+
+Smoke 3/3. Follow-ups em construção paralela: orcamento page AA + hierarquia tipográfica do Footer; gate de assessment para packs sem indicadores (loophole M1).
+
+---
+
 ## 2026-07-21 (2) — Debrief de sessão por IA: DEPLOYED (epic session-intelligence, fábrica completa)
 
 Sexto deploy do ciclo. Epic construído pela fábrica completa: 2 specs de leads → board 3 lentes opus (CISO/CTO/CPO, 3 vetos iniciais convertidos pelo Chair em constraints vinculativos) → builds em worktrees → QA gatekeepers (2× SHIP-WITH-RESERVATIONS, 0 bloqueadores) → integração CoS. Migration `20260720233529_session_debrief` aplicada em prod.
