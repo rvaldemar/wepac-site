@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { SESSION_KIND_LABELS, type SessionKind } from "@/lib/wepacker/types";
+import { SessionsCalendar } from "@/components/wepacker/SessionsCalendar";
 
 const STATUS_LABELS: Record<string, string> = {
   scheduled: "Agendada",
@@ -137,45 +139,97 @@ function SessionCard({ session, highlighted }: { session: SessionItem; highlight
 }
 
 export default function SessionsPageClient({ sessions }: Props) {
+  const [view, setView] = useState<"list" | "calendar">("list");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
   const sorted = [...sessions].sort(
     (a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime()
   );
 
   const upcoming = sorted.filter((s) => s.status === "scheduled");
   const past = sorted.filter((s) => s.status !== "scheduled");
+  const selectedSession = sorted.find((s) => s.id === selectedId) ?? null;
 
   return (
     <div className="p-6 lg:p-8">
-      <h1 className="font-barlow text-2xl font-bold text-wepac-white">Sessões</h1>
-      <p className="mt-1 text-sm text-wepac-text-tertiary">
-        Sessões passadas e futuras com o teu mentor.
-      </p>
-
-      {upcoming.length > 0 && (
-        <div className="mt-8">
-          <h2 className="text-sm font-bold uppercase tracking-widest text-wepac-text-tertiary">
-            Próximas
-          </h2>
-          <div className="mt-4 space-y-3">
-            {upcoming.map((session) => (
-              <SessionCard key={session.id} session={session} highlighted />
-            ))}
-          </div>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="font-barlow text-2xl font-bold text-wepac-white">Sessões</h1>
+          <p className="mt-1 text-sm text-wepac-text-tertiary">
+            Sessões passadas e futuras com o teu mentor.
+          </p>
         </div>
-      )}
-
-      <div className="mt-8">
-        <h2 className="text-sm font-bold uppercase tracking-widest text-wepac-text-tertiary">
-          Passadas
-        </h2>
-        <div className="mt-4 space-y-3">
-          {past.length === 0 ? (
-            <p className="text-sm text-wepac-text-tertiary">Ainda sem sessões passadas.</p>
-          ) : (
-            past.map((session) => <SessionCard key={session.id} session={session} />)
-          )}
+        <div className="flex gap-1">
+          {(
+            [
+              { key: "list" as const, label: "Lista" },
+              { key: "calendar" as const, label: "Calendário" },
+            ]
+          ).map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setView(tab.key)}
+              className={`px-4 py-2 text-sm transition-colors ${
+                view === tab.key
+                  ? "bg-wepac-white text-wepac-black"
+                  : "bg-wepac-card text-wepac-text-tertiary hover:text-wepac-text-secondary"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
       </div>
+
+      {view === "calendar" ? (
+        <div className="mt-8">
+          <SessionsCalendar
+            sessions={sorted}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+          />
+          <div className="mt-6">
+            {selectedSession ? (
+              <SessionCard
+                session={selectedSession}
+                highlighted={selectedSession.status === "scheduled"}
+              />
+            ) : (
+              <p className="text-sm text-wepac-text-tertiary">
+                Seleciona uma sessão no calendário para ver o detalhe.
+              </p>
+            )}
+          </div>
+        </div>
+      ) : (
+        <>
+          {upcoming.length > 0 && (
+            <div className="mt-8">
+              <h2 className="text-sm font-bold uppercase tracking-widest text-wepac-text-tertiary">
+                Próximas
+              </h2>
+              <div className="mt-4 space-y-3">
+                {upcoming.map((session) => (
+                  <SessionCard key={session.id} session={session} highlighted />
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="mt-8">
+            <h2 className="text-sm font-bold uppercase tracking-widest text-wepac-text-tertiary">
+              Passadas
+            </h2>
+            <div className="mt-4 space-y-3">
+              {past.length === 0 ? (
+                <p className="text-sm text-wepac-text-tertiary">Ainda sem sessões passadas.</p>
+              ) : (
+                past.map((session) => <SessionCard key={session.id} session={session} />)
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

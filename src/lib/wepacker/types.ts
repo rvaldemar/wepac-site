@@ -258,6 +258,26 @@ export const SESSION_KIND_LABELS: Record<
   },
 };
 
+// Compact glyph + accent color per kind, for dense UI surfaces (calendar
+// cells, legends) where the full label doesn't fit. Colors stay within the
+// existing wepac-* semantic palette (success/warning/error/info) — no new
+// colors introduced.
+export const SESSION_KIND_GLYPH: Record<SessionKind, string> = {
+  checkpoint: "◆",
+  recon: "▲",
+  basecamp: "■",
+  rescue: "●",
+  summit: "★",
+};
+
+export const SESSION_KIND_COLOR: Record<SessionKind, string> = {
+  checkpoint: "text-wepac-info",
+  recon: "text-wepac-warning",
+  basecamp: "text-wepac-text-secondary",
+  rescue: "text-wepac-error",
+  summit: "text-wepac-success",
+};
+
 // ===== COMPUTED TYPES =====
 
 export interface AreaScore {
