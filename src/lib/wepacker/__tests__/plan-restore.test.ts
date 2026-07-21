@@ -32,13 +32,11 @@ vi.mock("@/lib/db", () => ({
 }));
 
 const assertUserAccess = vi.fn();
+const assertUserOwnerMock = vi.fn();
 
 vi.mock("@/lib/wepacker/guards", () => ({
   assertUserAccess: (...args: unknown[]) => assertUserAccess(...args),
-  assertUserOwner: vi.fn(async (userId: string) => ({
-    actor: { id: userId, role: "member" },
-    ownerUserId: userId,
-  })),
+  assertUserOwner: (...args: unknown[]) => assertUserOwnerMock(...args),
   assertMentorOfUser: vi.fn(),
 }));
 
@@ -54,10 +52,15 @@ beforeEach(() => {
     actor: { id: "user-1", role: "member" },
     ownerUserId: "user-1",
   });
+  assertUserOwnerMock.mockReset();
+  assertUserOwnerMock.mockResolvedValue({
+    actor: { id: "user-1", role: "member" },
+    ownerUserId: "user-1",
+  });
 });
 
 describe("restoreLifePlanVersion", () => {
-  it("enforces access via assertUserAccess", async () => {
+  it("enforces owner-only access via assertUserOwner", async () => {
     lifePlanVersionFindUnique.mockResolvedValue({
       id: "v1",
       userId: "user-1",
@@ -72,7 +75,8 @@ describe("restoreLifePlanVersion", () => {
 
     await restoreLifePlanVersion("user-1", "v1");
 
-    expect(assertUserAccess).toHaveBeenCalledWith("user-1");
+    expect(assertUserOwnerMock).toHaveBeenCalledWith("user-1");
+    expect(assertUserAccess).not.toHaveBeenCalled();
   });
 
   it("throws when the version does not exist", async () => {

@@ -69,7 +69,7 @@ export async function upsertLifePlan(userId: string, data: LifePlanFields) {
 // snapshotAndSaveLifePlan exactly like a normal edit — nothing is deleted
 // or rewritten, the selected version just becomes current again.
 export async function restoreLifePlanVersion(userId: string, versionId: string) {
-  await assertUserAccess(userId);
+  await assertUserOwner(userId);
   const version = await prisma.lifePlanVersion.findUnique({
     where: { id: versionId },
   });
