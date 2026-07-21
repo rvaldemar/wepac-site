@@ -4,6 +4,17 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-21 (10) — Calendário Fase 1: convites .ics + vista de calendário
+
+15º deploy. Decisão de arquitetura: Fase 1 sem infra nova (ics + UI própria); Cal.com self-hosted fica como Fase 2 com gatilho claro (mais mentores / self-service booking).
+
+- **Convites .ics:** criação/remarcação de sessão envia email aos participantes com evento anexo (RFC 5545 gerado à mão, sem dependências novas; UID estável, method REQUEST/CANCEL; cancelamento remove o evento do calendário deles); LOCATION = sala meet.rvs.solutions; best-effort (falha de email nunca quebra a action). 2 fixes de gate aplicados sobre achados MEDIUM do QA: logs sem PII (bounces SMTP embutem endereços — agora só classe de erro + código SMTP) e ORGANIZER = mailbox de envio (Exchange/Outlook validam iMIP sender e descartavam o convite; mentor fica como attendee). Nits para backlog: mudança de meetingUrl não re-convida; SEQUENCE com granularidade de 1s.
+- **Vista de calendário:** toggle Lista|Calendário nas sessões (membro e mentor) — grid mensal próprio ~190 linhas, zero dependências (decisão documentada vs FullCalendar), kinds por glifo/cor, dark wepac-*. QA SHIP limpo.
+
+Suite 86/86. Smoke 200.
+
+---
+
 ## 2026-07-21 (9) — meet.rvs.solutions LIVE; WEPACKER migrado para vídeo próprio
 
 Jitsi Meet self-hosted em produção no servidor existente 77.42.82.10 (decisão do Rui: sem VPS novo — preflight confirmou folga: 8 cores, 24GB livres; custo adicional €0). Config como código no repo novo `~/Documents/code/rvs-meet` (compose oficial, nginx vhost, install.sh idempotente). Segurança: web/jicofo só em 127.0.0.1 (nginx faz TLS), secure domain (conta host "mentor", credenciais só em /opt/rvs-meet/host-credentials.txt chmod 600 no servidor), sem Jibri/gravação. Certbot com renovação automática. Colisões resolvidas em código: colibri 8080→8081; auth interna Prosody = meet.jitsi. Os 8 vhosts existentes verificados 200 após reload.
