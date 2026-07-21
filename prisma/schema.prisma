@@ -447,6 +447,12 @@ model Session {
   scheduledAt      DateTime
   durationMinutes  Int           @default(60)
   status           SessionStatus @default(scheduled)
+  // Video call link — auto-generated on creation (see generateMeetingUrl in
+  // src/lib/wepacker/actions/session.ts) or replaced by the mentor with a
+  // manual Zoom/Teams/etc link via updateSession. Member-safe: no privacy
+  // concerns like privateNote, so it's fine on every member-facing read
+  // path (ownAttendeeSessionSelect, dashboard's next session).
+  meetingUrl       String?
   // Deprecated for UI writes: a single mentor->everyone blob, wrong for
   // group sessions. Superseded by the per-attendee note fields below
   // (privateNote / sharedNote / sharedNotePublished / outcome). Kept for

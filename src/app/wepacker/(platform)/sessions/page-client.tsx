@@ -29,6 +29,7 @@ interface SessionItem {
   discussionPoints: string | null;
   outcome: string | null;
   sharedNote: string | null;
+  meetingUrl: string | null;
 }
 
 interface Props {
@@ -64,7 +65,7 @@ function SessionCard({ session, highlighted }: { session: SessionItem; highlight
           {STATUS_LABELS[session.status]}
         </span>
       </div>
-      <div className="mt-3 flex gap-2">
+      <div className="mt-3 flex flex-wrap items-center gap-2">
         <span className="bg-wepac-input px-2 py-0.5 text-xs text-wepac-text-tertiary">
           {session.sessionType === "individual" ? "Individual" : "Grupo"}
         </span>
@@ -74,6 +75,16 @@ function SessionCard({ session, highlighted }: { session: SessionItem; highlight
         <span className="bg-wepac-input px-2 py-0.5 text-xs text-wepac-text-tertiary">
           {session.mentorName}
         </span>
+        {session.status === "scheduled" && session.meetingUrl && (
+          <a
+            href={session.meetingUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-wepac-white hover:underline"
+          >
+            Entrar na chamada →
+          </a>
+        )}
       </div>
       {(session.outcome ||
         session.sharedNote ||

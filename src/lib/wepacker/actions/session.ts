@@ -1,5 +1,6 @@
 "use server";
 
+import { randomBytes } from "node:crypto";
 import { prisma } from "@/lib/db";
 import type { SessionKind, SessionStatus, SessionType } from "@prisma/client";
 import {
@@ -10,6 +11,23 @@ import {
   requireRole,
   requireUser,
 } from "@/lib/wepacker/guards";
+
+// Defaults to the public Jitsi instance — see .env.example. Will migrate to
+// a self-hosted instance later; reading this at call time (not module load)
+// keeps it test-friendly and lets it pick up runtime env changes.
+function meetingBaseUrl(): string {
+  return process.env.MEETING_BASE_URL || "https://meet.jit.si";
+}
+
+// Auto-generated video call link for a new session. The room slug is a
+// non-guessable crypto-random token, deliberately NOT the session's own id
+// — the session id is exposed in URLs/APIs to any attendee, and reusing it
+// as the meeting slug would let anyone who can see a session id also guess
+// (or worse, enumerate) its meeting room.
+export function generateMeetingUrl(baseUrl: string = meetingBaseUrl()): string {
+  const token = randomBytes(8).toString("hex"); // 16 hex chars
+  return `${baseUrl}/wepac-${token}`;
+}
 
 // Full attendee shape — mentor-facing only. Includes every field,
 // including privateNote, so this must never be reused for a member-facing
@@ -51,6 +69,9 @@ function ownAttendeeSessionSelect(userId: string) {
     notes: true,
     notesPublished: true,
     discussionPoints: true,
+    // Inert to the member — no privacy concerns like privateNote — so it's
+    // safe to select here unlike transcript/transcriptUploadedAt below.
+    meetingUrl: true,
     // transcript / transcriptUploadedAt / transcriptUploadedById are
     // deliberately NOT selected — mentor-only, never member-visible.
     attendees: {
@@ -237,6 +258,7 @@ export async function createSession(data: {
       scheduledAt: new Date(data.scheduledAt),
       durationMinutes: data.durationMinutes ?? 60,
       discussionPoints: data.discussionPoints,
+      meetingUrl: generateMeetingUrl(),
       attendees: {
         create: data.attendeeUserIds.map((userId) => ({ userId })),
       },
@@ -254,6 +276,9 @@ export async function updateSession(
     notesPublished?: boolean;
     discussionPoints?: string;
     scheduledAt?: string;
+    // Mentor can paste a manual Zoom/Teams/etc link here to replace the
+    // auto-generated one.
+    meetingUrl?: string;
   }
 ) {
   await assertMentorOfSession(sessionId);

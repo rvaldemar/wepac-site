@@ -38,6 +38,7 @@ export default async function SessionsPage() {
       discussionPoints: s.discussionPoints,
       outcome: own?.outcome ?? null,
       sharedNote: own?.sharedNote ?? null,
+      meetingUrl: s.meetingUrl,
     };
   });
 

@@ -51,6 +51,7 @@ interface SessionRow {
   notes: string | null;
   notesPublished: boolean;
   discussionPoints: string | null;
+  meetingUrl: string | null;
   attendees: AttendeeRow[];
   mentor: { id: string; name: string };
   transcript: string | null;
@@ -194,6 +195,58 @@ export function MentorSessionsClient({
       router.refresh();
     } catch (e) {
       console.error("Failed to update attendance:", e);
+    }
+  }
+
+  // ===== Meeting link: copy + manual override =====
+  // Only one session's link editor is open at a time. Copying uses the
+  // clipboard API with a brief inline confirmation (PT-PT), matching the
+  // rest of the page's per-action feedback pattern.
+  const [copiedLinkSessionId, setCopiedLinkSessionId] = useState<string | null>(null);
+  const [linkEditorSessionId, setLinkEditorSessionId] = useState<string | null>(null);
+  const [meetingUrlDraft, setMeetingUrlDraft] = useState("");
+  const [savingMeetingUrlId, setSavingMeetingUrlId] = useState<string | null>(null);
+  const [meetingUrlError, setMeetingUrlError] = useState<string | null>(null);
+
+  async function handleCopyMeetingUrl(sessionId: string, url: string) {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedLinkSessionId(sessionId);
+      setTimeout(() => {
+        setCopiedLinkSessionId((prev) => (prev === sessionId ? null : prev));
+      }, 2000);
+    } catch (e) {
+      console.error("Failed to copy meeting link:", e);
+    }
+  }
+
+  function openLinkEditor(sessionId: string, currentUrl: string) {
+    setLinkEditorSessionId(sessionId);
+    setMeetingUrlDraft(currentUrl);
+    setMeetingUrlError(null);
+  }
+
+  function cancelLinkEditor() {
+    setLinkEditorSessionId(null);
+    setMeetingUrlError(null);
+  }
+
+  async function handleSaveMeetingUrl(sessionId: string) {
+    if (!meetingUrlDraft.trim()) {
+      setMeetingUrlError("O link não pode ficar vazio.");
+      return;
+    }
+    setSavingMeetingUrlId(sessionId);
+    setMeetingUrlError(null);
+    try {
+      await updateSession(sessionId, { meetingUrl: meetingUrlDraft.trim() });
+      setLinkEditorSessionId(null);
+      router.refresh();
+    } catch (e) {
+      console.error("Failed to update meeting link:", e);
+      setMeetingUrlError("Erro ao guardar link. Tenta novamente.");
+    } finally {
+      setSavingMeetingUrlId(null);
     }
   }
 
@@ -616,6 +669,71 @@ export function MentorSessionsClient({
                     </option>
                   ))}
                 </select>
+              </div>
+
+              {/* Video call link */}
+              <div className="mt-3 border-t border-wepac-border pt-3">
+                {linkEditorSessionId === session.id ? (
+                  <div className="space-y-2">
+                    <label className="block text-xs text-wepac-text-tertiary">
+                      Link da videochamada
+                    </label>
+                    <input
+                      value={meetingUrlDraft}
+                      onChange={(e) => setMeetingUrlDraft(e.target.value)}
+                      placeholder="https://..."
+                      className="w-full bg-wepac-input px-3 py-2 text-xs text-wepac-white"
+                    />
+                    {meetingUrlError && (
+                      <p className="text-xs text-wepac-error">{meetingUrlError}</p>
+                    )}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleSaveMeetingUrl(session.id)}
+                        disabled={savingMeetingUrlId === session.id}
+                        className="bg-wepac-white px-3 py-1.5 text-xs font-bold text-wepac-black disabled:opacity-30"
+                      >
+                        {savingMeetingUrlId === session.id ? "A guardar..." : "Guardar"}
+                      </button>
+                      <button
+                        onClick={cancelLinkEditor}
+                        disabled={savingMeetingUrlId === session.id}
+                        className="border border-wepac-border px-3 py-1.5 text-xs text-wepac-text-secondary"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-3 text-xs">
+                    {session.meetingUrl && (
+                      <>
+                        <a
+                          href={session.meetingUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-wepac-white hover:underline"
+                        >
+                          Entrar na chamada →
+                        </a>
+                        <button
+                          onClick={() => handleCopyMeetingUrl(session.id, session.meetingUrl!)}
+                          className="text-wepac-text-secondary hover:underline"
+                        >
+                          {copiedLinkSessionId === session.id
+                            ? "Link copiado!"
+                            : "Copiar link"}
+                        </button>
+                      </>
+                    )}
+                    <button
+                      onClick={() => openLinkEditor(session.id, session.meetingUrl ?? "")}
+                      className="text-wepac-text-secondary hover:underline"
+                    >
+                      {session.meetingUrl ? "Substituir link" : "Adicionar link"}
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Attendance */}

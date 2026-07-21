@@ -85,6 +85,7 @@ export default async function DashboardPage() {
         scheduledAt: nextSession.scheduledAt.toISOString(),
         sessionType: nextSession.sessionType,
         durationMinutes: nextSession.durationMinutes,
+        meetingUrl: nextSession.meetingUrl,
       }
     : null;
 

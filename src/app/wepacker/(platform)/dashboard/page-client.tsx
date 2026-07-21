@@ -57,6 +57,7 @@ interface Props {
     scheduledAt: string;
     sessionType: string;
     durationMinutes: number;
+    meetingUrl: string | null;
   } | null;
   sessions: ExpeditionSession[];
   latestMessage: {
@@ -125,6 +126,19 @@ export default function DashboardPageClient({
           minute: "2-digit",
         })}
       </span>
+      {nextSession.meetingUrl && (
+        <>
+          {" · "}
+          <a
+            href={nextSession.meetingUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-wepac-white hover:underline"
+          >
+            Entrar na chamada →
+          </a>
+        </>
+      )}
     </>
   ) : pendingTasks[0] ? (
     <>
