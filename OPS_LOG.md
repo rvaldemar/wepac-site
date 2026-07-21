@@ -4,6 +4,18 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-21 (11) — Wave dos parqueados: Basecamp, restore do Life Plan, nits do ics
+
+16º deploy (mandato do Rui: lançar tudo o que estava parado, em paralelo):
+
+- **Página Basecamp** (`/wepacker/basecamp`): visão geral com 3 cards (Life Plan, Plano Estratégico, Trails) via actions guardadas existentes; item "Visão geral" no grupo Basecamp do sidebar (exact-match). QA SHIP.
+- **Restore de versões do Life Plan**: semântica append-only (restaurar snapshotta o atual para o histórico via o upsert normal — nada se perde). **QA NO-SHIP → fix → verde**: o guard inicial (assertUserAccess) deixaria um mentor reverter o Life Plan de um membro; corrigido para assertUserOwner (igual ao upsert), com teste a afirmar o guard certo e a exclusão do errado.
+- **Nits do ics fechados**: mudança de meetingUrl em sessão agendada reenvia o convite (prioridade cancel > reschedule > link, um email por mudança); SEQUENCE estritamente crescente. QA SHIP.
+
+Suite 95/95. Smoke 200. Em voo ainda: lote resiliência (backups+E2E) e epic Cal.com (board+build).
+
+---
+
 ## 2026-07-21 (10) — Calendário Fase 1: convites .ics + vista de calendário
 
 15º deploy. Decisão de arquitetura: Fase 1 sem infra nova (ics + UI própria); Cal.com self-hosted fica como Fase 2 com gatilho claro (mais mentores / self-service booking).
