@@ -43,6 +43,13 @@ export async function reserveAction(formData: FormData): Promise<void> {
 
   const seats = Math.max(1, Math.min(20, Number(seatsRaw) || 1));
 
+  // Stripe Checkout sessions we create expire after 30 minutes (see
+  // `expires_at` below). A pending Payment older than that window is either
+  // an abandoned checkout or one already resolved by the webhook out of
+  // band — it must not keep counting against capacity, or the event/tier can
+  // read as sold out ("phantom sold-out") long after those seats freed up.
+  const pendingWindowStart = new Date(Date.now() - 30 * 60 * 1000);
+
   if (tier.quantity != null) {
     const used = await prisma.ticket.aggregate({
       where: { tierId: tier.id, status: { not: "cancelled" } },
@@ -50,7 +57,11 @@ export async function reserveAction(formData: FormData): Promise<void> {
     });
     const alreadyTickets = used._sum.seats || 0;
     const pendingPayments = await prisma.payment.aggregate({
-      where: { tierId: tier.id, status: "pending" },
+      where: {
+        tierId: tier.id,
+        status: "pending",
+        createdAt: { gte: pendingWindowStart },
+      },
       _sum: { seats: true },
     });
     const pending = pendingPayments._sum.seats || 0;
@@ -65,7 +76,11 @@ export async function reserveAction(formData: FormData): Promise<void> {
       _sum: { seats: true },
     });
     const pendingPayments = await prisma.payment.aggregate({
-      where: { eventId: event.id, status: "pending" },
+      where: {
+        eventId: event.id,
+        status: "pending",
+        createdAt: { gte: pendingWindowStart },
+      },
       _sum: { seats: true },
     });
     const already =
@@ -157,24 +172,41 @@ export async function reserveAction(formData: FormData): Promise<void> {
         quantity: seats,
       };
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    payment_method_types: ["card", "multibanco"],
-    customer_email: buyerEmail,
-    line_items: [lineItem],
-    metadata: {
-      paymentId: payment.id,
-      eventId: event.id,
-      tierId: tier.id,
-      seats: String(seats),
-      buyerName,
-      buyerEmail,
-    },
-    success_url: `${base}/bilheteira/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${base}/bilheteira/${eventSlug}?cancelled=1`,
-    locale: "pt",
-    expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
-  });
+  let session;
+  try {
+    session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      payment_method_types: ["card", "multibanco"],
+      customer_email: buyerEmail,
+      line_items: [lineItem],
+      metadata: {
+        paymentId: payment.id,
+        eventId: event.id,
+        tierId: tier.id,
+        seats: String(seats),
+        buyerName,
+        buyerEmail,
+      },
+      success_url: `${base}/bilheteira/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${base}/bilheteira/${eventSlug}?cancelled=1`,
+      locale: "pt",
+      expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
+    });
+  } catch (err) {
+    // Stripe rejected the session after we already created the Payment row
+    // (needed upfront so the webhook can locate it by id). Without cleanup
+    // this Payment would sit as "pending" and keep counting against
+    // capacity for the full 30-minute window despite no checkout existing.
+    console.error("[bilheteira] stripe session creation failed", err);
+    await prisma.payment.delete({ where: { id: payment.id } }).catch((deleteErr) => {
+      console.error(
+        "[bilheteira] failed to clean up orphaned payment",
+        payment.id,
+        deleteErr
+      );
+    });
+    back(backPath, "Não foi possível iniciar o pagamento. Tenta novamente.");
+  }
 
   await prisma.payment.update({
     where: { id: payment.id },

@@ -28,6 +28,19 @@ async function fulfillCheckout(session: Stripe.Checkout.Session) {
     return;
   }
 
+  // Defense-in-depth: never mint a ticket for a session that has not
+  // actually been paid (e.g. a Multibanco session still awaiting payment).
+  // The caller is expected to have already filtered on payment_status, but
+  // this guard protects against future call sites that forget to.
+  if (session.payment_status !== "paid") {
+    console.warn(
+      "[stripe webhook] fulfillCheckout called with unpaid session, skipping",
+      session.id,
+      session.payment_status
+    );
+    return;
+  }
+
   const ticket = await prisma.ticket.create({
     data: {
       eventId: payment.eventId,
@@ -74,12 +87,25 @@ async function fulfillCheckout(session: Stripe.Checkout.Session) {
 async function markExpired(session: Stripe.Checkout.Session) {
   const paymentId = session.metadata?.paymentId;
   if (!paymentId) return;
-  const payment = await prisma.payment.findUnique({ where: { id: paymentId } });
+  const payment = await prisma.payment.findUnique({
+    where: { id: paymentId },
+    include: { ticket: true },
+  });
   if (!payment || payment.status === "completed") return;
   await prisma.payment.update({
     where: { id: payment.id },
     data: { status: "expired", failedAt: new Date() },
   });
+  // A ticket can already exist if checkout.session.completed fired for an
+  // async (Multibanco) session before the payment actually settled. Once the
+  // session expires or the async payment fails, that ticket must not remain
+  // scannable — cancel it alongside the payment.
+  if (payment.ticket && payment.ticket.status !== "cancelled") {
+    await prisma.ticket.update({
+      where: { id: payment.ticket.id },
+      data: { status: "cancelled" },
+    });
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -110,7 +136,18 @@ export async function POST(req: NextRequest) {
 
   try {
     switch (event.type) {
-      case "checkout.session.completed":
+      case "checkout.session.completed": {
+        // For card payments this fires with payment_status === "paid" and
+        // fulfillment should happen immediately. For async methods
+        // (Multibanco) it fires with payment_status === "unpaid" — the
+        // ticket must NOT be minted yet; wait for
+        // checkout.session.async_payment_succeeded instead.
+        const session = event.data.object as Stripe.Checkout.Session;
+        if (session.payment_status === "paid") {
+          await fulfillCheckout(session);
+        }
+        break;
+      }
       case "checkout.session.async_payment_succeeded":
         await fulfillCheckout(event.data.object as Stripe.Checkout.Session);
         break;
