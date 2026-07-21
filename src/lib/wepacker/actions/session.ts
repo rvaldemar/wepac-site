@@ -1,6 +1,5 @@
 "use server";
 
-import { randomBytes } from "node:crypto";
 import { prisma } from "@/lib/db";
 import type { SessionKind, SessionStatus, SessionType } from "@prisma/client";
 import {
@@ -18,24 +17,13 @@ import {
   nextIcsSequence,
   type IcsPerson,
 } from "@/lib/wepacker/ics";
-import { sendSessionCancelEmail, sendSessionInviteEmail } from "@/lib/email";
-
-// Defaults to the public Jitsi instance — see .env.example. Will migrate to
-// a self-hosted instance later; reading this at call time (not module load)
-// keeps it test-friendly and lets it pick up runtime env changes.
-function meetingBaseUrl(): string {
-  return process.env.MEETING_BASE_URL || "https://meet.jit.si";
-}
-
-// Auto-generated video call link for a new session. The room slug is a
-// non-guessable crypto-random token, deliberately NOT the session's own id
-// — the session id is exposed in URLs/APIs to any attendee, and reusing it
-// as the meeting slug would let anyone who can see a session id also guess
-// (or worse, enumerate) its meeting room.
-export function generateMeetingUrl(baseUrl: string = meetingBaseUrl()): string {
-  const token = randomBytes(8).toString("hex"); // 16 hex chars
-  return `${baseUrl}/wepac-${token}`;
-}
+import {
+  sendSessionCancelEmail,
+  sendSessionInviteEmail,
+  sendSharedNotePublishedEmail,
+} from "@/lib/email";
+import { logSafeError } from "@/lib/wepacker/log-safe-error";
+import { generateMeetingUrl } from "@/lib/wepacker/meeting-url";
 
 // Full attendee shape — mentor-facing only. Includes every field,
 // including privateNote, so this must never be reused for a member-facing
@@ -229,19 +217,6 @@ export async function getMentoredMembers() {
     if (!byUser.has(m.userId)) byUser.set(m.userId, m.user);
   }
   return Array.from(byUser.values());
-}
-
-// SMTP rejections routinely embed the recipient address in the server
-// response line, so raw err.message must never reach the logs (GDPR).
-// Log only the error class and, when present, the SMTP response code.
-function logSafeError(err: unknown): { kind: string; smtpCode: number | null } {
-  return {
-    kind: err instanceof Error ? err.name : "unknown",
-    smtpCode:
-      typeof (err as { responseCode?: unknown })?.responseCode === "number"
-        ? ((err as { responseCode: number }).responseCode)
-        : null,
-  };
 }
 
 interface CalendarPerson extends IcsPerson {
@@ -566,6 +541,35 @@ export async function setAttendance(
   });
 }
 
+// Best-effort "your mentor shared a note" notification for the member.
+// Mirrors sendSessionCalendarEmails: never blocks or fails the update,
+// and never logs anything beyond the sessionId/userId and a scrubbed
+// error (no name/email in the log line).
+async function sendSharedNoteNotification({
+  sessionId,
+  userId,
+}: {
+  sessionId: string;
+  userId: string;
+}): Promise<void> {
+  try {
+    const recipient = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, email: true },
+    });
+    if (!recipient) return;
+    await sendSharedNotePublishedEmail({
+      to: recipient.email,
+      recipientName: recipient.name,
+    });
+  } catch (err) {
+    console.error("Shared note email failed", {
+      sessionId,
+      ...logSafeError(err),
+    });
+  }
+}
+
 // Per-person session notes and outcome — the mentor-facing counterpart
 // to setAttendance. privateNote is mentor-only and never returned to the
 // member; sharedNote only reaches the member once sharedNotePublished.
@@ -581,8 +585,32 @@ export async function updateSessionAttendee(
   }
 ) {
   await assertMentorOfSession(sessionId);
-  return prisma.sessionAttendee.update({
+
+  // Snapshot before the write so the notification only fires on the
+  // false -> true transition, not on every subsequent edit that happens
+  // to pass `sharedNotePublished: true` again (e.g. tweaking the note
+  // text after it's already published).
+  const before =
+    data.sharedNotePublished !== undefined
+      ? await prisma.sessionAttendee.findUnique({
+          where: { sessionId_userId: { sessionId, userId } },
+          select: { sharedNotePublished: true },
+        })
+      : null;
+
+  const updated = await prisma.sessionAttendee.update({
     where: { sessionId_userId: { sessionId, userId } },
     data,
   });
+
+  const justPublished =
+    data.sharedNotePublished === true && before?.sharedNotePublished === false;
+
+  // Fire-and-forget — see sendSharedNoteNotification; never blocks or
+  // fails the update.
+  if (justPublished) {
+    void sendSharedNoteNotification({ sessionId, userId });
+  }
+
+  return updated;
 }

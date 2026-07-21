@@ -95,6 +95,16 @@ async function main() {
     },
   });
 
+  const u5 = await prisma.user.create({
+    data: {
+      name: "Sofia Rocha",
+      email: "sofia@example.com",
+      passwordHash: password,
+      role: "member",
+      onboarded: false, // has not accepted the Agreement yet — forces the onboarding flow
+    },
+  });
+
   const m1 = await prisma.user.create({
     data: {
       name: "Ricardo Valdemar",
@@ -160,6 +170,15 @@ async function main() {
       role: "mentor",
       level: "partner",
       currentPhase: "consolidation",
+    },
+  });
+  await prisma.cohortMembership.create({
+    data: {
+      cohortId: cohortAlpha.id,
+      userId: u5.id,
+      role: "member",
+      level: "seed",
+      currentPhase: "diagnosis",
     },
   });
   void mem2;
@@ -524,7 +543,7 @@ Concerto inserido na programação regular de Capela Viva na Capela do Hospital 
 
   console.log("Seed completed successfully!");
   console.log(`Pack: ${packArtist.slug} · Cohort: ${cohortAlpha.name}`);
-  console.log(`Users: ana@ / pedro@ / maria@ / joao@ example.com, ricardo@wepac.pt (mentor), admin@wepac.pt (admin) — password123`);
+  console.log(`Users: ana@ / pedro@ / maria@ / joao@ / sofia@ example.com, ricardo@wepac.pt (mentor), admin@wepac.pt (admin) — password123`);
   console.log(`Bilheteira admin: admin@wepac.pt / password123`);
   console.log(`Evento seed: ${ananda.slug}`);
 }

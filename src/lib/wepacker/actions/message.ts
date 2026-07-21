@@ -2,6 +2,75 @@
 
 import { prisma } from "@/lib/db";
 import { getMentoredCohortIds, requireUser } from "@/lib/wepacker/guards";
+import { sendNewMessageEmail } from "@/lib/email";
+import { logSafeError } from "@/lib/wepacker/log-safe-error";
+
+// A sender's messages inside one conversation only trigger one "new
+// message" email per rolling 30-minute window, not one per message —
+// otherwise a fast back-and-forth would spam the recipient's inbox.
+// There's no in-memory state to debounce against across serverless
+// invocations, so the heuristic is a query instead: does the sender
+// already have an earlier message in this conversation within the last
+// 30 minutes? If so, the recipient was already emailed for this burst
+// and this call skips sending. The first message of a burst always
+// sends immediately.
+const MESSAGE_EMAIL_DEBOUNCE_MS = 30 * 60 * 1000;
+
+// Best-effort "new message" notification for every other participant in
+// the conversation. Mirrors sendSessionCalendarEmails: never blocks or
+// fails sendMessage, and never logs anything beyond the conversationId
+// and a scrubbed error (no name/email/body in the log line).
+async function sendNewMessageNotification({
+  conversationId,
+  senderId,
+  senderName,
+  messageCreatedAt,
+}: {
+  conversationId: string;
+  senderId: string;
+  senderName: string;
+  messageCreatedAt: Date;
+}): Promise<void> {
+  try {
+    const recentPriorMessage = await prisma.message.findFirst({
+      where: {
+        conversationId,
+        userId: senderId,
+        createdAt: {
+          gte: new Date(messageCreatedAt.getTime() - MESSAGE_EMAIL_DEBOUNCE_MS),
+          lt: messageCreatedAt,
+        },
+      },
+      select: { id: true },
+    });
+    if (recentPriorMessage) return;
+
+    const recipients = await prisma.conversationParticipant.findMany({
+      where: { conversationId, userId: { not: senderId } },
+      select: { user: { select: { name: true, email: true } } },
+    });
+
+    await Promise.all(
+      recipients.map((r) =>
+        sendNewMessageEmail({
+          to: r.user.email,
+          recipientName: r.user.name,
+          senderName,
+        }).catch((err) => {
+          console.error("New message email failed", {
+            conversationId,
+            ...logSafeError(err),
+          });
+        })
+      )
+    );
+  } catch (err) {
+    console.error("New message email failed", {
+      conversationId,
+      ...logSafeError(err),
+    });
+  }
+}
 
 const conversationInclude = {
   participants: {
@@ -135,9 +204,20 @@ export async function sendMessage(conversationId: string, body: string) {
   });
   if (!participant) throw new Error("Sem permissão.");
   if (!body.trim()) throw new Error("Mensagem vazia.");
-  return prisma.message.create({
+  const message = await prisma.message.create({
     data: { conversationId, userId: user.id, body: body.trim() },
   });
+
+  // Fire-and-forget — see sendNewMessageNotification; never blocks or
+  // fails sendMessage.
+  void sendNewMessageNotification({
+    conversationId,
+    senderId: user.id,
+    senderName: user.name,
+    messageCreatedAt: message.createdAt,
+  });
+
+  return message;
 }
 
 export async function markAsRead(messageId: string) {

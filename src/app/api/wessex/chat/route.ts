@@ -2,6 +2,8 @@ import Anthropic from "@anthropic-ai/sdk";
 import { getPricingSummaryText } from "@/data/wessex-pricing";
 import { getRepertoireSummaryText } from "@/data/wessex-repertoire";
 import { saveLead } from "@/lib/leads";
+import { getChatEngine, ChatEngineError } from "@/lib/wessex/chat-engine";
+import { getVisitorIp, visitorRateLimiter } from "@/lib/wessex/rate-limit";
 
 const SAVE_LEAD_TOOL: Anthropic.Tool = {
   name: "save_lead",
@@ -170,12 +172,34 @@ Então:
 - Quando relevante, sugere páginas do site: wepac.pt/servicos, wepac.pt/servicos/orcamento, wepac.pt/contacto, wepac.pt/artist, etc.`;
 
 export async function POST(req: Request) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey || apiKey === "your_anthropic_api_key_here") {
-    return new Response("Anthropic API key not configured", { status: 500 });
+  // Per-visitor rate limit — applies identically regardless of which
+  // ChatEngine (direct/hub) ends up serving the request below. See
+  // src/lib/wessex/rate-limit.ts for the windows/limits and their
+  // rationale.
+  const visitorIp = getVisitorIp(req);
+  const rateLimitResult = visitorRateLimiter.check(visitorIp);
+  if (!rateLimitResult.allowed) {
+    return new Response(
+      "Já recebemos várias mensagens tuas num curto espaço de tempo. Espera um pouco e tenta de novo — ou contacta-nos diretamente em info@wepac.pt.",
+      {
+        status: 429,
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+          "Retry-After": String(rateLimitResult.retryAfterSeconds),
+        },
+      }
+    );
   }
 
-  const client = new Anthropic({ apiKey });
+  let engine;
+  try {
+    engine = getChatEngine();
+  } catch (err) {
+    const message =
+      err instanceof ChatEngineError ? err.message : "Chat engine not configured";
+    return new Response(message, { status: 500 });
+  }
+
   const { messages, consentGiven } = await req.json();
 
   const encoder = new TextEncoder();
@@ -188,50 +212,34 @@ export async function POST(req: Request) {
           let continueLoop = true;
 
           while (continueLoop) {
-            const stream = await client.messages.stream({
-              model: "claude-haiku-4-5-20251001",
-              max_tokens: 1024,
-              system: SYSTEM_PROMPT,
-              tools: [SAVE_LEAD_TOOL],
-              messages: currentMessages,
-            });
-
             let toolUseId = "";
             let toolUseName = "";
             let toolInputJson = "";
             let hasToolUse = false;
+            let stopReason: string | null = null;
+            let finalContent: Anthropic.MessageParam["content"] = [];
 
-            for await (const event of stream) {
-              if (
-                event.type === "content_block_delta" &&
-                event.delta.type === "text_delta"
-              ) {
-                controller.enqueue(encoder.encode(event.delta.text));
+            for await (const event of engine.runTurn({
+              system: SYSTEM_PROMPT,
+              tools: [SAVE_LEAD_TOOL],
+              messages: currentMessages,
+            })) {
+              if (event.type === "text_delta") {
+                controller.enqueue(encoder.encode(event.text));
               }
-              if (
-                event.type === "content_block_start" &&
-                event.content_block.type === "tool_use"
-              ) {
+              if (event.type === "tool_use") {
                 hasToolUse = true;
-                toolUseId = event.content_block.id;
-                toolUseName = event.content_block.name;
-                toolInputJson = "";
+                toolUseId = event.id;
+                toolUseName = event.name;
+                toolInputJson = event.inputJson;
               }
-              if (
-                event.type === "content_block_delta" &&
-                event.delta.type === "input_json_delta"
-              ) {
-                toolInputJson += event.delta.partial_json;
+              if (event.type === "stop") {
+                stopReason = event.stopReason;
+                finalContent = event.content;
               }
             }
 
-            const finalMessage = await stream.finalMessage();
-
-            if (
-              finalMessage.stop_reason === "tool_use" &&
-              hasToolUse &&
-              toolUseName === "save_lead"
-            ) {
+            if (stopReason === "tool_use" && hasToolUse && toolUseName === "save_lead") {
               // Execute save_lead tool server-side
               let toolResult = '{"success": true}';
               try {
@@ -249,7 +257,7 @@ export async function POST(req: Request) {
               // Add assistant response + tool result for continuation
               currentMessages = [
                 ...currentMessages,
-                { role: "assistant" as const, content: finalMessage.content },
+                { role: "assistant" as const, content: finalContent },
                 {
                   role: "user" as const,
                   content: [

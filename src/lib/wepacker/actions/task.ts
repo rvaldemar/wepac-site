@@ -9,6 +9,43 @@ import {
   requireUser,
 } from "@/lib/wepacker/guards";
 import { assertMentorOfSession } from "@/lib/wepacker/actions/session";
+import { sendTaskCreatedEmail } from "@/lib/email";
+import { logSafeError } from "@/lib/wepacker/log-safe-error";
+
+// Best-effort "new task" notification for the member it was assigned to.
+// Mirrors sendSessionCalendarEmails: never blocks or fails task creation,
+// and never logs anything beyond the taskId and a scrubbed error (no
+// name/email in the log line).
+async function sendTaskCreatedNotification({
+  taskId,
+  ownerUserId,
+  title,
+  deadline,
+}: {
+  taskId: string;
+  ownerUserId: string;
+  title: string;
+  deadline: string;
+}): Promise<void> {
+  try {
+    const owner = await prisma.user.findUnique({
+      where: { id: ownerUserId },
+      select: { name: true, email: true },
+    });
+    if (!owner) return;
+    await sendTaskCreatedEmail({
+      to: owner.email,
+      recipientName: owner.name,
+      title,
+      deadline,
+    });
+  } catch (err) {
+    console.error("Task created email failed", {
+      taskId,
+      ...logSafeError(err),
+    });
+  }
+}
 
 export async function getMyTasks() {
   const { membership } = await requireMembership();
@@ -56,17 +93,31 @@ export async function createTask(data: {
     data.membershipId
   );
   void membership;
-  return prisma.task.create({
+  const isMentorAssigned = actor.id !== ownerUserId;
+  const task = await prisma.task.create({
     data: {
       membershipId: data.membershipId,
-      assignedById: actor.id === ownerUserId ? null : actor.id,
+      assignedById: isMentorAssigned ? actor.id : null,
       title: data.title,
       description: data.description,
-      origin: actor.id === ownerUserId ? data.origin : "mentor",
+      origin: isMentorAssigned ? "mentor" : data.origin,
       goalId: data.goalId,
       deadline: data.deadline,
     },
   });
+
+  // Fire-and-forget — see sendTaskCreatedNotification; only fires when a
+  // mentor assigns the task to someone else, never for a self-created one.
+  if (isMentorAssigned) {
+    void sendTaskCreatedNotification({
+      taskId: task.id,
+      ownerUserId,
+      title: task.title,
+      deadline: task.deadline,
+    });
+  }
+
+  return task;
 }
 
 // Mentor-side task creation from a session outcome: activates the
@@ -125,7 +176,7 @@ export async function createTaskFromSession(data: {
   });
   if (existing) return existing;
 
-  return prisma.task.create({
+  const task = await prisma.task.create({
     data: {
       membershipId: membership.id,
       assignedById: actor.id,
@@ -136,6 +187,18 @@ export async function createTaskFromSession(data: {
       sourceSessionId: data.sessionId,
     },
   });
+
+  // Fire-and-forget — see sendTaskCreatedNotification; a session-derived
+  // task is mentor-created by definition, so always notify (unlike
+  // createTask's self-created path, which never fires this).
+  void sendTaskCreatedNotification({
+    taskId: task.id,
+    ownerUserId: data.userId,
+    title: task.title,
+    deadline: task.deadline,
+  });
+
+  return task;
 }
 
 export async function updateTaskStatus(taskId: string, status: TaskStatus) {
