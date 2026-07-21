@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { assertMentorOfSession } from "@/lib/wepacker/actions/session";
+import { requireUser } from "@/lib/wepacker/guards";
 import { computeAreaScores } from "@/lib/wepacker/actions/evaluation";
 import { AREA_KEYS, AREA_LABELS } from "@/lib/wepacker/types";
 import type { AreaKey, EvaluationMoment, SessionKind, TaskStatus } from "@/lib/wepacker/types";
@@ -60,7 +61,16 @@ async function radarSummary(userId: string): Promise<{
   const moment = availableMoments[availableMoments.length - 1];
   if (!moment) return null;
 
-  const scores = await computeAreaScores(userId, moment);
+  let scores;
+  try {
+    scores = await computeAreaScores(userId, moment);
+  } catch {
+    // assertUserAccess inside computeAreaScores is stricter than the
+    // session-level guard (e.g. cohort-less personal sessions after
+    // membership churn) — the prep panel degrades, never crashes the
+    // debrief workspace.
+    return null;
+  }
   const ranked = AREA_KEYS.map((area) => ({
     area,
     label: AREA_LABELS[area],
@@ -82,6 +92,7 @@ export async function getSessionPreparation(
   sessionId: string
 ): Promise<SessionPrepParticipant[]> {
   await assertMentorOfSession(sessionId);
+  const actor = await requireUser();
 
   const session = await prisma.session.findUnique({
     where: { id: sessionId },
@@ -103,7 +114,12 @@ export async function getSessionPreparation(
           where: {
             userId: user.id,
             sessionId: { not: sessionId },
-            session: { scheduledAt: { lt: session.scheduledAt } },
+            // Privacy boundary: only sessions THIS mentor conducted with
+            // the person — never another mentor's notes/outcomes.
+            session: {
+              scheduledAt: { lt: session.scheduledAt },
+              mentorId: actor.id,
+            },
           },
           select: {
             outcome: true,
@@ -120,6 +136,9 @@ export async function getSessionPreparation(
             origin: "session",
             status: { not: "done" },
             membership: { userId: user.id },
+            // Same privacy boundary: only tasks born from this mentor's
+            // own sessions with the person.
+            sourceSession: { mentorId: actor.id },
           },
           select: { id: true, title: true, deadline: true, status: true },
           orderBy: { deadline: "asc" },
