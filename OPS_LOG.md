@@ -4,6 +4,14 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-21 (9) — meet.rvs.solutions LIVE; WEPACKER migrado para vídeo próprio
+
+Jitsi Meet self-hosted em produção no servidor existente 77.42.82.10 (decisão do Rui: sem VPS novo — preflight confirmou folga: 8 cores, 24GB livres; custo adicional €0). Config como código no repo novo `~/Documents/code/rvs-meet` (compose oficial, nginx vhost, install.sh idempotente). Segurança: web/jicofo só em 127.0.0.1 (nginx faz TLS), secure domain (conta host "mentor", credenciais só em /opt/rvs-meet/host-credentials.txt chmod 600 no servidor), sem Jibri/gravação. Certbot com renovação automática. Colisões resolvidas em código: colibri 8080→8081; auth interna Prosody = meet.jitsi. Os 8 vhosts existentes verificados 200 após reload.
+
+`MEETING_BASE_URL=https://meet.rvs.solutions` aplicado ao .env.production do wepac + restart — sessões novas nascem com salas na infra própria. Smoke: meet 200, wepac 200. Password do host: `cat /opt/rvs-meet/host-credentials.txt` no servidor (o Rui precisa dela para abrir salas como host).
+
+---
+
 ## 2026-07-21 (8) — Cliente Hub real + link no workspace de detalhe
 
 14º deploy. `HubDebriefEngine` deixou de ser stub: cliente real do playbook W01 do Hub (submit + polling + mapeamento para DebriefResult), atrás de `DEBRIEF_ENGINE` (default `anthropic` — impossível ativar hub sem env explícita; fail-loud se faltar config, nunca fallback silencioso). QA confirmou o contrato HTTP contra o código real do Hub. Heurísticas v1 documentadas com TODO (sinal 'watch' uniforme por área; sugestões duplicadas em grupo — W01 sem split por attendee); 3 notas de interop enviadas ao Hub no canal. Migração para o Hub no futuro = definir 4 env vars no servidor. Também: link "Entrar na chamada"+"Copiar link" no workspace de detalhe da sessão (gap da frente anterior). Suite 64/64.
