@@ -4,6 +4,12 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-21 (6) — Motor de debrief calibrado por juízo de fidelidade (pronto para a sessão 2)
+
+12º deploy. Validação por regeneração cega: o motor reproduziu o documento da sessão 1 do Alex só a partir da transcrição + template, e um juiz opus comparou com o original — veredicto **APTO-COM-AJUSTES** (estrutura perfeita, zero contradições factuais em 15+ amostras, voz sustentada, honestidade exemplar; falhas: largou uma leitura crítica do mentor e cravou factos hesitantes). Os 5 ajustes do juiz foram aplicados ao `resultDocumentSystemPrompt()` (extração exaustiva das leituras do mentor, herança de hedges, exemplos sensíveis marcados [a rever pelo mentor], honestidade como regra dura, metáforas ancoradas às teses) e deployados. Suite 51/51. O caminho direto está calibrado e pronto para a transcrição da sessão 2.
+
+---
+
 ## 2026-07-21 (5) — PR #2 mergeado e deployado; decisões do Rui registadas
 
 11º deploy. PR #2 (Stripe money-path S1/S2/S3) mergeado por autorização direta do Rui ("merge já, live mode fica para depois") — fixes em produção, Stripe continua TEST mode; flip para live é decisão separada com o runbook do board. Suite 51/51.
