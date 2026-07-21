@@ -770,6 +770,9 @@ model Session {
   // ownAttendeeSessionInclude, the member-facing select, or any other
   // member-facing read path (see src/lib/wepacker/actions/session.ts).
   transcript             String?
+  // Monotonic source version for debrief generation. Content hashes alone
+  // cannot distinguish a same-content replacement or an A -> B -> A cycle.
+  transcriptRevision     Int       @default(0)
   transcriptUploadedAt   DateTime?
   transcriptUploadedById String?
 

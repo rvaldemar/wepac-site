@@ -27,11 +27,17 @@ vi.mock("@/lib/wepacker/guards", () => ({
   requireUser: vi.fn(async () => ({ id: "mentor-1", role: "mentor" })),
 }));
 
-const sendSessionInviteEmail = vi.fn(async (..._args: unknown[]) => undefined);
-const sendSessionCancelEmail = vi.fn(async (..._args: unknown[]) => undefined);
+const sendSessionInviteEmail = vi.fn(async (...args: unknown[]) => {
+  void args;
+});
+const sendSessionCancelEmail = vi.fn(async (...args: unknown[]) => {
+  void args;
+});
 vi.mock("@/lib/email", () => ({
-  sendSessionInviteEmail: (...args: unknown[]) => sendSessionInviteEmail(...args),
-  sendSessionCancelEmail: (...args: unknown[]) => sendSessionCancelEmail(...args),
+  sendSessionInviteEmail: (...args: unknown[]) =>
+    sendSessionInviteEmail(...args),
+  sendSessionCancelEmail: (...args: unknown[]) =>
+    sendSessionCancelEmail(...args),
 }));
 
 vi.mock("@/lib/wepacker/ics", () => ({
@@ -79,8 +85,20 @@ describe("updateSession — meeting link re-invite", () => {
       meetingUrl: "https://meet.jit.si/wepac-new",
     });
 
-    await updateSession("session-1", {
+    const result = await updateSession("session-1", {
       meetingUrl: "https://meet.jit.si/wepac-new",
+    });
+
+    expect(result).toEqual({ id: "session-1" });
+    expect(sessionUpdate).toHaveBeenCalledWith({
+      where: { id: "session-1" },
+      data: { meetingUrl: "https://meet.jit.si/wepac-new" },
+      select: {
+        id: true,
+        scheduledAt: true,
+        status: true,
+        meetingUrl: true,
+      },
     });
 
     await vi.waitFor(() => {
@@ -138,5 +156,24 @@ describe("updateSession — meeting link re-invite", () => {
       expect(sendSessionCancelEmail).toHaveBeenCalledTimes(2);
     });
     expect(sendSessionInviteEmail).not.toHaveBeenCalled();
+  });
+
+  it("rejects runtime fields outside the update allowlist before writing", async () => {
+    sessionFindUnique.mockResolvedValueOnce({
+      cohortId: null,
+      mentorshipId: null,
+      mentorId: "mentor-1",
+    });
+
+    await expect(
+      updateSession("session-1", {
+        meetingUrl: "https://meet.example/safe",
+        transcript: "private transcript",
+        transcriptUploadedById: "attacker-1",
+        mentorId: "attacker-1",
+      } as never),
+    ).rejects.toThrow("Campos de Session inválidos");
+
+    expect(sessionUpdate).not.toHaveBeenCalled();
   });
 });

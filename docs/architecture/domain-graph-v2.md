@@ -468,6 +468,24 @@ UI filtering is not an authorization boundary. Relationship status, end date,
 grant expiry, and revocation are checked on every protected write and sensitive
 read.
 
+### Support previews and `View as`
+
+`View as` is a read-only support projection, never identity impersonation. It
+must not modify the actor's session, JWT, cookies, role, or owner-scoped server
+actions. A permanent banner identifies both the previewed Person and the real
+actor, and leaving the dedicated preview route restores the normal workspace.
+
+The first bounded slice is `Preview attendee view` for one Session: its organizer
+may preview only an explicit attendee's member-safe Session projection. It omits
+the raw transcript, AI debrief, private and unpublished notes, other attendees,
+Messages, Tasks, Assessments, and every Journey artifact.
+
+A Person-wide Mentor preview requires explicit, resource-scoped Artifact Grants
+from the Mentee. Admin support preview additionally requires a reason, ticket,
+re-authentication, short expiry, immutable audit, and preferably subject
+notification. Until those controls exist, Admin is not an implicit Artifact
+Grant and no global `asUserId` path may be added to member pages or actions.
+
 ## Consent, privacy, and lifecycle
 
 1. Connection, Mentorship, Pack Membership, Cycle Enrollment, and Care Connection
@@ -490,7 +508,7 @@ read.
    participation or sharing. Exact age thresholds and evidence retention are
    policy configuration, not hard-coded assumptions.
 10. Private mentor notes, raw transcripts, and draft AI debriefs remain
-   mentor/staff-only unless a separate shared artifact is deliberately published.
+    organizer-only unless a separate shared artifact is deliberately published.
 11. Group Session notifications and calendar invitations are rendered per
     recipient and do not disclose the other attendees' contact data.
 

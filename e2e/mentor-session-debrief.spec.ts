@@ -26,18 +26,46 @@ test("mentor creates a Checkpoint session, attaches transcript, sees ready-to-ge
     .locator(".border-wepac-border")
     .filter({ hasText: "Ana Martins" })
     .first();
-  await expect(card.getByRole("link", { name: /Entrar na chamada/ })).toBeVisible();
+  await expect(
+    card.getByRole("link", { name: /Entrar na chamada/ }),
+  ).toBeVisible();
 
-  await card.getByRole("button", { name: "Colar transcrição" }).click();
-  await card
-    .locator("textarea")
-    .fill("Mentor: Como correu a semana?\nAna: Bem, avancei no repertório.");
-  await card.getByRole("button", { name: "Guardar transcrição" }).click();
-
-  await card.getByRole("link", { name: "Gerar debrief" }).click();
+  await card.getByRole("link", { name: "Attach Transcript" }).click();
   await expect(page).toHaveURL(/\/wepacker\/mentor\/sessions\/.+/);
-  await expect(page.getByRole("button", { name: "Gerar debrief" })).toBeVisible();
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "session.vtt",
+    mimeType: "text/vtt",
+    buffer: Buffer.from(
+      "WEBVTT\n\n00:00:00.000 --> 00:00:03.000\nMentor: Como correu a semana?\n\n00:00:03.000 --> 00:00:06.000\nAna: Bem, avancei no repertório.",
+    ),
+  });
+  await expect(page.locator("textarea")).toHaveValue(/Ana: Bem/);
+  await page.getByRole("button", { name: "Save Transcript" }).click();
+
+  await expect(
+    page.getByRole("button", { name: "Generate Debrief" }),
+  ).toBeVisible();
   // Deliberately not clicking — this is exactly where API spend would
   // start. The "ready to generate" state (session.transcript && !debrief)
   // is what's being validated.
+
+  const previewLink = page.getByRole("link", { name: "Ana Martins" });
+  const previewHref = await previewLink.getAttribute("href");
+  expect(previewHref).toBeTruthy();
+  const previewResponse = await page.request.get(previewHref!);
+  await previewLink.click();
+  await expect(page).toHaveURL(/\/preview\//);
+  expect(previewResponse.headers()["cache-control"]).toContain("no-store");
+  expect(previewResponse.headers()["x-robots-tag"]).toContain("noindex");
+  await expect(
+    page.getByText("Previewing Ana Martins's Session view"),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/You are still .*This preview is read-only/),
+  ).toBeVisible();
+  await expect(page.locator("form")).toHaveCount(0);
+  await page.getByRole("link", { name: "Exit Preview" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Session Workspace" }),
+  ).toBeVisible();
 });

@@ -62,12 +62,14 @@ deploy/
 - **Life Map and Trails** — Person-owned private artifacts
 - **Mentorship** — directed, bilateral and independent from Packs/Cycles
 - **Sessions** — explicit attendees; direct active Mentorship supports cohortless scheduling
+- **Session Transcript** — organizer-private UTF-8 text import (`.txt`, `.md`, `.vtt`, `.srt`); original file is not retained
+- **Preview attendee view** — read-only, Session-scoped support preview; never identity impersonation
 - **Packs** — target communities only; separate from legacy `Pack` rows
 - **Cycles** — time-bounded delivery with separate Enrollment and Facilitator edges
 - **Privacy** — Mentorship grants Session capability only; no implicit Life Map, Assessment, Task or Message access
 - **Legacy Assessment/Tasks** — visibly contained until target Stage-calibrated flows are implemented
 - **Leads** — pipeline de contactos (formulário + chat)
-- **Admin** — gestão de settings e leads
+- **Admin** — gestão de settings e leads; no implicit access to private Journey artifacts
 
 ## Deploy
 

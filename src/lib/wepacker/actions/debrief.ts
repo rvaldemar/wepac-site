@@ -1,9 +1,9 @@
 "use server";
 
+import { createHash } from "node:crypto";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { assertMentorOfSession } from "@/lib/wepacker/actions/session";
-import { requireUser } from "@/lib/wepacker/guards";
+import { assertSessionOrganizer } from "@/lib/wepacker/actions/session";
 import { getDebriefEngine } from "@/lib/wepacker/debrief/engine";
 import {
   DebriefEngineError,
@@ -31,6 +31,50 @@ export interface SessionDebriefView {
   generatedAt: string | null;
 }
 
+class TranscriptChangedDuringGenerationError extends Error {}
+
+function transcriptFingerprint(value: string | null): string {
+  return createHash("sha256")
+    .update(value ?? "")
+    .digest("hex");
+}
+
+// Lock the Session row while persisting a derived result. The monotonic source
+// revision catches same-content replacement and A-B-A changes; the fingerprint
+// is an additional integrity check. If replacement starts after this lock, it
+// waits and then atomically deletes the just-written result.
+async function withMatchingTranscript<T>(
+  sessionId: string,
+  expectedRevision: number,
+  expectedFingerprint: string,
+  write: (tx: Prisma.TransactionClient) => Promise<T>,
+): Promise<T> {
+  return prisma.$transaction(async (tx) => {
+    const rows = await tx.$queryRaw<
+      Array<{ transcript: string | null; transcriptRevision: number }>
+    >`
+      SELECT "transcript", "transcriptRevision"
+      FROM "sessions"
+      WHERE "id" = ${sessionId}
+      FOR SHARE
+    `;
+    if (
+      rows.length !== 1 ||
+      rows[0]?.transcriptRevision !== expectedRevision ||
+      transcriptFingerprint(rows[0]?.transcript ?? null) !== expectedFingerprint
+    ) {
+      throw new TranscriptChangedDuringGenerationError();
+    }
+    return write(tx);
+  });
+}
+
+function transcriptChangedError(): Error {
+  return new Error(
+    "A Session Transcript mudou durante a geração. Revê a versão atual e gera novamente.",
+  );
+}
+
 function toView(row: {
   id: string;
   status: string;
@@ -48,8 +92,10 @@ function toView(row: {
     status: row.status as "ready" | "failed",
     engineImpl: row.engineImpl,
     model: row.model,
-    perAttendee: (row.perAttendeeSuggestions as PerAttendeeDebrief[] | null) ?? [],
-    internalEvaluation: (row.internalEvaluation as InternalEvaluation | null) ?? null,
+    perAttendee:
+      (row.perAttendeeSuggestions as PerAttendeeDebrief[] | null) ?? [],
+    internalEvaluation:
+      (row.internalEvaluation as InternalEvaluation | null) ?? null,
     resultDocumentHtml: row.resultDocumentHtml,
     error: row.error,
     requestedAt: row.requestedAt.toISOString(),
@@ -58,9 +104,9 @@ function toView(row: {
 }
 
 export async function getSessionDebrief(
-  sessionId: string
+  sessionId: string,
 ): Promise<SessionDebriefView | null> {
-  await assertMentorOfSession(sessionId);
+  await assertSessionOrganizer(sessionId);
   const row = await prisma.sessionDebrief.findUnique({ where: { sessionId } });
   return row ? toView(row) : null;
 }
@@ -71,7 +117,7 @@ export async function getSessionDebrief(
 // for the engine seam to work; both fields are optional in the contract.
 async function buildDebriefInput(
   sessionId: string,
-  transcript: string
+  transcript: string,
 ): Promise<DebriefInput> {
   const session = await prisma.session.findUniqueOrThrow({
     where: { id: sessionId },
@@ -92,7 +138,9 @@ async function buildDebriefInput(
         packSlug: session.cohort.pack.slug,
         packName: session.cohort.pack.name,
         practiceLabel:
-          session.cohort.pack.tagline || session.cohort.pack.description || session.cohort.pack.name,
+          session.cohort.pack.tagline ||
+          session.cohort.pack.description ||
+          session.cohort.pack.name,
       }
     : null;
 
@@ -106,30 +154,32 @@ async function buildDebriefInput(
   };
 }
 
-// Gates via assertMentorOfSession; upserts SessionDebrief keyed on the
+// Gates via the exact organizer check; upserts SessionDebrief keyed on the
 // unique sessionId (force replaces the prior draft); never logs
 // transcript/payload content; throws a PT-PT user-safe Error (no raw SDK
 // error text) that the review UI renders verbatim in its Error state.
 export async function generateSessionDebrief(
   sessionId: string,
-  opts?: { force?: boolean }
+  opts?: { force?: boolean },
 ): Promise<SessionDebriefView> {
-  await assertMentorOfSession(sessionId);
-  const actor = await requireUser();
+  const { actorId } = await assertSessionOrganizer(sessionId);
 
   if (!opts?.force) {
-    const existing = await prisma.sessionDebrief.findUnique({ where: { sessionId } });
+    const existing = await prisma.sessionDebrief.findUnique({
+      where: { sessionId },
+    });
     if (existing) return toView(existing);
   }
 
   const session = await prisma.session.findUnique({
     where: { id: sessionId },
-    select: { transcript: true },
+    select: { transcript: true, transcriptRevision: true },
   });
   if (!session?.transcript) {
     throw new Error("Esta sessão ainda não tem transcrição.");
   }
 
+  const sourceFingerprint = transcriptFingerprint(session.transcript);
   const input = await buildDebriefInput(sessionId, session.transcript);
 
   try {
@@ -145,61 +195,86 @@ export async function generateSessionDebrief(
     // Prisma.InputJsonValue (also strips any `undefined` field values,
     // which Json columns can't store anyway).
     const perAttendeeJson = JSON.parse(
-      JSON.stringify(result.perAttendee)
+      JSON.stringify(result.perAttendee),
     ) as Prisma.InputJsonValue;
     const internalEvaluationJson = JSON.parse(
-      JSON.stringify(result.internalEvaluation)
+      JSON.stringify(result.internalEvaluation),
     ) as Prisma.InputJsonValue;
-    const row = await prisma.sessionDebrief.upsert({
-      where: { sessionId },
-      create: {
-        sessionId,
-        status: "ready",
-        engineImpl: engine.name,
-        model: "claude-sonnet-5",
-        perAttendeeSuggestions: perAttendeeJson,
-        internalEvaluation: internalEvaluationJson,
-        resultDocumentHtml: result.resultDocumentHtml,
-        requestedById: actor.id,
-        generatedAt: new Date(),
-      },
-      update: {
-        status: "ready",
-        engineImpl: engine.name,
-        model: "claude-sonnet-5",
-        perAttendeeSuggestions: perAttendeeJson,
-        internalEvaluation: internalEvaluationJson,
-        resultDocumentHtml: result.resultDocumentHtml,
-        error: null,
-        requestedById: actor.id,
-        requestedAt: new Date(),
-        generatedAt: new Date(),
-      },
-    });
+    const row = await withMatchingTranscript(
+      sessionId,
+      session.transcriptRevision,
+      sourceFingerprint,
+      (tx) =>
+        tx.sessionDebrief.upsert({
+          where: { sessionId },
+          create: {
+            sessionId,
+            status: "ready",
+            engineImpl: engine.name,
+            model: "claude-sonnet-5",
+            perAttendeeSuggestions: perAttendeeJson,
+            internalEvaluation: internalEvaluationJson,
+            resultDocumentHtml: result.resultDocumentHtml,
+            requestedById: actorId,
+            generatedAt: new Date(),
+          },
+          update: {
+            status: "ready",
+            engineImpl: engine.name,
+            model: "claude-sonnet-5",
+            perAttendeeSuggestions: perAttendeeJson,
+            internalEvaluation: internalEvaluationJson,
+            resultDocumentHtml: result.resultDocumentHtml,
+            error: null,
+            requestedById: actorId,
+            requestedAt: new Date(),
+            generatedAt: new Date(),
+          },
+        }),
+    );
     return toView(row);
   } catch (err) {
+    if (err instanceof TranscriptChangedDuringGenerationError) {
+      throw transcriptChangedError();
+    }
     // No transcript/prompt/payload here — only the user-safe message
     // (already scrubbed by the engine impl) and the sessionId.
     const message =
       err instanceof DebriefEngineError
         ? err.message
         : "Não foi possível gerar o debrief. Tenta novamente.";
-    console.error("[wepacker:debrief] generation failed", { sessionId, message });
-    await prisma.sessionDebrief.upsert({
-      where: { sessionId },
-      create: {
-        sessionId,
-        status: "failed",
-        error: message,
-        requestedById: actor.id,
-      },
-      update: {
-        status: "failed",
-        error: message,
-        requestedById: actor.id,
-        requestedAt: new Date(),
-      },
+    console.error("[wepacker:debrief] generation failed", {
+      sessionId,
+      message,
     });
+    try {
+      await withMatchingTranscript(
+        sessionId,
+        session.transcriptRevision,
+        sourceFingerprint,
+        (tx) =>
+          tx.sessionDebrief.upsert({
+            where: { sessionId },
+            create: {
+              sessionId,
+              status: "failed",
+              error: message,
+              requestedById: actorId,
+            },
+            update: {
+              status: "failed",
+              error: message,
+              requestedById: actorId,
+              requestedAt: new Date(),
+            },
+          }),
+      );
+    } catch (writeError) {
+      if (writeError instanceof TranscriptChangedDuringGenerationError) {
+        throw transcriptChangedError();
+      }
+      throw writeError;
+    }
     throw new Error(message);
   }
 }

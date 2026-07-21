@@ -10,7 +10,7 @@ import {
   resolveSessionAttendeeAuthorization,
   type SessionAttendeeAuthorization,
 } from "@/lib/wepacker/guards";
-import { SESSION_KIND_LABELS } from "@/lib/wepacker/types";
+import { SESSION_KIND_KEYS, SESSION_KIND_LABELS } from "@/lib/wepacker/types";
 import {
   buildSessionCancelIcs,
   buildSessionInviteIcs,
@@ -39,6 +39,37 @@ const mentorSessionInclude = {
   // Presence-only — lets the sessions list show "Ver debrief" vs "Gerar
   // debrief" without a second query. The payload itself is never
   // included here.
+  debrief: { select: { id: true } },
+} as const;
+
+// The Sessions index needs lifecycle metadata and editable attendee fields,
+// but never the raw transcript body. Keep this as a top-level select so a new
+// sensitive Session scalar cannot silently ride into every list response.
+const mentorSessionListSelect = {
+  id: true,
+  cohortId: true,
+  sessionType: true,
+  kind: true,
+  scheduledAt: true,
+  durationMinutes: true,
+  status: true,
+  notes: true,
+  notesPublished: true,
+  discussionPoints: true,
+  meetingUrl: true,
+  transcriptUploadedAt: true,
+  attendees: {
+    select: {
+      id: true,
+      attended: true,
+      privateNote: true,
+      sharedNote: true,
+      sharedNotePublished: true,
+      outcome: true,
+      user: { select: { id: true, name: true } },
+    },
+  },
+  mentor: { select: { id: true, name: true } },
   debrief: { select: { id: true } },
 } as const;
 
@@ -101,13 +132,18 @@ type OwnAttendeeSession = {
 // applies to the legacy session-level notes blob: unpublished notes must
 // not cross the server/client boundary at all.
 function maskUnpublishedNotes<
-  T extends OwnAttendeeSession & { notes: string | null; notesPublished: boolean },
+  T extends OwnAttendeeSession & {
+    notes: string | null;
+    notesPublished: boolean;
+    discussionPoints: string | null;
+  },
 >(session: T): T {
   return {
     ...session,
     notes: session.notesPublished ? session.notes : null,
+    discussionPoints: session.notesPublished ? session.discussionPoints : null,
     attendees: session.attendees.map((a) =>
-      a.sharedNotePublished ? a : { ...a, sharedNote: null }
+      a.sharedNotePublished ? a : { ...a, sharedNote: null },
     ),
   };
 }
@@ -117,9 +153,7 @@ function maskUnpublishedNotes<
 // only editable by the mentor who created it, or an admin. Exported so
 // other action modules (e.g. task creation from a session outcome) can
 // reuse the exact same check instead of re-deriving it.
-export async function assertMentorOfSession(
-  sessionId: string
-): Promise<{
+export async function assertMentorOfSession(sessionId: string): Promise<{
   cohortId: string | null;
   mentorshipId: string | null;
   mentorId: string;
@@ -150,6 +184,26 @@ export async function assertMentorOfSession(
   return session;
 }
 
+// Raw transcripts and AI-derived debriefs are organizer-private. Neither a
+// broad Admin role nor being another facilitator in the same legacy Cohort is
+// an Artifact Grant. A future audited break-glass flow must use a separate,
+// explicit capability rather than weakening this guard.
+export async function assertSessionOrganizer(sessionId: string): Promise<{
+  cohortId: string | null;
+  mentorshipId: string | null;
+  mentorId: string;
+  actorId: string;
+}> {
+  const actor = await requireRole(["mentor", "admin"]);
+  const session = await prisma.session.findUnique({
+    where: { id: sessionId },
+    select: { cohortId: true, mentorshipId: true, mentorId: true },
+  });
+  if (!session) throw new Error("Sessão não encontrada.");
+  if (session.mentorId !== actor.id) throw new Error("Sem permissão.");
+  return { ...session, actorId: actor.id };
+}
+
 export async function getMySessions() {
   const user = await requireUser();
   const sessions = await prisma.session.findMany({
@@ -175,13 +229,72 @@ export async function getNextSession() {
   return session ? maskUnpublishedNotes(session) : null;
 }
 
+// Read-only support preview for one explicit attendee of one organizer-owned
+// Session. This is deliberately not a general `asUserId` path: it returns the
+// same narrow projection used by the attendee-facing Sessions UI, without
+// changing cookies/JWT identity or exposing any mutable member action.
+export async function getSessionAttendeePreview(
+  sessionId: string,
+  attendeeUserId: string,
+) {
+  const { actorId } = await assertSessionOrganizer(sessionId);
+  const session = await prisma.session.findUnique({
+    where: { id: sessionId },
+    select: {
+      id: true,
+      scheduledAt: true,
+      durationMinutes: true,
+      sessionType: true,
+      kind: true,
+      status: true,
+      notes: true,
+      notesPublished: true,
+      discussionPoints: true,
+      meetingUrl: true,
+      mentor: { select: { id: true, name: true } },
+      attendees: {
+        where: { userId: attendeeUserId },
+        select: {
+          outcome: true,
+          sharedNote: true,
+          sharedNotePublished: true,
+          user: { select: { id: true, name: true } },
+        },
+      },
+    },
+  });
+  const attendee = session?.attendees[0];
+  if (!session || !attendee) return null;
+
+  return {
+    viewer: { id: actorId, name: session.mentor.name },
+    attendee: attendee.user,
+    session: {
+      id: session.id,
+      scheduledAt: session.scheduledAt,
+      durationMinutes: session.durationMinutes,
+      sessionType: session.sessionType,
+      kind: session.kind,
+      status: session.status,
+      mentorName: session.mentor.name,
+      notes: session.notesPublished ? session.notes : null,
+      notesPublished: session.notesPublished,
+      discussionPoints: session.notesPublished
+        ? session.discussionPoints
+        : null,
+      outcome: attendee.outcome,
+      sharedNote: attendee.sharedNotePublished ? attendee.sharedNote : null,
+      meetingUrl: session.meetingUrl,
+    },
+  };
+}
+
 // Single session, mentor-facing, with the transcript lifecycle metadata
 // and any existing debrief draft — powers the transcript/debrief review
-// workspace at mentor/sessions/[id]. Reuses assertMentorOfSession, so
-// only a mentor who could already write this session's per-attendee
-// notes can read its transcript/debrief.
+// workspace at mentor/sessions/[id]. The stricter organizer guard prevents a
+// co-facilitator or broad Admin role from reading its transcript/debrief.
 export async function getMentoredSessionDetail(sessionId: string) {
-  await assertMentorOfSession(sessionId);
+  await assertSessionOrganizer(sessionId);
   return prisma.session.findUnique({
     where: { id: sessionId },
     include: { ...mentorSessionInclude, debrief: true },
@@ -194,7 +307,7 @@ export async function getMentoredSessions() {
   const actor = await requireUser();
   if (actor.role === "admin") {
     return prisma.session.findMany({
-      include: mentorSessionInclude,
+      select: mentorSessionListSelect,
       orderBy: { scheduledAt: "desc" },
     });
   }
@@ -206,7 +319,7 @@ export async function getMentoredSessions() {
         { mentorId: actor.id },
       ],
     },
-    include: mentorSessionInclude,
+    select: mentorSessionListSelect,
     orderBy: { scheduledAt: "desc" },
   });
 }
@@ -256,10 +369,7 @@ export async function getMentoredMembers() {
     include: { user: { select: { id: true, name: true, email: true } } },
     orderBy: { joinedAt: "asc" },
   });
-  const byUser = new Map<
-    string,
-    { id: string; name: string; email: string }
-  >();
+  const byUser = new Map<string, { id: string; name: string; email: string }>();
   for (const mentorship of mentorships) {
     if (!byUser.has(mentorship.menteeId)) {
       byUser.set(mentorship.menteeId, mentorship.mentee);
@@ -330,7 +440,7 @@ async function getSessionCalendarContext(sessionId: string): Promise<{
 // attendee name/email in the log line).
 async function sendSessionCalendarEmails(
   sessionId: string,
-  method: "REQUEST" | "CANCEL"
+  method: "REQUEST" | "CANCEL",
 ): Promise<void> {
   try {
     const ctx = await getSessionCalendarContext(sessionId);
@@ -352,7 +462,10 @@ async function sendSessionCalendarEmails(
       // the sole attendee in their own calendar payload below.
       organizer: {
         name: "WEPAC",
-        email: (process.env.SMTP_FROM || "info@wepac.pt").replace(/^.*<|>.*$/g, ""),
+        email: (process.env.SMTP_FROM || "info@wepac.pt").replace(
+          /^.*<|>.*$/g,
+          "",
+        ),
       },
       sequence,
     };
@@ -388,7 +501,7 @@ async function sendSessionCalendarEmails(
             ...logSafeError(err),
           });
         });
-      })
+      }),
     );
   } catch (err) {
     console.error("Session calendar email failed", {
@@ -408,13 +521,15 @@ function normalizeSessionAttendeeIds(userIds: string[]): string[] {
 
 function assertSessionAttendeeCardinality(
   sessionType: SessionType,
-  attendeeUserIds: string[]
+  attendeeUserIds: string[],
 ): void {
   if (attendeeUserIds.length === 0) {
     throw new Error("Escolhe pelo menos um participante.");
   }
   if (sessionType === "individual" && attendeeUserIds.length !== 1) {
-    throw new Error("Uma Session individual requer exatamente um participante.");
+    throw new Error(
+      "Uma Session individual requer exatamente um participante.",
+    );
   }
   if (sessionType === "group" && attendeeUserIds.length < 2) {
     throw new Error("Uma Group Session requer pelo menos dois participantes.");
@@ -454,8 +569,8 @@ async function authorizeSessionAttendees({
       select: { userId: true },
     });
     if (
-      new Set(activeParticipants.map((membership) => membership.userId)).size !==
-      attendeeUserIds.length
+      new Set(activeParticipants.map((membership) => membership.userId))
+        .size !== attendeeUserIds.length
     ) {
       throw new Error(invalidMessage);
     }
@@ -477,9 +592,13 @@ async function authorizeSessionAttendees({
     // unlinked.
     if (attendeeUserIds.length === 1) {
       authorizations = [
-        await resolveSessionAttendeeAuthorization(actor.id, attendeeUserIds[0], {
-          legacyCohortId,
-        }),
+        await resolveSessionAttendeeAuthorization(
+          actor.id,
+          attendeeUserIds[0],
+          {
+            legacyCohortId,
+          },
+        ),
       ];
     }
   } else {
@@ -487,8 +606,8 @@ async function authorizeSessionAttendees({
       attendeeUserIds.map((attendeeUserId) =>
         resolveSessionAttendeeAuthorization(actor.id, attendeeUserId, {
           legacyCohortId,
-        })
-      )
+        }),
+      ),
     );
     if (authorizations.some((authorization) => !authorization.authorized)) {
       throw new Error(invalidMessage);
@@ -496,7 +615,7 @@ async function authorizeSessionAttendees({
   }
 
   const legacyFallbackCount = authorizations.filter(
-    (authorization) => authorization.source === "legacy_cohort"
+    (authorization) => authorization.source === "legacy_cohort",
   ).length;
   if (legacyFallbackCount > 0) {
     console.info("[session authorization] legacy_cohort_fallback", {
@@ -647,7 +766,7 @@ export async function createSessionFromResolvedActors(data: {
 // session already cancelled is left alone and no second CANCEL email
 // fires.
 export async function cancelSessionFromWebhook(
-  sessionId: string
+  sessionId: string,
 ): Promise<{ id: string; alreadyCancelled: boolean } | null> {
   const before = await prisma.session.findUnique({
     where: { id: sessionId },
@@ -667,21 +786,118 @@ export async function cancelSessionFromWebhook(
   return { id: sessionId, alreadyCancelled: false };
 }
 
+type SessionUpdatePayload = {
+  status?: SessionStatus;
+  kind?: SessionKind;
+  notes?: string;
+  notesPublished?: boolean;
+  discussionPoints?: string;
+  scheduledAt?: string;
+  meetingUrl?: string;
+};
+
+type ParsedSessionUpdate = Omit<SessionUpdatePayload, "scheduledAt"> & {
+  scheduledAt?: Date;
+};
+
+const SESSION_UPDATE_KEYS = new Set<keyof SessionUpdatePayload>([
+  "status",
+  "kind",
+  "notes",
+  "notesPublished",
+  "discussionPoints",
+  "scheduledAt",
+  "meetingUrl",
+]);
+const SESSION_STATUS_KEYS: readonly SessionStatus[] = [
+  "scheduled",
+  "completed",
+  "cancelled",
+  "no_show",
+];
+
+function parseSessionUpdateData(input: unknown): ParsedSessionUpdate {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    throw new Error("Dados de Session inválidos.");
+  }
+
+  const raw = input as Record<string, unknown>;
+  for (const key of Object.keys(raw)) {
+    if (!SESSION_UPDATE_KEYS.has(key as keyof SessionUpdatePayload)) {
+      throw new Error("Campos de Session inválidos.");
+    }
+  }
+
+  const parsed: ParsedSessionUpdate = {};
+  if (raw.status !== undefined) {
+    if (
+      typeof raw.status !== "string" ||
+      !SESSION_STATUS_KEYS.includes(raw.status as SessionStatus)
+    ) {
+      throw new Error("Estado de Session inválido.");
+    }
+    parsed.status = raw.status as SessionStatus;
+  }
+  if (raw.kind !== undefined) {
+    if (
+      typeof raw.kind !== "string" ||
+      !SESSION_KIND_KEYS.includes(
+        raw.kind as (typeof SESSION_KIND_KEYS)[number],
+      )
+    ) {
+      throw new Error("Tipo de Session inválido.");
+    }
+    parsed.kind = raw.kind as SessionKind;
+  }
+  if (raw.notes !== undefined) {
+    if (typeof raw.notes !== "string" || raw.notes.length > 300_000) {
+      throw new Error("Notas de Session inválidas.");
+    }
+    parsed.notes = raw.notes;
+  }
+  if (raw.notesPublished !== undefined) {
+    if (typeof raw.notesPublished !== "boolean") {
+      throw new Error("Publicação de notas inválida.");
+    }
+    parsed.notesPublished = raw.notesPublished;
+  }
+  if (raw.discussionPoints !== undefined) {
+    if (
+      typeof raw.discussionPoints !== "string" ||
+      raw.discussionPoints.length > 300_000
+    ) {
+      throw new Error("Pontos de discussão inválidos.");
+    }
+    parsed.discussionPoints = raw.discussionPoints;
+  }
+  if (raw.scheduledAt !== undefined) {
+    if (typeof raw.scheduledAt !== "string" || !raw.scheduledAt.trim()) {
+      throw new Error("Data da Session inválida.");
+    }
+    const scheduledAt = new Date(raw.scheduledAt);
+    if (Number.isNaN(scheduledAt.getTime())) {
+      throw new Error("Data da Session inválida.");
+    }
+    parsed.scheduledAt = scheduledAt;
+  }
+  if (raw.meetingUrl !== undefined) {
+    if (typeof raw.meetingUrl !== "string" || raw.meetingUrl.length > 2_048) {
+      throw new Error("Link da Session inválido.");
+    }
+    parsed.meetingUrl = raw.meetingUrl;
+  }
+
+  return parsed;
+}
+
 export async function updateSession(
   sessionId: string,
-  data: {
-    status?: SessionStatus;
-    kind?: SessionKind;
-    notes?: string;
-    notesPublished?: boolean;
-    discussionPoints?: string;
-    scheduledAt?: string;
-    // Mentor can paste a manual Zoom/Teams/etc link here to replace the
-    // auto-generated one.
-    meetingUrl?: string;
-  }
+  // Keep the public type narrow for normal callers, while the parser below
+  // treats the serialized Server Action payload as untrusted at runtime.
+  rawData: SessionUpdatePayload,
 ) {
   await assertMentorOfSession(sessionId);
+  const data = parseSessionUpdateData(rawData);
 
   // Snapshot taken before the write so we can tell whether this call
   // actually changed the schedule/status/meeting link (vs. e.g. only
@@ -699,9 +915,12 @@ export async function updateSession(
 
   const updated = await prisma.session.update({
     where: { id: sessionId },
-    data: {
-      ...data,
-      scheduledAt: data.scheduledAt ? new Date(data.scheduledAt) : undefined,
+    data,
+    select: {
+      id: true,
+      scheduledAt: true,
+      status: true,
+      meetingUrl: true,
     },
   });
 
@@ -735,13 +954,15 @@ export async function updateSession(
     void sendSessionCalendarEmails(sessionId, "REQUEST");
   }
 
-  return updated;
+  // Server Action responses are observable by the caller. Never return the
+  // full Session row here: it contains organizer-private transcript fields.
+  return { id: updated.id };
 }
 
 export async function setAttendance(
   sessionId: string,
   userId: string,
-  attended: boolean
+  attended: boolean,
 ) {
   await assertMentorOfSession(sessionId);
   return prisma.sessionAttendee.update({
@@ -791,7 +1012,7 @@ export async function updateSessionAttendee(
     sharedNote?: string;
     sharedNotePublished?: boolean;
     outcome?: string;
-  }
+  },
 ) {
   await assertMentorOfSession(sessionId);
 

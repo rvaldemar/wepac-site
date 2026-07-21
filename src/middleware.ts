@@ -19,6 +19,9 @@ const ONBOARDING_PATHS = [
   "/wepacker/assessment",
 ];
 
+const SESSION_ATTENDEE_PREVIEW_RE =
+  /^\/wepacker\/mentor\/sessions\/[^/]+\/preview\/[^/]+\/?$/;
+
 // Legacy Artista Alpha routes → WEPACKER equivalents.
 function legacyRedirect(pathname: string): string | null {
   if (!pathname.startsWith("/artists/alpha")) return null;
@@ -81,7 +84,15 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/wepacker/dashboard", req.url));
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  if (SESSION_ATTENDEE_PREVIEW_RE.test(pathname)) {
+    response.headers.set("Cache-Control", "private, no-store, max-age=0");
+    response.headers.set("Pragma", "no-cache");
+    const vary = response.headers.get("Vary");
+    response.headers.set("Vary", vary ? `${vary}, Cookie` : "Cookie");
+    response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+  }
+  return response;
 });
 
 export const config = {
