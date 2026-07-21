@@ -14,7 +14,7 @@ export default function OrcamentoPage() {
       <section className="bg-wepac-black px-6 py-12 md:py-16 lg:px-8">
         <div className="mx-auto max-w-4xl">
           <FadeIn>
-            <p className="text-sm font-bold uppercase tracking-widest text-wepac-white/40">
+            <p className="text-sm font-bold uppercase tracking-widest text-wepac-white/50">
               Serviços &middot; Wessex
             </p>
             <h1 className="mt-3 font-barlow text-3xl font-bold text-wepac-white md:text-5xl">
