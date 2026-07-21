@@ -79,6 +79,13 @@ export async function POST(req: NextRequest) {
   });
   if (!ticket) return NextResponse.json({ error: "Bilhete não encontrado" }, { status: 404 });
 
+  if (ticket.status === "cancelled") {
+    return NextResponse.json(
+      { error: "Bilhete cancelado — pagamento não concluído" },
+      { status: 409 }
+    );
+  }
+
   if (action === "checkin") {
     await prisma.ticket.update({
       where: { id: ticketId },
