@@ -418,14 +418,16 @@ export async function updateSession(
   await assertMentorOfSession(sessionId);
 
   // Snapshot taken before the write so we can tell whether this call
-  // actually changed the schedule/status (vs. e.g. only editing notes),
-  // and only send a calendar email when it did.
+  // actually changed the schedule/status/meeting link (vs. e.g. only
+  // editing notes), and only send a calendar email when it did.
   const needsBeforeSnapshot =
-    data.scheduledAt !== undefined || data.status !== undefined;
+    data.scheduledAt !== undefined ||
+    data.status !== undefined ||
+    data.meetingUrl !== undefined;
   const before = needsBeforeSnapshot
     ? await prisma.session.findUnique({
         where: { id: sessionId },
-        select: { scheduledAt: true, status: true },
+        select: { scheduledAt: true, status: true, meetingUrl: true },
       })
     : null;
 
@@ -446,14 +448,24 @@ export async function updateSession(
     data.scheduledAt !== undefined &&
     before !== null &&
     before.scheduledAt.getTime() !== updated.scheduledAt.getTime();
+  // A meeting-link-only edit (e.g. mentor swaps in a manual Zoom link)
+  // still needs to reach attendees' calendars, but only when it isn't
+  // already covered by a cancel or reschedule invite above.
+  const meetingUrlChanged =
+    !justCancelled &&
+    !rescheduled &&
+    data.meetingUrl !== undefined &&
+    before !== null &&
+    before.meetingUrl !== updated.meetingUrl;
 
   // Fire-and-forget — see sendSessionCalendarEmails; never blocks or
   // fails the update. Cancellation takes priority: if both status and
   // scheduledAt changed in the same call, send only the CANCEL, not a
-  // REQUEST immediately followed by a CANCEL.
+  // REQUEST immediately followed by a CANCEL. Same reasoning extends to
+  // a meeting-link change bundled with either.
   if (justCancelled) {
     void sendSessionCalendarEmails(sessionId, "CANCEL");
-  } else if (rescheduled) {
+  } else if (rescheduled || meetingUrlChanged) {
     void sendSessionCalendarEmails(sessionId, "REQUEST");
   }
 

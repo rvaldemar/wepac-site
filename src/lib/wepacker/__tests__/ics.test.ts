@@ -185,6 +185,12 @@ describe("nextIcsSequence", () => {
     expect(nextIcsSequence(new Date("2020-01-01T00:00:00.000Z"))).toBe(0);
   });
 
+  it("increases across calls less than a second apart", () => {
+    const t1 = new Date("2026-08-01T09:00:00.100Z");
+    const t2 = new Date("2026-08-01T09:00:00.250Z");
+    expect(nextIcsSequence(t2)).toBeGreaterThan(nextIcsSequence(t1));
+  });
+
   it("is deterministic for the same `now`", () => {
     const now = new Date("2026-08-01T09:00:00.000Z");
     expect(nextIcsSequence(now)).toBe(nextIcsSequence(now));
