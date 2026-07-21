@@ -4,9 +4,13 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
-## 2026-07-21 (branch, não deployado) — Debrief de sessão por IA (frente CAPTURE+REVIEW)
+## 2026-07-21 (2) — Debrief de sessão por IA: DEPLOYED (epic session-intelligence, fábrica completa)
 
-Build em worktree isolado — schema + captura de transcrição + workspace de revisão do mentor + motor Anthropic. Não passou por deploy.
+Sexto deploy do ciclo. Epic construído pela fábrica completa: 2 specs de leads → board 3 lentes opus (CISO/CTO/CPO, 3 vetos iniciais convertidos pelo Chair em constraints vinculativos) → builds em worktrees → QA gatekeepers (2× SHIP-WITH-RESERVATIONS, 0 bloqueadores) → integração CoS. Migration `20260720233529_session_debrief` aplicada em prod.
+
+**Verificação pós-deploy:** smoke local do caminho de falha VERDE (401 com key placeholder → erro PT-PT limpo, log sem qualquer conteúdo — só sessionId/status/contagens). Caminho feliz contra a API real NÃO verificado ainda: o `.env.local` de dev tem key placeholder e o servidor não recebe `src/` (build standalone), por isso a primeira geração real é a verificação — que o board já exige que seja com o Rui a validar registo/fidelidade do documento (HITL gate). Nota: o prompt do documento de resultado pode agora ser afinado com o template canónico extraído (`WHPH/WEPAC/WEPACKER/wepac-session-result-template-v1.html`), que o build não conseguiu ler (OneDrive timeout no worktree).
+
+Detalhe do que foi construído (nota original do build):
 
 - **Schema (migration aditiva única `20260720233529_session_debrief`):** `Session` ganha `transcript`/`transcriptUploadedAt`/`transcriptUploadedById` (mentor-only); novo modelo `SessionDebrief` (status ready/failed only — sem lock de "geração em curso", sem `reviewedAt`/`reviewedByUserId`, conforme trim do board).
 - **Fix de leak confirmado pelo board:** `ownAttendeeSessionInclude` usava `include` (todos os scalars da Session, incluindo os futuros `transcript*`) em vez de `select` — convertido para `select` explícito default-deny em `getMySessions`/`getNextSession`. Regressão coberta em teste.
