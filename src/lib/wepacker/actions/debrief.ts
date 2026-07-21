@@ -131,9 +131,14 @@ export async function generateSessionDebrief(
   }
 
   const input = await buildDebriefInput(sessionId, session.transcript);
-  const engine = getDebriefEngine();
 
   try {
+    // Inside the try: getDebriefEngine() itself can now throw a fail-loud
+    // DebriefEngineError (e.g. HubDebriefEngine's constructor when
+    // DEBRIEF_ENGINE=hub is missing its own env vars) and must land in the
+    // same failed-SessionDebrief-row flow as a generateDebrief() failure,
+    // not bubble up as an unhandled server-action exception.
+    const engine = getDebriefEngine();
     const result = await engine.generateDebrief(input);
     // Prisma's Json input type has no structural relation to our
     // DebriefResult sub-types — round-trip through JSON to get a plain
