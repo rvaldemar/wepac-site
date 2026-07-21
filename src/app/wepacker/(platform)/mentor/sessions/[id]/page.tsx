@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { requirePageRole } from "@/lib/wepacker/page-guards";
 import { getMentoredSessionDetail } from "@/lib/wepacker/actions/session";
 import { getSessionDebrief } from "@/lib/wepacker/actions/debrief";
+import { getSessionPreparation } from "@/lib/wepacker/actions/session-prep";
 import { SessionDebriefClient } from "./page-client";
 
 // Dates coming out of Prisma need to cross the server/client boundary as
@@ -34,10 +35,16 @@ export default async function MentorSessionDebriefPage({
   // else — go through the same action so both callers agree on shape.
   const debrief = await getSessionDebrief(id);
 
+  // Only relevant before there's a transcript/debrief to review — fetched
+  // unconditionally anyway since it's cheap and harmless once the session
+  // has moved past that point (the client only renders it before then).
+  const preparation = await getSessionPreparation(id);
+
   return (
     <SessionDebriefClient
       session={serialize(session)}
       debrief={debrief ? serialize(debrief) : null}
+      preparation={serialize(preparation)}
     />
   );
 }
