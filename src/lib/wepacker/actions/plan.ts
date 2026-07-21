@@ -24,17 +24,19 @@ export async function getLifePlanVersions(userId: string) {
   });
 }
 
-export async function upsertLifePlan(
-  userId: string,
-  data: {
-    whoIAm: string;
-    whereIAm: string;
-    whereIGo: string;
-    whyIDo: string;
-    commitments: string;
-  }
-) {
-  await assertUserOwner(userId);
+type LifePlanFields = {
+  whoIAm: string;
+  whereIAm: string;
+  whereIGo: string;
+  whyIDo: string;
+  commitments: string;
+};
+
+// Shared write path: snapshots the current Life Plan into history (if any)
+// before writing the new content. Used both by direct edits and by
+// restoring a past version — restoring never rewrites history, it just
+// becomes the new "current" through the same append-only mechanism.
+async function snapshotAndSaveLifePlan(userId: string, data: LifePlanFields) {
   return prisma.$transaction(async (tx) => {
     const previous = await tx.lifePlan.findUnique({ where: { userId } });
     if (previous) {
@@ -54,6 +56,32 @@ export async function upsertLifePlan(
       update: data,
       create: { userId, ...data },
     });
+  });
+}
+
+export async function upsertLifePlan(userId: string, data: LifePlanFields) {
+  await assertUserOwner(userId);
+  return snapshotAndSaveLifePlan(userId, data);
+}
+
+// Restores a past Life Plan version as the current one. Append-only: the
+// version being replaced is snapshotted into history by
+// snapshotAndSaveLifePlan exactly like a normal edit — nothing is deleted
+// or rewritten, the selected version just becomes current again.
+export async function restoreLifePlanVersion(userId: string, versionId: string) {
+  await assertUserAccess(userId);
+  const version = await prisma.lifePlanVersion.findUnique({
+    where: { id: versionId },
+  });
+  if (!version || version.userId !== userId) {
+    throw new Error("Versão não encontrada.");
+  }
+  return snapshotAndSaveLifePlan(userId, {
+    whoIAm: version.whoIAm,
+    whereIAm: version.whereIAm,
+    whereIGo: version.whereIGo,
+    whyIDo: version.whyIDo,
+    commitments: version.commitments,
   });
 }
 
