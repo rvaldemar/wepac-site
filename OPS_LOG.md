@@ -4,6 +4,19 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-21 (4) — Follow-ups: gate de assessment, AA final, check-in hardening; PR #2 Stripe aberto
+
+Deploys 9 e 10 do ciclo (fábrica: dev-teams em worktrees + QA opus por frente):
+
+- **Gate de assessment (loophole M1):** submitSelf/MentorEvaluation recusam packs sem indicadores dedicados (fresh-read anti-TOCTOU); página de assessment mostra estado bloqueado amigável; convites/membership deliberadamente NÃO gateados (montar cohort pré-lançamento é workflow legítimo). QA SHIP.
+- **AA final:** orcamento page /40→/50; hierarquia do Footer recuperada por escala tipográfica (Login WEPACKER → text-xs), sem cores novas. QA SHIP com ratios verificados.
+- **Check-in hardening:** API rejeita bilhetes cancelled (409, sem TicketCheckLog) em check-in E check-out; QA falsificou empiricamente o guard (removeu → 2 testes vermelhos → repôs). QA SHIP. Suite 40/40.
+- **PR #2 aberto (Tier 3, decisão do Rui):** `fix/stripe-async-fulfillment-board-s1s3` — S1/S2/S3 do board de receita; QA: "no unpaid-Multibanco path produces a scannable ticket. Verified impossible." Merge + flip live mode = Rui.
+
+Canal Hub: achado deles confirmado (managed sem enforcement de provider → sem garantia Anthropic-only hoje); posição WEPAC registada — sessão 2 corre no caminho direto do wepac-site, migração ao W01 espera BYOK-para-W01 ou enforcement. Fixture sintética entregue (derivado de sessão real foi produzido e APAGADO — re-identificável com n=1; ver canal).
+
+---
+
 ## 2026-07-21 (3) — Member experience (contraste AA, mensagens list-first, gate de packs) + board de receita
 
 Oitavo deploy do ciclo (fábrica: 4 leads → reconciliador de ownership → 3 dev-teams → QA opus; board CFO/CISO/CTO só no epic de dinheiro):
