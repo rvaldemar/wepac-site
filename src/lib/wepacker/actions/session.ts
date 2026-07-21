@@ -1,6 +1,5 @@
 "use server";
 
-import { randomBytes } from "node:crypto";
 import { prisma } from "@/lib/db";
 import type { SessionKind, SessionStatus, SessionType } from "@prisma/client";
 import {
@@ -24,23 +23,7 @@ import {
   sendSharedNotePublishedEmail,
 } from "@/lib/email";
 import { logSafeError } from "@/lib/wepacker/log-safe-error";
-
-// Defaults to the public Jitsi instance — see .env.example. Will migrate to
-// a self-hosted instance later; reading this at call time (not module load)
-// keeps it test-friendly and lets it pick up runtime env changes.
-function meetingBaseUrl(): string {
-  return process.env.MEETING_BASE_URL || "https://meet.jit.si";
-}
-
-// Auto-generated video call link for a new session. The room slug is a
-// non-guessable crypto-random token, deliberately NOT the session's own id
-// — the session id is exposed in URLs/APIs to any attendee, and reusing it
-// as the meeting slug would let anyone who can see a session id also guess
-// (or worse, enumerate) its meeting room.
-export function generateMeetingUrl(baseUrl: string = meetingBaseUrl()): string {
-  const token = randomBytes(8).toString("hex"); // 16 hex chars
-  return `${baseUrl}/wepac-${token}`;
-}
+import { generateMeetingUrl } from "@/lib/wepacker/meeting-url";
 
 // Full attendee shape — mentor-facing only. Includes every field,
 // including privateNote, so this must never be reused for a member-facing

@@ -276,6 +276,7 @@ export default function AssessmentPageClient({
                           checked={current === score}
                           onChange={() => handleScore(ind.key, score)}
                           className="peer sr-only"
+                          data-testid={`assessment-score-${area}-${ind.key}-${score}`}
                         />
                         <label
                           htmlFor={inputId}
@@ -357,6 +358,7 @@ export default function AssessmentPageClient({
             <button
               onClick={nextArea}
               disabled={!areaComplete}
+              data-testid="assessment-next-area"
               className="bg-wepac-white px-6 py-2 text-sm font-bold text-wepac-black transition-colors hover:bg-wepac-accent-muted disabled:opacity-30"
             >
               Seguinte
@@ -365,6 +367,7 @@ export default function AssessmentPageClient({
             <button
               onClick={handleAttemptComplete}
               disabled={submitting}
+              data-testid="assessment-complete"
               className="bg-wepac-white px-6 py-2 text-sm font-bold text-wepac-black transition-colors hover:bg-wepac-accent-muted disabled:opacity-30"
             >
               {submitting ? "A guardar..." : "Completar"}

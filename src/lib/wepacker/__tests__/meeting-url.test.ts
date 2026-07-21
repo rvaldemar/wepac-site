@@ -1,26 +1,10 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
+import { generateMeetingUrl } from "@/lib/wepacker/meeting-url";
 
 // Regression/spec test for the video-call link generator used by
 // createSession. The room slug must be crypto-random and independent of
 // the session's own id (which is exposed to every attendee), never
-// guessable or derived from anything sequential. Session actions import
-// prisma/guards at module load, so those are stubbed out here even though
-// this test only exercises the pure generateMeetingUrl helper.
-
-vi.mock("@/lib/db", () => ({
-  prisma: { session: {} },
-}));
-
-vi.mock("@/lib/wepacker/guards", () => ({
-  requireMembership: vi.fn(),
-  requireUser: vi.fn(),
-  requireRole: vi.fn(),
-  getMentoredCohortIds: vi.fn(),
-  assertMentorOfCohort: vi.fn(),
-  assertMentorOfUsers: vi.fn(),
-}));
-
-import { generateMeetingUrl } from "@/lib/wepacker/actions/session";
+// guessable or derived from anything sequential.
 
 describe("generateMeetingUrl", () => {
   it("uses the default base URL when none is provided", () => {
