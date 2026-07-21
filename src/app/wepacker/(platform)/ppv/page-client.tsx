@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { upsertLifePlan } from "@/lib/wepacker/actions/plan";
+import { useRouter } from "next/navigation";
+import { upsertLifePlan, restoreLifePlanVersion } from "@/lib/wepacker/actions/plan";
 
 const LIFE_SECTIONS = [
   { key: "whoIAm", title: "Quem sou", description: "Narrativa pessoal e artística." },
@@ -111,14 +112,30 @@ export default function LifePlanPageClient({ userId, lifePlan, versions }: Props
         })}
       </div>
 
-      {versions.length > 0 && <VersionHistory versions={versions} />}
+      {versions.length > 0 && <VersionHistory userId={userId} versions={versions} />}
     </div>
   );
 }
 
-function VersionHistory({ versions }: { versions: LifePlanVersion[] }) {
+function VersionHistory({ userId, versions }: { userId: string; versions: LifePlanVersion[] }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [restoringId, setRestoringId] = useState<string | null>(null);
+
+  const handleRestore = async (versionId: string) => {
+    const confirmed = window.confirm(
+      "Restaurar esta versão? O conteúdo atual fica guardado no histórico."
+    );
+    if (!confirmed) return;
+    setRestoringId(versionId);
+    try {
+      await restoreLifePlanVersion(userId, versionId);
+      router.refresh();
+    } finally {
+      setRestoringId(null);
+    }
+  };
 
   return (
     <div className="mt-10 border-t border-wepac-border pt-4">
@@ -166,6 +183,16 @@ function VersionHistory({ versions }: { versions: LifePlanVersion[] }) {
                         </p>
                       </div>
                     ))}
+                    <button
+                      type="button"
+                      onClick={() => handleRestore(version.id)}
+                      disabled={restoringId === version.id}
+                      className="text-xs text-wepac-white hover:underline disabled:opacity-50"
+                    >
+                      {restoringId === version.id
+                        ? "A restaurar..."
+                        : "Restaurar esta versão"}
+                    </button>
                   </div>
                 )}
               </div>
