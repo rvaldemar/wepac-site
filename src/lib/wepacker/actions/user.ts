@@ -16,7 +16,6 @@ export async function getMyContext() {
         email: true,
         role: true,
         onboarded: true,
-        avatarUrl: true,
         bio: true,
         phone: true,
         createdAt: true,
