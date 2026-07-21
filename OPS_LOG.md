@@ -4,6 +4,17 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-21 (13) — Lote resiliência FECHADO: backups em produção + suite E2E
+
+19º deploy (último do ciclo). O lote correu com board CISO+CTO no design dos backups (2 blocking fixes do board incorporados antes de qualquer código: restore-validation no plaintext pré-encriptação em vez de drill de decrypt automatizado com chave no servidor; alerting self-testing + dead-man-switch externo na Fase 1).
+
+- **Backups da BD de prod: ATIVOS no servidor.** Repo `~/Documents/code/rvs-backups` (parametrizado por tenant desde o dia 1); no 77.42.82.10: timer diário 03:15 UTC + healthcheck 6/6h, retenção 7 diários + 4 semanais (hardlinks), pg_dump -Z6 nice/ionice, prova real verificada pelo QA no journal do servidor: dump → pg_restore --list (227 entradas) → restore em BD scratch → paridade de contagens → cleanup. Zero segredos em repo/logs (só DATABASE_URL parseado, nunca o env inteiro). Caminhos negativos testados (env inválido, dump truncado, heartbeat envelhecido → CRITICAL). Pendentes de sign-off do Rui (fora do âmbito, por design): encriptação age (gate de custódia de chave), offsite Storage Box, extensão às outras 3 BDs do servidor, conta healthchecks.io.
+- **Suite E2E Playwright:** 4 fluxos críticos (login→dashboard, gate de onboarding, mentor cria sessão→transcrição→workspace, candidatura pública), verificada 3× estável pelo QA; `npm run test:e2e` / `test:e2e:build` documentados no CLAUDE.md como gate pré-deploy para superfícies críticas. Bónus da equipa: bug live real corrigido no onboarding (agreement `update({})`) + `generateMeetingUrl` extraído para módulo próprio (exigência do "use server"). **Nota de setup local:** o guard da suite recusa correr contra a BD local por ela se chamar `wepac_production` — para usar a suite nesta máquina, criar/renomear uma BD dev com nome de dev (a suite reseeda!).
+
+Suite unit 127/127. Smoke 200. Merge teve 2 conflitos triviais (CLAUDE.md, session.ts imports) resolvidos pelo CoS.
+
+---
+
 ## 2026-07-21 (12) — Wessex seam+rate-limit, member-value wave, Cal.com PR #3
 
 Deploys 17-18. Drenagem das waves em voo (zero frentes novas por ordem do Rui):
