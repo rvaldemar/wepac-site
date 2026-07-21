@@ -24,7 +24,15 @@ npm install
 npx prisma migrate dev    # criar/atualizar DB local
 npx prisma db seed        # seed com users de teste
 npm run dev               # http://localhost:3000
+npm run test:e2e          # E2E rápido (next dev) — loop local
+npm run test:e2e:build    # E2E contra build+start — gate antes de deploy
 ```
+
+Corre `npm run test:e2e:build` antes de qualquer deploy que toque em auth,
+onboarding, sessões/debrief ou candidatura pública — os 4 fluxos cobertos
+pela suite Playwright (`e2e/`). A suite reseeda a DB dev local (`prisma db
+seed`, que já limpa e recria as tabelas da plataforma WEPACKER) antes de
+correr — nunca correr com `DATABASE_URL` apontado a staging/produção.
 
 ## Env vars
 

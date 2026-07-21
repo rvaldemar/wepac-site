@@ -71,7 +71,15 @@ export default function AgreementPage() {
                 setLoading(true);
                 try {
                   await acceptAgreement();
-                  await update();
+                  // next-auth's client update() only POSTs the session
+                  // (triggering the jwt() callback's trigger:"update"
+                  // branch, which re-reads onboarded from the DB) when
+                  // called with a defined argument — update() with no
+                  // args resolves to a plain GET session read instead,
+                  // silently leaving the JWT's onboarded flag stale and
+                  // stranding the member in a welcome/assessment redirect
+                  // loop after finishing onboarding.
+                  await update({});
                   router.push("/wepacker/assessment");
                 } catch {
                   setLoading(false);
