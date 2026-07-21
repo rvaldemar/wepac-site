@@ -4,6 +4,14 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-21 (7) — Videochamada nas Sessões
+
+13º deploy. Cada sessão nova nasce com sala de vídeo própria: `Session.meetingUrl` (migration aditiva) gerado como `MEETING_BASE_URL/wepac-<token>` — token crypto-random 64-bit (nunca o id da sessão), base configurável por env (default meet.jit.si; migra para instância própria mudando a env var). Mentor: "Entrar na chamada" + "Copiar link" + substituição manual (Zoom/Teams) no card; membro: link no card e na linha de próxima ação do dashboard. QA SHIP: select default-deny do membro intacto (transcript/privateNote continuam excluídos), links com rel seguro, 55/55 testes. Gotcha de integração registado: `prisma generate` tem de correr na árvore principal após merge de branch com migration (o generate da worktree não a cobre).
+
+Pedido ao Hub registado no canal: primitivo genérico "audio transcription step executor" (Whisper local, W01 ganha step 0 áudio→texto; Bergano herda reunião→ata). Media plane (Jitsi próprio) = infra gerida RVS, fora do Hub — aguarda decisão de VPS do Rui.
+
+---
+
 ## 2026-07-21 (6) — Motor de debrief calibrado por juízo de fidelidade (pronto para a sessão 2)
 
 12º deploy. Validação por regeneração cega: o motor reproduziu o documento da sessão 1 do Alex só a partir da transcrição + template, e um juiz opus comparou com o original — veredicto **APTO-COM-AJUSTES** (estrutura perfeita, zero contradições factuais em 15+ amostras, voz sustentada, honestidade exemplar; falhas: largou uma leitura crítica do mentor e cravou factos hesitantes). Os 5 ajustes do juiz foram aplicados ao `resultDocumentSystemPrompt()` (extração exaustiva das leituras do mentor, herança de hedges, exemplos sensíveis marcados [a rever pelo mentor], honestidade como regra dura, metáforas ancoradas às teses) e deployados. Suite 51/51. O caminho direto está calibrado e pronto para a transcrição da sessão 2.
