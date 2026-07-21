@@ -165,10 +165,12 @@ export function buildSessionCancelIcs(
 // monotonic across the create → reschedule → cancel calls for a given
 // session (each happens at a strictly later real moment than the last).
 // Anchored to a fixed project epoch rather than 1970 to keep the numbers
-// small (seconds-since-2026 fits comfortably in a 32-bit int for the
-// foreseeable life of this app, unlike a raw Unix timestamp).
+// small. Milliseconds (not seconds) so two calendar sends issued within
+// the same wall-clock second — e.g. a mentor reschedule immediately
+// followed by a meeting-link edit — still produce strictly increasing
+// values instead of colliding on one integer.
 const SEQUENCE_EPOCH_MS = Date.UTC(2026, 0, 1);
 
 export function nextIcsSequence(now: Date = new Date()): number {
-  return Math.max(0, Math.floor((now.getTime() - SEQUENCE_EPOCH_MS) / 1000));
+  return Math.max(0, now.getTime() - SEQUENCE_EPOCH_MS);
 }
