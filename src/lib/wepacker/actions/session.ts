@@ -401,6 +401,88 @@ export async function createSession(data: {
   return session;
 }
 
+// Guard-free counterpart to createSession's write path, for the Cal.com
+// webhook receiver (src/app/api/wepacker/calcom-webhook/route.ts). There is
+// no HTTP session on a server-to-server webhook delivery, so
+// assertMentorOfCohort/assertMentorOfUsers (both requireUser()/NextAuth
+// underneath) cannot run here — the caller is expected to have already
+// verified the HMAC signature (authentication: this really came from
+// Cal.com) AND independently re-checked the mentor↔attendee relationship
+// (authorization: the signature only proves the payload's origin, not that
+// the self-asserted attendee actually has any relationship with the
+// organizer — Cal.com's booking page is public). Do not export this for
+// any caller that hasn't done both.
+//
+// calcomBookingUid is passed straight to `create` (not pre-checked with a
+// findFirst) so the @unique constraint is the single idempotency anchor:
+// Cal.com is at-least-once delivery, so two concurrent deliveries for the
+// same booking must race into the same P2002 here rather than both pass a
+// separate existence check. The caller (route.ts) catches P2002 and
+// responds 200 { duplicate: true }.
+export async function createSessionFromResolvedActors(data: {
+  cohortId?: string | null;
+  mentorId: string;
+  sessionType: SessionType;
+  kind?: SessionKind;
+  scheduledAt: Date;
+  durationMinutes?: number;
+  attendeeUserIds: string[];
+  calcomBookingUid: string;
+}) {
+  const session = await prisma.session.create({
+    data: {
+      cohortId: data.cohortId ?? undefined,
+      mentorId: data.mentorId,
+      sessionType: data.sessionType,
+      kind: data.kind ?? "checkpoint",
+      scheduledAt: data.scheduledAt,
+      durationMinutes: data.durationMinutes ?? 60,
+      meetingUrl: generateMeetingUrl(),
+      calcomBookingUid: data.calcomBookingUid,
+      attendees: {
+        create: data.attendeeUserIds.map((userId) => ({ userId })),
+      },
+    },
+    include: mentorSessionInclude,
+  });
+
+  // Fire-and-forget — see sendSessionCalendarEmails; never blocks or fails
+  // session creation. Only reached once `create` above has actually
+  // succeeded, so a P2002 (duplicate booking) never double-sends.
+  void sendSessionCalendarEmails(session.id, "REQUEST");
+
+  return session;
+}
+
+// Guard-free counterpart to updateSession's cancel path, for the same
+// Cal.com webhook receiver — mirrors updateSession's justCancelled branch
+// (status flip + CANCEL invite) without the assertMentorOfSession call,
+// which throws on a cohort-less session because it falls through to
+// requireUser()/NextAuth, and there is no HTTP session here. Idempotent:
+// Cal.com's BOOKING_CANCELLED can also be delivered more than once — a
+// session already cancelled is left alone and no second CANCEL email
+// fires.
+export async function cancelSessionFromWebhook(
+  sessionId: string
+): Promise<{ id: string; alreadyCancelled: boolean } | null> {
+  const before = await prisma.session.findUnique({
+    where: { id: sessionId },
+    select: { status: true },
+  });
+  if (!before) return null;
+  if (before.status === "cancelled") {
+    return { id: sessionId, alreadyCancelled: true };
+  }
+
+  await prisma.session.update({
+    where: { id: sessionId },
+    data: { status: "cancelled" },
+  });
+  void sendSessionCalendarEmails(sessionId, "CANCEL");
+
+  return { id: sessionId, alreadyCancelled: false };
+}
+
 export async function updateSession(
   sessionId: string,
   data: {

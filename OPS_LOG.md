@@ -4,6 +4,24 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-21 (12) — Cal.com self-service booking: webhook receiver (PR-ready, não deployado)
+
+Fase 2 do calendário (gatilho: self-service booking) — branch PR-ready, ainda não mergeado/deployado. Infra (`~/Documents/code/rvs-cal`) é um repo à parte, preparado mas não aplicado (decisão do Rui em falta antes do primeiro `install.sh`).
+
+Nesta entrega (wepac-site): `POST /api/wepacker/calcom-webhook` — env-gated por `CALCOM_WEBHOOK_SECRET` (ausência = 404, não 500, antes de tocar no body); verificação HMAC-SHA256 timing-safe do header `X-Cal-Signature-256` (mesmo padrão de `bilheteira/session.ts`), com o corpo lido sempre como raw text antes de qualquer parse. `BOOKING_CREATED` resolve mentor+attendee por email exato (sem fallback — mismatch cal↔users fica só em log, hash do email nunca o endereço em claro) e cria `Session` com **o nosso** `meetingUrl` (Jitsi, nunca o link do Cal.com) via uma nova função guard-free `createSessionFromResolvedActors` (o webhook não tem sessão HTTP, não pode passar pelos guards NextAuth). `BOOKING_CANCELLED` idem via `cancelSessionFromWebhook`, ambas extraídas de `createSession`/`updateSession`.
+
+3 correções de fundo aplicadas sobre a spec original (board review): (1) reautorização explícita da relação mentor↔attendee no próprio write-path — a assinatura HMAC prova que o payload veio do Cal.com, não que o attendee auto-declarado na página pública de booking tem alguma relação real com o mentor; reusa `isMentoredUser` (agora exportado de `guards.ts`, já era guard-free) e admin mantém o mesmo free-pass de `assertMentorOfUsers`; (2) idempotência ancorada na constraint `@unique` de `Session.calcomBookingUid` via catch de `P2002` no `create`, não num pré-check `findFirst` que duas entregas concorrentes (Cal.com é at-least-once) poderiam ambas passar antes de colidir; (3) cancelamento reimplementado sem `assertMentorOfSession` (lança em sessão sem cohort por cair no `requireUser()`/NextAuth, que não existe num webhook).
+
+Cortado por sequenciação (não gold-plating para fase 1 de um único mentor): override `metadata.wepackerKind` (Cal.com não emite sem event-type metadata configurada — default fixo `checkpoint`) e resolução multi-attendee/grupo (bookings reais são 1:1). `BOOKING_RESCHEDULED` fica fora de escopo — reagendar via Cal.com deixa a Session com `scheduledAt` e link antigos; documentar no runbook de go-live até ser tratado.
+
+Bloco "Marcar sessão" em `/wepacker/sessions` condicional a `CALCOM_BOOKING_URL` (link em nova aba — embed iframe fica fora de escopo, complexidade CSP adicional). Migration aditiva `Session.calcomBookingUid String? @unique`.
+
+Gates de go-live documentados (não aplicados ainda, dependem de decisão do Rui + Google OAuth client): RoPA/consentimento do mentor antes de qualquer ligação Google Calendar; mínimo de scopes Google (`calendar.events` cobre 2-way sync de busy-time — cortar `calendar.readonly`, que expõe todos os compromissos incl. terceiros); retenção/erasure da BD do Cal.com propagando eliminação de membro; desativar o email/location de confirmação do próprio Cal.com no event-type (senão o attendee recebe dois convites com dois links diferentes); confirmar event-type em auto-confirm (não "requires confirmation", que dispara `BOOKING_REQUESTED` em vez de `BOOKING_CREATED`); validar 1x mentor.email no Cal.com == `User.email` antes do go-live.
+
+Suite local pendente (ver secção de execução) — testes novos em `calcom-webhook.test.ts`.
+
+---
+
 ## 2026-07-21 (11) — Wave dos parqueados: Basecamp, restore do Life Plan, nits do ics
 
 16º deploy (mandato do Rui: lançar tudo o que estava parado, em paralelo):

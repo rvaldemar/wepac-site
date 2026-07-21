@@ -453,6 +453,14 @@ model Session {
   // concerns like privateNote, so it's fine on every member-facing read
   // path (ownAttendeeSessionSelect, dashboard's next session).
   meetingUrl       String?
+  // Cal.com booking UID (payload.uid on every webhook delivery for a
+  // booking) — nullable because manually-created sessions never go
+  // through Cal.com. This is the idempotency anchor for the webhook
+  // receiver (src/app/api/wepacker/calcom-webhook/route.ts): Cal.com is
+  // at-least-once delivery, so the @unique constraint (not a
+  // check-then-create race) is what actually prevents a duplicate
+  // Session on a retried BOOKING_CREATED.
+  calcomBookingUid String?       @unique
   // Deprecated for UI writes: a single mentor->everyone blob, wrong for
   // group sessions. Superseded by the per-attendee note fields below
   // (privateNote / sharedNote / sharedNotePublished / outcome). Kept for

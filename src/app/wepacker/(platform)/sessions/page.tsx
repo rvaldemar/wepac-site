@@ -42,5 +42,14 @@ export default async function SessionsPage() {
     };
   });
 
-  return <SessionsPageClient sessions={serializedSessions} />;
+  // Read at the server component level and passed down as a plain string
+  // prop — same env→prop pattern used elsewhere in the app. The value
+  // isn't secret, but there's no reason for the env var itself (vs. the
+  // resolved URL) to be visible client-side, so this deliberately isn't a
+  // NEXT_PUBLIC_* var.
+  const calcomBookingUrl = process.env.CALCOM_BOOKING_URL || null;
+
+  return (
+    <SessionsPageClient sessions={serializedSessions} calcomBookingUrl={calcomBookingUrl} />
+  );
 }

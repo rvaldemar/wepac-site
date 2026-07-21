@@ -133,7 +133,12 @@ export async function assertMentorOfCohort(
 // themselves, an admin, or a mentor of at least one of that user's
 // cohort memberships (any status — mirrors assertMembershipAccess,
 // which never filtered the target membership's own status).
-async function isMentoredUser(actorId: string, userId: string): Promise<boolean> {
+// Exported (not just used internally below) so callers with no HTTP
+// session to check against requireUser() — e.g. the Cal.com webhook
+// receiver, which authenticates via HMAC signature instead of NextAuth —
+// can still reimpose the same mentor↔attendee relationship check. This
+// function itself never touches auth(); it is already guard-free.
+export async function isMentoredUser(actorId: string, userId: string): Promise<boolean> {
   const mentoredCohortIds = await getMentoredCohortIds(actorId);
   if (mentoredCohortIds.length === 0) return false;
   const membership = await prisma.cohortMembership.findFirst({

@@ -36,6 +36,7 @@ interface SessionItem {
 
 interface Props {
   sessions: SessionItem[];
+  calcomBookingUrl?: string | null;
 }
 
 function SessionCard({ session, highlighted }: { session: SessionItem; highlighted?: boolean }) {
@@ -138,7 +139,7 @@ function SessionCard({ session, highlighted }: { session: SessionItem; highlight
   );
 }
 
-export default function SessionsPageClient({ sessions }: Props) {
+export default function SessionsPageClient({ sessions, calcomBookingUrl }: Props) {
   const [view, setView] = useState<"list" | "calendar">("list");
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -180,6 +181,26 @@ export default function SessionsPageClient({ sessions }: Props) {
           ))}
         </div>
       </div>
+
+      {calcomBookingUrl && (
+        <div className="mt-8 border border-wepac-border bg-wepac-card p-5">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-wepac-text-tertiary">
+            Marcar sessão
+          </h2>
+          <p className="mt-2 max-w-md text-sm text-wepac-text-secondary">
+            Marca uma sessão diretamente na agenda do teu mentor — escolhe o
+            dia e a hora que preferires.
+          </p>
+          <a
+            href={calcomBookingUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-block bg-wepac-white px-4 py-2 text-sm font-medium text-wepac-black hover:opacity-90"
+          >
+            Marcar sessão →
+          </a>
+        </div>
+      )}
 
       {view === "calendar" ? (
         <div className="mt-8">
