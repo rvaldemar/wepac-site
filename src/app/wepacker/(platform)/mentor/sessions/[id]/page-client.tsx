@@ -32,6 +32,7 @@ interface SessionDetail {
   scheduledAt: string;
   status: SessionStatus;
   discussionPoints: string | null;
+  meetingUrl: string | null;
   transcript: string | null;
   transcriptUploadedAt: string | null;
   attendees: AttendeeRow[];
@@ -66,6 +67,20 @@ export function SessionDebriefClient({ session, debrief: initialDebrief }: Props
     Record<string, { type: "success" | "error"; text: string } | undefined>
   >({});
   const [showResultDoc, setShowResultDoc] = useState(false);
+
+  // ===== Meeting link: copy-to-clipboard feedback (PT-PT), same pattern
+  // as the sessions list card — see mentor/sessions/page-client.tsx.
+  const [copiedMeetingLink, setCopiedMeetingLink] = useState(false);
+
+  async function handleCopyMeetingUrl(url: string) {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedMeetingLink(true);
+      setTimeout(() => setCopiedMeetingLink(false), 2000);
+    } catch (e) {
+      console.error("Failed to copy meeting link:", e);
+    }
+  }
 
   function suggestionFor(userId: string): PerAttendeeDebrief | undefined {
     return debrief?.perAttendee.find((p) => p.userId === userId);
@@ -220,6 +235,24 @@ export function SessionDebriefClient({ session, debrief: initialDebrief }: Props
             {SESSION_KIND_LABELS[session.kind]?.label ?? session.kind} ·{" "}
             {session.attendees.map((a) => a.user.name).join(", ")}
           </p>
+          {session.meetingUrl && (
+            <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
+              <a
+                href={session.meetingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-wepac-white hover:underline"
+              >
+                Entrar na chamada →
+              </a>
+              <button
+                onClick={() => handleCopyMeetingUrl(session.meetingUrl!)}
+                className="text-wepac-text-secondary hover:underline"
+              >
+                {copiedMeetingLink ? "Link copiado!" : "Copiar link"}
+              </button>
+            </div>
+          )}
         </div>
         <Link
           href="/wepacker/mentor/sessions"
