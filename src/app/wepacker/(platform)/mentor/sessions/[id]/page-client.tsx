@@ -15,6 +15,15 @@ import type {
   PerAttendeeDebrief,
 } from "@/lib/wepacker/debrief/types";
 
+// Local, display-only mirror of the labels used on the tasks pages (see
+// mentor/tasks/page-client.tsx) — not worth exporting from types.ts for a
+// single read-only panel.
+const TASK_STATUS_LABELS: Record<string, string> = {
+  todo: "To-do",
+  in_progress: "Em curso",
+  done: "Feito",
+};
+
 interface AttendeeRow {
   id: string;
   attended: boolean;
@@ -39,20 +48,62 @@ interface SessionDetail {
   mentor: { id: string; name: string };
 }
 
+// Serialized mirror of SessionPrepAreaSummary/HistoryEntry/PendingTask/
+// Participant from @/lib/wepacker/actions/session-prep — Dates cross the
+// server/client boundary as ISO strings (see `serialize` in page.tsx).
+interface PrepAreaSummary {
+  area: AreaKey;
+  label: string;
+  composite: number;
+}
+
+interface PrepHistoryEntry {
+  sessionId: string;
+  scheduledAt: string;
+  kind: SessionKind;
+  sharedNote: string | null;
+  outcome: string | null;
+}
+
+interface PrepPendingTask {
+  id: string;
+  title: string;
+  deadline: string;
+  status: "todo" | "in_progress" | "done";
+}
+
+interface PrepParticipant {
+  userId: string;
+  name: string;
+  hasEvaluation: boolean;
+  strengths: PrepAreaSummary[];
+  growthAreas: PrepAreaSummary[];
+  lastOutcome: string | null;
+  recentHistory: PrepHistoryEntry[];
+  pendingTasks: PrepPendingTask[];
+}
+
 interface Props {
   session: SessionDetail;
   debrief: SessionDebriefView | null;
+  preparation: PrepParticipant[];
 }
 
 function attendeeKey(userId: string): string {
   return userId;
 }
 
-export function SessionDebriefClient({ session, debrief: initialDebrief }: Props) {
+export function SessionDebriefClient({ session, debrief: initialDebrief, preparation }: Props) {
   const router = useRouter();
   const [debrief, setDebrief] = useState<SessionDebriefView | null>(initialDebrief);
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
+
+  // ===== Preparation panel: collapsed by default, one entry per
+  // participant — see the "empty state" render below.
+  const [expandedPrepUserId, setExpandedPrepUserId] = useState<string | null>(
+    preparation[0]?.userId ?? null
+  );
 
   // ===== Per-attendee suggestion editing =====
   const [editedOutcome, setEditedOutcome] = useState<Record<string, string>>({});
@@ -261,6 +312,145 @@ export function SessionDebriefClient({ session, debrief: initialDebrief }: Props
           Voltar às sessões
         </Link>
       </div>
+
+      {/* Preparation panel: one collapsible card per participant, built
+          entirely from data that already exists (past sessions,
+          evaluations, tasks). Only relevant before the session has taken
+          place / been debriefed — hidden once there's a transcript, same
+          as the empty state below. */}
+      {!session.transcript && preparation.length > 0 && (
+        <div className="mt-8 space-y-3">
+          <h2 className="text-sm font-bold text-wepac-white">Preparação</h2>
+          {preparation.map((p) => {
+            const isExpanded = expandedPrepUserId === p.userId;
+            return (
+              <div key={p.userId} className="border border-wepac-border bg-wepac-card">
+                <button
+                  onClick={() => setExpandedPrepUserId(isExpanded ? null : p.userId)}
+                  className="flex w-full items-center justify-between p-4 text-left"
+                >
+                  <span className="text-sm font-medium text-wepac-white">{p.name}</span>
+                  <span className="text-wepac-text-tertiary">{isExpanded ? "−" : "+"}</span>
+                </button>
+
+                {isExpanded && (
+                  <div className="space-y-4 border-t border-wepac-border p-4">
+                    {/* O que ficou combinado na última sessão */}
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
+                        Ficou combinado (última sessão)
+                      </p>
+                      <p className="mt-1 text-xs text-wepac-text-secondary">
+                        {p.lastOutcome || "Sem registo de sessões anteriores."}
+                      </p>
+                    </div>
+
+                    {/* Radar resumido */}
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
+                        Radar resumido
+                      </p>
+                      {!p.hasEvaluation ? (
+                        <p className="mt-1 text-xs text-wepac-text-tertiary">
+                          Ainda sem avaliação.
+                        </p>
+                      ) : (
+                        <div className="mt-1 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          <div>
+                            <p className="text-[10px] text-wepac-text-tertiary">Pontos fortes</p>
+                            <div className="mt-1 flex flex-wrap gap-1.5">
+                              {p.strengths.map((s) => (
+                                <span
+                                  key={s.area}
+                                  className="bg-wepac-success-bg px-2 py-0.5 text-[10px] text-wepac-success"
+                                >
+                                  {s.label} · {s.composite}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-wepac-text-tertiary">A desenvolver</p>
+                            <div className="mt-1 flex flex-wrap gap-1.5">
+                              {p.growthAreas.map((g) => (
+                                <span
+                                  key={g.area}
+                                  className="bg-wepac-input px-2 py-0.5 text-[10px] text-wepac-text-secondary"
+                                >
+                                  {g.label} · {g.composite}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Tarefas pendentes com origem sessão */}
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
+                        Tarefas pendentes (de sessões)
+                      </p>
+                      {p.pendingTasks.length === 0 ? (
+                        <p className="mt-1 text-xs text-wepac-text-tertiary">
+                          Sem tarefas pendentes.
+                        </p>
+                      ) : (
+                        <ul className="mt-1 space-y-1">
+                          {p.pendingTasks.map((t) => (
+                            <li key={t.id} className="flex items-center justify-between text-xs">
+                              <span className="text-wepac-text-secondary">{t.title}</span>
+                              <span className="text-[10px] text-wepac-text-tertiary">
+                                {TASK_STATUS_LABELS[t.status] ?? t.status} · {t.deadline}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+
+                    {/* Últimas notas partilhadas / outcomes */}
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
+                        Sessões anteriores
+                      </p>
+                      {p.recentHistory.length === 0 ? (
+                        <p className="mt-1 text-xs text-wepac-text-tertiary">
+                          Sem sessões anteriores.
+                        </p>
+                      ) : (
+                        <ul className="mt-1 space-y-2">
+                          {p.recentHistory.map((h) => (
+                            <li key={h.sessionId} className="border-l border-wepac-border pl-2">
+                              <p className="text-[10px] text-wepac-text-tertiary">
+                                {new Date(h.scheduledAt).toLocaleDateString("pt-PT")} ·{" "}
+                                {SESSION_KIND_LABELS[h.kind]?.label ?? h.kind}
+                              </p>
+                              {h.outcome && (
+                                <p className="text-xs text-wepac-text-secondary">
+                                  Combinado: {h.outcome}
+                                </p>
+                              )}
+                              {h.sharedNote && (
+                                <p className="text-xs text-wepac-text-secondary">
+                                  Nota: {h.sharedNote}
+                                </p>
+                              )}
+                              {!h.outcome && !h.sharedNote && (
+                                <p className="text-xs text-wepac-text-tertiary">Sem notas.</p>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Empty state */}
       {!session.transcript && (
