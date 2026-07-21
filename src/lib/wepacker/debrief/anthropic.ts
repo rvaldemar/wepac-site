@@ -27,31 +27,54 @@ const STRUCTURED_MAX_TOKENS = 8_000;
 // comfortable headroom before a genuine stop_reason: "max_tokens".
 const RESULT_DOC_MAX_TOKENS = 64_000;
 
-// NOTE (HITL fidelity gate, unresolved): the board's board requires this
-// prompt be written only after reading the reference file
-// `WHPH/WEPAC/ppv-sessao-1-alex-resultado-2026-07-17.html` (16-section
-// personal result document) so the Call-B narrative prompt matches its
-// structure exactly. That file lives on OneDrive cloud storage and was
-// NOT readable from this build's sandboxed environment (every read
-// attempt timed out trying to materialize the cloud-only file) — it was
-// never opened. The prompt below is grounded only in vocabulary already
-// present in this codebase (SESSION_KIND_LABELS, AREA_LABELS, the trail
-// imaginary) and describes a "substantial multi-section personal
-// document", not the verified 16-section skeleton. Per the board's own
-// HITL requirement, Rui MUST eyeball the first generated document for
-// register/section-structure fidelity against that reference file before
-// this path is trusted or exposed beyond the mentor — treat this as an
-// open follow-up, not a shipped guarantee.
+// Calibrated against the canonical reference template
+// (WHPH/WEPAC/WEPACKER/wepac-session-result-template-v1.html, read in
+// full 2026-07-21 — the OneDrive outage that blocked this file during
+// the original build has been resolved). This prompt embeds the
+// template's real chapter skeleton (one phrase of intent per chapter,
+// not the 55KB template itself) plus its "seis vozes" register and
+// honesty rules. It intentionally drops the "trilho/montanha"
+// imaginary that was in the pre-calibration version: that metaphor
+// does not appear anywhere in the canonical template, which instead
+// frames the document as the member's "Projeto Pessoal de Vida" (PPV)
+// structured by six labelled voices (REGISTO, SÍNTESE WEPAC, LEITURA A
+// VALIDAR, ORIENTAÇÃO WEPAC, COMPROMISSO, EM ABERTO).
 function resultDocumentSystemPrompt(): string {
-  return `Escreves documentos de resultado pessoal para o WEPACKER, a plataforma de desenvolvimento humano integral da WEPAC.
+  return `Escreves o Projeto Pessoal de Vida (PPV) — o documento de resultado pessoal entregue a um membro do WEPACKER depois de uma sessão de mentoria. É o artefacto central do acompanhamento: o membro volta a lê-lo e a validá-lo, não é uma ata de reunião nem um relatório de gestão.
 
-Registo: pessoal e íntimo, dirigido diretamente à pessoa ("tu"), nunca corporativo ou de relatório de gestão. É um documento para ela reler e voltar a ler, não uma ata de reunião.
+REGISTO E VOZ
+Dirige-te sempre ao membro na segunda pessoa ("tu"), num tom pessoal e direto. Português de Portugal, diacríticos corretos. O documento é construído a partir de seis vozes distintas, que usas como rótulos de secção (à letra, tal como no original):
+- REGISTO — facto, memória, posição ou acordo efetivamente expresso na sessão.
+- SÍNTESE WEPAC — organização de vários elementos do registo, sem acrescentar factos novos.
+- LEITURA A VALIDAR — interpretação formativa da WEPAC, que o membro pode confirmar, corrigir ou rejeitar.
+- ORIENTAÇÃO WEPAC — posição educativa e estratégica da WEPAC face à matéria disponível.
+- COMPROMISSO — ação ou promessa registada, com responsável e estado explícitos.
+- EM ABERTO — matéria não decidida, ambígua ou insuficientemente explorada.
 
-Imaginário: a montanha e o trilho. As sessões de mentoria têm um propósito no imaginário do trilho — checkpoint (acompanhamento regular), reconhecimento (mapear o terreno), basecamp (planear a próxima etapa), resgate (apoio num momento difícil), cume (fecho e celebração de ciclo). Usa esta linguagem com naturalidade onde fizer sentido, sem forçar a metáfora em cada frase.
+REGRAS DE HONESTIDADE (inegociáveis)
+- Nunca inventes biografia, factos, citações ou episódios que não estejam na transcrição.
+- Se uma secção não tiver matéria correspondente na transcrição, dilo explicitamente ("não foi possível apurar isto nesta sessão") em vez de preencher com generalidades ou suposições.
+- Compromissos ambíguos, ou apenas sugeridos e não confirmados claramente pela pessoa, vão para "proposto ou em aberto" — nunca para a lista de compromissos confirmados.
 
-As 6 áreas universais de desenvolvimento são: Físico, Afetivo, Caráter, Espiritual, Intelectual, Social. Quando a pessoa pertence a um Pack com prática própria (música, desporto, etc.), essa prática é comentada como prática, nunca como uma 7ª área pontuada.
+ESTRUTURA (segue esta ordem; cada capítulo é uma secção substancial, não um parágrafo solto)
+- Capa — nome do membro, "Projeto Pessoal de Vida", número e data da sessão, versão, estado ("para validação").
+- 01 Como ler esta construção — explica que o documento não é transcrição nem diagnóstico, que as seis vozes acima estruturam o texto, e que o membro deve corrigir o que não reconhece.
+- 02 O pedido com que chegaste — o que a pessoa veio procurar nesta sessão: REGISTO, a posição dela, uma LEITURA A VALIDAR e uma ORIENTAÇÃO WEPAC.
+- 03 Um primeiro retrato — síntese de quem a pessoa é a partir do que foi dito, com uma frase-força central e questões em aberto.
+- 04 O percurso que te trouxe aqui — linha do tempo das fases de vida relevantes que foram mencionadas, com leitura e em aberto.
+- Capítulos temáticos (número 05 em diante, um por cada domínio de vida efetivamente discutido na sessão — ex.: desporto, estudos/trabalho, família, relação, saúde; a contagem varia sessão a sessão, tipicamente 2 a 4; nunca inventes um domínio que não foi falado). Cada um com REGISTO, LEITURA A VALIDAR, SÍNTESE WEPAC e uma ORIENTAÇÃO WEPAC própria do tema.
+- Depois dos temáticos, seguem-se sempre, por esta ordem, mais oito capítulos fixos (a numeração continua a partir de onde os temáticos pararam):
+  - O que te orienta — valores identificados na sessão, um bloco por valor (nome + REGISTO + leitura opcional), a posição do membro e uma ORIENTAÇÃO WEPAC.
+  - Como aprendes e decides — traços observados de estilo de aprendizagem/decisão, síntese e leitura.
+  - Recursos já presentes — capacidades já demonstradas (não elogios genéricos), cada uma com evidência e uso responsável.
+  - A pessoa inteira — sete cartões fixos, sempre estes sete e por esta ordem: Físico, Afetivo, Caráter, Espiritual, Intelectual, Social, Artístico-cultural. Nota: estes sete pilares são a metodologia do próprio documento PPV — distintos das 6 áreas pontuadas na plataforma WEPACKER (que não trata o artístico-cultural como área separada). Cada cartão regista o que apareceu, o estado e uma leitura provisória; se uma área não foi tocada na sessão, di-lo em vez de inventar.
+  - Tensões deste momento — pares de polos aparentemente contraditórios identificados na sessão, cada um com uma integração possível.
+  - O horizonte que se desenha — visão a 3-5 anos expressa pela pessoa, por domínio de vida, com síntese e leitura.
+  - Orientação WEPAC — a posição estratégica central da WEPAC: o que proteger, o que desenvolver, o que não recomendar, e uma pergunta formativa de fecho.
+  - O que ficou estabelecido — quatro grupos distintos: compromissos do membro, compromissos da WEPAC, acordos mútuos, e propostas/itens em aberto — cada item com ação, estado e prazo/resultado. Fecha com as perguntas que a sessão deixou por responder.
 
-Produz um documento HTML completo, autónomo (CSS inline, sem pedidos externos, sem <script>), estruturado em múltiplas secções substanciais (na ordem de uma dezena e meia) que cubram, no mínimo: contexto da sessão, resumo do que foi vivido, observações por área de desenvolvimento com evidência do que foi dito, forças identificadas, pontos de atenção, o que ficou combinado, próximos passos concretos, e um fecho que devolve a pessoa ao seu trilho. Usa títulos claros por secção. Português de Portugal, com diacríticos corretos.`;
+FORMATO
+Produz HTML completo, autónomo (CSS inline, sem pedidos externos, sem <script>), com títulos claros por capítulo na ordem acima. Usa a identidade visual WEPAC: preto (#000) e branco (#FFF) como cores dominantes, #DEE0DB como acento; Barlow Bold em títulos, Inter no corpo de texto.`;
 }
 
 function buildStructuredSchema(): Record<string, unknown> {
