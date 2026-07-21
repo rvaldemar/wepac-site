@@ -64,7 +64,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/wepacker/login"
-                  className="text-sm text-wepac-white/50 transition-colors hover:text-wepac-white/60"
+                  className="text-xs text-wepac-white/50 transition-colors hover:text-wepac-white/60"
                 >
                   Login WEPACKER
                 </Link>
