@@ -4,6 +4,12 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-21 (8) — Cliente Hub real + link no workspace de detalhe
+
+14º deploy. `HubDebriefEngine` deixou de ser stub: cliente real do playbook W01 do Hub (submit + polling + mapeamento para DebriefResult), atrás de `DEBRIEF_ENGINE` (default `anthropic` — impossível ativar hub sem env explícita; fail-loud se faltar config, nunca fallback silencioso). QA confirmou o contrato HTTP contra o código real do Hub. Heurísticas v1 documentadas com TODO (sinal 'watch' uniforme por área; sugestões duplicadas em grupo — W01 sem split por attendee); 3 notas de interop enviadas ao Hub no canal. Migração para o Hub no futuro = definir 4 env vars no servidor. Também: link "Entrar na chamada"+"Copiar link" no workspace de detalhe da sessão (gap da frente anterior). Suite 64/64.
+
+---
+
 ## 2026-07-21 (7) — Videochamada nas Sessões
 
 13º deploy. Cada sessão nova nasce com sala de vídeo própria: `Session.meetingUrl` (migration aditiva) gerado como `MEETING_BASE_URL/wepac-<token>` — token crypto-random 64-bit (nunca o id da sessão), base configurável por env (default meet.jit.si; migra para instância própria mudando a env var). Mentor: "Entrar na chamada" + "Copiar link" + substituição manual (Zoom/Teams) no card; membro: link no card e na linha de próxima ação do dashboard. QA SHIP: select default-deny do membro intacto (transcript/privateNote continuam excluídos), links com rel seguro, 55/55 testes. Gotcha de integração registado: `prisma generate` tem de correr na árvore principal após merge de branch com migration (o generate da worktree não a cobre).
