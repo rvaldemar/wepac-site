@@ -104,16 +104,26 @@ describe("VisitorRateLimiter", () => {
 });
 
 describe("getVisitorIp", () => {
-  it("uses the first entry of x-forwarded-for", () => {
+  it("prefers the non-spoofable x-real-ip header", () => {
+    const req = new Request("http://x", {
+      headers: {
+        "x-real-ip": "198.51.100.7",
+        "x-forwarded-for": "6.6.6.6, 10.0.0.1",
+      },
+    });
+    expect(getVisitorIp(req)).toBe("198.51.100.7");
+  });
+
+  it("falls back to the RIGHTMOST x-forwarded-for entry (trusted-proxy appended)", () => {
     const req = new Request("https://example.com", {
       headers: { "x-forwarded-for": "203.0.113.5, 10.0.0.1, 10.0.0.2" },
     });
-    expect(getVisitorIp(req)).toBe("203.0.113.5");
+    expect(getVisitorIp(req)).toBe("10.0.0.2");
   });
 
-  it("trims whitespace around the first entry", () => {
+  it("trims whitespace around the rightmost entry", () => {
     const req = new Request("https://example.com", {
-      headers: { "x-forwarded-for": "  203.0.113.5  , 10.0.0.1" },
+      headers: { "x-forwarded-for": "6.6.6.6,  203.0.113.5  " },
     });
     expect(getVisitorIp(req)).toBe("203.0.113.5");
   });

@@ -115,16 +115,22 @@ export class VisitorRateLimiter {
 // to mean anything.
 export const visitorRateLimiter = new VisitorRateLimiter();
 
-// x-forwarded-for can be a comma-separated chain (client, proxy1, proxy2,
-// ...); the first entry is the original client as set by the nearest
-// trusted proxy in front of this app. Falls back to a shared "unknown"
-// bucket when the header is absent (e.g. direct connections in local dev)
-// — acceptable for a low-traffic informational chat.
+// Our own nginx (deploy/nginx.conf) sets two headers: X-Real-IP is the
+// actual TCP peer address ($remote_addr — non-spoofable), while
+// X-Forwarded-For APPENDS the peer to whatever chain the client sent, so
+// its FIRST entry is attacker-controlled and must never key a limiter.
+// Prefer X-Real-IP; fall back to the RIGHTMOST forwarded-for entry (the
+// one our trusted proxy appended). Absent both (direct connections in
+// local dev), a shared "unknown" bucket is acceptable for a low-traffic
+// informational chat.
 export function getVisitorIp(req: Request): string {
+  const realIp = req.headers.get("x-real-ip")?.trim();
+  if (realIp) return realIp;
   const forwardedFor = req.headers.get("x-forwarded-for");
   if (forwardedFor) {
-    const first = forwardedFor.split(",")[0]?.trim();
-    if (first) return first;
+    const parts = forwardedFor.split(",");
+    const last = parts[parts.length - 1]?.trim();
+    if (last) return last;
   }
   return "unknown";
 }
