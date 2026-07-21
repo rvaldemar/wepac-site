@@ -4,6 +4,20 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-22 — Domain Graph v2 foundation: additive/default-off em produção
+
+21º deploy. A PR #4 foi retirada de draft, mergeada em `main` no commit `4e3e3d5d8f0a19a4d10767853350327897e82c4f` e lançada como `/var/www/wepac/releases/20260722003145` (BUILD_ID `UaQZKYbF4UarHWDtsImXK`). Esta é uma foundation de expansão, não o cutover completo do domínio: os novos writes continuam desligados e os modelos legacy permanecem operacionais.
+
+- **Domain Graph v2:** estrutura aditiva para `Mentorship`, `PersonConnection`, `CommunityPack`/membership, `Cycle` edges, `StagePlacement` e `CareConnection`, alinhada com a linguagem English-first (`WEPACker`, `My Journey`, `Stage`, `Life Map`, `Trail`, `Cycle`, `Pack`, `Connection`, `Mentorship`). Não houve rename, remoção, backfill nem inferência de relações a partir dos dados legacy.
+- **My Journey + Sessions:** artefactos pessoais deixaram de exigir membership legacy; Sessions passam a reconhecer Mentorship ativa quando existir, mantendo fallback legacy medido e attendees explícitos. `MENTORSHIP_WRITES_ENABLED` ficou ausente/não-`true` tanto na configuração como no processo em execução.
+- **Transcript attachment:** o Session Workspace aceita `.txt`, `.md`, `.vtt` e `.srt` UTF-8; só guarda texto normalizado, não o ficheiro original. Leitura/escrita/debrief são organizer-only, substituição é atómica e `transcriptRevision` protege gerações concorrentes. Consentimento e retenção continuam gates antes de uso amplo.
+- **Preview attendee view:** preview Session-scoped, read-only e `no-store`, construído a partir da projeção member-safe; não troca JWT/cookies nem oferece ações. Um Person-wide `View as` continua bloqueado até existirem Artifact Grants e audit/break-glass.
+- **Dados:** migrations `20260721210000_add_domain_graph_v2_foundation` e `20260721220000_add_session_transcript_revision` aplicadas; produção em 29/29, zero falhadas. As contagens legacy permaneceram `users=7`, `packs=1`, `cohorts=1`, `cohort_memberships=2`, `sessions=1`, `session_attendees=1`; as sete tabelas novas ficaram vazias e nenhuma Session recebeu `mentorshipId` por backfill.
+- **Release gate:** replay limpo das 29 migrations, build + TypeScript, suite crítica 68/68, E2E 4/4, backup fresco com restore drill e gates independentes de integração/privacidade verdes. O full unit mantém um baseline pré-existente em `hub-debrief-engine.test.ts` (220/221) e o lint global mantém o falso positivo pré-existente no fixture E2E; nenhum toca esta release.
+- **Produção:** `wepac.service` active/running, BUILD_ID local/remoto igual, cinco smokes públicos `200`, redirects apex/legacy corretos, auth session `200` e zero erros Prisma, missing-column, unhandled ou journal error desde o restart. Rollback de aplicação: repor o symlink para `/var/www/wepac/releases/20260721211257` e reiniciar; não reverter as migrations aditivas.
+
+---
+
 ## 2026-07-21 (14) — Sessões pessoais sem membership: seletor e acesso corrigidos
 
 20º deploy. Um utilizador `member` sem `CohortMembership` (caso real: Alexandre Florindo) não aparecia no seletor de participantes, apesar de `SessionAttendee` já ligar diretamente ao `User` e de `Session.cohortId` ser opcional. O mesmo utilizador também ficava bloqueado na sua página de sessões pelo gate antigo de Journey.
