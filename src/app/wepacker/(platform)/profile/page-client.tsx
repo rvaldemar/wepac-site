@@ -12,7 +12,6 @@ interface Props {
     role: string;
     bio: string | null;
     phone: string | null;
-    avatarUrl: string | null;
   };
   membership: MembershipContext | null;
 }

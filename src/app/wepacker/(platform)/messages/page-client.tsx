@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { sendMessage, startConversation, markAsRead } from "@/lib/wepacker/actions/message";
 
@@ -39,10 +39,21 @@ interface Props {
 
 export default function MessagesPageClient({ userId, conversations, contacts }: Props) {
   const router = useRouter();
-  const [activeConvo, setActiveConvo] = useState<string | undefined>(conversations[0]?.id);
+  const [activeConvo, setActiveConvo] = useState<string | undefined>(undefined);
   const [newMessage, setNewMessage] = useState("");
   const [showContacts, setShowContacts] = useState(false);
   const [sending, setSending] = useState(false);
+
+  // Mobile starts on the conversation list (matches SSR, avoids hydration
+  // mismatch). Only on desktop do we auto-open the first conversation —
+  // decided once at mount, not re-evaluated on resize.
+  useLayoutEffect(() => {
+    const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
+    if (isDesktop && conversations.length > 0) {
+      setActiveConvo(conversations[0].id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const currentConvo = conversations.find((c) => c.id === activeConvo);
 
