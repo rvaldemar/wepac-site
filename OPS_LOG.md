@@ -4,6 +4,14 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-21 (5) — PR #2 mergeado e deployado; decisões do Rui registadas
+
+11º deploy. PR #2 (Stripe money-path S1/S2/S3) mergeado por autorização direta do Rui ("merge já, live mode fica para depois") — fixes em produção, Stripe continua TEST mode; flip para live é decisão separada com o runbook do board. Suite 51/51.
+
+Decisões do Rui (perguntadas via AskUserQuestion): LLM da org WEPAC = subscription Claude do Hub JÁ (com exigência nossa de gdpr_restricted + allowed_providers=[anthropic] na config); aprovador HITL = Rui confirmado; entrega ao membro EM REVISÃO (até definição, mantém-se release-ao-mentor); comparação de fidelidade dos documentos do Alex delegada ao juiz da fábrica (em curso).
+
+---
+
 ## 2026-07-21 (4) — Follow-ups: gate de assessment, AA final, check-in hardening; PR #2 Stripe aberto
 
 Deploys 9 e 10 do ciclo (fábrica: dev-teams em worktrees + QA opus por frente):
