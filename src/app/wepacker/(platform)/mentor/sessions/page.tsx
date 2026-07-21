@@ -23,7 +23,7 @@ function serialize<T>(data: T): Serialized<T> {
 }
 
 export default async function MentorSessionsPage() {
-  await requirePageRole(["mentor", "admin"]);
+  const actor = await requirePageRole(["mentor", "admin"]);
 
   const [sessions, cohorts, members] = await Promise.all([
     getMentoredSessions(),
@@ -36,6 +36,7 @@ export default async function MentorSessionsPage() {
       sessions={serialize(sessions)}
       cohorts={serialize(cohorts)}
       members={serialize(members)}
+      currentUserId={actor.id}
     />
   );
 }

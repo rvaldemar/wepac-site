@@ -64,7 +64,8 @@ interface SessionRow {
 interface CohortMembershipRow {
   id: string;
   role: "member" | "mentor";
-  user: { id: string; name: string };
+  status: "active" | "paused" | "exited";
+  user: { id: string; name: string; email: string };
 }
 
 interface CohortRow {
@@ -79,12 +80,14 @@ interface CohortRow {
 interface MentoredMemberRow {
   id: string;
   name: string;
+  email: string;
 }
 
 interface MentorSessionsProps {
   sessions: SessionRow[];
   cohorts: CohortRow[];
   members: MentoredMemberRow[];
+  currentUserId: string;
 }
 
 function toDatetimeLocalValue(date: Date): string {
@@ -98,6 +101,7 @@ export function MentorSessionsClient({
   sessions: rawSessions,
   cohorts,
   members,
+  currentUserId,
 }: MentorSessionsProps) {
   const router = useRouter();
   const [showCreate, setShowCreate] = useState(false);
@@ -129,9 +133,18 @@ export function MentorSessionsClient({
   // the mentor mentors otherwise.
   const participantOptions = associateCohort
     ? (selectedCohort?.memberships ?? [])
-        .filter((m) => m.role === "member")
-        .map((m) => ({ userId: m.user.id, name: m.user.name }))
-    : members.map((m) => ({ userId: m.id, name: m.name }));
+        .filter(
+          (m) =>
+            m.role === "member" &&
+            m.status === "active" &&
+            m.user.id !== currentUserId
+        )
+        .map((m) => ({
+          userId: m.user.id,
+          name: m.user.name,
+          email: m.user.email,
+        }))
+    : members.map((m) => ({ userId: m.id, name: m.name, email: m.email }));
 
   function toggleAttendee(userId: string) {
     setAttendeeIds((prev) =>
@@ -1058,7 +1071,7 @@ export function MentorSessionsClient({
                         : "bg-wepac-input text-wepac-text-tertiary"
                     }`}
                   >
-                    {m.name}
+                    {m.name} · {m.email}
                   </button>
                 ))}
                 {participantOptions.length === 0 && (

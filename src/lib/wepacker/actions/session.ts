@@ -4,9 +4,7 @@ import { prisma } from "@/lib/db";
 import type { SessionKind, SessionStatus, SessionType } from "@prisma/client";
 import {
   assertMentorOfCohort,
-  assertMentorOfUsers,
   getMentoredCohortIds,
-  requireMembership,
   requireRole,
   requireUser,
 } from "@/lib/wepacker/guards";
@@ -137,7 +135,7 @@ export async function assertMentorOfSession(
 }
 
 export async function getMySessions() {
-  const { user } = await requireMembership();
+  const user = await requireUser();
   const sessions = await prisma.session.findMany({
     where: {
       attendees: { some: { userId: user.id } },
@@ -149,7 +147,7 @@ export async function getMySessions() {
 }
 
 export async function getNextSession() {
-  const { user } = await requireMembership();
+  const user = await requireUser();
   const session = await prisma.session.findFirst({
     where: {
       status: "scheduled",
@@ -196,23 +194,33 @@ export async function getMentoredSessions() {
 
 // Every person (deduplicated) the actor mentors across every cohort —
 // used to populate the participant picker for sessions that aren't
-// scoped to one specific Journey (admin sees every member, same as
-// getCohorts).
+// scoped to one specific Journey. Admin sees every other user directly,
+// including people who don't yet have a Journey membership.
 export async function getMentoredMembers() {
   const actor = await requireRole(["mentor", "admin"]);
-  const where =
-    actor.role === "admin"
-      ? { role: "member" as const }
-      : {
-          role: "member" as const,
-          cohortId: { in: await getMentoredCohortIds(actor.id) },
-        };
+  if (actor.role === "admin") {
+    return prisma.user.findMany({
+      where: { id: { not: actor.id } },
+      select: { id: true, name: true, email: true },
+      orderBy: { createdAt: "asc" },
+    });
+  }
+
+  const where = {
+    role: "member" as const,
+    status: "active" as const,
+    userId: { not: actor.id },
+    cohortId: { in: await getMentoredCohortIds(actor.id) },
+  };
   const memberships = await prisma.cohortMembership.findMany({
     where,
-    include: { user: { select: { id: true, name: true } } },
+    include: { user: { select: { id: true, name: true, email: true } } },
     orderBy: { joinedAt: "asc" },
   });
-  const byUser = new Map<string, { id: string; name: string }>();
+  const byUser = new Map<
+    string,
+    { id: string; name: string; email: string }
+  >();
   for (const m of memberships) {
     if (!byUser.has(m.userId)) byUser.set(m.userId, m.user);
   }
@@ -278,7 +286,7 @@ async function sendSessionCalendarEmails(
     const sequence = nextIcsSequence();
     const kindLabel = SESSION_KIND_LABELS[ctx.kind]?.label ?? ctx.kind;
 
-    const icsInput = {
+    const sharedIcsInput = {
       sessionId,
       kind: ctx.kind,
       scheduledAt: ctx.scheduledAt,
@@ -286,24 +294,34 @@ async function sendSessionCalendarEmails(
       meetingUrl: ctx.meetingUrl,
       // Must match the sending mailbox (SMTP_FROM) — Exchange/Outlook
       // validate that the iMIP sender equals ORGANIZER and may otherwise
-      // drop the invite. The mentor is already among the attendees.
+      // drop the invite. Each recipient, including the mentor, is added as
+      // the sole attendee in their own calendar payload below.
       organizer: {
         name: "WEPAC",
         email: (process.env.SMTP_FROM || "info@wepac.pt").replace(/^.*<|>.*$/g, ""),
       },
-      attendees: recipients,
       sequence,
     };
-    const ics =
-      method === "REQUEST"
-        ? buildSessionInviteIcs(icsInput)
-        : buildSessionCancelIcs(icsInput);
     const sendOne =
       method === "REQUEST" ? sendSessionInviteEmail : sendSessionCancelEmail;
 
     await Promise.all(
-      recipients.map((person) =>
-        sendOne({
+      recipients.map((person) => {
+        // Build one calendar payload per recipient. Reusing a single VEVENT
+        // with every participant as ATTENDEE exposes the names and email
+        // addresses of the whole group to each recipient when they inspect
+        // the invite. The organizer remains the WEPAC sending mailbox, while
+        // the only ATTENDEE is the person receiving this copy.
+        const recipientIcsInput = {
+          ...sharedIcsInput,
+          attendees: [person],
+        };
+        const ics =
+          method === "REQUEST"
+            ? buildSessionInviteIcs(recipientIcsInput)
+            : buildSessionCancelIcs(recipientIcsInput);
+
+        return sendOne({
           to: person.email,
           recipientName: person.name,
           kindLabel,
@@ -315,8 +333,8 @@ async function sendSessionCalendarEmails(
             sessionId,
             ...logSafeError(err),
           });
-        })
-      )
+        });
+      })
     );
   } catch (err) {
     console.error("Session calendar email failed", {
@@ -339,9 +357,15 @@ export async function createSession(data: {
   if (data.cohortId) {
     actor = await assertMentorOfCohort(data.cohortId);
 
-    // Attendees must belong to the same cohort.
+    // Attendees must be active member-participants in the same cohort.
+    // A mentor/admin may not add themselves as an attendee.
     const valid = await prisma.cohortMembership.findMany({
-      where: { userId: { in: data.attendeeUserIds }, cohortId: data.cohortId },
+      where: {
+        userId: { in: data.attendeeUserIds, not: actor.id },
+        cohortId: data.cohortId,
+        role: "member",
+        status: "active",
+      },
       select: { userId: true },
     });
     const validUserIds = new Set(valid.map((v) => v.userId));
@@ -349,7 +373,35 @@ export async function createSession(data: {
       throw new Error("Participantes inválidos para esta Journey.");
     }
   } else {
-    actor = await assertMentorOfUsers(data.attendeeUserIds);
+    actor = await requireRole(["mentor", "admin"]);
+
+    if (actor.role === "admin") {
+      const valid = await prisma.user.findMany({
+        where: {
+          id: { in: data.attendeeUserIds, not: actor.id },
+        },
+        select: { id: true },
+      });
+      const validUserIds = new Set(valid.map((user) => user.id));
+      if (data.attendeeUserIds.some((id) => !validUserIds.has(id))) {
+        throw new Error("Participantes inválidos para esta sessão.");
+      }
+    } else {
+      const mentoredCohortIds = await getMentoredCohortIds(actor.id);
+      const valid = await prisma.cohortMembership.findMany({
+        where: {
+          userId: { in: data.attendeeUserIds, not: actor.id },
+          cohortId: { in: mentoredCohortIds },
+          role: "member",
+          status: "active",
+        },
+        select: { userId: true },
+      });
+      const validUserIds = new Set(valid.map((membership) => membership.userId));
+      if (data.attendeeUserIds.some((id) => !validUserIds.has(id))) {
+        throw new Error("Participantes inválidos para esta sessão.");
+      }
+    }
   }
 
   const session = await prisma.session.create({

@@ -4,6 +4,20 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-21 (14) — Sessões pessoais sem membership: seletor e acesso corrigidos
+
+20º deploy. Um utilizador `member` sem `CohortMembership` (caso real: Alexandre Florindo) não aparecia no seletor de participantes, apesar de `SessionAttendee` já ligar diretamente ao `User` e de `Session.cohortId` ser opcional. O mesmo utilizador também ficava bloqueado na sua página de sessões pelo gate antigo de Journey.
+
+- **Picker:** admin vê todos os outros utilizadores, incluindo pessoas sem membership; mentor vê apenas membros ativos das cohorts que acompanha. Nome + email desambiguam contas homónimas.
+- **Autorização:** sessões associadas a cohort aceitam apenas memberships `member` ativas e nunca o próprio mentor/admin; sessões pessoais revalidam no servidor a mesma população mostrada no picker.
+- **Acesso do participante:** `getMySessions`, `getNextSession` e `/wepacker/sessions` passaram a exigir apenas o `User` autenticado, mantendo a query limitada a `SessionAttendee.userId`; participar/ver uma sessão pessoal deixou de depender de membership.
+- **Privacidade do calendário:** cada destinatário recebe agora um `.ics` próprio cujo único `ATTENDEE` é o próprio destinatário; convites e cancelamentos de grupo deixam de expor nomes/emails dos restantes participantes.
+- **Âmbito:** sem migração e sem alteração do modelo de dados. A revisão conceptual de Pack/Stage/Journey discutida separadamente não faz parte deste hotfix.
+
+Suite unit 147/147; E2E contra build 4/4 numa PostgreSQL local descartável; build standalone, TypeScript, ESLint focado e diff-check verdes. A primeira configuração E2E foi corretamente recusada por não apontar a localhost; o gate final usou uma base Docker isolada e removida após a execução. Revisão independente: SHIP.
+
+---
+
 ## 2026-07-21 (13) — Lote resiliência FECHADO: backups em produção + suite E2E
 
 19º deploy (último do ciclo). O lote correu com board CISO+CTO no design dos backups (2 blocking fixes do board incorporados antes de qualquer código: restore-validation no plaintext pré-encriptação em vez de drill de decrypt automatizado com chave no servidor; alerting self-testing + dead-man-switch externo na Fase 1).

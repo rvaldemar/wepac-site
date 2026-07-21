@@ -11,6 +11,13 @@ import { describe, it, expect, vi } from "vitest";
 
 const findMany = vi.fn();
 const findFirst = vi.fn();
+const requireUser = vi.fn(async () => ({
+  id: "user-1",
+  role: "member",
+}));
+const requireMembership = vi.fn(async () => {
+  throw new Error("Session reads must not require a Journey membership.");
+});
 
 vi.mock("@/lib/db", () => ({
   prisma: {
@@ -22,11 +29,8 @@ vi.mock("@/lib/db", () => ({
 }));
 
 vi.mock("@/lib/wepacker/guards", () => ({
-  requireMembership: vi.fn(async () => ({
-    user: { id: "user-1", role: "member" },
-    membership: { membershipId: "mem-1" },
-  })),
-  requireUser: vi.fn(async () => ({ id: "user-1", role: "member" })),
+  requireMembership: () => requireMembership(),
+  requireUser: () => requireUser(),
   requireRole: vi.fn(async () => ({ id: "user-1", role: "member" })),
   getMentoredCohortIds: vi.fn(async () => []),
 }));
@@ -82,6 +86,8 @@ describe("member session reads never leak the transcript", () => {
     expect(callArgs.select).not.toHaveProperty("transcript");
     expect(callArgs.select).not.toHaveProperty("transcriptUploadedAt");
     expect(callArgs.select).not.toHaveProperty("transcriptUploadedById");
+    expect(requireUser).toHaveBeenCalled();
+    expect(requireMembership).not.toHaveBeenCalled();
   });
 
   it("getNextSession row carries no transcript field", async () => {
@@ -93,6 +99,7 @@ describe("member session reads never leak the transcript", () => {
     expect(callArgs).toHaveProperty("select");
     expect(callArgs).not.toHaveProperty("include");
     expect(callArgs.select).not.toHaveProperty("transcript");
+    expect(requireMembership).not.toHaveBeenCalled();
   });
 
   it("getNextSession returns null untouched", async () => {
