@@ -18,6 +18,10 @@ Estado final medido em Chromium real, contra o limiar correto de cada elemento (
 
 **Smoke:** serviço active, `/`, `/arte-a-capela`, `/wepacker`, `/bilheteira` a 200, zero erros no journal. Verificação visual feita a 1384px: headline nítido de ponta a ponta, galeria com o split medido, banda da citação compacta, duo em paisagem sem barras.
 
+**Estado pós-ciclo (2026-07-22, fecho).** `MENTORSHIP_WRITES_ENABLED=true` aplicado em `/var/www/wepac/shared/.env.production` e confirmado no ambiente do processo em execução (`/proc/<MainPID>/environ`), não apenas no ficheiro — era o ship blocker da landing WEPACKER e está resolvido.
+
+**Stripe fica em modo de teste, por decisão do Rui.** Sem risco imediato: `/bilheteira` mostra "Sem eventos publicados neste momento", portanto não há nada à venda e nenhuma compra pode falhar. **GATILHO: o flip para live tem de acontecer ANTES de publicar o primeiro evento**, não depois. No momento em que um evento for publicado no admin, a Arte à Capela passa a mostrar tiers com botões de compra e um comprador com cartão real recebe erro do Stripe em modo de teste — uma página de venda que não vende. Ordem correta: flip → publicar evento.
+
 ---
 
 ## 2026-07-22 (2) — Arte à Capela LP + landing WEPACKER reescrita + funil de candidaturas
