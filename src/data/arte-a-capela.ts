@@ -54,10 +54,13 @@ export const fallbackEvent = {
 export const footerTagline =
   "Experiências culturais em espaços patrimoniais históricos de Portugal.";
 
+// Arte à Capela has no social accounts of its own — it lives as a highlight on
+// the WEPAC account, which is the handle the rest of the site links to (see the
+// contacto page). The three per-brand handles that were here previously were
+// invented and pointed at accounts that do not exist. Do not add a handle here
+// without opening it first.
 export const footerSocialLinks = [
-  { label: "Instagram", href: "https://www.instagram.com/arteacapela/" },
-  { label: "Facebook", href: "https://www.facebook.com/arteacapela/" },
-  { label: "YouTube", href: "https://www.youtube.com/@arteacapela" },
+  { label: "Instagram", href: "https://www.instagram.com/wepac.oficial/" },
 ];
 
 export const footerInfoLinks = [
