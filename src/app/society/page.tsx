@@ -62,28 +62,21 @@ const WHAT_IT_IS_NOT = [
   "E não é para toda a gente ao mesmo tempo: cada pessoa aceite ocupa um mentor a sério.",
 ];
 
-// The doors. Society doesn't sell here — each area has (or will have) its own
-// page. Link only where a real page exists; name the rest without a link.
-const DOORS = [
+// What a single membership contains. These are not separate offers with
+// their own pages — they're sidebar groupings inside the one platform, for
+// people who are already members. No entry here links anywhere.
+const WHATS_INSIDE = [
   {
     name: "Academia",
     body: "Easy Peasy (0-11), Step Up (12-21) e YUP (22+) — o caminho por idade, da descoberta à transformação.",
-    href: null,
   },
   {
     name: "Care",
     body: "Acompanhamento próximo a pessoas e famílias, nos momentos que pedem mais apoio.",
-    href: null,
   },
   {
     name: "RH",
     body: "A metodologia WEPAC aplicada dentro de organizações — equipas, liderança, cultura.",
-    href: null,
-  },
-  {
-    name: "Universidade de Verão WEPAC Society",
-    body: "Uma imersão intensiva no método, para quem quer o essencial concentrado em dias.",
-    href: "/society/universidade-verao",
   },
 ];
 
@@ -335,43 +328,39 @@ export default function SocietyPage() {
         </div>
       </section>
 
-      {/* 9. The doors */}
+      {/* 9. What's inside a single membership */}
       <section className="px-6 py-16 lg:px-12 lg:py-24">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center font-barlow text-3xl font-bold text-wepac-white md:text-4xl">
-            As portas
+            O que a Society contém
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-center text-sm leading-relaxed text-wepac-text-secondary">
-            A Society é a camada de pertença. É nas áreas que o acompanhamento acontece — cada uma
-            com a sua própria página. Não vendemos aqui; escolhes a tua porta quando estiveres
-            dentro.
+            É uma única pertença, não uma família de produtos. Depois de entrares, é isto que
+            encontras lá dentro — a organização interna da mesma casa, não portas separadas para
+            escolher:
           </p>
 
-          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2">
-            {DOORS.map((door) =>
-              door.href ? (
-                <Link
-                  key={door.name}
-                  href={door.href}
-                  className="border border-wepac-border bg-wepac-card p-6 transition-colors hover:border-wepac-white"
-                >
-                  <p className="font-barlow text-lg font-bold text-wepac-white">
-                    {door.name} →
-                  </p>
-                  <p className="mt-2 text-sm leading-relaxed text-wepac-text-secondary">
-                    {door.body}
-                  </p>
-                </Link>
-              ) : (
-                <div key={door.name} className="border border-wepac-border bg-wepac-card p-6">
-                  <p className="font-barlow text-lg font-bold text-wepac-white">{door.name}</p>
-                  <p className="mt-2 text-sm leading-relaxed text-wepac-text-secondary">
-                    {door.body}
-                  </p>
-                </div>
-              )
-            )}
+          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {WHATS_INSIDE.map((item) => (
+              <div key={item.name} className="border border-wepac-border bg-wepac-card p-6">
+                <p className="font-barlow text-lg font-bold text-wepac-white">{item.name}</p>
+                <p className="mt-2 text-sm leading-relaxed text-wepac-text-secondary">
+                  {item.body}
+                </p>
+              </div>
+            ))}
           </div>
+
+          <p className="mx-auto mt-8 max-w-2xl text-center text-sm leading-relaxed text-wepac-text-secondary">
+            Há ainda uma imersão à parte, com data própria: a{" "}
+            <Link
+              href="/society/universidade-verao"
+              className="font-bold text-wepac-white underline-offset-4 hover:underline"
+            >
+              Universidade de Verão WEPAC Society →
+            </Link>
+            , dias concentrados no essencial do método. Candidaturas até 10 de agosto de 2026.
+          </p>
         </div>
       </section>
 
