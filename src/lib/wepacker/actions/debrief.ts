@@ -1,7 +1,7 @@
 "use server";
 
 import { createHash } from "node:crypto";
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { assertSessionOrganizer } from "@/lib/wepacker/actions/session";
 import { getDebriefEngine } from "@/lib/wepacker/debrief/engine";
@@ -156,8 +156,9 @@ async function buildDebriefInput(
 
 // Gates via the exact organizer check; upserts SessionDebrief keyed on the
 // unique sessionId (force replaces the prior draft); never logs
-// transcript/payload content; throws a PT-PT user-safe Error (no raw SDK
-// error text) that the review UI renders verbatim in its Error state.
+// transcript/payload content. Expected engine failures become a persisted
+// failed view with a PT-PT user-safe message; authorization, transcript-race
+// and persistence failures still throw.
 export async function generateSessionDebrief(
   sessionId: string,
   opts?: { force?: boolean },
@@ -248,7 +249,7 @@ export async function generateSessionDebrief(
       message,
     });
     try {
-      await withMatchingTranscript(
+      const failedRow = await withMatchingTranscript(
         sessionId,
         session.transcriptRevision,
         sourceFingerprint,
@@ -263,18 +264,28 @@ export async function generateSessionDebrief(
             },
             update: {
               status: "failed",
+              engineImpl: null,
+              model: null,
+              perAttendeeSuggestions: Prisma.DbNull,
+              internalEvaluation: Prisma.DbNull,
+              resultDocumentHtml: null,
               error: message,
               requestedById: actorId,
               requestedAt: new Date(),
+              generatedAt: null,
             },
           }),
       );
+      // Expected engine failures are persisted and returned as data. Next.js
+      // deliberately redacts thrown Server Action messages in production,
+      // which would otherwise replace this safe PT-PT message with an opaque
+      // Server Components digest in the mentor UI.
+      return toView(failedRow);
     } catch (writeError) {
       if (writeError instanceof TranscriptChangedDuringGenerationError) {
         throw transcriptChangedError();
       }
       throw writeError;
     }
-    throw new Error(message);
   }
 }

@@ -1,4 +1,8 @@
-import type { DebriefInput, DebriefResult } from "@/lib/wepacker/debrief/types";
+import {
+  DebriefEngineError,
+  type DebriefInput,
+  type DebriefResult,
+} from "@/lib/wepacker/debrief/types";
 import { AnthropicDebriefEngine } from "@/lib/wepacker/debrief/anthropic";
 import { HubDebriefEngine } from "@/lib/wepacker/debrief/hub";
 
@@ -11,12 +15,16 @@ export interface DebriefEngine {
   generateDebrief(input: DebriefInput): Promise<DebriefResult>;
 }
 
-// env DEBRIEF_ENGINE ("anthropic" | "hub"), default "anthropic". "hub"
-// fails loud at construction (not here) when its own env vars are missing
-// — see HubDebriefEngine's constructor — never a silent fallback to
-// AnthropicDirect.
+// env DEBRIEF_ENGINE ("anthropic" | "hub"), default "hub". The WEPAC
+// production path is subscription-backed through Agents Hub; direct
+// Anthropic billing remains available only when selected explicitly.
+// Missing Hub configuration and unknown values fail loud, never falling
+// back to AnthropicDirect.
 export function getDebriefEngine(): DebriefEngine {
   const impl = process.env.DEBRIEF_ENGINE;
-  if (impl === "hub") return new HubDebriefEngine();
-  return new AnthropicDebriefEngine();
+  if (!impl || impl === "hub") return new HubDebriefEngine();
+  if (impl === "anthropic") return new AnthropicDebriefEngine();
+  throw new DebriefEngineError(
+    "Configuração do motor de debrief inválida. Contacta o administrador."
+  );
 }

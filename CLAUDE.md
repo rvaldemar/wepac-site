@@ -49,7 +49,7 @@ Ver `.env.example`. Variáveis obrigatórias:
 - `ANTHROPIC_API_KEY` — para o chat Wessex (opcional em dev)
 - `UPLOAD_DIR` — diretório persistente para uploads da bilheteira (capas de eventos); em prod aponta para fora da release dir para sobreviver a deploys
 - `MEETING_BASE_URL` — base para as salas de vídeo auto-geradas das sessões (`generateMeetingUrl` em `src/lib/wepacker/actions/session.ts`); default `https://meet.jit.si` se não definida. **Em produção está definida para `https://meet.rvs.solutions`** (Jitsi self-hosted, servidor 77.42.82.10 — ver `OPS_LOG.md` 2026-07-21 (9))
-- `DEBRIEF_ENGINE` — motor do debrief AI de sessões: `anthropic` (default, chama a API Anthropic diretamente) ou `hub` (routa via playbook "wepac-session-debrief"/W01 do Agents Hub); seam em `src/lib/wepacker/debrief/engine.ts`
+- `DEBRIEF_ENGINE` — motor do debrief AI de sessões: `hub` (default, routa via playbook "wepac-session-debrief"/W01 do Agents Hub com a Claude Subscription) ou `anthropic` (apenas quando selecionado explicitamente, chama a API Anthropic diretamente); seam em `src/lib/wepacker/debrief/engine.ts`
 - `HUB_API_URL`, `HUB_API_KEY`, `HUB_DEBRIEF_PLAYBOOK_ID` — só obrigatórias quando `DEBRIEF_ENGINE="hub"`; o `HubDebriefEngine` falha alto (fail-loud) no construtor se faltar alguma, nunca faz fallback silencioso para o Anthropic direto
 
 ## Deploy

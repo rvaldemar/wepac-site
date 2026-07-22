@@ -8,7 +8,7 @@ import {
   type InternalEvaluation,
   type PerAttendeeDebrief,
 } from "@/lib/wepacker/debrief/types";
-import { AREA_KEYS, AREA_LABELS, type AreaKey } from "@/lib/wepacker/types";
+import { AREA_KEYS, type AreaKey } from "@/lib/wepacker/types";
 
 // Real client for the Agents Hub playbook "wepac-session-debrief" (code
 // W01 — see /Users/ruisantos/Documents/code/agents/db/seeds/playbook_templates/w01_wepac_session_debrief.rb,
@@ -338,6 +338,7 @@ interface HubRunDetail {
 }
 
 interface HubAssessmentSection {
+  area?: string;
   title?: string;
   observations?: string;
   mentor_notes?: string;
@@ -407,10 +408,16 @@ function buildAreaObservations(
 ): Record<AreaKey, AreaObservation> {
   const result = {} as Record<AreaKey, AreaObservation>;
   for (const area of AREA_KEYS) {
-    const label = AREA_LABELS[area].toLowerCase();
-    const match = sections.find((s) =>
-      typeof s.title === "string" ? s.title.toLowerCase().includes(label) : false
-    );
+    const aliases = AREA_TITLE_ALIASES[area].map(normalizeAreaTitle);
+    const canonicalMatch = sections.find((s) => s.area === area);
+    const titleMatch = sections.find((s) => {
+      // A canonical area belongs only to that Pillar, even when its free-text
+      // title happens to mention another one.
+      if (isAreaKey(s.area) || typeof s.title !== "string") return false;
+      const title = normalizeAreaTitle(s.title);
+      return aliases.some((alias) => title.includes(alias));
+    });
+    const match = canonicalMatch ?? titleMatch;
     result[area] = match
       ? {
           area,
@@ -423,4 +430,28 @@ function buildAreaObservations(
       : { area, signal: "not_discussed", evidence: "" };
   }
   return result;
+}
+
+// W01 currently emits Portuguese section titles while the WEPAC product
+// contract is English-first. Keep this boundary tolerant until the Hub
+// output schema uses AreaKey directly; accent-folding also covers both
+// pre- and post-orthographic spellings of Character.
+const AREA_TITLE_ALIASES: Record<AreaKey, readonly string[]> = {
+  physical: ["physical", "físico"],
+  emotional: ["emotional", "emocional", "afetivo"],
+  character: ["character", "caráter", "carácter"],
+  spiritual: ["spiritual", "espiritual"],
+  intellectual: ["intellectual", "intelectual"],
+  social: ["social"],
+};
+
+function normalizeAreaTitle(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function isAreaKey(value: unknown): value is AreaKey {
+  return typeof value === "string" && AREA_KEYS.includes(value as AreaKey);
 }

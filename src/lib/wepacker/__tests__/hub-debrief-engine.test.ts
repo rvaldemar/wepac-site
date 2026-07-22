@@ -7,7 +7,12 @@ import { DebriefEngineError, type DebriefInput } from "@/lib/wepacker/debrief/ty
 // auth failure, and the fail-loud-at-construction contract for a
 // misconfigured "hub" engine (never a silent fallback to Anthropic).
 
-const ENV_KEYS = ["HUB_API_URL", "HUB_API_KEY", "HUB_DEBRIEF_PLAYBOOK_ID"] as const;
+const ENV_KEYS = [
+  "DEBRIEF_ENGINE",
+  "HUB_API_URL",
+  "HUB_API_KEY",
+  "HUB_DEBRIEF_PLAYBOOK_ID",
+] as const;
 
 function setHubEnv() {
   process.env.HUB_API_URL = "https://hub.example.com";
@@ -46,6 +51,11 @@ const readyRunBody = {
         status: "done",
         output: {
           sections: [
+            {
+              area: "emotional",
+              title: "Physical symptoms mentioned in passing",
+              observations: "regulação presente",
+            },
             { title: "Físico — postura e energia", observations: "boa forma geral" },
           ],
           overall_summary: "Resumo geral da sessão.",
@@ -81,10 +91,15 @@ describe("HubDebriefEngine", () => {
     expect(() => new HubDebriefEngine()).toThrow(/Agents Hub/);
   });
 
-  it("getDebriefEngine() with DEBRIEF_ENGINE=hub and no Hub vars throws instead of falling back to Anthropic", async () => {
-    process.env.DEBRIEF_ENGINE = "hub";
+  it("getDebriefEngine() defaults to Hub and fails loud when its vars are missing", async () => {
     const { getDebriefEngine } = await import("@/lib/wepacker/debrief/engine");
     expect(() => getDebriefEngine()).toThrow(DebriefEngineError);
+  });
+
+  it("rejects an unknown engine instead of falling back to direct Anthropic billing", async () => {
+    process.env.DEBRIEF_ENGINE = "typo";
+    const { getDebriefEngine } = await import("@/lib/wepacker/debrief/engine");
+    expect(() => getDebriefEngine()).toThrow(/inválida/);
     delete process.env.DEBRIEF_ENGINE;
   });
 
@@ -153,6 +168,10 @@ describe("HubDebriefEngine", () => {
     expect(result.internalEvaluation.areaObservations.physical.evidence).toBe(
       "boa forma geral"
     );
+    expect(result.internalEvaluation.areaObservations.emotional).toMatchObject({
+      signal: "watch",
+      evidence: "regulação presente",
+    });
     expect(result.internalEvaluation.areaObservations.social.signal).toBe(
       "not_discussed"
     );

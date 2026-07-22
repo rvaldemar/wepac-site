@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { DebriefEngineError } from "@/lib/wepacker/debrief/types";
 
 const assertSessionOrganizer = vi.fn();
 const sessionFindUnique = vi.fn();
@@ -59,6 +60,17 @@ const readyRow = {
   generatedAt: new Date("2026-07-21T10:01:00Z"),
 };
 
+const failedRow = {
+  ...readyRow,
+  status: "failed",
+  engineImpl: null,
+  model: null,
+  perAttendeeSuggestions: null,
+  internalEvaluation: null,
+  error: "O serviço de debrief está temporariamente indisponível.",
+  generatedAt: null,
+};
+
 describe("debrief transcript revision fence", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -99,6 +111,38 @@ describe("debrief transcript revision fence", () => {
       generateSessionDebrief("session-1", { force: true }),
     ).resolves.toMatchObject({ id: "debrief-1", status: "ready" });
     expect(txUpsert).toHaveBeenCalledOnce();
+  });
+
+  it("returns a persisted safe failure instead of a redacted Server Action error", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    lockedTranscript.mockResolvedValueOnce([
+      { transcript: "version one", transcriptRevision: 7 },
+    ]);
+    generateDebrief.mockRejectedValueOnce(
+      new DebriefEngineError(failedRow.error),
+    );
+    txUpsert.mockResolvedValueOnce(failedRow);
+
+    await expect(
+      generateSessionDebrief("session-1", { force: true }),
+    ).resolves.toMatchObject({
+      status: "failed",
+      error: failedRow.error,
+    });
+    expect(txUpsert).toHaveBeenCalledOnce();
+    expect(txUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        update: expect.objectContaining({
+          engineImpl: null,
+          model: null,
+          perAttendeeSuggestions: expect.anything(),
+          internalEvaluation: expect.anything(),
+          resultDocumentHtml: null,
+          generatedAt: null,
+        }),
+      }),
+    );
+    consoleError.mockRestore();
   });
 
   it("does not resurrect a stale debrief after replacement", async () => {
