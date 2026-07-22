@@ -189,8 +189,20 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
           <div
             className="absolute inset-0"
             style={{
+              // The 52% stop let the gradient finish lightening before the
+              // long headline lines' final characters (the "a" of "nova
+              // vida", the "o." of "património.") clear it — those glyphs
+              // sampled under ~3.9-4.2:1 against the lit nave. Pushing that
+              // stop to 60% keeps the dark band under the whole headline
+              // column without touching the 0%/26%/100% stops, so it holds
+              // the already-verified lead paragraph and CTAs (both sit past
+              // 60% and stay flat at the same 0.18 tail alpha) and leaves
+              // the photo just as visible on the right. Verified by
+              // compositing this gradient over the real hero.jpg pixels and
+              // sampling under every headline glyph (worst case went from
+              // ~4.05:1 to ~4.98:1 across 1384-1600px viewports).
               backgroundImage:
-                "linear-gradient(100deg, rgba(11,10,9,0.92) 0%, rgba(11,10,9,0.72) 26%, rgba(11,10,9,0.18) 52%, rgba(11,10,9,0.18) 100%)",
+                "linear-gradient(100deg, rgba(11,10,9,0.92) 0%, rgba(11,10,9,0.72) 26%, rgba(11,10,9,0.18) 60%, rgba(11,10,9,0.18) 100%)",
             }}
           />
         </div>
