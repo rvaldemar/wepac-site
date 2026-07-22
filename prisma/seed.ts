@@ -551,11 +551,56 @@ Concerto inserido na programação regular de Capela Viva na Capela do Hospital 
     });
   }
 
+  const catedraisSlug = "catedrais-interiores-2026-09-18";
+  const catedraisDescription = `Um recital a solo de violoncelo dedicado às Suites para violoncelo solo de Bach, em diálogo com os caprichos de Duport e Popper. Um programa que atravessa três séculos de escrita para o instrumento, da disciplina barroca ao virtuosismo do século XIX.
+
+Interpretado dentro de uma capela histórica, o recital explora a acústica do espaço como parte da experiência musical — a ressonância da pedra a moldar cada frase, o silêncio entre andamentos tão presente como as próprias notas.
+
+Concerto inserido na programação regular de Capela Viva na Capela do Hospital de Jesus, Lisboa.`;
+
+  const catedrais = await prisma.event.upsert({
+    where: { slug: catedraisSlug },
+    update: {},
+    create: {
+      slug: catedraisSlug,
+      title: "Catedrais Interiores",
+      subtitle: "António Cortez · violoncelo",
+      description: catedraisDescription,
+      departmentId: depts["arte-a-capela"].id,
+      brandId: capelaViva.id,
+      venue: "Capela do Hospital de Jesus",
+      address: "Travessa da Arrochela, Lisboa",
+      startsAt: new Date("2026-09-18T19:30:00+01:00"),
+      doorsAt: new Date("2026-09-18T19:00:00+01:00"),
+      durationMinutes: 60,
+      capacity: 80,
+      status: "published",
+      createdById: seedAdmin.id,
+    },
+  });
+
+  const existingCatedraisTiers = await prisma.ticketTier.count({
+    where: { eventId: catedrais.id },
+  });
+  if (existingCatedraisTiers === 0) {
+    await prisma.ticketTier.createMany({
+      data: [
+        {
+          eventId: catedrais.id,
+          name: "Bilhete",
+          description: "Entrada regular — pagamento à porta.",
+          priceCents: 1200,
+          sortOrder: 0,
+        },
+      ],
+    });
+  }
+
   console.log("Seed completed successfully!");
   console.log(`Pack: ${packArtist.slug} · Cohort: ${cohortAlpha.name}`);
   console.log(`Users: ana@ / pedro@ / maria@ / joao@ / sofia@ example.com, ricardo@wepac.pt (mentor), admin@wepac.pt (admin) — password123`);
   console.log(`Bilheteira admin: admin@wepac.pt / password123`);
-  console.log(`Evento seed: ${ananda.slug}`);
+  console.log(`Evento seed: ${ananda.slug}, ${catedrais.slug}`);
 }
 
 main()
