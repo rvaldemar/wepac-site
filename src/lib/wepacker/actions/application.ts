@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
 import type { BetaSignupStatus } from "@prisma/client";
 import {
@@ -7,6 +8,32 @@ import {
   sendBetaSignupNotificationEmail,
 } from "@/lib/email";
 import { requireAdmin } from "@/lib/wepacker/guards";
+import { VisitorRateLimiter, getVisitorIp } from "@/lib/wessex/rate-limit";
+
+// "wepacker" is the sentinel slug of the generic intake (no pack chosen).
+const GENERIC_PACK_SLUG = "wepacker";
+
+// Dedicated instance: reuses the same tested VisitorRateLimiter
+// implementation (windows/limits/cleanup) as the public Wessex chat
+// endpoint (src/lib/wessex/rate-limit.ts), but keeps its own per-IP
+// counters. This is an unrelated public surface — a burst of chat
+// messages from a visitor must not exhaust their application budget,
+// or vice versa.
+const applicationRateLimiter = new VisitorRateLimiter();
+
+// submitApplication is a Server Action, not a route handler, so there is
+// no `Request` to read off directly — reconstruct just enough of one from
+// the incoming request headers (via next/headers) for getVisitorIp, which
+// only ever reads the two proxy headers below.
+async function getApplicationVisitorIp(): Promise<string> {
+  const incoming = await headers();
+  const forwardedHeaders: Record<string, string> = {};
+  const realIp = incoming.get("x-real-ip");
+  if (realIp) forwardedHeaders["x-real-ip"] = realIp;
+  const forwardedFor = incoming.get("x-forwarded-for");
+  if (forwardedFor) forwardedHeaders["x-forwarded-for"] = forwardedFor;
+  return getVisitorIp(new Request("http://localhost/", { headers: forwardedHeaders }));
+}
 
 // Public candidatura — feeds the existing beta_signups pipeline, tagged
 // with the target pack or with the generic WEPACKER intake sentinel.
@@ -19,19 +46,63 @@ export async function submitApplication(data: {
   socialLinks?: string;
   motivation?: string;
 }) {
+  // Unauthenticated public write that also fires two emails per call —
+  // rate limit before doing any other work. See rate-limit.ts for the
+  // windows/limits and their rationale.
+  const visitorIp = await getApplicationVisitorIp();
+  const rateLimitResult = applicationRateLimiter.check(visitorIp);
+  if (!rateLimitResult.allowed) {
+    throw new Error(
+      "Já recebemos várias candidaturas tuas num curto espaço de tempo. Espera um pouco e tenta novamente."
+    );
+  }
+
   const name = data.name?.trim();
   const email = data.email?.trim().toLowerCase();
   if (!name || !email) throw new Error("Nome e email são obrigatórios.");
 
-  // "wepacker" is the sentinel slug of the generic intake (no pack chosen).
-  let packSlug = "wepacker";
-  if (data.packSlug !== "wepacker") {
+  let packSlug: string = GENERIC_PACK_SLUG;
+  if (data.packSlug !== GENERIC_PACK_SLUG) {
     const pack = await prisma.pack.findUnique({
       where: { slug: data.packSlug },
       select: { slug: true, active: true },
     });
     if (!pack || !pack.active) throw new Error("Pack inválido.");
     packSlug = pack.slug;
+  }
+
+  const existing = await prisma.betaSignup.findUnique({
+    where: { email },
+    select: { status: true, packSlug: true, notes: true },
+  });
+
+  // Bug fix: without this, a rejected/contacted candidate who applies
+  // again gets the confirmation email and has their answers overwritten,
+  // yet the row keeps its old status and never returns to the pending
+  // queue an admin actually looks at — the application is silently lost.
+  // Also preserve a specific pack: a later resubmission through the
+  // generic intake must not overwrite a more specific packSlug already on
+  // file.
+  let finalPackSlug = packSlug;
+  let notesForUpdate: string | undefined;
+  let statusForUpdate: BetaSignupStatus | undefined;
+  if (existing) {
+    if (
+      packSlug === GENERIC_PACK_SLUG &&
+      existing.packSlug !== GENERIC_PACK_SLUG
+    ) {
+      finalPackSlug = existing.packSlug;
+    }
+
+    // Not surfaced anywhere new: `notes` already renders as "Notas
+    // internas" in the admin leads inbox (page-client.tsx), so this is
+    // the simplest way to give an admin the reapplication history
+    // without touching that screen.
+    const reapplicationNote = `[Reaplicação ${new Date().toISOString()}] Estado anterior: ${existing.status}.`;
+    notesForUpdate = existing.notes
+      ? `${existing.notes}\n${reapplicationNote}`
+      : reapplicationNote;
+    statusForUpdate = "pending";
   }
 
   const signup = await prisma.betaSignup.upsert({
@@ -42,7 +113,9 @@ export async function submitApplication(data: {
       artisticArea: data.area || undefined,
       socialLinks: data.socialLinks || undefined,
       motivation: data.motivation || undefined,
-      packSlug,
+      packSlug: finalPackSlug,
+      notes: notesForUpdate,
+      status: statusForUpdate,
     },
     create: {
       name,
@@ -51,7 +124,7 @@ export async function submitApplication(data: {
       artisticArea: data.area || null,
       socialLinks: data.socialLinks || null,
       motivation: data.motivation || null,
-      packSlug,
+      packSlug: finalPackSlug,
     },
   });
 
