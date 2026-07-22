@@ -160,48 +160,77 @@ describe("happy path", () => {
   });
 });
 
-describe("returnPath allowlist", () => {
-  it("honours an allowlisted returnPath on a validation error redirect", async () => {
-    // Missing buyerEmail trips the earliest validation check, before any
-    // DB/Stripe call — exercises the allowlist without needing mocks below it.
+describe("eventSlug cannot shape the redirect before the DB lookup", () => {
+  it("falls back to the event list, not the raw slug, when a pre-lookup validation fails", async () => {
+    // Missing buyerEmail trips validation before prisma.event.findUnique is
+    // ever called — a hostile eventSlug must not reach redirect() here.
     const err = await reserveAction(
-      formData({ returnPath: "/arte-a-capela", buyerEmail: "" })
+      formData({
+        eventSlug: "https://evil.example.com/phish",
+        buyerEmail: "",
+      })
     ).catch((e) => e);
 
+    expect(eventFindUnique).not.toHaveBeenCalled();
     expect(err).toBeInstanceOf(RedirectSignal);
-    expect((err as RedirectSignal).url).toMatch(/^\/arte-a-capela\?error=/);
+    expect((err as RedirectSignal).url).toMatch(/^\/bilheteira\?error=/);
   });
 
-  it("honours an allowlisted returnPath as the Stripe cancel_url", async () => {
+  it("uses the DB event.slug, not the raw input, for later redirects and the Stripe cancel_url", async () => {
+    // The DB row's slug differs from the raw, attacker-shaped input the
+    // lookup was keyed on (e.g. a traversal/encoded variant that still
+    // resolves to a row) — the redirect must reflect the trusted value.
+    eventFindUnique.mockResolvedValue({
+      ...baseEvent,
+      slug: "concerto",
+    });
     sessionsCreate.mockResolvedValue({ id: "cs_3", url: "https://checkout.stripe.com/cs_3" });
 
     await expect(
-      reserveAction(formData({ returnPath: "/arte-a-capela" }))
+      reserveAction(formData({ eventSlug: "concerto/../../admin" }))
     ).rejects.toBeInstanceOf(RedirectSignal);
 
     expect(sessionsCreate).toHaveBeenCalledTimes(1);
     const call = sessionsCreate.mock.calls[0][0];
-    expect(call.cancel_url).toMatch(/^https:\/\/wepac\.pt\/arte-a-capela\?cancelled=1$/);
+    expect(call.cancel_url).toBe(
+      "https://wepac.pt/bilheteira/concerto?cancelled=1"
+    );
   });
 
-  it.each([
-    ["absolute URL to another origin", "https://evil.example.com/phish"],
-    ["protocol-relative URL", "//evil.example.com/phish"],
-    ["path traversal", "/arte-a-capela/../../admin"],
-    ["unknown in-app path", "/some/other/page"],
-  ])("falls back to the event page for a hostile/unknown returnPath (%s)", async (_label, hostile) => {
-    const err = await reserveAction(
-      formData({ returnPath: hostile, buyerEmail: "" })
-    ).catch((e) => e);
+  it("falls back to the event list when the event is not found", async () => {
+    eventFindUnique.mockResolvedValue(null);
+
+    const err = await reserveAction(formData()).catch((e) => e);
+
+    expect(err).toBeInstanceOf(RedirectSignal);
+    expect((err as RedirectSignal).url).toMatch(/^\/bilheteira\?error=/);
+  });
+});
+
+describe("seats validation rejects instead of silently clamping", () => {
+  it("rejects an out-of-range seat count instead of silently capping it", async () => {
+    const err = await reserveAction(formData({ seats: "50" })).catch((e) => e);
 
     expect(err).toBeInstanceOf(RedirectSignal);
     expect((err as RedirectSignal).url).toMatch(/^\/bilheteira\/concerto\?error=/);
+    expect(paymentCreate).not.toHaveBeenCalled();
   });
 
-  it("preserves today's behaviour when returnPath is absent", async () => {
-    const err = await reserveAction(formData({ buyerEmail: "" })).catch((e) => e);
+  it("rejects a non-numeric seat count instead of silently defaulting it", async () => {
+    const err = await reserveAction(formData({ seats: "abc" })).catch((e) => e);
 
     expect(err).toBeInstanceOf(RedirectSignal);
     expect((err as RedirectSignal).url).toMatch(/^\/bilheteira\/concerto\?error=/);
+    expect(paymentCreate).not.toHaveBeenCalled();
+  });
+
+  it("accepts a seat count within the 1-10 range advertised by the form", async () => {
+    sessionsCreate.mockResolvedValue({ id: "cs_4", url: "https://checkout.stripe.com/cs_4" });
+
+    await expect(
+      reserveAction(formData({ seats: "10" }))
+    ).rejects.toBeInstanceOf(RedirectSignal);
+
+    expect(paymentCreate).toHaveBeenCalledTimes(1);
   });
 });
