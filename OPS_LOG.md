@@ -4,6 +4,22 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-22 (3) — Fidelidade de design da Arte à Capela + remoção de conteúdo fictício
+
+23º a 26º deploy (quatro releases no mesmo ciclo; a última é `/var/www/wepac/releases/20260722180947`). Sem migrations em nenhuma.
+
+**Conteúdo fictício removido de produção.** A página anunciava, sob "Próximo evento", um concerto chamado "Catedrais Interiores" com "António Cortez — Violoncelo" e um programa de Bach/Duport/Popper. Tudo isso era conteúdo de mockup transcrito do Figma do designer, não um concerto real. O fallback passa a dizer "Ainda não há concerto marcado." e a apontar para a bilheteira; o programa estático foi removido de vez (não há coluna no schema para o suportar). O evento continua no seed de desenvolvimento, agora com um comentário a marcar a origem. **Por confirmar com o Rui: se "António Cortez" é uma pessoa real, o nome esteve publicado associado a um concerto inexistente.**
+
+**Board de comparação Figma vs. entregue (4 lentes, medições reais).** Veredicto: "é o mesmo design, desenhado à escala errada" — face, paleta, sistema de labels, ordem das secções e a quebra romano→itálico sobreviveram; a proporção não. Aplicados os nove gaps: banda da citação com hierarquia invertida (199px no board, 415px entregues, estatísticas a 36px a gritar sobre a citação que deviam seguir); hero a metade do brilho do board com um vinhetado inexistente no design (luminância média 18,7 contra 34,8); banda letterbox a 21:9 quando o board tem 4,18:1; duo em `aspect-square` quando o board tem paisagem 1,53:1, o que agravava o upscale do único asset de baixa resolução; split da galeria; escada tipográfica; contraste dos labels de 11px no lado escuro (3,79:1) e dos eyebrows vermelhos (3,52:1). **Dois erros da própria transcrição em `docs/design/arte-a-capela-figma-spec.md` corrigidos** (linhas 98 e 145) — eram a origem de dois dos gaps e seriam re-herdados.
+
+**Lição de processo, registada porque custou.** Três agentes seguidos mediram contraste com métodos cada vez mais sofisticados (simulação do gradiente em Python/Pillow, extração da fonte real do build para medir glifos, Playwright a amostrar píxeis compostos) e nenhum viu que o scrim da coluna direita estava a ser pintado **por cima** do headline: `-inset-x-[150px]` invadia a coluna do título e o `<h1>` não tinha `z-index`. Cada elemento medido isoladamente passava, porque o scrim está atrás de tudo o que foi amostrado — e à frente do único elemento já dado como resolvido. Pior: **o bug estava a inflacionar a própria medição** (o headline media 4,98:1 com o scrim por cima; o valor real era 3,9:1). Só se viu olhando para um screenshot. **Regra: em trabalho visual, a inspeção visual vem antes da medição, não depois.**
+
+Estado final medido em Chromium real, contra o limiar correto de cada elemento (4,5:1 texto, 3:1 não-texto): headline 5,47:1 · parágrafo 5,53:1 · CTA primário 5,62:1 · CTA secundário label 9,04:1 · borda do CTA secundário 3,90:1 (uma borda a 25% de branco tem um teto matemático de ~2,3:1 contra qualquer fundo — foi subida para 50%). Luminância média da metade direita da foto: 27,4, ainda muito acima dos 18,7 da versão sobre-escurecida.
+
+**Smoke:** serviço active, `/`, `/arte-a-capela`, `/wepacker`, `/bilheteira` a 200, zero erros no journal. Verificação visual feita a 1384px: headline nítido de ponta a ponta, galeria com o split medido, banda da citação compacta, duo em paisagem sem barras.
+
+---
+
 ## 2026-07-22 (2) — Arte à Capela LP + landing WEPACKER reescrita + funil de candidaturas
 
 22º deploy. Release `/var/www/wepac/releases/20260722160842`, a partir de `feat/arte-a-capela-base` (28 commits sobre `origin/main` 6054535, worktree isolada). **Sem migrations** — `prisma migrate deploy` reportou "No pending migrations to apply" sobre as 29 existentes, portanto o rollback é apenas repor o symlink para `releases/20260722003145` e reiniciar.
