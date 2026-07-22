@@ -4,6 +4,27 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-22 (2) — Arte à Capela LP + landing WEPACKER reescrita + funil de candidaturas
+
+22º deploy. Release `/var/www/wepac/releases/20260722160842`, a partir de `feat/arte-a-capela-base` (28 commits sobre `origin/main` 6054535, worktree isolada). **Sem migrations** — `prisma migrate deploy` reportou "No pending migrations to apply" sobre as 29 existentes, portanto o rollback é apenas repor o symlink para `releases/20260722003145` e reiniciar.
+
+- **Arte à Capela (`/arte-a-capela`):** rota top-level nova, irmã de `/wessex`, com identidade própria (Cormorant Garamond, creme #F0EDE6, vermelho #C2301F) construída a partir do Figma do designer. Assets extraídos do próprio ficheiro Figma. O navbar WEPAC passa a apontar aqui; `/projetos/arte-a-capela` mantém-se e ganha canonical para a rota nova.
+- **Bilheteira, não duplicada:** o Figma desenhava um checkout inline. Board de 5 lentes rejeitou — todas as tiers Capela são pagas e o comprador vai para o Stripe de qualquer forma, portanto o form inline não poupava navegação nenhuma e criava uma segunda superfície de dinheiro. A LP mostra **todas** as tiers (a de mecenato estava escondida) e faz deep-link para `/bilheteira/[slug]?tier=<id>`, que pré-seleciona a tier.
+- **Bilheteira endurecida:** `backPath` passa a ser construído a partir do `event.slug` da base e não do input do utilizador; `seats` é validado 1-10 em vez de sofrer clamp silencioso a 20 (um POST com 50 comprava 20); aviso de recolha de dados junto ao formulário. O `returnPath` com allowlist chegou a ser construído e foi **removido** por decisão do board quando o form inline caiu.
+- **Landing WEPACKER (`/wepacker`):** reescrita. Era o modelo de dados publicado como marketing — Assessment/Method/Disciplines/Six Pillars/My Journey como títulos de secção, e o Assessment vendido como passo 01 quando o onboarding real é welcome→agreement. Agora: WEPAC Society, imaginário backpacker, entrada gratuita e primeiro PPV gratuito em destaque, o que a plataforma **não** é, e os quatro percursos dos fundadores. Página passou a estática (deixou de fazer fetch de packs).
+- **Funil de candidaturas corrigido:** o `upsert` por email nunca repunha `status`, portanto uma recandidatura de alguém marcado `rejected`/`contacted` recebia o email de confirmação e **nunca reaparecia na fila do admin**. Passa a voltar a `pending` com registo em notas; `packSlug` específico deixa de ser esmagado pelo sentinela genérico; rate limit por IP reutilizando o limitador do Wessex com contadores próprios.
+- **Correções de conteúdo:** três handles de redes sociais inventados no rodapé da Capela (contas inexistentes) substituídos por `wepac.oficial`, verificado; seed deixa de prometer "pagamento à porta" numa tier cobrada por Stripe; `.env.example` documenta as duas chaves Stripe realmente usadas.
+
+**Gate:** build standalone e TypeScript verdes; unit 235/236 (a única falha é o baseline pré-existente em `hub-debrief-engine.test.ts`, que pertence ao lote hub-debrief em curso). QA visual empírica em browser, desktop e mobile, com os deep-links de tier verificados a sério. Gate técnico de 8 lentes deu VETO com 6 must-fix, todos corrigidos antes do deploy.
+
+**E2E: 1/4, com delta zero contra `origin/main`.** Os três testes que falham dependem de login e falham por `UntrustedHost` do NextAuth no ambiente local — provado correndo a mesma suite, na mesma base descartável e com as mesmas variáveis, contra `origin/main`, com resultado idêntico. O único fluxo E2E que este lote toca — candidatura pública — é o que passa. **Follow-up P1: o gate E2E está cego em 3 de 4 fluxos nesta máquina**; enquanto não for corrigido não serve de gate para superfícies autenticadas.
+
+**Smoke pós-deploy:** `wepac.service` active; `/`, `/arte-a-capela`, `/wepacker`, `/bilheteira`, `/projetos/arte-a-capela`, `/sitemap.xml` todos 200; navbar a apontar para `/arte-a-capela`; zero erros no journal desde o restart. `/arte-a-capela` está no estado fallback porque **não há evento Arte à Capela futuro publicado na base de produção** — para mostrar o concerto real é preciso criá-lo no admin da bilheteira.
+
+**Por fazer, com impacto:** `MENTORSHIP_WRITES_ENABLED` continua **ausente** de `/var/www/wepac/shared/.env.production`, logo as escritas de mentoria estão desligadas e a landing promete um mentor que ainda não pode ser atribuído. Stripe continua em modo de teste.
+
+---
+
 ## 2026-07-22 — Domain Graph v2 foundation: additive/default-off em produção
 
 21º deploy. A PR #4 foi retirada de draft, mergeada em `main` no commit `4e3e3d5d8f0a19a4d10767853350327897e82c4f` e lançada como `/var/www/wepac/releases/20260722003145` (BUILD_ID `UaQZKYbF4UarHWDtsImXK`). Esta é uma foundation de expansão, não o cutover completo do domínio: os novos writes continuam desligados e os modelos legacy permanecem operacionais.
