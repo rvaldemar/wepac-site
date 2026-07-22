@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { reserveAction } from "@/lib/bilheteira/reserve-action";
+import { formatPriceCents } from "@/app/bilheteira/ui";
 import {
   manifesto,
   pullQuote,
   stats,
   fallbackProgramme,
   fallbackEvent,
+  programmeEventSlug,
   footerTagline,
   footerSocialLinks,
   footerInfoLinks,
@@ -17,7 +19,9 @@ import {
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Arte à Capela | WEPAC — Concertos em espaços patrimoniais",
+  // `absolute` opts out of the root layout's "%s | WEPAC" template — this
+  // title already ends in "| WEPAC", so the template would double it up.
+  title: { absolute: "Arte à Capela | WEPAC — Concertos em espaços patrimoniais" },
   description:
     "Concertos intimistas e experiências imersivas em capelas, igrejas e espaços históricos de Portugal.",
 };
@@ -49,12 +53,21 @@ function formatDateFull(d: Date): string {
   }).format(d);
 }
 
-function formatPriceCents(cents: number): string {
-  if (cents === 0) return "Grátis";
-  const euros = cents / 100;
-  return euros % 1 === 0
-    ? `${euros.toFixed(0)}€`
-    : `${euros.toFixed(2).replace(".", ",")}€`;
+// Event.subtitle follows the seed convention "Name · instrument" (see
+// prisma/seed.ts). Split it instead of borrowing the fallback event's
+// hardcoded artist/caption — those belong only to the no-event placeholder.
+function splitArtistSubtitle(subtitle: string): {
+  artist: string;
+  caption: string;
+} {
+  const separatorIndex = subtitle.indexOf("·");
+  if (separatorIndex === -1) {
+    return { artist: subtitle.trim(), caption: "" };
+  }
+  return {
+    artist: subtitle.slice(0, separatorIndex).trim(),
+    caption: subtitle.slice(separatorIndex + 1).trim(),
+  };
 }
 
 type EventView = {
@@ -86,20 +99,27 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
     ? [...dbEvent.tiers].sort((a, b) => a.priceCents - b.priceCents)[0]
     : undefined;
 
+  // No dedicated "artist"/"instrument" columns on Event — subtitle carries
+  // both, "Name · instrument". A real event must never borrow the fallback
+  // placeholder's artist/caption/price — those belong only to the no-event
+  // state below.
+  const dbArtist = dbEvent
+    ? dbEvent.subtitle
+      ? splitArtistSubtitle(dbEvent.subtitle)
+      : { artist: dbEvent.title, caption: "" }
+    : { artist: "", caption: "" };
+
   const event: EventView = dbEvent
     ? {
         slug: dbEvent.slug,
         tierId: cheapestTier?.id ?? null,
         title: dbEvent.title,
-        // No dedicated "artist" column on Event — subtitle carries it.
-        artist: dbEvent.subtitle || fallbackEvent.artist,
-        artistCaption: fallbackEvent.artistCaption,
+        artist: dbArtist.artist,
+        artistCaption: dbArtist.caption,
         dateShort: formatDateShort(dbEvent.startsAt),
         dateFull: formatDateFull(dbEvent.startsAt),
         venue: dbEvent.venue,
-        priceLabel: cheapestTier
-          ? formatPriceCents(cheapestTier.priceCents)
-          : fallbackEvent.priceLabel,
+        priceLabel: cheapestTier ? formatPriceCents(cheapestTier.priceCents) : "—",
       }
     : {
         slug: null,
@@ -125,6 +145,7 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
               src="/images/arte-a-capela/logo.png"
               alt="Arte à Capela"
               className="h-8 sm:h-10 lg:h-[52px] w-auto"
+              loading="lazy"
             />
           </Link>
           <nav className="hidden lg:flex items-center gap-10 xl:gap-14 text-[11px] uppercase tracking-[0.18em] text-white/70">
@@ -234,6 +255,7 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
               src={`/images/arte-a-capela/${img.src}`}
               alt={img.alt}
               className="absolute inset-0 w-full h-full object-cover object-center"
+              loading="lazy"
             />
           </div>
         ))}
@@ -270,6 +292,7 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
               src="/images/arte-a-capela/azulejos.jpg"
               alt="Painel de azulejos portugueses"
               className="absolute inset-0 w-full h-full object-cover object-center"
+              loading="lazy"
             />
           </div>
         </div>
@@ -278,6 +301,7 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
             src="/images/arte-a-capela/lisboa.jpg"
             alt="Vista de Lisboa a partir de um espaço patrimonial"
             className="absolute inset-0 w-full h-full object-cover object-center"
+            loading="lazy"
           />
         </div>
       </section>
@@ -310,7 +334,7 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
                 <p className="mt-1 text-[15px]">{event.priceLabel}</p>
               </div>
               <a
-                href="#bilheteira"
+                href={canReserve ? "#bilheteira" : "/bilheteira"}
                 className="inline-flex items-center justify-center bg-capela-red text-white text-[11px] font-medium uppercase tracking-[0.18em] px-7 h-[48px] hover:bg-capela-red/85 transition whitespace-nowrap"
               >
                 Garantir bilhete
@@ -326,24 +350,32 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
               <p className={`${serif} text-[26px] sm:text-[28px]`}>{event.artist}</p>
               <p className="text-[13px] text-white/45 mt-1">{event.artistCaption}</p>
             </div>
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.18em] text-white/40 mb-3">
-                Programa
-              </p>
-              <ul className="divide-y divide-white/10">
-                {fallbackProgramme.map((row) => (
-                  <li
-                    key={row.work}
-                    className="flex items-baseline justify-between gap-4 py-2.5 text-[14px] sm:text-[15px]"
-                  >
-                    <span>{row.work}</span>
-                    <span className="text-white/35 whitespace-nowrap">
-                      {row.composer}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {/* The schema has no column for a concert programme, so this
+                list is static copy pinned to one specific Event (see
+                src/data/arte-a-capela.ts). Only show it when there is no
+                real dbEvent, or when the published event actually is that
+                one — otherwise a different published concert would get
+                sold under this Bach/Duport/Popper programme. */}
+            {(!dbEvent || dbEvent.slug === programmeEventSlug) && (
+              <div>
+                <p className="text-[11px] uppercase tracking-[0.18em] text-white/40 mb-3">
+                  Programa
+                </p>
+                <ul className="divide-y divide-white/10">
+                  {fallbackProgramme.map((row) => (
+                    <li
+                      key={row.work}
+                      className="flex items-baseline justify-between gap-4 py-2.5 text-[14px] sm:text-[15px]"
+                    >
+                      <span>{row.work}</span>
+                      <span className="text-white/35 whitespace-nowrap">
+                        {row.composer}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -354,6 +386,7 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
           src="/images/arte-a-capela/tumulo-vitral.jpg"
           alt="Túmulo sob um vitral histórico"
           className="absolute inset-0 w-full h-full object-cover object-center"
+          loading="lazy"
         />
       </section>
 
@@ -371,7 +404,12 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
 
             <dl className="space-y-4">
               {[
-                { label: "Artista", value: `${event.artist} — ${event.artistCaption}` },
+                {
+                  label: "Artista",
+                  value: event.artistCaption
+                    ? `${event.artist} — ${event.artistCaption}`
+                    : event.artist,
+                },
                 { label: "Data", value: event.dateFull },
                 { label: "Local", value: event.venue },
                 { label: "Preço por bilhete", value: event.priceLabel },
@@ -532,6 +570,7 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
                   src="/images/arte-a-capela/logo.png"
                   alt="Arte à Capela"
                   className="h-9 w-auto"
+                  loading="lazy"
                 />
               </Link>
               <p className="mt-5 text-[13px] leading-[1.6] text-white/45">
