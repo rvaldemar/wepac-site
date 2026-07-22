@@ -71,49 +71,71 @@ export async function submitApplication(data: {
     packSlug = pack.slug;
   }
 
+  // An application is unique per (person, offer) — email + packSlug —
+  // not per person: the same human can hold a standing application to
+  // several WEPAC offers (Society, Summer University, Clínica, ...) at
+  // once. Look up the specific offer this submission targets first.
   const existing = await prisma.betaSignup.findUnique({
-    where: { email },
+    where: { email_packSlug: { email, packSlug } },
     select: { status: true, packSlug: true, notes: true },
   });
 
+  // The generic sentinel has no offer of its own to look up against, so an
+  // exact (email, "wepacker") match only ever fires for a genuine repeat
+  // generic submission. A *first* generic submission from someone who
+  // already has a specific-offer application on file is still the same
+  // repeat-application case the bug fix below targets — look for that
+  // specific row too, so the generic form doesn't quietly spin up a second,
+  // separate "wepacker" application next to it. Ties (more than one
+  // specific offer already on file) resolve to the most recent.
+  const existingSpecificForGeneric =
+    packSlug === GENERIC_PACK_SLUG && !existing
+      ? await prisma.betaSignup.findFirst({
+          where: { email, packSlug: { not: GENERIC_PACK_SLUG } },
+          select: { status: true, packSlug: true, notes: true },
+          orderBy: { createdAt: "desc" },
+        })
+      : null;
+
+  const matchedExisting = existing ?? existingSpecificForGeneric;
+
   // Bug fix: without this, a rejected/contacted candidate who applies
-  // again gets the confirmation email and has their answers overwritten,
-  // yet the row keeps its old status and never returns to the pending
-  // queue an admin actually looks at — the application is silently lost.
-  // Also preserve a specific pack: a later resubmission through the
-  // generic intake must not overwrite a more specific packSlug already on
-  // file.
+  // again to an offer they already applied to gets the confirmation email
+  // and has their answers overwritten, yet the row keeps its old status
+  // and never returns to the pending queue an admin actually looks at —
+  // the application is silently lost. Also preserve a specific pack: a
+  // later resubmission through the generic intake must not overwrite a
+  // more specific packSlug already on file.
   let finalPackSlug = packSlug;
   let notesForUpdate: string | undefined;
   let statusForUpdate: BetaSignupStatus | undefined;
-  if (existing) {
+  if (matchedExisting) {
     if (
       packSlug === GENERIC_PACK_SLUG &&
-      existing.packSlug !== GENERIC_PACK_SLUG
+      matchedExisting.packSlug !== GENERIC_PACK_SLUG
     ) {
-      finalPackSlug = existing.packSlug;
+      finalPackSlug = matchedExisting.packSlug;
     }
 
     // Not surfaced anywhere new: `notes` already renders as "Notas
     // internas" in the admin leads inbox (page-client.tsx), so this is
     // the simplest way to give an admin the reapplication history
     // without touching that screen.
-    const reapplicationNote = `[Reaplicação ${new Date().toISOString()}] Estado anterior: ${existing.status}.`;
-    notesForUpdate = existing.notes
-      ? `${existing.notes}\n${reapplicationNote}`
+    const reapplicationNote = `[Reaplicação ${new Date().toISOString()}] Estado anterior: ${matchedExisting.status}.`;
+    notesForUpdate = matchedExisting.notes
+      ? `${matchedExisting.notes}\n${reapplicationNote}`
       : reapplicationNote;
     statusForUpdate = "pending";
   }
 
   const signup = await prisma.betaSignup.upsert({
-    where: { email },
+    where: { email_packSlug: { email, packSlug: finalPackSlug } },
     update: {
       name,
       phone: data.phone || undefined,
       artisticArea: data.area || undefined,
       socialLinks: data.socialLinks || undefined,
       motivation: data.motivation || undefined,
-      packSlug: finalPackSlug,
       notes: notesForUpdate,
       status: statusForUpdate,
     },
