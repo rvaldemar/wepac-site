@@ -536,7 +536,7 @@ Concerto inserido na programação regular de Capela Viva na Capela do Hospital 
         {
           eventId: ananda.id,
           name: "Bilhete",
-          description: "Entrada regular — pagamento à porta.",
+          description: "Entrada regular — pagamento online por cartão via Stripe Checkout.",
           priceCents: 1200,
           sortOrder: 0,
         },
@@ -588,7 +588,7 @@ Concerto inserido na programação regular de Capela Viva na Capela do Hospital 
         {
           eventId: catedrais.id,
           name: "Bilhete",
-          description: "Entrada regular — pagamento à porta.",
+          description: "Entrada regular — pagamento online por cartão via Stripe Checkout.",
           priceCents: 1200,
           sortOrder: 0,
         },
