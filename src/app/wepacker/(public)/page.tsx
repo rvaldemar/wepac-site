@@ -3,9 +3,9 @@ import Image from "next/image";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: { absolute: "WEPACKER — mentoria e desenvolvimento pessoal | WEPAC" },
+  title: { absolute: "WEPACKER — a tua entrada na WEPAC Society | WEPAC" },
   description:
-    "O acompanhamento pessoal da WEPAC — Companhia de Artes: um mentor atribuído, sessões marcadas e um espaço privado onde escreves o mapa da tua vida. Entra-se por candidatura.",
+    "A tua entrada na WEPAC Society: um mentor atribuído, sessões marcadas e um espaço privado onde escreves o mapa da tua vida. Entrar não custa nada — nem o teu primeiro mapa. Entra-se por candidatura.",
 };
 
 const heroHref = "/wepacker/intake";
@@ -14,7 +14,7 @@ const heroHref = "/wepacker/intake";
 const WHAT_IT_IS = [
   {
     title: "Um espaço privado só teu.",
-    body: "Aqui escreves o teu Life Map: quem és, onde estás, para onde vais, porquê, e que compromissos assumes — perguntas que a maior parte das pessoas nunca chega a fazer-se com honestidade. Escreves também o plano do trimestre, com objetivos e ações mensais, e os teus Trails: as transformações que decides levar por diante, uma de cada vez. Guardamos todas as versões — daqui a seis meses lês o que escreveste hoje e vês exatamente o que mudou.",
+    body: "Aqui escreves o teu Life Map — o mapa da tua vida: quem és, onde estás, para onde vais, porquê, e que compromissos assumes. É a primeira vez que a maior parte das pessoas se faz estas perguntas com honestidade, e o primeiro mapa é oferecido: não pagas nada por ele. Escreves também o plano do trimestre, com objetivos e ações mensais, e os teus Trails: as transformações que decides levar por diante, uma de cada vez. Guardamos todas as versões — daqui a seis meses lês o que escreveste hoje e vês exatamente o que mudou.",
   },
   {
     title: "Um mentor atribuído pela equipa.",
@@ -45,7 +45,7 @@ const HOW_YOU_ENTER = [
   },
   {
     label: "Primeira sessão",
-    body: "Aceitas os compromissos de participação, abres o teu espaço — que começa em branco, e é suposto — e marcas a primeira sessão com o teu mentor.",
+    body: "Aceitas os compromissos de participação, abres o teu espaço — que começa em branco, e é suposto —, escreves o teu primeiro mapa sem pagar nada por ele, e marcas a primeira sessão com o teu mentor.",
   },
 ];
 
@@ -82,10 +82,9 @@ const WHAT_IT_IS_NOT = [
   "E não é para toda a gente ao mesmo tempo: cada pessoa aceite ocupa um mentor a sério.",
 ];
 
-// TODO(founder): four questions have no answer yet and must not be invented —
-// see "OPEN QUESTIONS FOR THE FOUNDER" in the landing review. Add them here
-// once decided:
-//   - Quanto custa? (preço/gratuito/mensalidade)
+// TODO(founder): three questions still have no answer and must not be
+// invented — see "OPEN QUESTIONS FOR THE FOUNDER" in the landing review. Add
+// them here once decided:
 //   - Quanto tempo dura? (nº sessões/mês, durante quantos meses)
 //   - É online ou presencial? (morada se presencial)
 //   - A partir de que idade? (consentimento parental se aceitar menores) —
@@ -93,7 +92,16 @@ const WHAT_IT_IS_NOT = [
 //     (adultos, 22+), mas o produto não tem gate de idade nem fluxo de
 //     consentimento parental implementado, por isso continua bloqueada aqui
 //     até esse trabalho existir.
+//
+// Price is answered (founder correction, 2026-07-22): entering the WEPAC
+// Society costs nothing, and the first Life Map (PPV) is free. Reflected in
+// the hero, "O que é" and the FAQ below. What (if anything) is charged after
+// the first Life Map is still open — do not invent it.
 const FAQ = [
+  {
+    q: "Quanto custa entrar?",
+    a: "Nada. Candidatar-se é gratuito, e o teu primeiro Life Map — o mapa da tua vida — também é oferecido. O que vem depois ainda não está decidido; dizemos-te assim que estiver.",
+  },
   {
     q: "Quem vê o que eu escrevo?",
     a: "Só tu. O teu mentor vê as sessões que tem contigo e aquilo que tu decidires partilhar. O teu Life Map, os teus Trails e o teu plano não são partilhados com ninguém — nem com mentores, nem com a equipa. Isto não é uma promessa de marketing: é a forma como o sistema está construído.",
@@ -131,17 +139,18 @@ export default function WepackerLandingPage() {
       <section className="px-6 py-16 lg:px-12 lg:py-28">
         <div className="mx-auto max-w-4xl text-center">
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-wepac-gray">
-            WEPACKER · um programa da WEPAC — Companhia de Artes
+            WEPACKER · a tua entrada na WEPAC Society
           </p>
           <h1 className="mt-4 font-barlow text-4xl font-bold leading-tight text-wepac-white sm:text-5xl md:text-6xl">
             Um mentor. Sessões marcadas. Um espaço onde escreves para onde vais.
           </h1>
           <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-wepac-text-secondary">
-            O WEPACKER é o acompanhamento pessoal da WEPAC — para quem já carrega o próprio peso
+            O WEPACKER é a tua entrada na WEPAC Society — para quem já carrega o próprio peso
             todos os dias, entre trabalho, decisões e gente que depende de si, e sente que tem mais
             para dar do que aquilo que está hoje a conseguir converter em vida. Acompanhamos poucas
             pessoas de cada vez, durante meses: um mentor atribuído pela equipa, sessões com data no
-            calendário, e um espaço privado onde constróis o mapa da tua vida — e que é só teu.
+            calendário, e um espaço privado onde escreves o mapa da tua vida — o teu Plano de
+            Projeto de Vida — e que é só teu.
           </p>
           <div className="mt-10">
             <a
@@ -152,7 +161,7 @@ export default function WepackerLandingPage() {
             </a>
             <p className="mx-auto mt-4 max-w-md text-xs leading-relaxed text-wepac-text-tertiary">
               Isto não é um registo. É uma candidatura: a equipa lê, fala contigo, e só depois é
-              que existe conta.
+              que existe conta. Entrar na Society não custa nada — nem o teu primeiro mapa.
             </p>
           </div>
           <a
@@ -369,7 +378,9 @@ export default function WepackerLandingPage() {
             Já carregas o teu peso todos os dias — trabalho, contas, decisões, gente que depende de
             ti. Isso não é pouco: é o primeiro requisito. Falta-te uma letra: o WE. Um packer
             carrega o seu próprio peso; um WEPACker carrega o mesmo peso e ainda é o primeiro a
-            parar por quem precisa no caminho. É essa a diferença que este acompanhamento trabalha.
+            parar por quem precisa no caminho. A WEPAC Society é o nome que damos a essa diferença:
+            não é uma turma nem uma audiência — é a decisão de carregar o teu peso e ainda teres mão
+            livre para quem precisar, mesmo que nunca chegues a conhecê-lo.
           </p>
           <div className="mt-10">
             <a
@@ -380,6 +391,9 @@ export default function WepackerLandingPage() {
             </a>
             <p className="mx-auto mt-4 max-w-md text-xs leading-relaxed text-wepac-text-tertiary">
               Leva cinco minutos. Lemos tudo.
+            </p>
+            <p className="mx-auto mt-6 max-w-md text-xs italic leading-relaxed text-wepac-text-tertiary">
+              Isto é um mapa. Boa caminhada.
             </p>
           </div>
         </div>
