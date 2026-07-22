@@ -14,15 +14,15 @@ const heroHref = "/wepacker/intake";
 const WHAT_IT_IS = [
   {
     title: "Um espaço privado só teu.",
-    body: "Escreves o teu Life Map — quem és, onde estás, para onde vais, porquê e o que te comprometes a fazer —, o plano do trimestre com objetivos e ações mensais, e os teus Trails: as transformações que decides levar por diante, uma de cada vez. Guardamos todas as versões: daqui a seis meses podes ler o que escreveste hoje e ver exatamente o que mudou.",
+    body: "Aqui escreves o teu Life Map: quem és, onde estás, para onde vais, porquê, e que compromissos assumes — perguntas que a maior parte das pessoas nunca chega a fazer-se com honestidade. Escreves também o plano do trimestre, com objetivos e ações mensais, e os teus Trails: as transformações que decides levar por diante, uma de cada vez. Guardamos todas as versões — daqui a seis meses lês o que escreveste hoje e vês exatamente o que mudou.",
   },
   {
     title: "Um mentor atribuído pela equipa.",
-    body: "A relação só começa quando as duas partes a aceitam, e termina quando qualquer uma das duas a terminar. Não é uma linha de apoio nem um chat permanente: é uma pessoa que se senta contigo, com regularidade.",
+    body: "Achamos que ninguém desbloqueia potencial sozinho, por isso a relação só começa quando as duas partes a aceitam, e termina quando qualquer uma das duas decidir terminá-la. Não é uma linha de apoio nem um chat permanente: é uma pessoa que se senta contigo, com regularidade, e que é a primeira a notar quando escorregas no caminho.",
   },
   {
     title: "Sessões com data no calendário.",
-    body: "Cada sessão tem dia, hora, duração e link de videochamada, e chega-te por convite de calendário. O que se passa lá dentro fica entre vocês.",
+    body: "Cada sessão tem dia, hora, duração e link de videochamada, e chega-te por convite de calendário. É estrutura, não é boa vontade: fica marcado porque o que fica só à mercê da vontade raramente acontece. O que se passa lá dentro fica entre vocês.",
   },
 ];
 
@@ -50,6 +50,8 @@ const HOW_YOU_ENTER = [
 ];
 
 // Literal from agreement/page.tsx, cast to infinitive, per board recommendation.
+// Kept verbatim: this is the actual agreement text shown elsewhere in the
+// product, not marketing copy free to rephrase.
 const COMMITMENTS = [
   "Estar presente nas sessões que aceitei.",
   "Ser pontual nas interações que aceitei.",
@@ -77,7 +79,7 @@ const WHAT_IT_IS_NOT = [
   "Não é uma aplicação de hábitos: não há streaks nem notificações a pedir-te para voltares.",
   "Não é uma rede social: não há feed, não conheces os outros candidatos e não há mensagens para desconhecidos.",
   "Não é acompanhamento clínico: não substitui psicologia nem psicoterapia.",
-  "E não é para toda a gente ao mesmo tempo — cada pessoa aceite ocupa um mentor a sério.",
+  "E não é para toda a gente ao mesmo tempo: cada pessoa aceite ocupa um mentor a sério.",
 ];
 
 // TODO(founder): four questions have no answer yet and must not be invented —
@@ -86,7 +88,11 @@ const WHAT_IT_IS_NOT = [
 //   - Quanto custa? (preço/gratuito/mensalidade)
 //   - Quanto tempo dura? (nº sessões/mês, durante quantos meses)
 //   - É online ou presencial? (morada se presencial)
-//   - A partir de que idade? (consentimento parental se aceitar menores)
+//   - A partir de que idade? (consentimento parental se aceitar menores) —
+//     nota: o material fundador já responde a esta pergunta para este stage
+//     (adultos, 22+), mas o produto não tem gate de idade nem fluxo de
+//     consentimento parental implementado, por isso continua bloqueada aqui
+//     até esse trabalho existir.
 const FAQ = [
   {
     q: "Quem vê o que eu escrevo?",
@@ -128,12 +134,14 @@ export default function WepackerLandingPage() {
             WEPACKER · um programa da WEPAC — Companhia de Artes
           </p>
           <h1 className="mt-4 font-barlow text-4xl font-bold leading-tight text-wepac-white sm:text-5xl md:text-6xl">
-            Um mentor, sessões marcadas e um espaço onde escreves para onde vais.
+            Um mentor. Sessões marcadas. Um espaço onde escreves para onde vais.
           </h1>
           <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-wepac-text-secondary">
-            O WEPACKER é o acompanhamento pessoal da WEPAC. Acompanhamos poucas pessoas de cada
-            vez, durante meses: um mentor atribuído pela equipa, sessões com data no calendário, e
-            um espaço privado onde constróis o mapa da tua vida — e que é só teu.
+            O WEPACKER é o acompanhamento pessoal da WEPAC — para quem já carrega o próprio peso
+            todos os dias, entre trabalho, decisões e gente que depende de si, e sente que tem mais
+            para dar do que aquilo que está hoje a conseguir converter em vida. Acompanhamos poucas
+            pessoas de cada vez, durante meses: um mentor atribuído pela equipa, sessões com data no
+            calendário, e um espaço privado onde constróis o mapa da tua vida — e que é só teu.
           </p>
           <div className="mt-10">
             <a
@@ -162,6 +170,10 @@ export default function WepackerLandingPage() {
           <h2 className="text-center font-barlow text-3xl font-bold text-wepac-white md:text-4xl">
             O que é, em concreto
           </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-center text-sm leading-relaxed text-wepac-text-secondary">
+            Não te perguntamos se acreditas em ti. Perguntamos para onde queres ir, e construímos à
+            volta disso a estrutura que falta para lá chegares. Não é motivação — é engenharia.
+          </p>
 
           <div className="mt-14 grid grid-cols-1 gap-6 lg:grid-cols-3">
             {WHAT_IT_IS.map((item) => (
@@ -211,8 +223,9 @@ export default function WepackerLandingPage() {
             O que te vamos pedir
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-center text-sm leading-relaxed text-wepac-text-secondary">
-            Antes de entrares, pedimos que leias e aceites sete compromissos. São a base da
-            relação, e preferimos que os leias agora — antes de te candidatares.
+            Um compromisso que ninguém lê não vale nada. Antes de entrares, pedimos que leias e
+            aceites sete compromissos — não frases emolduradas, mas a base real da relação — e
+            preferimos que os leias agora, antes de te candidatares.
           </p>
 
           <ul className="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-3">
@@ -235,8 +248,10 @@ export default function WepackerLandingPage() {
             Olhamos para a pessoa inteira, não para uma competência
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-center text-sm leading-relaxed text-wepac-text-secondary">
-            Seis dimensões que voltam a aparecer em cada conversa. Não é um teste, não gera nota e
-            não é um exame de entrada.
+            Ninguém vive por departamentos. É a mesma pessoa vista de seis ângulos, e a pergunta
+            nunca é se já chegaste a algum lado — é para onde deves ir a seguir. Estas seis
+            dimensões voltam a aparecer em cada conversa. Não é um teste, não gera nota e não é um
+            exame de entrada: é a lente com que ouvimos.
           </p>
 
           <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -277,10 +292,10 @@ export default function WepackerLandingPage() {
             A primeira porta são as Artes
           </h2>
           <p className="mx-auto mt-6 max-w-2xl text-sm leading-relaxed text-wepac-text-secondary">
-            Este acompanhamento nasceu do trabalho da WEPAC com artistas, e é aí que a nossa
-            prática é mais funda. Se a tua área é outra — desporto, ofício, ensino, liderança —,
-            candidata-te na mesma: dizemos-te com franqueza se conseguimos acompanhar-te agora ou
-            se é melhor esperares.
+            Começámos pela arte não porque seja superior a outras práticas, mas porque foi o
+            trabalho que já tínhamos nas mãos — e é aí que a nossa prática é mais funda. Se a tua
+            área é outra — desporto, ofício, ensino, liderança —, candidata-te na mesma:
+            dizemos-te com franqueza se conseguimos acompanhar-te agora ou se é melhor esperares.
           </p>
         </div>
       </section>
@@ -295,8 +310,11 @@ export default function WepackerLandingPage() {
             O WEPACKER é da WEPAC — Companhia de Artes, uma estrutura cultural multidisciplinar
             portuguesa que trabalha em criação artística (Wessex), educação artística (Easy Peasy)
             e recuperação de espaços com valor patrimonial (Arte à Capela). Não somos uma startup
-            nem uma escola de coaching: o WEPACKER nasceu do trabalho que já fazíamos com pessoas
-            dentro dos nossos próprios projetos.
+            nem uma escola de coaching: somos três escuteiros e um virtuoso, gente que passou anos
+            a formar quem cresce antes de decidir escrevê-lo em método. O WEPACKER nasceu do
+            trabalho que já fazíamos com pessoas dentro dos nossos próprios projetos. Acompanha
+            adultos — o trabalho da WEPAC com crianças e jovens vive noutros projetos, fora desta
+            página.
           </p>
           <Link
             href="/sobre"
@@ -348,8 +366,10 @@ export default function WepackerLandingPage() {
             From packers to WEPACkers.
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-wepac-text-secondary">
-            Um packer carrega o seu próprio peso. Um WEPACker carrega o seu peso e ainda entrega
-            valor a quem está ao lado. É essa a diferença que este acompanhamento trabalha.
+            Já carregas o teu peso todos os dias — trabalho, contas, decisões, gente que depende de
+            ti. Isso não é pouco: é o primeiro requisito. Falta-te uma letra: o WE. Um packer
+            carrega o seu próprio peso; um WEPACker carrega o mesmo peso e ainda é o primeiro a
+            parar por quem precisa no caminho. É essa a diferença que este acompanhamento trabalha.
           </p>
           <div className="mt-10">
             <a
