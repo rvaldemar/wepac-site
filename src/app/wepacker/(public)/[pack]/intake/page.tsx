@@ -38,7 +38,7 @@ export default async function CandidaturaPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-wepac-black">
       <header className="flex items-center justify-between px-6 py-6 lg:px-12">
-        <Link href="/wepacker">
+        <Link href="/society">
           <Image
             src="/logo/email/wepacker-lockup-white.png"
             alt="WEPACKER"

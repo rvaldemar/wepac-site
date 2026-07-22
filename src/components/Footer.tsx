@@ -63,6 +63,14 @@ export function Footer() {
               ))}
               <li>
                 <Link
+                  href="/society"
+                  className="text-xs text-wepac-white/50 transition-colors hover:text-wepac-white/60"
+                >
+                  WEPAC Society
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/wepacker/login"
                   className="text-xs text-wepac-white/50 transition-colors hover:text-wepac-white/60"
                 >
