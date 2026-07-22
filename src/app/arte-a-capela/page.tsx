@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { reserveAction } from "@/lib/bilheteira/reserve-action";
 import { formatPriceCents } from "@/app/bilheteira/ui";
 import {
   manifesto,
@@ -53,6 +52,15 @@ function formatDateFull(d: Date): string {
   }).format(d);
 }
 
+function formatTime(d: Date): string {
+  return new Intl.DateTimeFormat("pt-PT", {
+    timeZone: LISBON_TZ,
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(d);
+}
+
 // Event.subtitle follows the seed convention "Name · instrument" (see
 // prisma/seed.ts). Split it instead of borrowing the fallback event's
 // hardcoded artist/caption — those belong only to the no-event placeholder.
@@ -72,13 +80,15 @@ function splitArtistSubtitle(subtitle: string): {
 
 type EventView = {
   slug: string | null;
-  tierId: string | null;
   title: string;
   artist: string;
   artistCaption: string;
   dateShort: string;
   dateFull: string;
+  timeLabel: string | null;
+  doorsLabel: string | null;
   venue: string;
+  address: string | null;
   priceLabel: string;
 };
 
@@ -92,12 +102,16 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
       department: { slug: "arte-a-capela" },
     },
     orderBy: { startsAt: "asc" },
-    include: { tiers: true },
+    include: { tiers: { orderBy: { sortOrder: "asc" } } },
   });
 
-  const cheapestTier = dbEvent
-    ? [...dbEvent.tiers].sort((a, b) => a.priceCents - b.priceCents)[0]
-    : undefined;
+  // Every tier gets shown — the defect that triggered this rework was
+  // hiding all but the cheapest one. The teaser price up in NEXT EVENT is
+  // the only spot that still wants a single number, so it takes the
+  // cheapest independently of display order.
+  const tiers = dbEvent ? dbEvent.tiers : [];
+  const cheapestTierPriceCents =
+    tiers.length > 0 ? Math.min(...tiers.map((t) => t.priceCents)) : null;
 
   // No dedicated "artist"/"instrument" columns on Event — subtitle carries
   // both, "Name · instrument". A real event must never borrow the fallback
@@ -112,28 +126,33 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
   const event: EventView = dbEvent
     ? {
         slug: dbEvent.slug,
-        tierId: cheapestTier?.id ?? null,
         title: dbEvent.title,
         artist: dbArtist.artist,
         artistCaption: dbArtist.caption,
         dateShort: formatDateShort(dbEvent.startsAt),
         dateFull: formatDateFull(dbEvent.startsAt),
+        timeLabel: formatTime(dbEvent.startsAt),
+        doorsLabel: dbEvent.doorsAt ? formatTime(dbEvent.doorsAt) : null,
         venue: dbEvent.venue,
-        priceLabel: cheapestTier ? formatPriceCents(cheapestTier.priceCents) : "—",
+        address: dbEvent.address,
+        priceLabel:
+          cheapestTierPriceCents !== null
+            ? formatPriceCents(cheapestTierPriceCents)
+            : "—",
       }
     : {
         slug: null,
-        tierId: null,
         title: fallbackEvent.title,
         artist: fallbackEvent.artist,
         artistCaption: fallbackEvent.artistCaption,
         dateShort: fallbackEvent.dateShort,
         dateFull: fallbackEvent.dateFull,
+        timeLabel: null,
+        doorsLabel: null,
         venue: fallbackEvent.venue,
+        address: null,
         priceLabel: fallbackEvent.priceLabel,
       };
-
-  const canReserve = Boolean(dbEvent && cheapestTier);
 
   return (
     <div className="bg-capela-bg text-white overflow-x-hidden">
@@ -334,7 +353,7 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
                 <p className="mt-1 text-[15px]">{event.priceLabel}</p>
               </div>
               <a
-                href={canReserve ? "#bilheteira" : "/bilheteira"}
+                href={tiers.length > 0 ? "#bilheteira" : "/bilheteira"}
                 className="inline-flex items-center justify-center bg-capela-red text-white text-[11px] font-medium uppercase tracking-[0.18em] px-7 h-[48px] hover:bg-capela-red/85 transition whitespace-nowrap"
               >
                 Garantir bilhete
@@ -393,7 +412,8 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
       {/* TICKETING */}
       <section id="bilheteira" className="bg-capela-cream text-black">
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 lg:px-16 py-20 lg:py-28 grid lg:grid-cols-2 gap-14 lg:gap-0">
-          {/* Left column */}
+          {/* Left column — event facts, no price: prices live entirely in
+              the tier list on the right, where each one gets its own CTA. */}
           <div className="lg:pr-16 lg:border-r border-black/10">
             <p className="text-[11px] uppercase tracking-[0.18em] text-capela-red mb-4">
               Bilheteira
@@ -410,9 +430,21 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
                     ? `${event.artist} — ${event.artistCaption}`
                     : event.artist,
                 },
-                { label: "Data", value: event.dateFull },
-                { label: "Local", value: event.venue },
-                { label: "Preço por bilhete", value: event.priceLabel },
+                {
+                  label: "Data",
+                  value: event.timeLabel
+                    ? `${event.dateFull} · ${event.timeLabel}`
+                    : event.dateFull,
+                },
+                {
+                  label: "Local",
+                  value: event.address
+                    ? `${event.venue} — ${event.address}`
+                    : event.venue,
+                },
+                ...(event.doorsLabel
+                  ? [{ label: "Portas", value: event.doorsLabel }]
+                  : []),
               ].map((row) => (
                 <div
                   key={row.label}
@@ -432,7 +464,9 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
             </p>
           </div>
 
-          {/* Right column */}
+          {/* Right column — every tier, in order, each its own way in.
+              This replaces an inline checkout that duplicated the real
+              ticketing product; the tier itself deep-links there. */}
           <div className="lg:pl-16 pt-14 lg:pt-0">
             {cancelled && (
               <p className="mb-6 text-[13px] text-black/70 border border-black/20 bg-black/5 px-4 py-3">
@@ -445,103 +479,45 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
               </p>
             )}
 
-            {canReserve && event.slug && event.tierId ? (
-              <form action={reserveAction} className="space-y-8">
-                <input type="hidden" name="eventSlug" value={event.slug} />
-                <input type="hidden" name="tierId" value={event.tierId} />
-                <input type="hidden" name="returnPath" value="/arte-a-capela" />
+            {event.slug && tiers.length > 0 ? (
+              <div className="space-y-10">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-black/50">
+                  Escolhe o teu lugar
+                </p>
 
-                <div>
-                  <label
-                    htmlFor="capela-seats"
-                    className="text-[11px] uppercase tracking-[0.18em] text-black/50"
-                  >
-                    Quantidade
-                  </label>
-                  <input
-                    id="capela-seats"
-                    type="number"
-                    name="seats"
-                    defaultValue={1}
-                    min={1}
-                    max={10}
-                    required
-                    className="mt-2 w-24 border-0 border-b border-black/25 bg-transparent text-[16px] py-2 focus:outline-none focus:border-capela-red"
-                  />
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-black/40 mt-1">
-                    bilhete
-                  </p>
-                </div>
+                <ul className="divide-y divide-black/10 border-t border-black/10">
+                  {tiers.map((tier) => (
+                    <li key={tier.id} className="py-8 first:pt-0">
+                      <div className="flex items-baseline justify-between gap-6">
+                        <h3 className={`${serif} text-[22px] sm:text-[26px] leading-[1.2]`}>
+                          {tier.name}
+                        </h3>
+                        <span className="text-[20px] font-medium whitespace-nowrap">
+                          {formatPriceCents(tier.priceCents)}
+                        </span>
+                      </div>
+                      {tier.description && (
+                        <p className="mt-3 text-[13px] text-black/55 leading-[1.6] max-w-[420px]">
+                          {tier.description}
+                        </p>
+                      )}
+                      <Link
+                        href={`/bilheteira/${event.slug}?tier=${tier.id}`}
+                        className="mt-5 inline-flex items-center justify-center bg-capela-red text-white text-[11px] font-medium uppercase tracking-[0.18em] px-7 h-[48px] hover:bg-capela-red/85 transition"
+                      >
+                        Garantir bilhete
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
 
-                <div>
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-black/50 mb-4">
-                    Dados do participante
-                  </p>
-                  <div className="space-y-5">
-                    <div>
-                      <label htmlFor="capela-name" className="sr-only">
-                        Nome completo
-                      </label>
-                      <input
-                        id="capela-name"
-                        type="text"
-                        name="buyerName"
-                        placeholder="Nome completo"
-                        required
-                        className="w-full border-0 border-b border-black/25 bg-transparent text-[16px] py-2 placeholder:text-black/40 focus:outline-none focus:border-capela-red"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="capela-email" className="sr-only">
-                        E-mail
-                      </label>
-                      <input
-                        id="capela-email"
-                        type="email"
-                        name="buyerEmail"
-                        placeholder="E-mail"
-                        required
-                        className="w-full border-0 border-b border-black/25 bg-transparent text-[16px] py-2 placeholder:text-black/40 focus:outline-none focus:border-capela-red"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="capela-phone" className="sr-only">
-                        Telefone
-                      </label>
-                      <input
-                        id="capela-phone"
-                        type="tel"
-                        name="buyerPhone"
-                        placeholder="Telefone"
-                        className="w-full border-0 border-b border-black/25 bg-transparent text-[16px] py-2 placeholder:text-black/40 focus:outline-none focus:border-capela-red"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-black/50 mb-2">
-                    Pagamento
-                  </p>
-                  {/* Stripe session only enables card + Multibanco (see
-                      reserveAction) — no MB Way chip is rendered here. */}
-                  <p className="text-[15px]">Cartão · Multibanco</p>
-                </div>
-
-                <div className="flex items-baseline justify-between border-t border-black/10 pt-5">
-                  <span className="text-[11px] uppercase tracking-[0.18em] text-black/50">
-                    Total
-                  </span>
-                  <span className="text-[20px] font-medium">{event.priceLabel}</span>
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full bg-capela-red text-white text-[11px] font-medium uppercase tracking-[0.18em] h-[54px] hover:bg-capela-red/85 transition"
-                >
-                  Comprar
-                </button>
-              </form>
+                {/* Same VAT exemption sentence the real ticketing page
+                    carries for this identical price — see
+                    src/app/bilheteira/[slug]/page.tsx. */}
+                <p className="text-[12px] text-black/45 leading-[1.6]">
+                  Preços isentos de IVA ao abrigo do art.º 9.º do CIVA.
+                </p>
+              </div>
             ) : (
               <div className="space-y-6">
                 <p className="text-[15px] text-black/70 leading-[1.6]">
