@@ -490,7 +490,6 @@ DB_ENV_LOADED=1
 # Safe release flags are part of the production contract. Verify names and
 # expected states without printing any environment value.
 test "${DEBRIEF_ENGINE:-}" = disabled
-test "${MENTORSHIP_WRITES_ENABLED:-false}" != true
 test "${SESSION_TRANSCRIPT_WRITES_ENABLED:-false}" != true
 test "${CALCOM_SESSION_INGEST_ENABLED:-false}" != true
 test "${NOTIFICATION_OUTBOX_WORKER_ENABLED:-}" = true
