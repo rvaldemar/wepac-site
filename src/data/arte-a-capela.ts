@@ -2,11 +2,6 @@
 // plus the fallback event content rendered when no published Event exists for
 // this department yet. Portuguese copy is intentional (user-facing content).
 
-export type ProgrammeRow = {
-  work: string;
-  composer: string;
-};
-
 export const manifesto = {
   statement:
     "Mais do que concertos — experiências que reativam o património. Cada evento cria uma ligação profunda entre o espaço, os artistas e o público.",
@@ -22,33 +17,18 @@ export const stats: { title: string; caption: string }[] = [
   { title: "Programação", caption: "Curada" },
 ];
 
-// The schema has no column for a concert programme (Event/TicketTier only
-// carry title/subtitle/description), so this list is always static and is
-// pinned to the one Event it was written for (see prisma/seed.ts). It must
-// only render when that specific Event is the one being shown — never for
-// any other published Arte à Capela event, which would otherwise sell an
-// unrelated concert under this Bach/Duport/Popper programme.
-export const programmeEventSlug = "catedrais-interiores-2026-09-18";
+// There is no real Arte à Capela event to attach a programme to yet — the
+// previous programme rows (and the `programmeEventSlug` gate pinning them to
+// one seeded event) were placeholder content transcribed from a designer's
+// Figma mockup, not a real concert. Do not reintroduce a static programme
+// here; it belongs on the real Event once one exists.
 
-export const fallbackProgramme: ProgrammeRow[] = [
-  { work: "Suíte Nº 1 em Sol Maior", composer: "J. S. Bach" },
-  { work: "Capricho Nº 8", composer: "J.-L. Duport" },
-  { work: "Suíte Nº 3 em Dó Maior", composer: "J. S. Bach" },
-  { work: "Capricho Nº 11", composer: "J.-L. Duport" },
-  { work: "Capricho Nº 27", composer: "D. Popper" },
-];
-
-// Rendered verbatim when no published upcoming Event exists for the
-// arte-a-capela department (see spec section 7 + section 9).
-export const fallbackEvent = {
-  title: "Catedrais Interiores",
-  artist: "António Cortez",
-  artistCaption: "Violoncelo",
-  dateShort: "Data a anunciar",
-  dateFull: "Data a anunciar",
-  venue: "A confirmar",
-  priceCents: 1200,
-  priceLabel: "12€",
+// Rendered when no published upcoming Event exists for the arte-a-capela
+// department. Deliberately has no title/artist/venue — those would have to
+// be invented, and this is a real cultural organisation's website.
+export const noUpcomingEvent = {
+  heading: "Ainda não há concerto marcado.",
+  body: "Estamos a preparar a próxima experiência da Arte à Capela. Assim que a data for confirmada, os bilhetes ficam disponíveis na bilheteira.",
 };
 
 export const footerTagline =

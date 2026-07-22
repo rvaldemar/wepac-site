@@ -551,6 +551,11 @@ Concerto inserido na programação regular de Capela Viva na Capela do Hospital 
     });
   }
 
+  // NOTE: this event's identity (title, artist, venue, programme) was
+  // transcribed from a designer's Figma mockup, not a real booked concert.
+  // It is dev/seed data only — replace with a real concert before treating
+  // it as real, and never reuse this identity as a production fallback
+  // (see src/data/arte-a-capela.ts and src/app/arte-a-capela/page.tsx).
   const catedraisSlug = "catedrais-interiores-2026-09-18";
   const catedraisDescription = `Um recital a solo de violoncelo dedicado às Suites para violoncelo solo de Bach, em diálogo com os caprichos de Duport e Popper. Um programa que atravessa três séculos de escrita para o instrumento, da disciplina barroca ao virtuosismo do século XIX.
 

@@ -5,9 +5,7 @@ import {
   manifesto,
   pullQuote,
   stats,
-  fallbackProgramme,
-  fallbackEvent,
-  programmeEventSlug,
+  noUpcomingEvent,
   footerTagline,
   footerSocialLinks,
   footerInfoLinks,
@@ -79,7 +77,7 @@ function splitArtistSubtitle(subtitle: string): {
 }
 
 type EventView = {
-  slug: string | null;
+  slug: string;
   title: string;
   artist: string;
   artistCaption: string;
@@ -114,16 +112,18 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
     tiers.length > 0 ? Math.min(...tiers.map((t) => t.priceCents)) : null;
 
   // No dedicated "artist"/"instrument" columns on Event — subtitle carries
-  // both, "Name · instrument". A real event must never borrow the fallback
-  // placeholder's artist/caption/price — those belong only to the no-event
-  // state below.
+  // both, "Name · instrument".
   const dbArtist = dbEvent
     ? dbEvent.subtitle
       ? splitArtistSubtitle(dbEvent.subtitle)
       : { artist: dbEvent.title, caption: "" }
     : { artist: "", caption: "" };
 
-  const event: EventView = dbEvent
+  // No fallback branch: when there is no published Event, there is no real
+  // title/artist/venue to show, so `event` is simply absent and every
+  // rendering spot below must handle that explicitly instead of falling
+  // back to invented content.
+  const event: EventView | null = dbEvent
     ? {
         slug: dbEvent.slug,
         title: dbEvent.title,
@@ -140,19 +140,7 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
             ? formatPriceCents(cheapestTierPriceCents)
             : "—",
       }
-    : {
-        slug: null,
-        title: fallbackEvent.title,
-        artist: fallbackEvent.artist,
-        artistCaption: fallbackEvent.artistCaption,
-        dateShort: fallbackEvent.dateShort,
-        dateFull: fallbackEvent.dateFull,
-        timeLabel: null,
-        doorsLabel: null,
-        venue: fallbackEvent.venue,
-        address: null,
-        priceLabel: fallbackEvent.priceLabel,
-      };
+    : null;
 
   return (
     <div className="bg-capela-bg text-white overflow-x-hidden">
@@ -335,70 +323,66 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
             Próximo evento
           </p>
 
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 lg:gap-10">
-            <h2
-              className={`${serif} text-[40px] sm:text-[48px] lg:text-[56px] leading-[1.15] max-w-[720px]`}
-            >
-              {event.title}
-            </h2>
+          {event ? (
+            <>
+              <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 lg:gap-10">
+                <h2
+                  className={`${serif} text-[40px] sm:text-[48px] lg:text-[56px] leading-[1.15] max-w-[720px]`}
+                >
+                  {event.title}
+                </h2>
 
-            <div className="flex flex-wrap lg:flex-nowrap items-center gap-6 lg:gap-10 lg:text-right">
-              <div>
-                <p className="text-[11px] uppercase tracking-[0.18em] text-white/40">
-                  Data
-                </p>
-                <p className="mt-1 text-[15px]">{event.dateShort}</p>
+                <div className="flex flex-wrap lg:flex-nowrap items-center gap-6 lg:gap-10 lg:text-right">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-white/40">
+                      Data
+                    </p>
+                    <p className="mt-1 text-[15px]">{event.dateShort}</p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-white/40">
+                      Entrada
+                    </p>
+                    <p className="mt-1 text-[15px]">{event.priceLabel}</p>
+                  </div>
+                  <a
+                    href={tiers.length > 0 ? "#bilheteira" : "/bilheteira"}
+                    className="inline-flex items-center justify-center bg-capela-red text-white text-[11px] font-medium uppercase tracking-[0.18em] px-7 h-[48px] hover:bg-capela-red/85 transition whitespace-nowrap"
+                  >
+                    Garantir bilhete
+                  </a>
+                </div>
               </div>
-              <div>
-                <p className="text-[11px] uppercase tracking-[0.18em] text-white/40">
-                  Entrada
-                </p>
-                <p className="mt-1 text-[15px]">{event.priceLabel}</p>
-              </div>
-              <a
-                href={tiers.length > 0 ? "#bilheteira" : "/bilheteira"}
-                className="inline-flex items-center justify-center bg-capela-red text-white text-[11px] font-medium uppercase tracking-[0.18em] px-7 h-[48px] hover:bg-capela-red/85 transition whitespace-nowrap"
-              >
-                Garantir bilhete
-              </a>
-            </div>
-          </div>
 
-          <div className="border-t border-white/10 mt-12 lg:mt-16 pt-12 lg:pt-16 grid sm:grid-cols-2 gap-10 sm:gap-16">
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.18em] text-white/40 mb-3">
-                Artista
-              </p>
-              <p className={`${serif} text-[26px] sm:text-[28px]`}>{event.artist}</p>
-              <p className="text-[13px] text-white/45 mt-1">{event.artistCaption}</p>
-            </div>
-            {/* The schema has no column for a concert programme, so this
-                list is static copy pinned to one specific Event (see
-                src/data/arte-a-capela.ts). Only show it when there is no
-                real dbEvent, or when the published event actually is that
-                one — otherwise a different published concert would get
-                sold under this Bach/Duport/Popper programme. */}
-            {(!dbEvent || dbEvent.slug === programmeEventSlug) && (
-              <div>
+              {/* No column for a concert programme exists on Event/TicketTier
+                  (see src/data/arte-a-capela.ts) — there is no real programme
+                  data to render here, for this or any other event. */}
+              <div className="border-t border-white/10 mt-12 lg:mt-16 pt-12 lg:pt-16">
                 <p className="text-[11px] uppercase tracking-[0.18em] text-white/40 mb-3">
-                  Programa
+                  Artista
                 </p>
-                <ul className="divide-y divide-white/10">
-                  {fallbackProgramme.map((row) => (
-                    <li
-                      key={row.work}
-                      className="flex items-baseline justify-between gap-4 py-2.5 text-[14px] sm:text-[15px]"
-                    >
-                      <span>{row.work}</span>
-                      <span className="text-white/35 whitespace-nowrap">
-                        {row.composer}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                <p className={`${serif} text-[26px] sm:text-[28px]`}>{event.artist}</p>
+                <p className="text-[13px] text-white/45 mt-1">{event.artistCaption}</p>
               </div>
-            )}
-          </div>
+            </>
+          ) : (
+            <div className="max-w-[640px]">
+              <h2
+                className={`${serif} text-[40px] sm:text-[48px] lg:text-[56px] leading-[1.15]`}
+              >
+                {noUpcomingEvent.heading}
+              </h2>
+              <p className="mt-6 text-[15px] leading-[1.7] text-white/60 max-w-[520px]">
+                {noUpcomingEvent.body}
+              </p>
+              <Link
+                href="/bilheteira"
+                className="mt-8 inline-flex items-center justify-center bg-capela-red text-white text-[11px] font-medium uppercase tracking-[0.18em] px-8 h-[52px] hover:bg-capela-red/85 transition"
+              >
+                Ir para a bilheteira
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 
@@ -421,50 +405,68 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
             <p className="text-[11px] uppercase tracking-[0.18em] text-capela-red mb-4">
               Bilheteira
             </p>
-            <h2 className={`${serif} text-[32px] sm:text-[40px] leading-[1.15] mb-8`}>
-              {event.title}
-            </h2>
 
-            <dl className="space-y-4">
-              {[
-                {
-                  label: "Artista",
-                  value: event.artistCaption
-                    ? `${event.artist} — ${event.artistCaption}`
-                    : event.artist,
-                },
-                {
-                  label: "Data",
-                  value: event.timeLabel
-                    ? `${event.dateFull} · ${event.timeLabel}`
-                    : event.dateFull,
-                },
-                {
-                  label: "Local",
-                  value: event.address
-                    ? `${event.venue} — ${event.address}`
-                    : event.venue,
-                },
-                ...(event.doorsLabel
-                  ? [{ label: "Portas", value: event.doorsLabel }]
-                  : []),
-              ].map((row) => (
-                <div
-                  key={row.label}
-                  className="flex items-baseline justify-between gap-4 border-b border-black/10 pb-3"
-                >
-                  <dt className="text-[11px] uppercase tracking-[0.18em] text-black/60">
-                    {row.label}
-                  </dt>
-                  <dd className="text-[15px] font-medium text-right">{row.value}</dd>
-                </div>
-              ))}
-            </dl>
+            {event ? (
+              <>
+                <h2 className={`${serif} text-[32px] sm:text-[40px] leading-[1.15] mb-8`}>
+                  {event.title}
+                </h2>
 
-            <p className="mt-8 text-[12px] text-black/58 leading-[1.6]">
-              Lugares limitados. Bilhete enviado por e-mail após confirmação
-              do pagamento.
-            </p>
+                <dl className="space-y-4">
+                  {[
+                    {
+                      label: "Artista",
+                      value: event.artistCaption
+                        ? `${event.artist} — ${event.artistCaption}`
+                        : event.artist,
+                    },
+                    {
+                      label: "Data",
+                      value: event.timeLabel
+                        ? `${event.dateFull} · ${event.timeLabel}`
+                        : event.dateFull,
+                    },
+                    {
+                      label: "Local",
+                      value: event.address
+                        ? `${event.venue} — ${event.address}`
+                        : event.venue,
+                    },
+                    ...(event.doorsLabel
+                      ? [{ label: "Portas", value: event.doorsLabel }]
+                      : []),
+                  ].map((row) => (
+                    <div
+                      key={row.label}
+                      className="flex items-baseline justify-between gap-4 border-b border-black/10 pb-3"
+                    >
+                      <dt className="text-[11px] uppercase tracking-[0.18em] text-black/60">
+                        {row.label}
+                      </dt>
+                      <dd className="text-[15px] font-medium text-right">
+                        {row.value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </>
+            ) : (
+              <>
+                <h2 className={`${serif} text-[32px] sm:text-[40px] leading-[1.15] mb-4`}>
+                  {noUpcomingEvent.heading}
+                </h2>
+                <p className="text-[14px] text-black/58 leading-[1.7] max-w-[420px]">
+                  {noUpcomingEvent.body}
+                </p>
+              </>
+            )}
+
+            {event && (
+              <p className="mt-8 text-[12px] text-black/58 leading-[1.6]">
+                Lugares limitados. Bilhete enviado por e-mail após confirmação
+                do pagamento.
+              </p>
+            )}
           </div>
 
           {/* Right column — every tier, in order, each its own way in.
@@ -476,7 +478,7 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
               live-tier layout itself. */}
           <div
             className={`lg:pl-16 pt-14 lg:pt-0${
-              event.slug && tiers.length > 0
+              event && tiers.length > 0
                 ? ""
                 : " lg:flex lg:flex-col lg:justify-center"
             }`}
@@ -492,7 +494,7 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
               </p>
             )}
 
-            {event.slug && tiers.length > 0 ? (
+            {event && tiers.length > 0 ? (
               <div className="space-y-10">
                 <p className="text-[11px] uppercase tracking-[0.18em] text-black/60">
                   Escolhe o teu lugar
