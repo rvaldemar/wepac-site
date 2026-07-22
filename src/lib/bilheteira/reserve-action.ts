@@ -9,14 +9,7 @@ function back(path: string, error: string): never {
   redirect(`${path}?error=${encodeURIComponent(error)}`);
 }
 
-// `returnPath` comes straight from a hidden form field, i.e. user-controlled
-// input, and feeds both a server redirect and the Stripe cancel_url. Any
-// pattern check (startsWith("/"), a regex) can be defeated by scheme-relative
-// URLs, backslash tricks or traversal segments, and would let this action be
-// used as an open redirect. A closed allowlist of known in-app paths is the
-// only shape that can't be tricked: unknown input has one well-defined
-// outcome — silently fall back to the existing per-event page.
-const RETURN_PATH_ALLOWLIST = new Set<string>(["/arte-a-capela"]);
+const MAX_SEATS = 10;
 
 export async function reserveAction(formData: FormData): Promise<void> {
   const eventSlug = String(formData.get("eventSlug") || "");
@@ -28,18 +21,18 @@ export async function reserveAction(formData: FormData): Promise<void> {
   const buyerPhone = String(formData.get("buyerPhone") || "").trim() || null;
   const marketingConsent = formData.get("marketingConsent") === "on";
   const seatsRaw = String(formData.get("seats") || "1");
-  const returnPathRaw = String(formData.get("returnPath") || "");
 
-  const eventPath = `/bilheteira/${eventSlug}`;
-  const backPath = RETURN_PATH_ALLOWLIST.has(returnPathRaw)
-    ? returnPathRaw
-    : eventPath;
+  // Before the event lookup, `eventSlug` is raw user input — it must never
+  // shape a redirect or the Stripe cancel_url (that's how an open redirect
+  // happens). The only safe fallback pre-lookup is the static event list;
+  // once we have the DB row, `event.slug` is what every later redirect uses.
+  const preLookupBackPath = "/bilheteira";
 
   if (!eventSlug || !tierId || !buyerName || !buyerEmail) {
-    back(backPath, "Preenche nome, email e escolhe uma tier.");
+    back(preLookupBackPath, "Preenche nome, email e escolhe uma tier.");
   }
   if (!/.+@.+\..+/.test(buyerEmail)) {
-    back(backPath, "Email inválido.");
+    back(preLookupBackPath, "Email inválido.");
   }
 
   const event = await prisma.event.findUnique({
@@ -47,6 +40,9 @@ export async function reserveAction(formData: FormData): Promise<void> {
     include: { tiers: true, brand: true, department: true },
   });
   if (!event) back("/bilheteira", "Evento não encontrado.");
+
+  const backPath = `/bilheteira/${event.slug}`;
+
   if (event.status !== "published") {
     back(backPath, "Este evento não está disponível para reserva.");
   }
@@ -54,7 +50,17 @@ export async function reserveAction(formData: FormData): Promise<void> {
   const tier = event.tiers.find((t) => t.id === tierId);
   if (!tier) back(backPath, "Tier inválida.");
 
-  const seats = Math.max(1, Math.min(20, Number(seatsRaw) || 1));
+  // Both forms that post here cap the visible input at MAX_SEATS — silently
+  // clamping out-of-range or non-numeric values would let a crafted POST buy
+  // a different quantity than what the buyer saw and submitted. Reject
+  // instead of coercing.
+  if (!/^\d+$/.test(seatsRaw)) {
+    back(backPath, "Número de lugares inválido.");
+  }
+  const seats = Number(seatsRaw);
+  if (seats < 1 || seats > MAX_SEATS) {
+    back(backPath, `Escolhe entre 1 e ${MAX_SEATS} lugares.`);
+  }
 
   // Stripe Checkout sessions we create expire after 30 minutes (see
   // `expires_at` below). A pending Payment older than that window is either
