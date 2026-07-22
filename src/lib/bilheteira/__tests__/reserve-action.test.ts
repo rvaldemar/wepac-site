@@ -159,3 +159,49 @@ describe("happy path", () => {
     });
   });
 });
+
+describe("returnPath allowlist", () => {
+  it("honours an allowlisted returnPath on a validation error redirect", async () => {
+    // Missing buyerEmail trips the earliest validation check, before any
+    // DB/Stripe call — exercises the allowlist without needing mocks below it.
+    const err = await reserveAction(
+      formData({ returnPath: "/arte-a-capela", buyerEmail: "" })
+    ).catch((e) => e);
+
+    expect(err).toBeInstanceOf(RedirectSignal);
+    expect((err as RedirectSignal).url).toMatch(/^\/arte-a-capela\?error=/);
+  });
+
+  it("honours an allowlisted returnPath as the Stripe cancel_url", async () => {
+    sessionsCreate.mockResolvedValue({ id: "cs_3", url: "https://checkout.stripe.com/cs_3" });
+
+    await expect(
+      reserveAction(formData({ returnPath: "/arte-a-capela" }))
+    ).rejects.toBeInstanceOf(RedirectSignal);
+
+    expect(sessionsCreate).toHaveBeenCalledTimes(1);
+    const call = sessionsCreate.mock.calls[0][0];
+    expect(call.cancel_url).toMatch(/^https:\/\/wepac\.pt\/arte-a-capela\?cancelled=1$/);
+  });
+
+  it.each([
+    ["absolute URL to another origin", "https://evil.example.com/phish"],
+    ["protocol-relative URL", "//evil.example.com/phish"],
+    ["path traversal", "/arte-a-capela/../../admin"],
+    ["unknown in-app path", "/some/other/page"],
+  ])("falls back to the event page for a hostile/unknown returnPath (%s)", async (_label, hostile) => {
+    const err = await reserveAction(
+      formData({ returnPath: hostile, buyerEmail: "" })
+    ).catch((e) => e);
+
+    expect(err).toBeInstanceOf(RedirectSignal);
+    expect((err as RedirectSignal).url).toMatch(/^\/bilheteira\/concerto\?error=/);
+  });
+
+  it("preserves today's behaviour when returnPath is absent", async () => {
+    const err = await reserveAction(formData({ buyerEmail: "" })).catch((e) => e);
+
+    expect(err).toBeInstanceOf(RedirectSignal);
+    expect((err as RedirectSignal).url).toMatch(/^\/bilheteira\/concerto\?error=/);
+  });
+});

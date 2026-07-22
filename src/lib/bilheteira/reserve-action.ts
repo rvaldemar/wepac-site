@@ -9,6 +9,15 @@ function back(path: string, error: string): never {
   redirect(`${path}?error=${encodeURIComponent(error)}`);
 }
 
+// `returnPath` comes straight from a hidden form field, i.e. user-controlled
+// input, and feeds both a server redirect and the Stripe cancel_url. Any
+// pattern check (startsWith("/"), a regex) can be defeated by scheme-relative
+// URLs, backslash tricks or traversal segments, and would let this action be
+// used as an open redirect. A closed allowlist of known in-app paths is the
+// only shape that can't be tricked: unknown input has one well-defined
+// outcome — silently fall back to the existing per-event page.
+const RETURN_PATH_ALLOWLIST = new Set<string>(["/arte-a-capela"]);
+
 export async function reserveAction(formData: FormData): Promise<void> {
   const eventSlug = String(formData.get("eventSlug") || "");
   const tierId = String(formData.get("tierId") || "");
@@ -19,8 +28,12 @@ export async function reserveAction(formData: FormData): Promise<void> {
   const buyerPhone = String(formData.get("buyerPhone") || "").trim() || null;
   const marketingConsent = formData.get("marketingConsent") === "on";
   const seatsRaw = String(formData.get("seats") || "1");
+  const returnPathRaw = String(formData.get("returnPath") || "");
 
-  const backPath = `/bilheteira/${eventSlug}`;
+  const eventPath = `/bilheteira/${eventSlug}`;
+  const backPath = RETURN_PATH_ALLOWLIST.has(returnPathRaw)
+    ? returnPathRaw
+    : eventPath;
 
   if (!eventSlug || !tierId || !buyerName || !buyerEmail) {
     back(backPath, "Preenche nome, email e escolhe uma tier.");
@@ -188,7 +201,7 @@ export async function reserveAction(formData: FormData): Promise<void> {
         buyerEmail,
       },
       success_url: `${base}/bilheteira/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${base}/bilheteira/${eventSlug}?cancelled=1`,
+      cancel_url: `${base}${backPath}?cancelled=1`,
       locale: "pt",
       expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
     });
