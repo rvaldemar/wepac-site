@@ -21,6 +21,8 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 **Gate:** tsc limpo, build compila, vitest **237/238** (a única falha é o red pré-existente em `hub-debrief-engine.test.ts`, do lote hub-debrief). Smoke: `/society` e `/society/universidade-verao` a 200, `/academia` e `/clinica` a 404 como esperado, `/wepacker` a 307, serviço active, sem overflow horizontal, e grep de "clínica/terapia/saúde mental" na página da Society devolve vazio.
 
+**QA visual pós-deploy (Playwright, produção, 1440x900 e 390x844):** ship_with_concerns, zero bloqueantes. Sem overflow horizontal; todos os links internos a 200; contraste de texto no pior caso 6,11:1 (mínimo 4,5:1); zero factos inventados na Universidade (nenhum preço, nenhuma data além do prazo de 10 de agosto, nenhum mentor, nenhuma contagem de lugares); zero vocabulário de saúde na Society. Corrigido no mesmo ciclo: o banner de cookies tapava a última linha da frase de tranquilização no hero a 390px — resolvido reduzindo o `pt` do hero (aumentar `pb` não funcionava, por o parágrafo ser o último filho da secção; provado por medição). **Follow-up registado, não corrigido:** `--wepac-border` (rgb 42,42,42) dá 1,14-1,46:1 contra os fundos adjacentes, abaixo do mínimo de 3:1 para elementos não-textuais. É sistémico do site inteiro, não destas páginas — mexer nele é decisão de design global.
+
 **Pendente do Rui:** os seis factos da Universidade de Verão (o board recomenda **publicar a data** — a data secreta não filtra por compromisso, filtra por quem tem agosto livre, e garante desistências depois da seleção); confirmar se "A Travessia" fica como nome desta edição; e o teto de custo, sem o qual a página não pode falar de dinheiro.
 
 ---
