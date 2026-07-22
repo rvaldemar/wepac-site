@@ -1,12 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { getActivePacksPublic } from "@/lib/wepacker/actions/admin";
-import { AREA_LABELS } from "@/lib/wepacker/types";
-
-// During expand, this list still comes from the legacy `packs` table, whose
-// rows describe development disciplines rather than community Packs.
-export const revalidate = 300;
+import { PILLAR_LABELS } from "@/lib/wepacker/types";
 
 export const metadata: Metadata = {
   title: { absolute: "WEPACker — plataforma de desenvolvimento humano da WEPAC" },
@@ -14,7 +9,7 @@ export const metadata: Metadata = {
     "WEPACKER é um estilo de vida que te permite atingir o teu potencial. Relações de Mentorship, comunidade e experiências reais para desenvolver talento, caráter, disciplina e propósito em qualquer fase da vida.",
 };
 
-const AREA_DESCRIPTIONS: Record<string, string> = {
+const PILLAR_DESCRIPTIONS: Record<string, string> = {
   physical: "O corpo como base de presença e energia",
   emotional: "Vida emocional e capacidade expressiva",
   character: "Disciplina, ética e consistência",
@@ -25,8 +20,8 @@ const AREA_DESCRIPTIONS: Record<string, string> = {
 
 const METHODOLOGY_STEPS = [
   {
-    label: "Assessment",
-    desc: "Um retrato honesto de onde estás, através dos Six Pillars.",
+    label: "My Journey",
+    desc: "Um percurso pessoal contínuo, orientado pelos Six Pillars e pelo teu Stage.",
   },
   {
     label: "Life Map",
@@ -42,12 +37,7 @@ const METHODOLOGY_STEPS = [
   },
 ];
 
-export default async function WepackerLandingPage() {
-  // Only the legacy Artist row has a reviewed target mapping (Arts). Unknown
-  // legacy rows stay private until their Discipline meaning is verified.
-  const packs = (await getActivePacksPublic()).filter(
-    (pack) => pack.slug === "artist"
-  );
+export default function WepackerLandingPage() {
   const heroHref = "/wepacker/intake";
 
   return (
@@ -132,13 +122,13 @@ export default async function WepackerLandingPage() {
               My Journey.
             </p>
             <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {(Object.keys(AREA_LABELS) as (keyof typeof AREA_LABELS)[]).map((key) => (
+              {(Object.keys(PILLAR_LABELS) as (keyof typeof PILLAR_LABELS)[]).map((key) => (
                 <div key={key} className="border border-wepac-border bg-wepac-black p-4">
                   <p className="font-barlow text-sm font-bold text-wepac-white">
-                    {AREA_LABELS[key]}
+                    {PILLAR_LABELS[key]}
                   </p>
                   <p className="mt-1 text-xs text-wepac-text-tertiary">
-                    {AREA_DESCRIPTIONS[key]}
+                    {PILLAR_DESCRIPTIONS[key]}
                   </p>
                 </div>
               ))}
@@ -147,7 +137,6 @@ export default async function WepackerLandingPage() {
         </div>
       </section>
 
-      {/* Legacy delivery rows are presented as Disciplines, never community Packs. */}
       <section id="disciplines" className="scroll-mt-16 px-6 py-16 lg:px-12 lg:py-24">
         <div className="mx-auto max-w-5xl">
           <p className="text-center text-xs font-medium uppercase tracking-[0.2em] text-wepac-gray">
@@ -157,36 +146,19 @@ export default async function WepackerLandingPage() {
             Escolhe o teu caminho
           </h2>
 
-          {packs.length === 0 ? (
-            <p className="mt-12 text-center text-sm text-wepac-text-tertiary">
-              Nenhum percurso disponível de momento.
-            </p>
-          ) : (
-            <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2">
-              {packs.map((pack) => (
-                <Link
-                  key={pack.slug}
-                  href={`/wepacker/${pack.slug}/intake`}
-                  className="flex flex-col border border-wepac-border bg-wepac-card p-8 transition-colors hover:border-wepac-white"
-                >
-                  <h3 className="font-barlow text-2xl font-bold text-wepac-white">
-                    Arts
-                  </h3>
-                  {pack.tagline && (
-                    <p className="mt-2 text-sm font-medium text-wepac-gray">{pack.tagline}</p>
-                  )}
-                  {pack.description && (
-                    <p className="mt-4 flex-1 text-sm leading-relaxed text-wepac-text-secondary">
-                      {pack.description}
-                    </p>
-                  )}
-                  <span className="mt-6 text-sm font-bold text-wepac-white">
-                    Apply →
-                  </span>
-                </Link>
-              ))}
-            </div>
-          )}
+          <div className="mx-auto mt-14 max-w-xl">
+            <Link
+              href="/wepacker/intake?artisticArea=Arts"
+              className="flex flex-col border border-wepac-border bg-wepac-card p-8 transition-colors hover:border-wepac-white"
+            >
+              <h3 className="font-barlow text-2xl font-bold text-wepac-white">Arts</h3>
+              <p className="mt-3 flex-1 text-sm leading-relaxed text-wepac-text-secondary">
+                Uma Discipline para pessoas que querem desenvolver a sua prática artística
+                sem separar talento, caráter e vida.
+              </p>
+              <span className="mt-6 text-sm font-bold text-wepac-white">Apply →</span>
+            </Link>
+          </div>
           <p className="mt-10 text-center text-sm text-wepac-text-tertiary">
             Ainda não sabes por onde começar?{" "}
             <Link

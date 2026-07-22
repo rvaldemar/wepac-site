@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { getActivePacksPublic } from "@/lib/wepacker/actions/admin";
-import { CandidaturaFormClient } from "../[pack]/intake/page-client";
+import { ApplicationFormClient } from "./page-client";
 
 export const metadata: Metadata = {
   title: "Intake — WEPACKER",
@@ -10,14 +9,12 @@ export const metadata: Metadata = {
     "Candidata-te ao WEPACKER — o caminho de desenvolvimento humano integral da WEPAC. Não precisas de escolher uma Discipline: começa aqui.",
 };
 
-export const revalidate = 300;
-
-// Generic intake: apply to WEPACKER itself without choosing a legacy
-// delivery Discipline first.
-export default async function GeneralIntakePage() {
-  const packs = (await getActivePacksPublic()).filter(
-    (pack) => pack.slug === "artist"
-  );
+export default async function GeneralIntakePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ artisticArea?: string }>;
+}) {
+  const { artisticArea } = await searchParams;
 
   return (
     <div className="min-h-screen bg-wepac-black">
@@ -63,27 +60,8 @@ export default async function GeneralIntakePage() {
           </p>
 
           <div className="mt-10">
-            <CandidaturaFormClient packSlug="wepacker" />
+            <ApplicationFormClient initialArtisticArea={artisticArea} />
           </div>
-
-          {packs.length > 0 && (
-            <div className="mt-12 border-t border-wepac-border pt-8">
-              <p className="text-sm text-wepac-text-tertiary">
-                Já sabes qual Discipline queres explorar? Escolhe-a diretamente:
-              </p>
-              <div className="mt-4 flex flex-wrap gap-3">
-                {packs.map((pack) => (
-                  <Link
-                    key={pack.slug}
-                    href={`/wepacker/${pack.slug}/intake`}
-                    className="border border-wepac-border px-4 py-2 text-sm text-wepac-text-secondary transition-colors hover:border-wepac-white hover:text-wepac-white"
-                  >
-                    Arts →
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </section>
     </div>

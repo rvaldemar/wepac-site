@@ -1,60 +1,63 @@
 "use server";
 
+import { randomUUID, timingSafeEqual } from "node:crypto";
+import { Prisma, type SessionKind, type SessionStatus } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import type { SessionKind, SessionStatus, SessionType } from "@prisma/client";
 import {
-  assertMentorOfCohort,
-  getMentoredCohortIds,
-  requireRole,
   requireUser,
   resolveSessionAttendeeAuthorization,
   type SessionAttendeeAuthorization,
 } from "@/lib/wepacker/guards";
-import { SESSION_KIND_KEYS, SESSION_KIND_LABELS } from "@/lib/wepacker/types";
+import { SESSION_KIND_KEYS } from "@/lib/wepacker/types";
 import {
-  buildSessionCancelIcs,
-  buildSessionInviteIcs,
-  nextIcsSequence,
-  type IcsPerson,
-} from "@/lib/wepacker/ics";
+  dispatchPersistedNotificationEvents,
+  persistSessionEvent,
+  persistSessionFollowupUpdatedEvent,
+  sessionTransitionDedupeScope,
+  type PersistedNotificationEvent,
+} from "@/lib/wepacker/notifications";
 import {
-  sendSessionCancelEmail,
-  sendSessionInviteEmail,
-  sendSharedNotePublishedEmail,
-} from "@/lib/email";
-import { logSafeError } from "@/lib/wepacker/log-safe-error";
-import { generateMeetingUrl } from "@/lib/wepacker/meeting-url";
+  generateMeetingUrl,
+  normalizeMeetingUrl,
+} from "@/lib/wepacker/meeting-url";
 
-// Full attendee shape — mentor-facing only. Includes every field,
-// including privateNote, so this must never be reused for a member-facing
-// read path.
-const mentorSessionInclude = {
+export type SessionFormat = "individual" | "group";
+
+function deriveSessionFormat(attendeeCount: number): SessionFormat {
+  return attendeeCount === 1 ? "individual" : "group";
+}
+
+function withAttendeeFormat<T extends { attendees: unknown[] }>(session: T) {
+  const attendeeCount = session.attendees.length;
+  return {
+    ...session,
+    attendeeCount,
+    format: deriveSessionFormat(attendeeCount),
+  };
+}
+
+// Organizer-facing shape. The full attendee notes are private to the exact
+// organizer and must never be reused by an attendee-facing read.
+const organizerSessionInclude = {
   attendees: {
     include: {
       user: { select: { id: true, name: true } },
     },
   },
-  mentor: { select: { id: true, name: true } },
+  organizer: { select: { id: true, name: true } },
   transcriptUploadedBy: { select: { id: true, name: true } },
-  // Presence-only — lets the sessions list show "Ver debrief" vs "Gerar
-  // debrief" without a second query. The payload itself is never
-  // included here.
-  debrief: { select: { id: true } },
 } as const;
 
-// The Sessions index needs lifecycle metadata and editable attendee fields,
-// but never the raw transcript body. Keep this as a top-level select so a new
-// sensitive Session scalar cannot silently ride into every list response.
-const mentorSessionListSelect = {
+// A top-level select prevents newly-added sensitive Session scalars from
+// silently entering list responses.
+const organizerSessionListSelect = {
   id: true,
-  cohortId: true,
-  sessionType: true,
+  cycleId: true,
+  mentorshipId: true,
   kind: true,
   scheduledAt: true,
   durationMinutes: true,
   status: true,
-  notes: true,
-  notesPublished: true,
   discussionPoints: true,
   meetingUrl: true,
   transcriptUploadedAt: true,
@@ -69,38 +72,22 @@ const mentorSessionListSelect = {
       user: { select: { id: true, name: true } },
     },
   },
-  mentor: { select: { id: true, name: true } },
-  debrief: { select: { id: true } },
+  organizer: { select: { id: true, name: true } },
+  debrief: { select: { id: true, contractVersion: true } },
 } as const;
 
-// Member-facing session shape: an explicit top-level `select` (default-
-// deny) enumerating only member-safe Session scalars, instead of an
-// `include` — an `include` returns every Session scalar column
-// automatically, which would silently leak any future sensitive column
-// (transcript, transcriptUploadedAt, transcriptUploadedById) to a member
-// the moment it's added to the schema. Attendees are scoped to the
-// requesting user's own row only (never another attendee's), and never
-// select privateNote — that field is mentor-only and must not cross the
-// server/client boundary. sharedNote/sharedNotePublished are still
-// selected raw here; callers must run the result through
-// `maskUnpublishedNotes` before returning.
+// Attendees receive only their own attendee row. Raw transcripts, uploader
+// metadata, private notes, and other attendees are default-denied.
 function ownAttendeeSessionSelect(userId: string) {
   return {
     id: true,
-    cohortId: true,
-    sessionType: true,
+    cycleId: true,
+    mentorshipId: true,
     kind: true,
     scheduledAt: true,
     durationMinutes: true,
     status: true,
-    notes: true,
-    notesPublished: true,
-    discussionPoints: true,
-    // Inert to the member — no privacy concerns like privateNote — so it's
-    // safe to select here unlike transcript/transcriptUploadedAt below.
     meetingUrl: true,
-    // transcript / transcriptUploadedAt / transcriptUploadedById are
-    // deliberately NOT selected — mentor-only, never member-visible.
     attendees: {
       where: { userId },
       select: {
@@ -112,127 +99,85 @@ function ownAttendeeSessionSelect(userId: string) {
         user: { select: { id: true, name: true } },
       },
     },
-    mentor: { select: { id: true, name: true } },
+    organizer: { select: { id: true, name: true } },
+    _count: { select: { attendees: true } },
   } as const;
 }
 
 type OwnAttendeeSession = {
-  attendees: {
+  attendees: Array<{
     id: string;
     attended: boolean;
     outcome: string | null;
     sharedNote: string | null;
     sharedNotePublished: boolean;
     user: { id: string; name: string };
-  }[];
+  }>;
+  _count: { attendees: number };
 };
 
-// A member should only ever see their shared note once the mentor has
-// published it — hide it otherwise, even though it was fetched. The same
-// applies to the legacy session-level notes blob: unpublished notes must
-// not cross the server/client boundary at all.
-function maskUnpublishedNotes<
-  T extends OwnAttendeeSession & {
-    notes: string | null;
-    notesPublished: boolean;
-    discussionPoints: string | null;
-  },
->(session: T): T {
+function toAttendeeSessionView<T extends OwnAttendeeSession>(session: T) {
+  const { _count, ...safeSession } = session;
   return {
-    ...session,
-    notes: session.notesPublished ? session.notes : null,
-    discussionPoints: session.notesPublished ? session.discussionPoints : null,
-    attendees: session.attendees.map((a) =>
-      a.sharedNotePublished ? a : { ...a, sharedNote: null },
+    ...safeSession,
+    attendeeCount: _count.attendees,
+    format: deriveSessionFormat(_count.attendees),
+    attendees: session.attendees.map((attendee) =>
+      attendee.sharedNotePublished
+        ? attendee
+        : { ...attendee, sharedNote: null },
     ),
   };
 }
 
-// A session's mentor gate: cohort-scoped sessions defer to the cohort
-// guard; a session without a cohort (a personal mentoring session) is
-// only editable by the mentor who created it, or an admin. Exported so
-// other action modules (e.g. task creation from a session outcome) can
-// reuse the exact same check instead of re-deriving it.
-export async function assertMentorOfSession(sessionId: string): Promise<{
-  cohortId: string | null;
+type SessionOrganizerGuard = {
+  cycleId: string | null;
   mentorshipId: string | null;
-  mentorId: string;
-}> {
-  const session = await prisma.session.findUnique({
-    where: { id: sessionId },
-    select: { cohortId: true, mentorshipId: true, mentorId: true },
-  });
-  if (!session) throw new Error("Sessão não encontrada.");
-
-  // A direct Mentorship Session remains private to its organizer even when it
-  // also carries optional Cycle context. Routing it through the broad legacy
-  // Cohort guard would expose transcript, debrief, and private attendee notes
-  // to every co-mentor in that Cycle.
-  if (session.mentorshipId) {
-    const actor = await requireUser();
-    if (actor.role !== "admin" && actor.id !== session.mentorId) {
-      throw new Error("Sem permissão.");
-    }
-  } else if (session.cohortId) {
-    await assertMentorOfCohort(session.cohortId);
-  } else {
-    const actor = await requireUser();
-    if (actor.role !== "admin" && actor.id !== session.mentorId) {
-      throw new Error("Sem permissão.");
-    }
-  }
-  return session;
-}
-
-// Raw transcripts and AI-derived debriefs are organizer-private. Neither a
-// broad Admin role nor being another facilitator in the same legacy Cohort is
-// an Artifact Grant. A future audited break-glass flow must use a separate,
-// explicit capability rather than weakening this guard.
-export async function assertSessionOrganizer(sessionId: string): Promise<{
-  cohortId: string | null;
-  mentorshipId: string | null;
-  mentorId: string;
+  organizerId: string;
   actorId: string;
-}> {
-  const actor = await requireRole(["mentor", "admin"]);
+};
+
+// Private session artifacts and every session mutation belong to the exact
+// organizer. An Admin role is not an implicit artifact grant.
+export async function assertSessionOrganizer(
+  sessionId: string,
+): Promise<SessionOrganizerGuard> {
+  const actor = await requireUser();
   const session = await prisma.session.findUnique({
     where: { id: sessionId },
-    select: { cohortId: true, mentorshipId: true, mentorId: true },
+    select: { cycleId: true, mentorshipId: true, organizerId: true },
   });
-  if (!session) throw new Error("Sessão não encontrada.");
-  if (session.mentorId !== actor.id) throw new Error("Sem permissão.");
+  if (!session) throw new Error("Session not found.");
+  if (session.organizerId !== actor.id) throw new Error("Permission denied.");
   return { ...session, actorId: actor.id };
 }
 
 export async function getMySessions() {
-  const user = await requireUser();
+  const actor = await requireUser();
   const sessions = await prisma.session.findMany({
-    where: {
-      attendees: { some: { userId: user.id } },
-    },
-    select: ownAttendeeSessionSelect(user.id),
+    where: { attendees: { some: { userId: actor.id } } },
+    select: ownAttendeeSessionSelect(actor.id),
     orderBy: { scheduledAt: "desc" },
   });
-  return sessions.map(maskUnpublishedNotes);
+  return sessions.map(toAttendeeSessionView);
 }
 
 export async function getNextSession() {
-  const user = await requireUser();
+  const actor = await requireUser();
   const session = await prisma.session.findFirst({
     where: {
       status: "scheduled",
-      attendees: { some: { userId: user.id } },
+      scheduledAt: { gte: new Date() },
+      attendees: { some: { userId: actor.id } },
     },
-    select: ownAttendeeSessionSelect(user.id),
+    select: ownAttendeeSessionSelect(actor.id),
     orderBy: { scheduledAt: "asc" },
   });
-  return session ? maskUnpublishedNotes(session) : null;
+  return session ? toAttendeeSessionView(session) : null;
 }
 
-// Read-only support preview for one explicit attendee of one organizer-owned
-// Session. This is deliberately not a general `asUserId` path: it returns the
-// same narrow projection used by the attendee-facing Sessions UI, without
-// changing cookies/JWT identity or exposing any mutable member action.
+// Support preview is a read of the exact attendee-safe projection, not
+// impersonation: identity, cookies, and mutation authority stay unchanged.
 export async function getSessionAttendeePreview(
   sessionId: string,
   attendeeUserId: string,
@@ -244,14 +189,10 @@ export async function getSessionAttendeePreview(
       id: true,
       scheduledAt: true,
       durationMinutes: true,
-      sessionType: true,
       kind: true,
       status: true,
-      notes: true,
-      notesPublished: true,
-      discussionPoints: true,
       meetingUrl: true,
-      mentor: { select: { id: true, name: true } },
+      organizer: { select: { id: true, name: true } },
       attendees: {
         where: { userId: attendeeUserId },
         select: {
@@ -261,27 +202,24 @@ export async function getSessionAttendeePreview(
           user: { select: { id: true, name: true } },
         },
       },
+      _count: { select: { attendees: true } },
     },
   });
   const attendee = session?.attendees[0];
   if (!session || !attendee) return null;
 
   return {
-    viewer: { id: actorId, name: session.mentor.name },
+    viewer: { id: actorId, name: session.organizer.name },
     attendee: attendee.user,
     session: {
       id: session.id,
       scheduledAt: session.scheduledAt,
       durationMinutes: session.durationMinutes,
-      sessionType: session.sessionType,
+      attendeeCount: session._count.attendees,
+      format: deriveSessionFormat(session._count.attendees),
       kind: session.kind,
       status: session.status,
-      mentorName: session.mentor.name,
-      notes: session.notesPublished ? session.notes : null,
-      notesPublished: session.notesPublished,
-      discussionPoints: session.notesPublished
-        ? session.discussionPoints
-        : null,
+      organizerName: session.organizer.name,
       outcome: attendee.outcome,
       sharedNote: attendee.sharedNotePublished ? attendee.sharedNote : null,
       meetingUrl: session.meetingUrl,
@@ -289,343 +227,254 @@ export async function getSessionAttendeePreview(
   };
 }
 
-// Single session, mentor-facing, with the transcript lifecycle metadata
-// and any existing debrief draft — powers the transcript/debrief review
-// workspace at mentor/sessions/[id]. The stricter organizer guard prevents a
-// co-facilitator or broad Admin role from reading its transcript/debrief.
 export async function getMentoredSessionDetail(sessionId: string) {
   await assertSessionOrganizer(sessionId);
-  return prisma.session.findUnique({
+  const session = await prisma.session.findUnique({
     where: { id: sessionId },
-    include: { ...mentorSessionInclude, debrief: true },
+    include: organizerSessionInclude,
   });
+  return session ? withAttendeeFormat(session) : null;
 }
 
-// Sessions across every cohort the actor mentors, plus every personal
-// (cohort-less) session they created themselves (admin sees all).
 export async function getMentoredSessions() {
   const actor = await requireUser();
-  if (actor.role === "admin") {
-    return prisma.session.findMany({
-      select: mentorSessionListSelect,
-      orderBy: { scheduledAt: "desc" },
-    });
-  }
-  const mentoredCohortIds = await getMentoredCohortIds(actor.id);
-  return prisma.session.findMany({
-    where: {
-      OR: [
-        { cohortId: { in: mentoredCohortIds }, mentorshipId: null },
-        { mentorId: actor.id },
-      ],
-    },
-    select: mentorSessionListSelect,
+  const sessions = await prisma.session.findMany({
+    where: { organizerId: actor.id },
+    select: organizerSessionListSelect,
     orderBy: { scheduledAt: "desc" },
   });
+  return sessions.map(withAttendeeFormat);
 }
 
-// Every person (deduplicated) available to the actor for Session scheduling.
-// Active, fully accepted Mentorships are the primary source; active legacy
-// Cohort mentor/member pairs remain a measured compatibility fallback during
-// migration. Admin sees every other user directly.
+// Mentorship attendee discovery comes only from active, fully accepted,
+// directed Mentorships. Account role never substitutes for the relationship.
 export async function getMentoredMembers() {
-  const actor = await requireRole(["mentor", "admin"]);
-  if (actor.role === "admin") {
-    return prisma.user.findMany({
-      where: { id: { not: actor.id } },
-      select: { id: true, name: true, email: true },
-      orderBy: { createdAt: "asc" },
-    });
-  }
+  const actor = await requireUser();
+  const mentorships = await prisma.mentorship.findMany({
+    where: {
+      mentorId: actor.id,
+      menteeId: { not: actor.id },
+      status: "active",
+      mentorAcceptedAt: { not: null },
+      menteeAcceptedAt: { not: null },
+      activatedAt: { not: null },
+      endedAt: null,
+    },
+    select: {
+      mentee: { select: { id: true, name: true, email: true } },
+    },
+    orderBy: { activatedAt: "asc" },
+  });
+  return mentorships.map(({ mentee }) => mentee);
+}
 
-  const [mentorships, mentoredCohortIds] = await Promise.all([
-    prisma.mentorship.findMany({
+// A Cycle facilitator is an explicit capability edge, independent of account
+// role. Only accepted, active facilitations for runnable Cycles are exposed.
+export async function getFacilitatedCycles() {
+  const actor = await requireUser();
+  const facilitations = await prisma.cycleFacilitator.findMany({
+    where: {
+      userId: actor.id,
+      status: "active",
+      acceptedAt: { not: null },
+      endedAt: null,
+      cycle: { status: { in: ["published", "active"] } },
+    },
+    select: {
+      role: true,
+      cycle: { select: { id: true, name: true, status: true } },
+    },
+    orderBy: { acceptedAt: "asc" },
+  });
+  return facilitations.map(({ cycle, role }) => ({
+    ...cycle,
+    // The relational where clause above is the runtime narrowing Prisma does
+    // not currently carry into its generated TypeScript result.
+    status: cycle.status as "published" | "active",
+    role,
+  }));
+}
+
+// Navigation discovery follows exact graph authority. Account role is absent:
+// an accepted Mentorship-as-mentor, active Cycle Facilitation, or ownership of
+// any Session keeps the organizer workspace reachable; Admin alone does not.
+export async function canAccessMentorWorkspace() {
+  const actor = await requireUser();
+  const [mentorship, facilitation, ownedSession] = await Promise.all([
+    prisma.mentorship.findFirst({
       where: {
         mentorId: actor.id,
         menteeId: { not: actor.id },
         status: "active",
-        reviewRequired: false,
         mentorAcceptedAt: { not: null },
         menteeAcceptedAt: { not: null },
         activatedAt: { not: null },
         endedAt: null,
       },
-      select: {
-        menteeId: true,
-        mentee: { select: { id: true, name: true, email: true } },
-      },
-      orderBy: { activatedAt: "asc" },
+      select: { id: true },
     }),
-    getMentoredCohortIds(actor.id),
+    prisma.cycleFacilitator.findFirst({
+      where: {
+        userId: actor.id,
+        status: "active",
+        acceptedAt: { not: null },
+        endedAt: null,
+        cycle: { status: { in: ["published", "active"] } },
+      },
+      select: { id: true },
+    }),
+    prisma.session.findFirst({
+      where: { organizerId: actor.id },
+      select: { id: true },
+    }),
   ]);
+  return Boolean(mentorship || facilitation || ownedSession);
+}
 
-  const memberships = await prisma.cohortMembership.findMany({
-    where: {
-      role: "member",
-      status: "active",
-      userId: { not: actor.id },
-      cohortId: { in: mentoredCohortIds },
-    },
-    include: { user: { select: { id: true, name: true, email: true } } },
-    orderBy: { joinedAt: "asc" },
+const SESSION_PERSON_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Cycle context authorizes the facilitator to resolve a known Person by exact
+// email for explicit attendance. It does not create an Enrollment, Connection,
+// Pack Membership or Mentorship, and never bulk-enumerates People.
+export async function getCycleSessionAttendeeCandidate(
+  cycleId: string,
+  emailInput: string,
+) {
+  const actor = await requireUser();
+  const normalizedCycleId = cycleId.trim();
+  const email = emailInput.trim().toLowerCase();
+  if (
+    !normalizedCycleId ||
+    normalizedCycleId.length > 128 ||
+    !SESSION_PERSON_EMAIL_PATTERN.test(email) ||
+    email.length > 320
+  ) {
+    throw new Error("Invalid Cycle Session participant.");
+  }
+
+  await authorizeCycleContext(
+    { id: actor.id },
+    normalizedCycleId,
+    "Cycle unavailable or permission denied.",
+  );
+
+  const candidate = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true, name: true, email: true },
   });
-  const byUser = new Map<string, { id: string; name: string; email: string }>();
-  for (const mentorship of mentorships) {
-    if (!byUser.has(mentorship.menteeId)) {
-      byUser.set(mentorship.menteeId, mentorship.mentee);
-    }
-  }
-
-  let legacyOnlyCount = 0;
-  for (const m of memberships) {
-    if (!byUser.has(m.userId)) {
-      byUser.set(m.userId, m.user);
-      legacyOnlyCount += 1;
-    }
-  }
-  if (legacyOnlyCount > 0) {
-    console.info("[session discovery] legacy_cohort_fallback", {
-      attendeeCount: legacyOnlyCount,
-    });
-  }
-  return Array.from(byUser.values());
+  return candidate && candidate.id !== actor.id ? candidate : null;
 }
 
-interface CalendarPerson extends IcsPerson {
-  id: string;
-  name: string;
-  email: string;
+function normalizeSessionAttendeeIds(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return Array.from(
+    new Set(
+      value
+        .filter((userId): userId is string => typeof userId === "string")
+        .map((userId) => userId.trim())
+        .filter(Boolean),
+    ),
+  );
 }
 
-// Minimal, email-sending-only read of a session — deliberately separate
-// from mentorSessionInclude/ownAttendeeSessionSelect above so that adding
-// `email` here never leaks into any mentor- or member-facing query
-// result; this data only ever feeds an outbound calendar invite.
-async function getSessionCalendarContext(sessionId: string): Promise<{
-  mentor: CalendarPerson;
-  attendees: CalendarPerson[];
-  kind: SessionKind;
-  scheduledAt: Date;
-  durationMinutes: number;
-  meetingUrl: string | null;
-} | null> {
-  const session = await prisma.session.findUnique({
-    where: { id: sessionId },
-    select: {
-      kind: true,
-      scheduledAt: true,
-      durationMinutes: true,
-      meetingUrl: true,
-      mentor: { select: { id: true, name: true, email: true } },
-      attendees: {
-        select: { user: { select: { id: true, name: true, email: true } } },
-      },
-    },
-  });
-  if (!session) return null;
-  return {
-    mentor: session.mentor,
-    attendees: session.attendees.map((a) => a.user),
-    kind: session.kind,
-    scheduledAt: session.scheduledAt,
-    durationMinutes: session.durationMinutes,
-    meetingUrl: session.meetingUrl,
-  };
-}
-
-// Best-effort calendar invite fan-out for createSession (new booking) and
-// updateSession (reschedule/cancel). Never throws — a flaky SMTP relay
-// must never roll back or block a session action — and never logs
-// anything beyond the sessionId and a scrubbed error message (no
-// attendee name/email in the log line).
-async function sendSessionCalendarEmails(
-  sessionId: string,
-  method: "REQUEST" | "CANCEL",
-): Promise<void> {
-  try {
-    const ctx = await getSessionCalendarContext(sessionId);
-    if (!ctx) return;
-
-    const recipients: CalendarPerson[] = [ctx.mentor, ...ctx.attendees];
-    const sequence = nextIcsSequence();
-    const kindLabel = SESSION_KIND_LABELS[ctx.kind]?.label ?? ctx.kind;
-
-    const sharedIcsInput = {
-      sessionId,
-      kind: ctx.kind,
-      scheduledAt: ctx.scheduledAt,
-      durationMinutes: ctx.durationMinutes,
-      meetingUrl: ctx.meetingUrl,
-      // Must match the sending mailbox (SMTP_FROM) — Exchange/Outlook
-      // validate that the iMIP sender equals ORGANIZER and may otherwise
-      // drop the invite. Each recipient, including the mentor, is added as
-      // the sole attendee in their own calendar payload below.
-      organizer: {
-        name: "WEPAC",
-        email: (process.env.SMTP_FROM || "info@wepac.pt").replace(
-          /^.*<|>.*$/g,
-          "",
-        ),
-      },
-      sequence,
-    };
-    const sendOne =
-      method === "REQUEST" ? sendSessionInviteEmail : sendSessionCancelEmail;
-
-    await Promise.all(
-      recipients.map((person) => {
-        // Build one calendar payload per recipient. Reusing a single VEVENT
-        // with every participant as ATTENDEE exposes the names and email
-        // addresses of the whole group to each recipient when they inspect
-        // the invite. The organizer remains the WEPAC sending mailbox, while
-        // the only ATTENDEE is the person receiving this copy.
-        const recipientIcsInput = {
-          ...sharedIcsInput,
-          attendees: [person],
-        };
-        const ics =
-          method === "REQUEST"
-            ? buildSessionInviteIcs(recipientIcsInput)
-            : buildSessionCancelIcs(recipientIcsInput);
-
-        return sendOne({
-          to: person.email,
-          recipientName: person.name,
-          kindLabel,
-          scheduledAt: ctx.scheduledAt,
-          meetingUrl: ctx.meetingUrl,
-          ics,
-        }).catch((err) => {
-          console.error("Session calendar email failed", {
-            sessionId,
-            ...logSafeError(err),
-          });
-        });
-      }),
-    );
-  } catch (err) {
-    console.error("Session calendar email failed", {
-      sessionId,
-      ...logSafeError(err),
-    });
-  }
-}
-
-function normalizeSessionAttendeeIds(userIds: string[]): string[] {
-  const normalized = (Array.isArray(userIds) ? userIds : [])
-    .filter((userId): userId is string => typeof userId === "string")
-    .map((userId) => userId.trim())
-    .filter(Boolean);
-  return Array.from(new Set(normalized));
-}
-
-function assertSessionAttendeeCardinality(
-  sessionType: SessionType,
-  attendeeUserIds: string[],
-): void {
+function assertSessionAttendeeCardinality(attendeeUserIds: string[]): void {
   if (attendeeUserIds.length === 0) {
-    throw new Error("Escolhe pelo menos um participante.");
+    throw new Error("Choose at least one attendee.");
   }
-  if (sessionType === "individual" && attendeeUserIds.length !== 1) {
-    throw new Error(
-      "Uma Session individual requer exatamente um participante.",
-    );
+  if (attendeeUserIds.length > 50) {
+    throw new Error("A Session cannot have more than 50 attendees.");
   }
-  if (sessionType === "group" && attendeeUserIds.length < 2) {
-    throw new Error("Uma Group Session requer pelo menos dois participantes.");
+}
+
+// This module is a Server Actions boundary, so webhook-only exports need their
+// own capability check. A valid Cal.com request signature is verified by the
+// route; passing the configured secret here prevents either helper from being
+// invoked as an unauthenticated Server Action.
+function assertWebhookCapability(candidate: string): void {
+  const expected = process.env.CALCOM_WEBHOOK_SECRET;
+  if (!expected || typeof candidate !== "string") {
+    throw new Error("Unauthorized webhook operation.");
   }
-  if (sessionType !== "individual" && sessionType !== "group") {
-    throw new Error("Formato de Session inválido.");
+  const candidateBytes = Buffer.from(candidate);
+  const expectedBytes = Buffer.from(expected);
+  if (
+    candidateBytes.length !== expectedBytes.length ||
+    !timingSafeEqual(candidateBytes, expectedBytes)
+  ) {
+    throw new Error("Unauthorized webhook operation.");
   }
+}
+
+type SessionActor = { id: string };
+
+async function authorizeCycleContext(
+  actor: SessionActor,
+  cycleId: string,
+  invalidMessage: string,
+): Promise<void> {
+  const cycle = await prisma.cycle.findFirst({
+    where: {
+      id: cycleId,
+      status: { in: ["published", "active"] },
+    },
+    select: { id: true },
+  });
+  if (!cycle) throw new Error(invalidMessage);
+
+  const facilitator = await prisma.cycleFacilitator.findFirst({
+    where: {
+      cycleId,
+      userId: actor.id,
+      status: "active",
+      acceptedAt: { not: null },
+      endedAt: null,
+    },
+    select: { id: true },
+  });
+  if (!facilitator) throw new Error(invalidMessage);
 }
 
 async function authorizeSessionAttendees({
   actor,
   attendeeUserIds,
-  legacyCohortId,
+  cycleId,
   invalidMessage,
 }: {
-  actor: { id: string; role: "member" | "mentor" | "admin" };
+  actor: SessionActor;
   attendeeUserIds: string[];
-  legacyCohortId?: string;
+  cycleId?: string | null;
   invalidMessage: string;
-}): Promise<{ mentorshipId: string | null }> {
-  if (attendeeUserIds.includes(actor.id)) {
+}): Promise<{ cycleId: string | null; mentorshipId: string | null }> {
+  if (attendeeUserIds.includes(actor.id)) throw new Error(invalidMessage);
+
+  const users = await prisma.user.findMany({
+    where: { id: { in: attendeeUserIds, not: actor.id } },
+    select: { id: true },
+  });
+  if (new Set(users.map(({ id }) => id)).size !== attendeeUserIds.length) {
     throw new Error(invalidMessage);
   }
 
-  // A persisted legacy Cycle context must be truthful: context never adds
-  // attendees, and neither Mentorship nor the admin role may attach a Person
-  // who is not an active participant of that exact Cycle. Cohortless Sessions
-  // continue through the Mentorship-first authorization below.
-  if (legacyCohortId) {
-    const activeParticipants = await prisma.cohortMembership.findMany({
-      where: {
-        cohortId: legacyCohortId,
-        userId: { in: attendeeUserIds, not: actor.id },
-        role: "member",
-        status: "active",
-      },
-      select: { userId: true },
-    });
-    if (
-      new Set(activeParticipants.map((membership) => membership.userId))
-        .size !== attendeeUserIds.length
-    ) {
-      throw new Error(invalidMessage);
-    }
+  if (cycleId) {
+    // Cycle context authorizes the organizer, not the attendee list. Every
+    // attendee is an explicit Person and need not be enrolled in the Cycle.
+    await authorizeCycleContext(actor, cycleId, invalidMessage);
+    return { cycleId, mentorshipId: null };
   }
 
-  let authorizations: SessionAttendeeAuthorization[] = [];
-  if (actor.role === "admin") {
-    const users = await prisma.user.findMany({
-      where: { id: { in: attendeeUserIds, not: actor.id } },
-      select: { id: true },
-    });
-    if (new Set(users.map((user) => user.id)).size !== attendeeUserIds.length) {
-      throw new Error(invalidMessage);
-    }
-
-    // Admin may schedule with any other Person. We still resolve a sole
-    // attendee through the same narrow predicate so a genuine active
-    // Mentorship is attached when one exists; unrelated admin Sessions stay
-    // unlinked.
-    if (attendeeUserIds.length === 1) {
-      authorizations = [
-        await resolveSessionAttendeeAuthorization(
-          actor.id,
-          attendeeUserIds[0],
-          {
-            legacyCohortId,
-          },
-        ),
-      ];
-    }
-  } else {
-    authorizations = await Promise.all(
-      attendeeUserIds.map((attendeeUserId) =>
-        resolveSessionAttendeeAuthorization(actor.id, attendeeUserId, {
-          legacyCohortId,
-        }),
-      ),
-    );
-    if (authorizations.some((authorization) => !authorization.authorized)) {
-      throw new Error(invalidMessage);
-    }
-  }
-
-  const legacyFallbackCount = authorizations.filter(
-    (authorization) => authorization.source === "legacy_cohort",
-  ).length;
-  if (legacyFallbackCount > 0) {
-    console.info("[session authorization] legacy_cohort_fallback", {
-      attendeeCount: legacyFallbackCount,
-    });
+  const authorizations: SessionAttendeeAuthorization[] = await Promise.all(
+    attendeeUserIds.map((attendeeUserId) =>
+      resolveSessionAttendeeAuthorization(actor.id, attendeeUserId),
+    ),
+  );
+  if (authorizations.some(({ authorized }) => !authorized)) {
+    throw new Error(invalidMessage);
   }
 
   const soleAuthorization =
     attendeeUserIds.length === 1 ? authorizations[0] : undefined;
   return {
+    cycleId: null,
     mentorshipId:
       soleAuthorization?.source === "mentorship"
         ? soleAuthorization.mentorshipId
@@ -633,167 +482,496 @@ async function authorizeSessionAttendees({
   };
 }
 
-export async function createSession(data: {
-  cohortId?: string;
-  sessionType: SessionType;
+// Repeat the exact capability proof inside the write transaction. The earlier
+// check provides fast feedback, but is not an authorization boundary: a
+// Mentorship or Cycle Facilitation can be revoked between that check and the
+// Session insert.
+async function revalidateSessionAttendeesInTransaction(
+  tx: Prisma.TransactionClient,
+  {
+    actor,
+    attendeeUserIds,
+    cycleId,
+    invalidMessage,
+  }: {
+    actor: SessionActor;
+    attendeeUserIds: string[];
+    cycleId?: string | null;
+    invalidMessage: string;
+  },
+): Promise<{ cycleId: string | null; mentorshipId: string | null }> {
+  if (attendeeUserIds.includes(actor.id)) throw new Error(invalidMessage);
+
+  const users = await tx.user.findMany({
+    where: { id: { in: attendeeUserIds, not: actor.id } },
+    select: { id: true },
+  });
+  if (new Set(users.map(({ id }) => id)).size !== attendeeUserIds.length) {
+    throw new Error(invalidMessage);
+  }
+
+  if (cycleId) {
+    const lockedCapability = await tx.$queryRaw<
+      Array<{ cycleId: string; facilitatorId: string }>
+    >(Prisma.sql`
+      SELECT
+        c."id" AS "cycleId",
+        cf."id" AS "facilitatorId"
+      FROM "cycles" c
+      INNER JOIN "cycle_facilitators" cf
+        ON cf."cycleId" = c."id"
+      WHERE c."id" = ${cycleId}
+        AND c."status" IN ('published', 'active')
+        AND cf."userId" = ${actor.id}
+        AND cf."status" = 'active'
+        AND cf."acceptedAt" IS NOT NULL
+        AND cf."endedAt" IS NULL
+      FOR SHARE OF c, cf
+    `);
+    if (lockedCapability.length !== 1) throw new Error(invalidMessage);
+    return { cycleId, mentorshipId: null };
+  }
+
+  const mentorships = await tx.$queryRaw<
+    Array<{ id: string; menteeId: string }>
+  >(Prisma.sql`
+    SELECT "id", "menteeId"
+    FROM "mentorships"
+    WHERE "mentorId" = ${actor.id}
+      AND "menteeId" IN (${Prisma.join(attendeeUserIds)})
+      AND "status" = 'active'
+      AND "mentorAcceptedAt" IS NOT NULL
+      AND "menteeAcceptedAt" IS NOT NULL
+      AND "activatedAt" IS NOT NULL
+      AND "endedAt" IS NULL
+    FOR SHARE
+  `);
+  const byMenteeId = new Map(
+    mentorships.map((mentorship) => [mentorship.menteeId, mentorship.id]),
+  );
+  if (attendeeUserIds.some((userId) => !byMenteeId.has(userId))) {
+    throw new Error(invalidMessage);
+  }
+  return {
+    cycleId: null,
+    mentorshipId:
+      attendeeUserIds.length === 1
+        ? (byMenteeId.get(attendeeUserIds[0]) ?? null)
+        : null,
+  };
+}
+
+type SessionCreateInput = {
+  cycleId?: string;
   kind?: SessionKind;
   scheduledAt: string;
   durationMinutes?: number;
   discussionPoints?: string;
   attendeeUserIds: string[];
-}) {
-  const attendeeUserIds = normalizeSessionAttendeeIds(data.attendeeUserIds);
-  assertSessionAttendeeCardinality(data.sessionType, attendeeUserIds);
+};
 
-  let actor;
-  if (data.cohortId) {
-    actor = await assertMentorOfCohort(data.cohortId);
-  } else {
-    actor = await requireRole(["mentor", "admin"]);
+type ParsedSessionCreate = {
+  cycleId: string | null;
+  kind: SessionKind;
+  scheduledAt: Date;
+  durationMinutes: number;
+  discussionPoints: string | null;
+  attendeeUserIds: string[];
+};
+
+const SESSION_CREATE_KEYS = new Set<keyof SessionCreateInput>([
+  "cycleId",
+  "kind",
+  "scheduledAt",
+  "durationMinutes",
+  "discussionPoints",
+  "attendeeUserIds",
+]);
+
+function parseSessionCreateData(input: unknown): ParsedSessionCreate {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    throw new Error("Invalid Session data.");
+  }
+  const raw = input as Record<string, unknown>;
+  for (const key of Object.keys(raw)) {
+    if (!SESSION_CREATE_KEYS.has(key as keyof SessionCreateInput)) {
+      throw new Error("Invalid Session fields.");
+    }
   }
 
-  const { mentorshipId } = await authorizeSessionAttendees({
-    actor,
+  const attendeeUserIds = normalizeSessionAttendeeIds(raw.attendeeUserIds);
+  assertSessionAttendeeCardinality(attendeeUserIds);
+
+  if (typeof raw.scheduledAt !== "string" || !raw.scheduledAt.trim()) {
+    throw new Error("Invalid Session date.");
+  }
+  const scheduledAt = new Date(raw.scheduledAt);
+  if (Number.isNaN(scheduledAt.getTime())) {
+    throw new Error("Invalid Session date.");
+  }
+
+  const durationMinutes = raw.durationMinutes ?? 60;
+  if (
+    typeof durationMinutes !== "number" ||
+    !Number.isInteger(durationMinutes) ||
+    durationMinutes < 15 ||
+    durationMinutes > 1_440
+  ) {
+    throw new Error("Invalid Session duration.");
+  }
+
+  const kind = raw.kind ?? "checkpoint";
+  if (
+    typeof kind !== "string" ||
+    !SESSION_KIND_KEYS.includes(kind as (typeof SESSION_KIND_KEYS)[number])
+  ) {
+    throw new Error("Invalid Session kind.");
+  }
+
+  if (
+    raw.cycleId !== undefined &&
+    (typeof raw.cycleId !== "string" || !raw.cycleId.trim())
+  ) {
+    throw new Error("Invalid Cycle.");
+  }
+  if (
+    raw.discussionPoints !== undefined &&
+    (typeof raw.discussionPoints !== "string" ||
+      raw.discussionPoints.length > 30_000)
+  ) {
+    throw new Error("Invalid discussion points.");
+  }
+
+  return {
+    cycleId:
+      typeof raw.cycleId === "string" ? raw.cycleId.trim() || null : null,
+    kind: kind as SessionKind,
+    scheduledAt,
+    durationMinutes,
+    discussionPoints:
+      typeof raw.discussionPoints === "string"
+        ? raw.discussionPoints.trim() || null
+        : null,
     attendeeUserIds,
-    legacyCohortId: data.cohortId,
-    invalidMessage: data.cohortId
-      ? "Participantes inválidos para este Cycle."
-      : "Participantes inválidos para esta sessão.",
-  });
-
-  const session = await prisma.session.create({
-    data: {
-      cohortId: data.cohortId,
-      mentorshipId,
-      mentorId: actor.id,
-      sessionType: data.sessionType,
-      kind: data.kind ?? "checkpoint",
-      scheduledAt: new Date(data.scheduledAt),
-      durationMinutes: data.durationMinutes ?? 60,
-      discussionPoints: data.discussionPoints,
-      meetingUrl: generateMeetingUrl(),
-      attendees: {
-        create: attendeeUserIds.map((userId) => ({ userId })),
-      },
-    },
-    include: mentorSessionInclude,
-  });
-
-  // Fire-and-forget — see sendSessionCalendarEmails; never blocks or
-  // fails session creation.
-  void sendSessionCalendarEmails(session.id, "REQUEST");
-
-  return session;
+  };
 }
 
-// Guard-free counterpart to createSession's write path, for the Cal.com
-// webhook receiver (src/app/api/wepacker/calcom-webhook/route.ts). There is
-// no HTTP session on a server-to-server webhook delivery, so
-// browser-session guards cannot run here. The caller must first verify the
-// Cal.com HMAC signature; this function independently re-checks organizer and
-// attendee authorization before writing because a valid signature proves only
-// payload origin, not the self-asserted attendee's relationship.
-//
-// calcomBookingUid is passed straight to `create` (not pre-checked with a
-// findFirst) so the @unique constraint is the single idempotency anchor:
-// Cal.com is at-least-once delivery, so two concurrent deliveries for the
-// same booking must race into the same P2002 here rather than both pass a
-// separate existence check. The caller (route.ts) catches P2002 and
-// responds 200 { duplicate: true }.
+export async function createSession(data: SessionCreateInput) {
+  const parsed = parseSessionCreateData(data);
+  const actor = await requireUser();
+  await authorizeSessionAttendees({
+    actor,
+    attendeeUserIds: parsed.attendeeUserIds,
+    cycleId: parsed.cycleId,
+    invalidMessage: "Invalid attendees for this Session.",
+  });
+
+  const result = await prisma.$transaction(async (tx) => {
+    const context = await revalidateSessionAttendeesInTransaction(tx, {
+      actor,
+      attendeeUserIds: parsed.attendeeUserIds,
+      cycleId: parsed.cycleId,
+      invalidMessage: "Invalid attendees for this Session.",
+    });
+    const session = await tx.session.create({
+      data: {
+        cycleId: context.cycleId,
+        mentorshipId: context.mentorshipId,
+        organizerId: actor.id,
+        kind: parsed.kind,
+        scheduledAt: parsed.scheduledAt,
+        durationMinutes: parsed.durationMinutes,
+        discussionPoints: parsed.discussionPoints,
+        meetingUrl: generateMeetingUrl(),
+        attendees: {
+          create: parsed.attendeeUserIds.map((userId) => ({ userId })),
+        },
+      },
+      include: organizerSessionInclude,
+    });
+    const events = await persistSessionEvent(tx, {
+      sessionId: session.id,
+      actorId: actor.id,
+      type: "session_scheduled",
+    });
+    return { session, events };
+  });
+
+  dispatchPersistedNotificationEvents(result.events);
+  return withAttendeeFormat(result.session);
+}
+
+// HMAC-authenticated webhook counterpart. It cannot rely on a browser session,
+// so it re-resolves the organizer and relationships before every write.
 export async function createSessionFromResolvedActors(data: {
-  cohortId?: string | null;
-  mentorId: string;
-  sessionType: SessionType;
+  webhookSecret: string;
+  organizerId: string;
   kind?: SessionKind;
   scheduledAt: Date;
   durationMinutes?: number;
   attendeeUserIds: string[];
   calcomBookingUid: string;
 }) {
+  assertWebhookCapability(data.webhookSecret);
   const attendeeUserIds = normalizeSessionAttendeeIds(data.attendeeUserIds);
-  assertSessionAttendeeCardinality(data.sessionType, attendeeUserIds);
-
-  // This exported write is used by an HMAC-authenticated webhook and cannot
-  // rely on a browser/NextAuth session. Re-resolve the organizer and every
-  // attendee here so the write itself still fails closed if a caller forgets
-  // the route-level checks.
-  const actor = await prisma.user.findUnique({
-    where: { id: data.mentorId },
-    select: { id: true, role: true },
-  });
-  if (!actor || (actor.role !== "mentor" && actor.role !== "admin")) {
-    throw new Error("Organizador inválido para esta sessão.");
+  assertSessionAttendeeCardinality(attendeeUserIds);
+  if (
+    data.kind !== undefined &&
+    !SESSION_KIND_KEYS.includes(data.kind)
+  ) {
+    throw new Error("Invalid Session kind.");
   }
-  const { mentorshipId } = await authorizeSessionAttendees({
+  if (Number.isNaN(data.scheduledAt.getTime())) {
+    throw new Error("Invalid Session date.");
+  }
+  const durationMinutes = data.durationMinutes ?? 60;
+  if (
+    !Number.isInteger(durationMinutes) ||
+    durationMinutes < 15 ||
+    durationMinutes > 1_440
+  ) {
+    throw new Error("Invalid Session duration.");
+  }
+  if (
+    typeof data.calcomBookingUid !== "string" ||
+    !data.calcomBookingUid.trim()
+  ) {
+    throw new Error("Invalid booking UID.");
+  }
+
+  const actor = await prisma.user.findUnique({
+    where: { id: data.organizerId },
+    select: { id: true },
+  });
+  if (!actor) throw new Error("Invalid Session organizer.");
+  await authorizeSessionAttendees({
     actor,
     attendeeUserIds,
-    legacyCohortId: data.cohortId ?? undefined,
-    invalidMessage: "Participantes inválidos para esta sessão.",
+    invalidMessage: "Invalid attendees for this Session.",
   });
 
-  const session = await prisma.session.create({
-    data: {
-      cohortId: data.cohortId ?? undefined,
-      mentorshipId,
-      mentorId: data.mentorId,
-      sessionType: data.sessionType,
-      kind: data.kind ?? "checkpoint",
-      scheduledAt: data.scheduledAt,
-      durationMinutes: data.durationMinutes ?? 60,
-      meetingUrl: generateMeetingUrl(),
-      calcomBookingUid: data.calcomBookingUid,
-      attendees: {
-        create: attendeeUserIds.map((userId) => ({ userId })),
+  const result = await prisma.$transaction(async (tx) => {
+    const context = await revalidateSessionAttendeesInTransaction(tx, {
+      actor,
+      attendeeUserIds,
+      invalidMessage: "Invalid attendees for this Session.",
+    });
+    const session = await tx.session.create({
+      data: {
+        mentorshipId: context.mentorshipId,
+        organizerId: actor.id,
+        kind: data.kind ?? "checkpoint",
+        scheduledAt: data.scheduledAt,
+        durationMinutes,
+        meetingUrl: generateMeetingUrl(),
+        calcomBookingUid: data.calcomBookingUid,
+        calcomBookingReferences: {
+          create: { uid: data.calcomBookingUid },
+        },
+        attendees: { create: attendeeUserIds.map((userId) => ({ userId })) },
       },
-    },
-    include: mentorSessionInclude,
+      include: organizerSessionInclude,
+    });
+    const events = await persistSessionEvent(tx, {
+      sessionId: session.id,
+      actorId: actor.id,
+      type: "session_scheduled",
+    });
+    return { session, events };
   });
 
-  // Fire-and-forget — see sendSessionCalendarEmails; never blocks or fails
-  // session creation. Only reached once `create` above has actually
-  // succeeded, so a P2002 (duplicate booking) never double-sends.
-  void sendSessionCalendarEmails(session.id, "REQUEST");
-
-  return session;
+  dispatchPersistedNotificationEvents(result.events);
+  return withAttendeeFormat(result.session);
 }
 
-// Guard-free counterpart to updateSession's cancel path, for the same
-// Cal.com webhook receiver — mirrors updateSession's justCancelled branch
-// (status flip + CANCEL invite) without the assertMentorOfSession call,
-// which throws on a cohort-less session because it falls through to
-// requireUser()/NextAuth, and there is no HTTP session here. Idempotent:
-// Cal.com's BOOKING_CANCELLED can also be delivered more than once — a
-// session already cancelled is left alone and no second CANCEL email
-// fires.
 export async function cancelSessionFromWebhook(
   sessionId: string,
+  webhookSecret: string,
 ): Promise<{ id: string; alreadyCancelled: boolean } | null> {
-  const before = await prisma.session.findUnique({
-    where: { id: sessionId },
-    select: { status: true },
+  assertWebhookCapability(webhookSecret);
+  const transitionId = randomUUID();
+  const result = await prisma.$transaction(async (tx) => {
+    const beforeRows = await tx.$queryRaw<
+      Array<{
+        organizerId: string;
+        status: SessionStatus;
+        kind: SessionKind;
+        scheduledAt: Date;
+        durationMinutes: number;
+        meetingUrl: string | null;
+      }>
+    >(Prisma.sql`
+      SELECT
+        "mentorId" AS "organizerId",
+        "status",
+        "kind",
+        "scheduledAt",
+        "durationMinutes",
+        "meetingUrl"
+      FROM "sessions"
+      WHERE "id" = ${sessionId}
+      FOR UPDATE
+    `);
+    const before = beforeRows[0] ?? null;
+    if (!before) return { response: null, events: [] };
+    if (before.status === "cancelled") {
+      return {
+        response: { id: sessionId, alreadyCancelled: true },
+        events: [],
+      };
+    }
+
+    const updated = await tx.session.update({
+      where: { id: sessionId },
+      data: { status: "cancelled" },
+      select: {
+        status: true,
+        kind: true,
+        scheduledAt: true,
+        durationMinutes: true,
+        meetingUrl: true,
+      },
+    });
+    const events = await persistSessionEvent(tx, {
+      sessionId,
+      actorId: before.organizerId,
+      type: "session_cancelled",
+      dedupeScope: sessionTransitionDedupeScope(
+        before,
+        updated,
+        transitionId,
+      ),
+    });
+    return {
+      response: { id: sessionId, alreadyCancelled: false },
+      events,
+    };
   });
-  if (!before) return null;
-  if (before.status === "cancelled") {
-    return { id: sessionId, alreadyCancelled: true };
+
+  dispatchPersistedNotificationEvents(result.events);
+  return result.response;
+}
+
+export async function rescheduleSessionFromWebhook(
+  sessionId: string,
+  webhookSecret: string,
+  data: {
+    scheduledAt: Date;
+    durationMinutes: number;
+    calcomBookingUid: string;
+  },
+): Promise<{ id: string; alreadyCurrent: boolean } | null> {
+  assertWebhookCapability(webhookSecret);
+  if (Number.isNaN(data.scheduledAt.getTime())) {
+    throw new Error("Invalid Session date.");
+  }
+  if (
+    !Number.isInteger(data.durationMinutes) ||
+    data.durationMinutes < 15 ||
+    data.durationMinutes > 1_440
+  ) {
+    throw new Error("Invalid Session duration.");
+  }
+  const calcomBookingUid = data.calcomBookingUid.trim();
+  if (!calcomBookingUid) {
+    throw new Error("Invalid booking UID.");
   }
 
-  await prisma.session.update({
-    where: { id: sessionId },
-    data: { status: "cancelled" },
-  });
-  void sendSessionCalendarEmails(sessionId, "CANCEL");
+  const transitionId = randomUUID();
+  const result = await prisma.$transaction(async (tx) => {
+    const beforeRows = await tx.$queryRaw<
+      Array<{
+        organizerId: string;
+        status: SessionStatus;
+        kind: SessionKind;
+        scheduledAt: Date;
+        durationMinutes: number;
+        meetingUrl: string | null;
+        calcomBookingUid: string | null;
+      }>
+    >(Prisma.sql`
+      SELECT
+        "mentorId" AS "organizerId",
+        "status",
+        "kind",
+        "scheduledAt",
+        "durationMinutes",
+        "meetingUrl",
+        "calcomBookingUid"
+      FROM "sessions"
+      WHERE "id" = ${sessionId}
+      FOR UPDATE
+    `);
+    const before = beforeRows[0] ?? null;
+    if (!before) return { response: null, events: [] };
 
-  return { id: sessionId, alreadyCancelled: false };
+    const bookingReference = await tx.calcomBookingReference.upsert({
+      where: { uid: calcomBookingUid },
+      create: { sessionId, uid: calcomBookingUid },
+      update: {},
+      select: { sessionId: true },
+    });
+    if (bookingReference.sessionId !== sessionId) {
+      throw new Error("Booking UID belongs to a different Session.");
+    }
+
+    // A reschedule cannot resurrect a Session whose cancellation/completion
+    // already won. Replayed webhook deliveries are also no-ops once the
+    // requested calendar state is current.
+    if (
+      before.status !== "scheduled" ||
+      (before.scheduledAt.getTime() === data.scheduledAt.getTime() &&
+        before.durationMinutes === data.durationMinutes &&
+        before.calcomBookingUid === calcomBookingUid)
+    ) {
+      return {
+        response: { id: sessionId, alreadyCurrent: true },
+        events: [],
+      };
+    }
+
+    const updated = await tx.session.update({
+      where: { id: sessionId },
+      data: {
+        scheduledAt: data.scheduledAt,
+        durationMinutes: data.durationMinutes,
+        calcomBookingUid,
+      },
+      select: {
+        status: true,
+        kind: true,
+        scheduledAt: true,
+        durationMinutes: true,
+        meetingUrl: true,
+      },
+    });
+    const events = await persistSessionEvent(tx, {
+      sessionId,
+      actorId: before.organizerId,
+      type: "session_updated",
+      dedupeScope: sessionTransitionDedupeScope(
+        before,
+        updated,
+        transitionId,
+      ),
+    });
+    return {
+      response: { id: sessionId, alreadyCurrent: false },
+      events,
+    };
+  });
+
+  dispatchPersistedNotificationEvents(result.events);
+  return result.response;
 }
 
 type SessionUpdatePayload = {
   status?: SessionStatus;
   kind?: SessionKind;
-  notes?: string;
-  notesPublished?: boolean;
   discussionPoints?: string;
   scheduledAt?: string;
-  meetingUrl?: string;
+  durationMinutes?: number;
+  meetingUrl?: string | null;
 };
 
 type ParsedSessionUpdate = Omit<SessionUpdatePayload, "scheduledAt"> & {
@@ -803,10 +981,9 @@ type ParsedSessionUpdate = Omit<SessionUpdatePayload, "scheduledAt"> & {
 const SESSION_UPDATE_KEYS = new Set<keyof SessionUpdatePayload>([
   "status",
   "kind",
-  "notes",
-  "notesPublished",
   "discussionPoints",
   "scheduledAt",
+  "durationMinutes",
   "meetingUrl",
 ]);
 const SESSION_STATUS_KEYS: readonly SessionStatus[] = [
@@ -818,13 +995,12 @@ const SESSION_STATUS_KEYS: readonly SessionStatus[] = [
 
 function parseSessionUpdateData(input: unknown): ParsedSessionUpdate {
   if (!input || typeof input !== "object" || Array.isArray(input)) {
-    throw new Error("Dados de Session inválidos.");
+    throw new Error("Invalid Session data.");
   }
-
   const raw = input as Record<string, unknown>;
   for (const key of Object.keys(raw)) {
     if (!SESSION_UPDATE_KEYS.has(key as keyof SessionUpdatePayload)) {
-      throw new Error("Campos de Session inválidos.");
+      throw new Error("Invalid Session fields.");
     }
   }
 
@@ -834,7 +1010,7 @@ function parseSessionUpdateData(input: unknown): ParsedSessionUpdate {
       typeof raw.status !== "string" ||
       !SESSION_STATUS_KEYS.includes(raw.status as SessionStatus)
     ) {
-      throw new Error("Estado de Session inválido.");
+      throw new Error("Invalid Session status.");
     }
     parsed.status = raw.status as SessionStatus;
   }
@@ -845,118 +1021,171 @@ function parseSessionUpdateData(input: unknown): ParsedSessionUpdate {
         raw.kind as (typeof SESSION_KIND_KEYS)[number],
       )
     ) {
-      throw new Error("Tipo de Session inválido.");
+      throw new Error("Invalid Session kind.");
     }
     parsed.kind = raw.kind as SessionKind;
-  }
-  if (raw.notes !== undefined) {
-    if (typeof raw.notes !== "string" || raw.notes.length > 300_000) {
-      throw new Error("Notas de Session inválidas.");
-    }
-    parsed.notes = raw.notes;
-  }
-  if (raw.notesPublished !== undefined) {
-    if (typeof raw.notesPublished !== "boolean") {
-      throw new Error("Publicação de notas inválida.");
-    }
-    parsed.notesPublished = raw.notesPublished;
   }
   if (raw.discussionPoints !== undefined) {
     if (
       typeof raw.discussionPoints !== "string" ||
-      raw.discussionPoints.length > 300_000
+      raw.discussionPoints.length > 30_000
     ) {
-      throw new Error("Pontos de discussão inválidos.");
+      throw new Error("Invalid discussion points.");
     }
-    parsed.discussionPoints = raw.discussionPoints;
+    parsed.discussionPoints = raw.discussionPoints.trim();
   }
   if (raw.scheduledAt !== undefined) {
     if (typeof raw.scheduledAt !== "string" || !raw.scheduledAt.trim()) {
-      throw new Error("Data da Session inválida.");
+      throw new Error("Invalid Session date.");
     }
     const scheduledAt = new Date(raw.scheduledAt);
     if (Number.isNaN(scheduledAt.getTime())) {
-      throw new Error("Data da Session inválida.");
+      throw new Error("Invalid Session date.");
     }
     parsed.scheduledAt = scheduledAt;
   }
-  if (raw.meetingUrl !== undefined) {
-    if (typeof raw.meetingUrl !== "string" || raw.meetingUrl.length > 2_048) {
-      throw new Error("Link da Session inválido.");
+  if (raw.durationMinutes !== undefined) {
+    if (
+      typeof raw.durationMinutes !== "number" ||
+      !Number.isInteger(raw.durationMinutes) ||
+      raw.durationMinutes < 15 ||
+      raw.durationMinutes > 1_440
+    ) {
+      throw new Error("Invalid Session duration.");
     }
-    parsed.meetingUrl = raw.meetingUrl;
+    parsed.durationMinutes = raw.durationMinutes;
   }
-
+  if (raw.meetingUrl !== undefined) {
+    if (raw.meetingUrl !== null && typeof raw.meetingUrl !== "string") {
+      throw new Error("Invalid Session link.");
+    }
+    const trimmed = raw.meetingUrl?.trim() ?? "";
+    parsed.meetingUrl = trimmed ? normalizeMeetingUrl(trimmed) : null;
+  }
   return parsed;
 }
 
 export async function updateSession(
   sessionId: string,
-  // Keep the public type narrow for normal callers, while the parser below
-  // treats the serialized Server Action payload as untrusted at runtime.
   rawData: SessionUpdatePayload,
 ) {
-  await assertMentorOfSession(sessionId);
+  const { actorId } = await assertSessionOrganizer(sessionId);
   const data = parseSessionUpdateData(rawData);
+  const transitionId = randomUUID();
+  const result = await prisma.$transaction(async (tx) => {
+    const needsBeforeSnapshot =
+      data.scheduledAt !== undefined ||
+      data.status !== undefined ||
+      data.kind !== undefined ||
+      data.durationMinutes !== undefined ||
+      data.meetingUrl !== undefined;
+    const before = needsBeforeSnapshot
+      ? (
+          await tx.$queryRaw<
+            Array<{
+              kind: SessionKind;
+              scheduledAt: Date;
+              durationMinutes: number;
+              status: SessionStatus;
+              meetingUrl: string | null;
+            }>
+          >(Prisma.sql`
+            SELECT
+              "kind",
+              "scheduledAt",
+              "durationMinutes",
+              "status",
+              "meetingUrl"
+            FROM "sessions"
+            WHERE "id" = ${sessionId}
+            FOR UPDATE
+          `)
+        )[0] ?? null
+      : null;
 
-  // Snapshot taken before the write so we can tell whether this call
-  // actually changed the schedule/status/meeting link (vs. e.g. only
-  // editing notes), and only send a calendar email when it did.
-  const needsBeforeSnapshot =
-    data.scheduledAt !== undefined ||
-    data.status !== undefined ||
-    data.meetingUrl !== undefined;
-  const before = needsBeforeSnapshot
-    ? await prisma.session.findUnique({
-        where: { id: sessionId },
-        select: { scheduledAt: true, status: true, meetingUrl: true },
-      })
-    : null;
+    const updated = await tx.session.update({
+      where: { id: sessionId },
+      data,
+      select: {
+        id: true,
+        kind: true,
+        scheduledAt: true,
+        durationMinutes: true,
+        status: true,
+        meetingUrl: true,
+      },
+    });
+    const justCancelled =
+      data.status === "cancelled" &&
+      before !== null &&
+      before.status !== "cancelled";
+    const reactivated =
+      data.status === "scheduled" &&
+      before !== null &&
+      before.status !== "scheduled" &&
+      updated.status === "scheduled";
+    const scheduleChanged =
+      !justCancelled &&
+      !reactivated &&
+      before !== null &&
+      ((data.scheduledAt !== undefined &&
+        before.scheduledAt.getTime() !== updated.scheduledAt.getTime()) ||
+        (data.durationMinutes !== undefined &&
+          before.durationMinutes !== updated.durationMinutes));
+    const meetingUrlChanged =
+      !justCancelled &&
+      !reactivated &&
+      !scheduleChanged &&
+      data.meetingUrl !== undefined &&
+      before !== null &&
+      before.meetingUrl !== updated.meetingUrl;
+    const kindChanged =
+      !justCancelled &&
+      !reactivated &&
+      !scheduleChanged &&
+      !meetingUrlChanged &&
+      data.kind !== undefined &&
+      before !== null &&
+      before.kind !== updated.kind;
 
-  const updated = await prisma.session.update({
-    where: { id: sessionId },
-    data,
-    select: {
-      id: true,
-      scheduledAt: true,
-      status: true,
-      meetingUrl: true,
-    },
+    let events: PersistedNotificationEvent[] = [];
+    if (before) {
+      const dedupeScope = sessionTransitionDedupeScope(
+        before,
+        updated,
+        transitionId,
+      );
+      if (justCancelled) {
+        events = await persistSessionEvent(tx, {
+          sessionId,
+          actorId,
+          type: "session_cancelled",
+          dedupeScope,
+        });
+      } else if (reactivated) {
+        events = await persistSessionEvent(tx, {
+          sessionId,
+          actorId,
+          type: "session_scheduled",
+          dedupeScope,
+        });
+      } else if (
+        updated.status === "scheduled" &&
+        (scheduleChanged || meetingUrlChanged || kindChanged)
+      ) {
+        events = await persistSessionEvent(tx, {
+          sessionId,
+          actorId,
+          type: "session_updated",
+          dedupeScope,
+        });
+      }
+    }
+    return { id: updated.id, events };
   });
 
-  const justCancelled =
-    data.status === "cancelled" &&
-    before !== null &&
-    before.status !== "cancelled";
-  const rescheduled =
-    !justCancelled &&
-    data.scheduledAt !== undefined &&
-    before !== null &&
-    before.scheduledAt.getTime() !== updated.scheduledAt.getTime();
-  // A meeting-link-only edit (e.g. mentor swaps in a manual Zoom link)
-  // still needs to reach attendees' calendars, but only when it isn't
-  // already covered by a cancel or reschedule invite above.
-  const meetingUrlChanged =
-    !justCancelled &&
-    !rescheduled &&
-    data.meetingUrl !== undefined &&
-    before !== null &&
-    before.meetingUrl !== updated.meetingUrl;
-
-  // Fire-and-forget — see sendSessionCalendarEmails; never blocks or
-  // fails the update. Cancellation takes priority: if both status and
-  // scheduledAt changed in the same call, send only the CANCEL, not a
-  // REQUEST immediately followed by a CANCEL. Same reasoning extends to
-  // a meeting-link change bundled with either.
-  if (justCancelled) {
-    void sendSessionCalendarEmails(sessionId, "CANCEL");
-  } else if (rescheduled || meetingUrlChanged) {
-    void sendSessionCalendarEmails(sessionId, "REQUEST");
-  }
-
-  // Server Action responses are observable by the caller. Never return the
-  // full Session row here: it contains organizer-private transcript fields.
-  return { id: updated.id };
+  dispatchPersistedNotificationEvents(result.events);
+  return { id: result.id };
 }
 
 export async function setAttendance(
@@ -964,49 +1193,17 @@ export async function setAttendance(
   userId: string,
   attended: boolean,
 ) {
-  await assertMentorOfSession(sessionId);
+  await assertSessionOrganizer(sessionId);
   return prisma.sessionAttendee.update({
     where: { sessionId_userId: { sessionId, userId } },
     data: { attended },
   });
 }
 
-// Best-effort "your mentor shared a note" notification for the member.
-// Mirrors sendSessionCalendarEmails: never blocks or fails the update,
-// and never logs anything beyond the sessionId/userId and a scrubbed
-// error (no name/email in the log line).
-async function sendSharedNoteNotification({
-  sessionId,
-  userId,
-}: {
-  sessionId: string;
-  userId: string;
-}): Promise<void> {
-  try {
-    const recipient = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { name: true, email: true },
-    });
-    if (!recipient) return;
-    await sendSharedNotePublishedEmail({
-      to: recipient.email,
-      recipientName: recipient.name,
-    });
-  } catch (err) {
-    console.error("Shared note email failed", {
-      sessionId,
-      ...logSafeError(err),
-    });
-  }
-}
-
-// Per-person session notes and outcome — the mentor-facing counterpart
-// to setAttendance. privateNote is mentor-only and never returned to the
-// member; sharedNote only reaches the member once sharedNotePublished.
 export async function updateSessionAttendee(
   sessionId: string,
   userId: string,
-  data: {
+  rawData: {
     attended?: boolean;
     privateNote?: string;
     sharedNote?: string;
@@ -1014,33 +1211,134 @@ export async function updateSessionAttendee(
     outcome?: string;
   },
 ) {
-  await assertMentorOfSession(sessionId);
+  const { actorId } = await assertSessionOrganizer(sessionId);
+  const data = parseSessionAttendeeUpdate(rawData);
+  const result = await prisma.$transaction(async (tx) => {
+    const touchesAttendeeVisibleFollowup =
+      data.sharedNote !== undefined ||
+      data.sharedNotePublished !== undefined ||
+      data.outcome !== undefined;
+    const beforeRows = touchesAttendeeVisibleFollowup
+      ? await tx.$queryRaw<
+          Array<{
+            sharedNote: string | null;
+            sharedNotePublished: boolean;
+            outcome: string | null;
+            followupRevision: number;
+          }>
+        >(Prisma.sql`
+          SELECT
+            "sharedNote",
+            "sharedNotePublished",
+            "outcome",
+            "followupRevision"
+          FROM "session_attendees"
+          WHERE "sessionId" = ${sessionId}
+            AND "userId" = ${userId}
+          FOR UPDATE
+        `)
+      : [];
+    const before = beforeRows[0] ?? null;
+    if (touchesAttendeeVisibleFollowup && !before) {
+      throw new Error("Invalid attendee update.");
+    }
 
-  // Snapshot before the write so the notification only fires on the
-  // false -> true transition, not on every subsequent edit that happens
-  // to pass `sharedNotePublished: true` again (e.g. tweaking the note
-  // text after it's already published).
-  const before =
-    data.sharedNotePublished !== undefined
-      ? await prisma.sessionAttendee.findUnique({
-          where: { sessionId_userId: { sessionId, userId } },
-          select: { sharedNotePublished: true },
+    const nextSharedNotePublished =
+      data.sharedNotePublished ?? before?.sharedNotePublished ?? false;
+    const nextSharedNote = data.sharedNote ?? before?.sharedNote ?? null;
+    if (nextSharedNotePublished && !nextSharedNote?.trim()) {
+      throw new Error("A published shared note cannot be empty.");
+    }
+    const sharedNoteVisibilityChanged = Boolean(
+      before &&
+        (before.sharedNotePublished !== nextSharedNotePublished ||
+          (nextSharedNotePublished &&
+            data.sharedNote !== undefined &&
+            before.sharedNote?.trim() !== (nextSharedNote ?? "").trim())),
+    );
+    const outcomeChanged = Boolean(
+      before &&
+        data.outcome !== undefined &&
+        before.outcome?.trim() !== data.outcome.trim(),
+    );
+    const attendeeVisibleFollowupChanged =
+      sharedNoteVisibilityChanged || outcomeChanged;
+    const updated = await tx.sessionAttendee.update({
+      where: { sessionId_userId: { sessionId, userId } },
+      data: attendeeVisibleFollowupChanged
+        ? { ...data, followupRevision: { increment: 1 } }
+        : data,
+    });
+    const events = attendeeVisibleFollowupChanged && before
+      ? await persistSessionFollowupUpdatedEvent(tx, {
+          sessionId,
+          recipientId: userId,
+          actorId,
+          transitionScope: `${before.followupRevision}->${updated.followupRevision}`,
         })
-      : null;
-
-  const updated = await prisma.sessionAttendee.update({
-    where: { sessionId_userId: { sessionId, userId } },
-    data,
+      : [];
+    return { updated, events };
   });
 
-  const justPublished =
-    data.sharedNotePublished === true && before?.sharedNotePublished === false;
+  dispatchPersistedNotificationEvents(result.events);
+  return result.updated;
+}
 
-  // Fire-and-forget — see sendSharedNoteNotification; never blocks or
-  // fails the update.
-  if (justPublished) {
-    void sendSharedNoteNotification({ sessionId, userId });
+type SessionAttendeeUpdate = {
+  attended?: boolean;
+  privateNote?: string;
+  sharedNote?: string;
+  sharedNotePublished?: boolean;
+  outcome?: string;
+};
+
+const SESSION_ATTENDEE_UPDATE_KEYS = new Set<keyof SessionAttendeeUpdate>([
+  "attended",
+  "privateNote",
+  "sharedNote",
+  "sharedNotePublished",
+  "outcome",
+]);
+
+function parseSessionAttendeeUpdate(input: unknown): SessionAttendeeUpdate {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    throw new Error("Invalid attendee update.");
+  }
+  const raw = input as Record<string, unknown>;
+  const keys = Object.keys(raw);
+  if (keys.length === 0) throw new Error("Invalid attendee update.");
+  for (const key of keys) {
+    if (!SESSION_ATTENDEE_UPDATE_KEYS.has(key as keyof SessionAttendeeUpdate)) {
+      throw new Error("Invalid attendee update fields.");
+    }
   }
 
-  return updated;
+  const parsed: SessionAttendeeUpdate = {};
+  for (const key of ["attended", "sharedNotePublished"] as const) {
+    if (raw[key] !== undefined) {
+      if (typeof raw[key] !== "boolean") {
+        throw new Error("Invalid attendee update.");
+      }
+      parsed[key] = raw[key];
+    }
+  }
+
+  const textLimits = {
+    privateNote: 30_000,
+    sharedNote: 30_000,
+    outcome: 10_000,
+  } as const;
+  for (const key of Object.keys(textLimits) as Array<keyof typeof textLimits>) {
+    if (raw[key] !== undefined) {
+      if (
+        typeof raw[key] !== "string" ||
+        raw[key].length > textLimits[key]
+      ) {
+        throw new Error("Invalid attendee update.");
+      }
+      parsed[key] = raw[key].trim();
+    }
+  }
+
+  return parsed;
 }

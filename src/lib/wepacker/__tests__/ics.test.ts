@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import {
   buildSessionCancelIcs,
   buildSessionInviteIcs,
-  nextIcsSequence,
   sessionIcsUid,
   type SessionIcsInput,
 } from "@/lib/wepacker/ics";
@@ -171,28 +170,5 @@ describe("buildSessionCancelIcs", () => {
     const seqOf = (ics: string) =>
       Number(ics.split("\r\n").find((l) => l.startsWith("SEQUENCE:"))?.split(":")[1]);
     expect(seqOf(cancel)).toBeGreaterThan(seqOf(invite));
-  });
-});
-
-describe("nextIcsSequence", () => {
-  it("increases for a later `now`", () => {
-    const t1 = new Date("2026-08-01T09:00:00.000Z");
-    const t2 = new Date("2026-08-01T09:00:05.000Z");
-    expect(nextIcsSequence(t2)).toBeGreaterThan(nextIcsSequence(t1));
-  });
-
-  it("never returns a negative sequence, even before its epoch", () => {
-    expect(nextIcsSequence(new Date("2020-01-01T00:00:00.000Z"))).toBe(0);
-  });
-
-  it("increases across calls less than a second apart", () => {
-    const t1 = new Date("2026-08-01T09:00:00.100Z");
-    const t2 = new Date("2026-08-01T09:00:00.250Z");
-    expect(nextIcsSequence(t2)).toBeGreaterThan(nextIcsSequence(t1));
-  });
-
-  it("is deterministic for the same `now`", () => {
-    const now = new Date("2026-08-01T09:00:00.000Z");
-    expect(nextIcsSequence(now)).toBe(nextIcsSequence(now));
   });
 });

@@ -6,6 +6,12 @@ export const metadata: Metadata = {
   description: "Política de privacidade e proteção de dados da WEPAC.",
 };
 
+const contact = (
+  <a href="mailto:info@wepac.pt" className="text-wepac-gray underline">
+    info@wepac.pt
+  </a>
+);
+
 export default function PrivacidadePage() {
   return (
     <div className="pt-20">
@@ -16,7 +22,7 @@ export default function PrivacidadePage() {
               Política de Privacidade
             </h1>
             <p className="mt-4 text-sm text-wepac-white/40">
-              Última atualização: 26 de março de 2026
+              Última atualização: 22 de julho de 2026
             </p>
           </FadeIn>
         </div>
@@ -30,170 +36,193 @@ export default function PrivacidadePage() {
             </h2>
             <p className="mt-3">
               WEPAC — Companhia de Artes, com sede em Carcavelos, Portugal.
-              Contacto para questões de privacidade:{" "}
-              <a href="mailto:info@wepac.pt" className="text-wepac-gray underline">
-                info@wepac.pt
-              </a>
+              Para questões de privacidade ou para exercer direitos, contacta-nos
+              através de {contact}.
             </p>
           </div>
 
           <div>
             <h2 className="font-barlow text-lg font-bold text-wepac-white">
-              2. Dados que recolhemos
+              2. Dados tratados
             </h2>
-            <p className="mt-3">
-              Recolhemos os seguintes dados pessoais quando utilizas os nossos
-              serviços:
-            </p>
-            <ul className="mt-2 ml-4 space-y-1 list-disc text-wepac-white/60">
+            <ul className="mt-3 ml-4 list-disc space-y-2 text-wepac-white/60">
               <li>
-                <strong className="text-wepac-white/80">Assistente Wessex (chat):</strong>{" "}
-                nome, email, telefone, detalhes do evento, histórico da
-                conversa
+                <strong className="text-wepac-white/80">Site e contactos:</strong>{" "}
+                nome, email, telefone, conteúdo de mensagens, detalhes de eventos,
+                candidaturas e histórico do Wessex chat.
               </li>
               <li>
-                <strong className="text-wepac-white/80">Formulário de contacto:</strong>{" "}
-                nome, email, assunto, mensagem
+                <strong className="text-wepac-white/80">Conta WEPACKER:</strong>{" "}
+                identidade, contactos, credenciais protegidas, perfil, avatar,
+                Agreements e registos técnicos de autenticação.
               </li>
               <li>
-                <strong className="text-wepac-white/80">Pack Artista:</strong>{" "}
-                email para lista de espera
-              </li>
-              <li>
-                <strong className="text-wepac-white/80">Cookies:</strong>{" "}
-                cookies essenciais para funcionamento do site
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h2 className="font-barlow text-lg font-bold text-wepac-white">
-              3. Finalidade do tratamento
-            </h2>
-            <p className="mt-3">Os dados são utilizados para:</p>
-            <ul className="mt-2 ml-4 space-y-1 list-disc text-wepac-white/60">
-              <li>
-                Responder a pedidos de orçamento e informação comercial
-              </li>
-              <li>Preparar propostas personalizadas de serviços musicais</li>
-              <li>Contactar potenciais clientes para seguimento comercial</li>
-              <li>Gerir inscrições no Pack Artista</li>
-              <li>Melhorar a qualidade dos nossos serviços</li>
-            </ul>
-          </div>
-
-          <div>
-            <h2 className="font-barlow text-lg font-bold text-wepac-white">
-              4. Base legal
-            </h2>
-            <p className="mt-3">
-              O tratamento dos dados baseia-se no consentimento explícito do
-              titular (artigo 6.º, n.º 1, alínea a) do RGPD), obtido antes da
-              recolha de dados no assistente Wessex e nos formulários do site.
-            </p>
-          </div>
-
-          <div>
-            <h2 className="font-barlow text-lg font-bold text-wepac-white">
-              5. Período de conservação
-            </h2>
-            <p className="mt-3">
-              Os dados pessoais são conservados pelo período necessário para a
-              finalidade para que foram recolhidos, não excedendo 24 meses após
-              o último contacto. Os dados podem ser eliminados a qualquer
-              momento mediante pedido do titular.
-            </p>
-          </div>
-
-          <div>
-            <h2 className="font-barlow text-lg font-bold text-wepac-white">
-              6. Direitos do titular
-            </h2>
-            <p className="mt-3">Tens o direito de:</p>
-            <ul className="mt-2 ml-4 space-y-1 list-disc text-wepac-white/60">
-              <li>
-                <strong className="text-wepac-white/80">Acesso</strong> — saber
-                que dados temos sobre ti
-              </li>
-              <li>
-                <strong className="text-wepac-white/80">Retificação</strong> —
-                corrigir dados incorretos
-              </li>
-              <li>
-                <strong className="text-wepac-white/80">Apagamento</strong> —
-                pedir a eliminação dos teus dados
-              </li>
-              <li>
-                <strong className="text-wepac-white/80">Portabilidade</strong> —
-                receber os teus dados em formato estruturado
-              </li>
-              <li>
-                <strong className="text-wepac-white/80">Oposição</strong> —
-                opor-te ao tratamento dos teus dados
+                <strong className="text-wepac-white/80">My Journey:</strong> Stage,
+                Life Map e respetivo histórico, Trails, Goals e Actions.
               </li>
               <li>
                 <strong className="text-wepac-white/80">
-                  Retirada de consentimento
+                  Relações e participação:
                 </strong>{" "}
-                — a qualquer momento
+                Connections, Mentorships, Pack Memberships, Cycle Enrollments e
+                Facilitation.
+              </li>
+              <li>
+                <strong className="text-wepac-white/80">Sessions:</strong> agenda,
+                participantes, links, presença, discussion points, notas privadas
+                do mentor, notas partilhadas e outcomes.
+              </li>
+              <li>
+                <strong className="text-wepac-white/80">
+                  Session Transcript e Debrief:
+                </strong>{" "}
+                texto integral da Transcript, autoria e data do attachment e drafts
+                estruturados derivados. Estes dados podem conter informação
+                especialmente sensível.
+              </li>
+              <li>
+                <strong className="text-wepac-white/80">Dados técnicos:</strong>{" "}
+                cookies estritamente necessários, segurança e registos operacionais
+                sem conteúdo privado sempre que possível.
+              </li>
+              <li>
+                <strong className="text-wepac-white/80">
+                  Support Preview:
+                </strong>{" "}
+                identificadores do Admin, Person e Session, finalidade
+                estruturada, digest keyed da referência externa, timestamps e
+                eventos de acesso sem o conteúdo projetado.
               </li>
             </ul>
+          </div>
+
+          <div>
+            <h2 className="font-barlow text-lg font-bold text-wepac-white">
+              3. Finalidades
+            </h2>
             <p className="mt-3">
-              Para exercer qualquer destes direitos, contacta-nos em{" "}
-              <a href="mailto:info@wepac.pt" className="text-wepac-gray underline">
-                info@wepac.pt
+              Tratamos dados para responder a pedidos e candidaturas, prestar os
+              serviços WEPAC, gerir a conta e My Journey, permitir relações e
+              participação explicitamente aceites, organizar Sessions, comunicar
+              informação operacional, proteger a plataforma e cumprir obrigações
+              legais. Qualquer Debrief por AI serve apenas para criar um draft
+              privado sujeito a revisão humana; não publica notas nem cria Actions
+              automaticamente.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="font-barlow text-lg font-bold text-wepac-white">
+              4. Fundamentos jurídicos
+            </h2>
+            <p className="mt-3">
+              Conforme a operação, o fundamento pode ser a execução de um contrato
+              ou de diligências pedidas pelo titular, o cumprimento de obrigação
+              legal, interesses legítimos de operação e segurança, ou consentimento
+              específico quando este seja necessário. Um Agreement geral, Pack
+              Membership, Connection ou presença numa Session não vale por si só
+              como consentimento para uma Transcript ou para tratamento AI.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="font-barlow text-lg font-bold text-wepac-white">
+              5. Transcript, menores e estado atual
+            </h2>
+            <p className="mt-3">
+              Novos Session Transcript attachments e replacements estão
+              desativados. Só serão ativados quando existirem um pedido de
+              consentimento específico e informado, prova de quem consentiu,
+              verificação de idade e Parent/Guardian quando aplicável, uma regra de
+              conservação concreta e um mecanismo simples de retirada. Apenas o
+              organizer da Session pode remover uma Transcript já existente; essa
+              remoção apaga também o Debrief derivado. O Session Debrief por AI permanece
+              igualmente desativado até certificação técnica e de privacidade.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="font-barlow text-lg font-bold text-wepac-white">
+              6. Conservação
+            </h2>
+            <p className="mt-3">
+              Pedidos comerciais e candidaturas são conservados enquanto houver
+              seguimento legítimo e, em regra, não mais de 24 meses após o último
+              contacto. Dados de conta, My Journey, relações e Sessions permanecem
+              enquanto a conta ou relação correspondente estiver ativa e pelo
+              período adicional necessário para resolver pedidos, segurança ou
+              obrigações legais. Atualmente não existe um prazo automático separado
+              para Transcripts existentes; por isso novos attachments estão
+              bloqueados até esse prazo ser definido e aplicado. Um pedido de
+              apagamento é avaliado sem demora indevida, ressalvadas obrigações de
+              conservação e direitos de terceiros.
+            </p>
+            <p className="mt-3">
+              No Support Preview, o digest da referência fica elegível para
+              redaction quando o grant de 15 minutos expira; o grant é apagado
+              após 30 dias e o audit event sem conteúdo após 365 dias. Num pedido
+              de apagamento, grants ativos são removidos e as referências diretas
+              à Person são anonymized antes da eliminação possível da conta.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="font-barlow text-lg font-bold text-wepac-white">
+              7. Destinatários e prestadores
+            </h2>
+            <p className="mt-3">
+              O acesso dentro da WEPAC é limitado à função e à relação necessárias.
+              Podemos usar prestadores de alojamento, email, calendarização,
+              autenticação e AI como subcontratantes. O Wessex chat pode enviar a
+              mensagem necessária ao fornecedor AI configurado. O Session Debrief
+              não envia Transcripts para o Agents Hub enquanto estiver desativado.
+              Não vendemos dados pessoais. Transferências internacionais, quando
+              existam, ficam sujeitas às salvaguardas aplicáveis e podem ser
+              esclarecidas através do contacto acima.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="font-barlow text-lg font-bold text-wepac-white">
+              8. Direitos
+            </h2>
+            <p className="mt-3">
+              Nos termos aplicáveis, podes pedir acesso, retificação, apagamento,
+              limitação, portabilidade ou oposição e retirar consentimento sem
+              afetar o tratamento anterior. Podes também apresentar reclamação à
+              Comissão Nacional de Proteção de Dados em{" "}
+              <a
+                href="https://www.cnpd.pt/"
+                className="text-wepac-gray underline"
+                rel="noreferrer"
+                target="_blank"
+              >
+                cnpd.pt
               </a>
-              .
+              . Se o titular for menor, estes direitos podem ser exercidos pelo seu
+              representante legal de acordo com a idade e maturidade.
             </p>
           </div>
 
           <div>
             <h2 className="font-barlow text-lg font-bold text-wepac-white">
-              7. Partilha de dados
+              9. Cookies e segurança
             </h2>
             <p className="mt-3">
-              Não partilhamos os teus dados pessoais com terceiros, exceto
-              quando necessário para a prestação dos serviços contratados ou
-              quando exigido por lei. Utilizamos a API da Anthropic (Claude)
-              para o assistente Wessex — as mensagens são processadas para
-              gerar respostas mas não são armazenadas pela Anthropic após o
-              processamento.
+              Usamos cookies necessários para autenticação e funcionamento. Não
+              usamos estes cookies para publicidade comportamental. Aplicamos
+              controlos técnicos e organizativos proporcionais, incluindo HTTPS,
+              autorização por recurso e limitação do conteúdo incluído em logs.
+              Nenhuma medida elimina totalmente o risco; incidentes são tratados de
+              acordo com as obrigações aplicáveis.
             </p>
-          </div>
-
-          <div>
-            <h2 className="font-barlow text-lg font-bold text-wepac-white">
-              8. Cookies
-            </h2>
             <p className="mt-3">
-              O site utiliza apenas cookies essenciais para o funcionamento
-              técnico (autenticação, preferências). Não utilizamos cookies de
-              rastreamento ou publicidade. O consentimento para cookies é
-              solicitado na primeira visita.
-            </p>
-          </div>
-
-          <div>
-            <h2 className="font-barlow text-lg font-bold text-wepac-white">
-              9. Segurança
-            </h2>
-            <p className="mt-3">
-              Implementamos medidas técnicas e organizativas adequadas para
-              proteger os dados pessoais contra acesso não autorizado,
-              alteração, divulgação ou destruição. As comunicações são
-              encriptadas via HTTPS.
-            </p>
-          </div>
-
-          <div>
-            <h2 className="font-barlow text-lg font-bold text-wepac-white">
-              10. Reclamações
-            </h2>
-            <p className="mt-3">
-              Se considerares que o tratamento dos teus dados viola o RGPD,
-              tens o direito de apresentar uma reclamação junto da Comissão
-              Nacional de Proteção de Dados (CNPD) —{" "}
-              <span className="text-wepac-gray">www.cnpd.pt</span>.
+              O Support Preview de uma Session é read-only e não troca identidade,
+              JWT ou role. O organizer exato só pode projetar um attendee explícito
+              da própria Session. Admin support exige password re-authentication,
+              reason code, ticket digest e um cookie assinado e limitado àquela
+              Session/Person; a projeção Admin não inclui meeting URL, Transcript,
+              Debrief, discussion points nem private notes.
             </p>
           </div>
         </div>

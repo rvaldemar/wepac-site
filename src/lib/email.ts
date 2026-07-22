@@ -1,19 +1,15 @@
-import nodemailer from "nodemailer";
-
-const hasAuth = process.env.SMTP_USER && process.env.SMTP_PASSWORD;
-const SMTP_PORT = parseInt(process.env.SMTP_PORT || "587");
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.zoho.eu",
-  port: SMTP_PORT,
-  secure: SMTP_PORT === 465,
-  ...(hasAuth
-    ? { auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD } }
-    : { tls: { rejectUnauthorized: false } }),
-});
+import { logSafeError } from "@/lib/wepacker/log-safe-error";
+import {
+  assertSafeEmailUrl,
+  emailTransporter as transporter,
+  escapeEmailHtml as escapeHtml,
+  safeEmailHeaderText as safeHeaderText,
+} from "@/lib/email-security";
 
 const FROM = process.env.SMTP_FROM || "info@wepac.pt";
-const APP_URL = process.env.APP_URL || "https://wepac.pt";
+const APP_URL = assertSafeEmailUrl(
+  process.env.APP_URL || "https://wepac.pt",
+);
 
 // ===== SHARED LIGHT TEMPLATE =====
 // Table-based layout for Outlook/Gmail compatibility. Brand palette only
@@ -52,6 +48,9 @@ function emailShell({
   bodyHtml,
   footerHtml,
 }: EmailShellOptions): string {
+  const safePreheader = escapeHtml(preheader);
+  const safeLogoSrc = escapeHtml(assertSafeEmailUrl(logoSrc));
+  const safeLogoAlt = escapeHtml(logoAlt);
   return `<!doctype html>
 <html lang="pt">
   <head>
@@ -59,11 +58,11 @@ function emailShell({
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light" />
     <meta name="supported-color-schemes" content="light" />
-    <title>${logoAlt}</title>
+    <title>${safeLogoAlt}</title>
   </head>
   <body style="margin:0; padding:0; background:#FFFFFF;">
     <div style="display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;">
-      ${preheader}
+      ${safePreheader}
     </div>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FFFFFF;">
       <tr>
@@ -71,7 +70,7 @@ function emailShell({
           <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px; width:100%;">
             <tr>
               <td style="padding-bottom: 32px;">
-                <img src="${logoSrc}" alt="${logoAlt}" width="${logoWidth}" style="display:block; width:${logoWidth}px; max-width:100%; height:auto; border:0;" />
+                <img src="${safeLogoSrc}" alt="${safeLogoAlt}" width="${logoWidth}" style="display:block; width:${logoWidth}px; max-width:100%; height:auto; border:0;" />
               </td>
             </tr>
             <tr>
@@ -105,22 +104,12 @@ function emailShell({
 }
 
 function ctaButton(href: string, label: string): string {
-  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top: 28px;"><tr><td style="background:#000000; border-radius:0;"><a href="${href}" style="display:inline-block; padding:14px 32px; font-family:${FONT_HEADING}; font-weight:700; font-size:13px; letter-spacing:0.5px; color:#FFFFFF; text-decoration:none;">${label}</a></td></tr></table>`;
+  const safeHref = escapeHtml(assertSafeEmailUrl(href));
+  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top: 28px;"><tr><td style="background:#000000; border-radius:0;"><a href="${safeHref}" style="display:inline-block; padding:14px 32px; font-family:${FONT_HEADING}; font-weight:700; font-size:13px; letter-spacing:0.5px; color:#FFFFFF; text-decoration:none;">${escapeHtml(label)}</a></td></tr></table>`;
 }
 
 function heading(text: string): string {
-  return `<h1 style="margin:0 0 20px; font-family:${FONT_HEADING}; font-weight:700; font-size:26px; line-height:1.25; color:#000000;">${text}</h1>`;
-}
-
-// Free-text admin input (e.g. a personal invite message) lands directly
-// in the HTML — escape it.
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+  return `<h1 style="margin:0 0 20px; font-family:${FONT_HEADING}; font-weight:700; font-size:26px; line-height:1.25; color:#000000;">${escapeHtml(text)}</h1>`;
 }
 
 // WEPACKER emails header with the WEPACKER wordmark, so the footer signs
@@ -137,6 +126,7 @@ export async function sendInviteEmail(
   inviteUrl: string,
   message?: string
 ) {
+  const safeName = escapeHtml(name);
   const personalMessage = message?.trim()
     ? `<p style="margin:0 0 16px; padding:16px; border-left:2px solid #000000; background:#F7F7F5; font-style:italic; color:#333333;">${escapeHtml(
         message.trim()
@@ -145,7 +135,7 @@ export async function sendInviteEmail(
 
   const bodyHtml = `
     ${heading("Foste convidado/a.")}
-    <p style="margin:0 0 16px;">Olá ${name},</p>
+    <p style="margin:0 0 16px;">Olá ${safeName},</p>
     <p style="margin:0 0 16px;">
       Foste convidado/a para o WEPACKER — o caminho de desenvolvimento
       humano integral da WEPAC. Um wepacker carrega o seu próprio peso e
@@ -221,7 +211,8 @@ export async function sendMentorshipInvitationEmail({
     </p>
     <p style="margin:0 0 16px; color:#666666;">
       Nesta primeira fase, uma Mentorship ativa permite apenas descobrir a outra
-      pessoa e propor Sessions. Não abre o teu Life Map, Trails ou Assessments.
+      pessoa e propor Sessions. Não abre o teu Life Map, Trails, Goals, Actions
+      ou artefactos privados de uma Session.
     </p>
     ${ctaButton(mentorshipsUrl, "Review invitation")}
   `;
@@ -231,7 +222,7 @@ export async function sendMentorshipInvitationEmail({
     to,
     subject: "Mentorship invitation — WEPACKER",
     html: emailShell({
-      preheader: `${safeMentorName} convidou-te para uma Mentorship.`,
+      preheader: `${mentorName} convidou-te para uma Mentorship.`,
       logoSrc: WEPACKER_LOCKUP,
       logoAlt: "WEPACKER",
       logoWidth: 220,
@@ -268,7 +259,7 @@ export async function sendMentorshipAcceptedEmail({
     to,
     subject: "Mentorship accepted — WEPACKER",
     html: emailShell({
-      preheader: `${safeMenteeName} aceitou a tua Mentorship invitation.`,
+      preheader: `${menteeName} aceitou a tua Mentorship invitation.`,
       logoSrc: WEPACKER_LOCKUP,
       logoAlt: "WEPACKER",
       logoWidth: 220,
@@ -282,9 +273,10 @@ export async function sendBetaSignupConfirmationEmail(
   name: string,
   email: string
 ) {
+  const safeName = escapeHtml(name);
   const bodyHtml = `
     ${heading("Candidatura recebida.")}
-    <p style="margin:0 0 16px;">Olá ${name},</p>
+    <p style="margin:0 0 16px;">Olá ${safeName},</p>
     <p style="margin:0 0 16px;">
       Recebemos a tua candidatura ao WEPACKER. A nossa equipa vai analisar
       o teu perfil e entrar em contacto em breve.
@@ -312,18 +304,21 @@ export async function sendBetaSignupNotificationEmail(
   email: string,
   artisticArea?: string | null
 ) {
+  const safeName = escapeHtml(name);
+  const safeEmail = escapeHtml(email);
+  const safeArtisticArea = artisticArea ? escapeHtml(artisticArea) : null;
   const bodyHtml = `
     ${heading("Nova candidatura.")}
-    <p style="margin:0 0 8px;"><strong style="color:#000000;">Nome:</strong> ${name}</p>
-    <p style="margin:0 0 8px;"><strong style="color:#000000;">Email:</strong> ${email}</p>
-    ${artisticArea ? `<p style="margin:0 0 8px;"><strong style="color:#000000;">Área:</strong> ${artisticArea}</p>` : ""}
+    <p style="margin:0 0 8px;"><strong style="color:#000000;">Nome:</strong> ${safeName}</p>
+    <p style="margin:0 0 8px;"><strong style="color:#000000;">Email:</strong> ${safeEmail}</p>
+    ${safeArtisticArea ? `<p style="margin:0 0 8px;"><strong style="color:#000000;">Área:</strong> ${safeArtisticArea}</p>` : ""}
     ${ctaButton(`${APP_URL}/wepacker/admin/leads`, "Ver no painel")}
   `;
 
   await transporter.sendMail({
     from: FROM,
     to: FROM,
-    subject: `Nova candidatura WEPACKER: ${name}`,
+    subject: safeHeaderText(`Nova candidatura WEPACKER: ${name}`),
     html: emailShell({
       preheader: `Nova candidatura de ${name}.`,
       logoSrc: WEPACKER_LOCKUP,
@@ -373,12 +368,15 @@ export async function sendSessionInviteEmail({
   ics,
 }: SessionCalendarEmailParams) {
   const when = formatSessionDateTime(scheduledAt);
+  const safeRecipientName = escapeHtml(recipientName);
+  const safeKindLabel = escapeHtml(kindLabel);
+  const safeWhen = escapeHtml(when);
   const bodyHtml = `
     ${heading("Session scheduled.")}
-    <p style="margin:0 0 16px;">Olá ${recipientName},</p>
+    <p style="margin:0 0 16px;">Olá ${safeRecipientName},</p>
     <p style="margin:0 0 16px;">
-      Tens uma Session WEPACKER (${kindLabel}) marcada para
-      <strong style="color:#000000;">${when}</strong>.
+      Tens uma Session WEPACKER (${safeKindLabel}) marcada para
+      <strong style="color:#000000;">${safeWhen}</strong>.
     </p>
     ${meetingUrl ? ctaButton(meetingUrl, "Join Session") : ""}
     <p style="margin:28px 0 0; font-size:12px; color:#999999;">
@@ -389,7 +387,7 @@ export async function sendSessionInviteEmail({
   await transporter.sendMail({
     from: FROM,
     to,
-    subject: `Session scheduled — ${kindLabel} | WEPACKER`,
+    subject: safeHeaderText(`Session scheduled — ${kindLabel} | WEPACKER`),
     html: emailShell({
       preheader: `Session WEPACKER (${kindLabel}) marcada para ${when}.`,
       logoSrc: WEPACKER_LOCKUP,
@@ -417,12 +415,15 @@ export async function sendSessionCancelEmail({
   ics,
 }: SessionCalendarEmailParams) {
   const when = formatSessionDateTime(scheduledAt);
+  const safeRecipientName = escapeHtml(recipientName);
+  const safeKindLabel = escapeHtml(kindLabel);
+  const safeWhen = escapeHtml(when);
   const bodyHtml = `
     ${heading("Session cancelled.")}
-    <p style="margin:0 0 16px;">Olá ${recipientName},</p>
+    <p style="margin:0 0 16px;">Olá ${safeRecipientName},</p>
     <p style="margin:0 0 16px;">
-      A Session WEPACKER (${kindLabel}) marcada para
-      <strong style="color:#000000;">${when}</strong> foi cancelada.
+      A Session WEPACKER (${safeKindLabel}) marcada para
+      <strong style="color:#000000;">${safeWhen}</strong> foi cancelada.
     </p>
     <p style="margin:28px 0 0; font-size:12px; color:#999999;">
       O evento foi removido da tua agenda.
@@ -432,7 +433,7 @@ export async function sendSessionCancelEmail({
   await transporter.sendMail({
     from: FROM,
     to,
-    subject: `Session cancelled — ${kindLabel} | WEPACKER`,
+    subject: safeHeaderText(`Session cancelled — ${kindLabel} | WEPACKER`),
     html: emailShell({
       preheader: `Session WEPACKER (${kindLabel}) cancelada.`,
       logoSrc: WEPACKER_LOCKUP,
@@ -450,51 +451,11 @@ export async function sendSessionCancelEmail({
 }
 
 // ===== WEPACKER MEMBER NOTIFICATIONS =====
-// Best-effort, member-facing notifications for events initiated by a
-// mentor or a peer: a new task assignment, a shared session note going
-// live, or a new message. Callers fire-and-forget these the same way as
-// sendSessionCalendarEmails above — a flaky SMTP relay must never block
-// or fail the action that triggered the notification.
+// Member-facing templates for events initiated by a Session organizer or a
+// peer. The durable outbox reauthorizes the exact resource before calling
+// these renderers; domain actions never invoke SMTP inside their transaction.
 
-export async function sendTaskCreatedEmail({
-  to,
-  recipientName,
-  title,
-  deadline,
-}: {
-  to: string;
-  recipientName: string;
-  title: string;
-  deadline: string;
-}) {
-  const tasksUrl = `${APP_URL}/wepacker/tasks`;
-  const bodyHtml = `
-    ${heading("New Task.")}
-    <p style="margin:0 0 16px;">Olá ${recipientName},</p>
-    <p style="margin:0 0 16px;">
-      O teu Mentor atribuiu-te uma nova Task:
-      <strong style="color:#000000;">${escapeHtml(title)}</strong>.
-    </p>
-    <p style="margin:0 0 16px; color:#666666;">Prazo: ${escapeHtml(deadline)}</p>
-    ${ctaButton(tasksUrl, "View Task")}
-  `;
-
-  await transporter.sendMail({
-    from: FROM,
-    to,
-    subject: `New Task — ${title}`,
-    html: emailShell({
-      preheader: `${recipientName}, tens uma nova Task: ${title}.`,
-      logoSrc: WEPACKER_LOCKUP,
-      logoAlt: "WEPACKER",
-      logoWidth: 220,
-      bodyHtml,
-      footerHtml: WEPACKER_FOOTER,
-    }),
-  });
-}
-
-export async function sendSharedNotePublishedEmail({
+export async function sendSessionFollowupUpdatedEmail({
   to,
   recipientName,
 }: {
@@ -502,11 +463,13 @@ export async function sendSharedNotePublishedEmail({
   recipientName: string;
 }) {
   const sessionsUrl = `${APP_URL}/wepacker/sessions`;
+  const safeRecipientName = escapeHtml(recipientName);
   const bodyHtml = `
-    ${heading("Nova nota do teu mentor.")}
-    <p style="margin:0 0 16px;">Olá ${recipientName},</p>
+    ${heading("Follow-up da tua Session atualizado.")}
+    <p style="margin:0 0 16px;">Olá ${safeRecipientName},</p>
     <p style="margin:0 0 16px;">
-      O teu Mentor partilhou uma nota sobre uma Session recente.
+      O organizador atualizou informação de follow-up visível para ti numa
+      Session recente.
     </p>
     ${ctaButton(sessionsUrl, "View Session")}
   `;
@@ -514,9 +477,9 @@ export async function sendSharedNotePublishedEmail({
   await transporter.sendMail({
     from: FROM,
     to,
-    subject: "O teu mentor partilhou uma nota — WEPACKER",
+    subject: "Session follow-up updated — WEPACKER",
     html: emailShell({
-      preheader: `${recipientName}, o teu mentor partilhou uma nota.`,
+      preheader: `${recipientName}, o follow-up da tua Session foi atualizado.`,
       logoSrc: WEPACKER_LOCKUP,
       logoAlt: "WEPACKER",
       logoWidth: 220,
@@ -536,9 +499,10 @@ export async function sendNewMessageEmail({
   senderName: string;
 }) {
   const messagesUrl = `${APP_URL}/wepacker/messages`;
+  const safeRecipientName = escapeHtml(recipientName);
   const bodyHtml = `
     ${heading("Nova mensagem.")}
-    <p style="margin:0 0 16px;">Olá ${recipientName},</p>
+    <p style="margin:0 0 16px;">Olá ${safeRecipientName},</p>
     <p style="margin:0 0 16px;">
       Recebeste uma nova mensagem de
       <strong style="color:#000000;">${escapeHtml(senderName)}</strong>.
@@ -549,9 +513,159 @@ export async function sendNewMessageEmail({
   await transporter.sendMail({
     from: FROM,
     to,
-    subject: `Nova mensagem de ${senderName} — WEPACKER`,
+    subject: safeHeaderText(`Nova mensagem de ${senderName} — WEPACKER`),
     html: emailShell({
       preheader: `${recipientName}, recebeste uma nova mensagem de ${senderName}.`,
+      logoSrc: WEPACKER_LOCKUP,
+      logoAlt: "WEPACKER",
+      logoWidth: 220,
+      bodyHtml,
+      footerHtml: WEPACKER_FOOTER,
+    }),
+  });
+}
+
+export async function sendPackInvitationEmail({
+  to,
+  recipientName,
+  ownerName,
+}: {
+  to: string;
+  recipientName: string;
+  ownerName: string;
+}) {
+  const safeRecipientName = escapeHtml(recipientName);
+  const safeOwnerName = escapeHtml(ownerName);
+  const bodyHtml = `
+    ${heading("Pack invitation.")}
+    <p style="margin:0 0 16px;">Olá ${safeRecipientName},</p>
+    <p style="margin:0 0 16px;">
+      ${safeOwnerName} convidou-te para o seu Pack. A Pack Membership só
+      fica ativa depois da tua aceitação.
+    </p>
+    <p style="margin:0 0 16px; color:#666666;">
+      Aceitar este convite não cria uma Connection, Mentorship ou Cycle
+      Enrollment e não abre My Journey.
+    </p>
+    ${ctaButton(`${APP_URL}/wepacker/communities`, "Review Pack invitation")}
+  `;
+
+  await transporter.sendMail({
+    from: FROM,
+    to,
+    subject: "Pack invitation — WEPACKER",
+    html: emailShell({
+      preheader: `${ownerName} convidou-te para um Pack.`,
+      logoSrc: WEPACKER_LOCKUP,
+      logoAlt: "WEPACKER",
+      logoWidth: 220,
+      bodyHtml,
+      footerHtml: WEPACKER_FOOTER,
+    }),
+  });
+}
+
+export async function sendPackAcceptedEmail({
+  to,
+  recipientName,
+  memberName,
+}: {
+  to: string;
+  recipientName: string;
+  memberName: string;
+}) {
+  const safeRecipientName = escapeHtml(recipientName);
+  const safeMemberName = escapeHtml(memberName);
+  const bodyHtml = `
+    ${heading("Pack invitation accepted.")}
+    <p style="margin:0 0 16px;">Olá ${safeRecipientName},</p>
+    <p style="margin:0 0 16px;">
+      ${safeMemberName} aceitou o teu convite e pertence agora a My Pack.
+    </p>
+    ${ctaButton(`${APP_URL}/wepacker/communities`, "Open My Pack")}
+  `;
+
+  await transporter.sendMail({
+    from: FROM,
+    to,
+    subject: "Pack invitation accepted — WEPACKER",
+    html: emailShell({
+      preheader: `${memberName} aceitou o teu convite para My Pack.`,
+      logoSrc: WEPACKER_LOCKUP,
+      logoAlt: "WEPACKER",
+      logoWidth: 220,
+      bodyHtml,
+      footerHtml: WEPACKER_FOOTER,
+    }),
+  });
+}
+
+export async function sendConnectionRequestEmail({
+  to,
+  recipientName,
+  requesterName,
+}: {
+  to: string;
+  recipientName: string;
+  requesterName: string;
+}) {
+  const safeRecipientName = escapeHtml(recipientName);
+  const safeRequesterName = escapeHtml(requesterName);
+  const bodyHtml = `
+    ${heading("Connection request.")}
+    <p style="margin:0 0 16px;">Olá ${safeRecipientName},</p>
+    <p style="margin:0 0 16px;">
+      ${safeRequesterName} enviou-te um pedido de Connection. A relação só
+      fica ativa depois da tua aceitação.
+    </p>
+    <p style="margin:0 0 16px; color:#666666;">
+      Uma Connection não abre Life Map, Trails, Goals, Actions ou outros dados
+      de My Journey.
+    </p>
+    ${ctaButton(`${APP_URL}/wepacker/connections`, "Review Connection request")}
+  `;
+
+  await transporter.sendMail({
+    from: FROM,
+    to,
+    subject: "Connection request — WEPACKER",
+    html: emailShell({
+      preheader: `${requesterName} enviou-te um pedido de Connection.`,
+      logoSrc: WEPACKER_LOCKUP,
+      logoAlt: "WEPACKER",
+      logoWidth: 220,
+      bodyHtml,
+      footerHtml: WEPACKER_FOOTER,
+    }),
+  });
+}
+
+export async function sendConnectionAcceptedEmail({
+  to,
+  recipientName,
+  personName,
+}: {
+  to: string;
+  recipientName: string;
+  personName: string;
+}) {
+  const safeRecipientName = escapeHtml(recipientName);
+  const safePersonName = escapeHtml(personName);
+  const bodyHtml = `
+    ${heading("Connection accepted.")}
+    <p style="margin:0 0 16px;">Olá ${safeRecipientName},</p>
+    <p style="margin:0 0 16px;">
+      ${safePersonName} aceitou o teu pedido de Connection.
+    </p>
+    ${ctaButton(`${APP_URL}/wepacker/connections`, "Open Connections")}
+  `;
+
+  await transporter.sendMail({
+    from: FROM,
+    to,
+    subject: "Connection accepted — WEPACKER",
+    html: emailShell({
+      preheader: `${personName} aceitou o teu pedido de Connection.`,
       logoSrc: WEPACKER_LOCKUP,
       logoAlt: "WEPACKER",
       logoWidth: 220,
@@ -602,7 +716,7 @@ export async function sendLeadNotificationEmail(lead: LeadEmailData) {
     .filter(([, value]) => value)
     .map(
       ([label, value]) =>
-        `<tr><td style="padding:10px 0; font-weight:700; color:#000000; vertical-align:top; white-space:nowrap; padding-right:16px; border-top:1px solid #DEE0DB;">${label}</td><td style="padding:10px 0; color:#333333; border-top:1px solid #DEE0DB;">${value}</td></tr>`
+        `<tr><td style="padding:10px 0; font-weight:700; color:#000000; vertical-align:top; white-space:nowrap; padding-right:16px; border-top:1px solid #DEE0DB;">${escapeHtml(String(label))}</td><td style="padding:10px 0; color:#333333; border-top:1px solid #DEE0DB;">${escapeHtml(String(value))}</td></tr>`
     )
     .join("");
 
@@ -621,7 +735,9 @@ export async function sendLeadNotificationEmail(lead: LeadEmailData) {
     await transporter.sendMail({
       from: FROM,
       to: "info@wepac.pt",
-      subject: `Nova lead Wessex: ${lead.name}${lead.eventType ? ` — ${lead.eventType}` : ""}`,
+      subject: safeHeaderText(
+        `Nova lead Wessex: ${lead.name}${lead.eventType ? ` — ${lead.eventType}` : ""}`,
+      ),
       html: emailShell({
         preheader: `Nova lead de ${lead.name}.`,
         logoSrc: WEPAC_BADGE,
@@ -632,6 +748,9 @@ export async function sendLeadNotificationEmail(lead: LeadEmailData) {
       }),
     });
   } catch (error) {
-    console.error("Failed to send lead notification email:", error);
+    console.error(
+      "[wessex lead email] delivery_failed",
+      logSafeError(error),
+    );
   }
 }

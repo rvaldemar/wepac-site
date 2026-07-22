@@ -7,6 +7,31 @@ function meetingBaseUrl(): string {
   return process.env.MEETING_BASE_URL || "https://meet.jit.si";
 }
 
+function isLoopbackHost(hostname: string): boolean {
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
+}
+
+export function normalizeMeetingUrl(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.length > 2_048 || /[\u0000-\u001f\u007f]/.test(trimmed)) {
+    throw new Error("Invalid Session link.");
+  }
+
+  let url: URL;
+  try {
+    url = new URL(trimmed);
+  } catch {
+    throw new Error("Invalid Session link.");
+  }
+  const protocolAllowed =
+    url.protocol === "https:" ||
+    (url.protocol === "http:" && isLoopbackHost(url.hostname));
+  if (!protocolAllowed || url.username || url.password) {
+    throw new Error("Invalid Session link.");
+  }
+  return url.toString();
+}
+
 // Auto-generated video call link for a new session. The room slug is a
 // non-guessable crypto-random token, deliberately NOT the session's own id
 // — the session id is exposed in URLs/APIs to any attendee, and reusing it
@@ -18,5 +43,5 @@ function meetingBaseUrl(): string {
 // Actions module to be an async function — this is a plain sync helper.
 export function generateMeetingUrl(baseUrl: string = meetingBaseUrl()): string {
   const token = randomBytes(8).toString("hex"); // 16 hex chars
-  return `${baseUrl}/wepac-${token}`;
+  return normalizeMeetingUrl(`${baseUrl.replace(/\/+$/, "")}/wepac-${token}`);
 }

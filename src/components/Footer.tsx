@@ -16,17 +16,17 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Departamentos */}
+          {/* Áreas WEPAC */}
           <div>
             <h3 className="font-barlow text-sm font-bold uppercase tracking-wider text-wepac-white/60">
-              Departamentos
+              Áreas WEPAC
             </h3>
             <ul className="mt-4 space-y-3">
               {[
                 { name: "Wessex", href: "/servicos" },
                 { name: "Easy Peasy", href: "/projetos/easy-peasy" },
                 { name: "Arte à Capela", href: "/projetos/arte-a-capela" },
-                { name: "Pack Artista", href: "/artist" },
+                { name: "WEPAC for Artists", href: "/artist" },
               ].map((item) => (
                 <li key={item.name}>
                   <Link

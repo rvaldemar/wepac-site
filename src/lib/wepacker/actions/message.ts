@@ -2,79 +2,49 @@
 
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/wepacker/guards";
-import { sendNewMessageEmail } from "@/lib/email";
-import { logSafeError } from "@/lib/wepacker/log-safe-error";
+import {
+  dispatchPersistedNotificationEvents,
+  persistNewMessageEvent,
+} from "@/lib/wepacker/notifications";
+
+const MAX_MESSAGE_BODY_LENGTH = 10_000;
+const MAX_ID_LENGTH = 191;
+const ID_PATTERN = /^[A-Za-z0-9_-]+$/;
+
+function parseId(value: unknown, label: string): string {
+  if (typeof value !== "string") throw new Error(`${label} must be a string.`);
+  const id = value.trim();
+  if (!id || id.length > MAX_ID_LENGTH || !ID_PATTERN.test(id)) {
+    throw new Error(`Invalid ${label}.`);
+  }
+  return id;
+}
+
+function parseMessageBody(value: unknown): string {
+  if (typeof value !== "string") throw new Error("Mensagem inválida.");
+  const body = value.trim();
+  if (!body) throw new Error("Mensagem vazia.");
+  if (body.length > MAX_MESSAGE_BODY_LENGTH) {
+    throw new Error(
+      `Mensagem demasiado longa (máx. ${MAX_MESSAGE_BODY_LENGTH.toLocaleString("pt-PT")} caracteres).`,
+    );
+  }
+  return body;
+}
 
 // A sender's messages inside one conversation only trigger one "new
-// message" email per rolling 30-minute window, not one per message —
+// message" event per rolling 30-minute window, not one per message —
 // otherwise a fast back-and-forth would spam the recipient's inbox.
 // There's no in-memory state to debounce against across serverless
 // invocations, so the heuristic is a query instead: does the sender
 // already have an earlier message in this conversation within the last
-// 30 minutes? If so, the recipient was already emailed for this burst
-// and this call skips sending. The first message of a burst always
-// sends immediately.
-const MESSAGE_EMAIL_DEBOUNCE_MS = 30 * 60 * 1000;
-
-// Best-effort "new message" notification for every other participant in
-// the conversation. Mirrors sendSessionCalendarEmails: never blocks or
-// fails sendMessage, and never logs anything beyond the conversationId
-// and a scrubbed error (no name/email/body in the log line).
-async function sendNewMessageNotification({
-  conversationId,
-  senderId,
-  senderName,
-  messageCreatedAt,
-}: {
-  conversationId: string;
-  senderId: string;
-  senderName: string;
-  messageCreatedAt: Date;
-}): Promise<void> {
-  try {
-    const recentPriorMessage = await prisma.message.findFirst({
-      where: {
-        conversationId,
-        userId: senderId,
-        createdAt: {
-          gte: new Date(messageCreatedAt.getTime() - MESSAGE_EMAIL_DEBOUNCE_MS),
-          lt: messageCreatedAt,
-        },
-      },
-      select: { id: true },
-    });
-    if (recentPriorMessage) return;
-
-    const recipients = await prisma.conversationParticipant.findMany({
-      where: { conversationId, userId: { not: senderId } },
-      select: { user: { select: { name: true, email: true } } },
-    });
-
-    await Promise.all(
-      recipients.map((r) =>
-        sendNewMessageEmail({
-          to: r.user.email,
-          recipientName: r.user.name,
-          senderName,
-        }).catch((err) => {
-          console.error("New message email failed", {
-            conversationId,
-            ...logSafeError(err),
-          });
-        })
-      )
-    );
-  } catch (err) {
-    console.error("New message email failed", {
-      conversationId,
-      ...logSafeError(err),
-    });
-  }
-}
+// 30 minutes? If so, the recipient already received the in-app/email event
+// for this burst. The first message of a burst stages both channels.
+const MESSAGE_NOTIFICATION_DEBOUNCE_MINUTES = 30;
 
 const conversationInclude = {
   participants: {
-    include: { user: { select: { id: true, name: true, role: true } } },
+    include: { user: { select: { id: true, name: true } } },
   },
   messages: { orderBy: { createdAt: "asc" as const } },
 } as const;
@@ -83,7 +53,7 @@ function serialize(
   c: {
     id: string;
     participants: {
-      user: { id: string; name: string; role: string };
+      user: { id: string; name: string };
     }[];
     messages: {
       id: string;
@@ -100,7 +70,6 @@ function serialize(
     participants: c.participants.map((p) => ({
       id: p.user.id,
       name: p.user.name,
-      role: p.user.role,
     })),
     messages: c.messages.map((m) => ({
       id: m.id,
@@ -126,7 +95,7 @@ export async function getMyConversations() {
 // conversation is disabled until a dedicated, consented Message grant exists.
 export async function getMessagingContacts() {
   await requireUser();
-  return [] as Array<{ id: string; name: string; role: string }>;
+  return [] as Array<{ id: string; name: string }>;
 }
 
 export async function startConversation(withUserId: string) {
@@ -160,31 +129,72 @@ export async function startConversation(withUserId: string) {
   return serialize(convo);
 }
 
-export async function sendMessage(conversationId: string, body: string) {
+export async function sendMessage(
+  conversationIdValue: unknown,
+  bodyValue: unknown,
+) {
   const user = await requireUser();
-  const participant = await prisma.conversationParticipant.findUnique({
-    where: { conversationId_userId: { conversationId, userId: user.id } },
-  });
-  if (!participant) throw new Error("Sem permissão.");
-  if (!body.trim()) throw new Error("Mensagem vazia.");
-  const message = await prisma.message.create({
-    data: { conversationId, userId: user.id, body: body.trim() },
+  const conversationId = parseId(conversationIdValue, "Conversation ID");
+  const body = parseMessageBody(bodyValue);
+  const result = await prisma.$transaction(async (tx) => {
+    // Serialize one sender's burst within one Conversation across processes.
+    // Without this transaction-scoped advisory lock, two concurrent first
+    // messages can both miss the other's uncommitted insert and stage duplicate
+    // in-app/email intents for the same 30-minute window.
+    await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`${conversationId}:${user.id}`}, 0))`;
+
+    const participant = await tx.conversationParticipant.findUnique({
+      where: { conversationId_userId: { conversationId, userId: user.id } },
+    });
+    if (!participant) throw new Error("Sem permissão.");
+
+    // Read before inserting the current Message. Comparing to the inserted
+    // row's createdAt is unsafe because PostgreSQL's default now() is the
+    // transaction-start timestamp: two serialized transactions may still get
+    // equal or reverse timestamps. clock_timestamp() observes actual database
+    // wall time after the advisory lock has been acquired and the prior writer
+    // has committed.
+    const recentPriorMessages = await tx.$queryRaw<Array<{ id: string }>>`
+      SELECT "id"
+      FROM "messages"
+      WHERE "conversationId" = ${conversationId}
+        AND "userId" = ${user.id}
+        AND "createdAt" >= clock_timestamp()
+          - (${MESSAGE_NOTIFICATION_DEBOUNCE_MINUTES} * INTERVAL '1 minute')
+      ORDER BY "createdAt" DESC, "id" DESC
+      LIMIT 1
+    `;
+
+    const message = await tx.message.create({
+      data: { conversationId, userId: user.id, body },
+    });
+    if (recentPriorMessages.length > 0) return { message, events: [] };
+
+    const recipients = await tx.conversationParticipant.findMany({
+      where: { conversationId, userId: { not: user.id } },
+      select: { userId: true },
+    });
+    const events = [];
+    for (const recipient of recipients) {
+      events.push(
+        ...(await persistNewMessageEvent(tx, {
+          conversationId,
+          messageId: message.id,
+          recipientId: recipient.userId,
+          actorId: user.id,
+        })),
+      );
+    }
+    return { message, events };
   });
 
-  // Fire-and-forget — see sendNewMessageNotification; never blocks or
-  // fails sendMessage.
-  void sendNewMessageNotification({
-    conversationId,
-    senderId: user.id,
-    senderName: user.name,
-    messageCreatedAt: message.createdAt,
-  });
-
-  return message;
+  dispatchPersistedNotificationEvents(result.events);
+  return result.message;
 }
 
-export async function markAsRead(messageId: string) {
+export async function markAsRead(messageIdValue: unknown) {
   const user = await requireUser();
+  const messageId = parseId(messageIdValue, "Message ID");
   const message = await prisma.message.findUnique({
     where: { id: messageId },
     select: { conversationId: true, userId: true },

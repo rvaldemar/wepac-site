@@ -5,7 +5,7 @@ import { FadeIn } from "@/components/FadeIn";
 
 export const dynamic = "force-dynamic";
 
-const departments = [
+const wepacAreas = [
   {
     name: "Wessex",
     tagline: "Serviços Musicais",
@@ -31,12 +31,12 @@ const departments = [
     cta: "Saber mais",
   },
   {
-    name: "Pack Artista",
-    tagline: "Desenvolvimento Artístico",
+    name: "WEPAC for Artists",
+    tagline: "Arts · Discipline",
     description:
-      "Sistema integrado de desenvolvimento, ativação e consolidação de artistas. Excelência artística, estrutura humana, impacto real.",
+      "O caminho WEPAC para pessoas cuja prática é Arts: excelência artística, estrutura humana e impacto real.",
     href: "/artist",
-    cta: "Conhecer o programa",
+    cta: "Conhecer o caminho",
   },
 ];
 
@@ -67,38 +67,38 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Department entry points */}
+      {/* WEPAC areas */}
       <section className="bg-wepac-dark px-6 py-24 lg:px-8 lg:py-32">
         <div className="mx-auto max-w-7xl">
           <FadeIn>
             <p className="text-sm font-bold uppercase tracking-widest text-wepac-white/40">
-              O que fazemos
+              Áreas WEPAC
             </p>
             <h2 className="mt-2 font-barlow text-3xl font-bold text-wepac-white md:text-4xl">
-              Quatro caminhos, um propósito
+              Quatro frentes, um propósito
             </h2>
           </FadeIn>
 
           <div className="mt-16 grid grid-cols-1 gap-6 md:grid-cols-2">
-            {departments.map((dept, i) => (
-              <FadeIn key={dept.name} delay={i * 0.1}>
+            {wepacAreas.map((area, i) => (
+              <FadeIn key={area.name} delay={i * 0.1}>
                 <Link
-                  href={dept.href}
+                  href={area.href}
                   className="group flex flex-col justify-between border border-wepac-white/10 p-5 md:p-8 transition-colors hover:border-wepac-white/30 min-h-[200px] md:min-h-[250px]"
                 >
                   <div>
                     <p className="text-xs font-bold uppercase tracking-widest text-wepac-white/40">
-                      {dept.tagline}
+                      {area.tagline}
                     </p>
                     <h3 className="mt-2 font-barlow text-2xl font-bold text-wepac-white md:text-3xl">
-                      {dept.name}
+                      {area.name}
                     </h3>
                     <p className="mt-4 leading-relaxed text-wepac-white/50">
-                      {dept.description}
+                      {area.description}
                     </p>
                   </div>
                   <span className="mt-6 inline-block font-barlow text-sm font-bold uppercase tracking-wider text-wepac-white/40 transition-colors group-hover:text-wepac-white">
-                    {dept.cta} &rarr;
+                    {area.cta} &rarr;
                   </span>
                 </Link>
               </FadeIn>

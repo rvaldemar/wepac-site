@@ -3,37 +3,17 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createInvite, deleteUser } from "@/lib/wepacker/actions/admin";
-import type {
-  MemberLevel,
-  MemberPhase,
-  MembershipRole,
-  UserRole,
-} from "@/lib/wepacker/types";
+import type { UserRole } from "@/lib/wepacker/types";
 
-const ROLE_LABELS: Record<UserRole, string> = {
+type AccountAccess = "member" | "admin";
+
+const ACCOUNT_ACCESS_LABELS: Record<AccountAccess, string> = {
   member: "Standard access",
-  mentor: "Mentor workspace access",
   admin: "Admin access",
 };
 
-interface PackSummary {
-  id: string;
-  slug: string;
-  name: string;
-}
-
-interface CohortSummary {
-  id: string;
-  name: string;
-  pack: PackSummary;
-}
-
-interface Membership {
-  id: string;
-  role: MembershipRole;
-  level: MemberLevel;
-  currentPhase: MemberPhase;
-  cohort: CohortSummary;
+function accountAccess(role: UserRole): AccountAccess {
+  return role === "admin" ? "admin" : "member";
 }
 
 interface AdminUser {
@@ -43,15 +23,11 @@ interface AdminUser {
   role: UserRole;
   onboarded: boolean;
   phone: string | null;
-  inviteToken: string | null;
   createdAt: string;
-  memberships: Membership[];
-  _count: { sessionsMentored: number; evaluationsGiven: number };
 }
 
 interface AdminUsersPageProps {
   users: AdminUser[];
-  cohorts: CohortSummary[];
   currentUserId: string;
   prefill?: {
     name: string;
@@ -61,29 +37,19 @@ interface AdminUsersPageProps {
   } | null;
 }
 
-function buildWhatsappUrl(name: string, phone: string, inviteUrl: string) {
-  return `https://wa.me/${phone.replace(/[\s\-()+"]/g, "")}?text=${encodeURIComponent(
-    `Olá ${name.split(" ")[0]}, foste convidado/a para o WEPACKER. Cria a tua conta aqui: ${inviteUrl}`
-  )}`;
-}
-
 export function AdminUsersPageClient({
   users: allUsers,
-  cohorts,
   currentUserId,
   prefill = null,
 }: AdminUsersPageProps) {
   const router = useRouter();
-  const [roleFilter, setRoleFilter] = useState<"all" | UserRole>("all");
+  const [roleFilter, setRoleFilter] = useState<"all" | AccountAccess>("all");
   const [showInviteForm, setShowInviteForm] = useState(prefill !== null);
   const [inviteName, setInviteName] = useState(prefill?.name ?? "");
   const [inviteEmail, setInviteEmail] = useState(prefill?.email ?? "");
   const [invitePhone, setInvitePhone] = useState(prefill?.phone ?? "");
-  const [inviteRole, setInviteRole] = useState<UserRole>("member");
+  const [inviteRole, setInviteRole] = useState<AccountAccess>("member");
   const [inviteMessage, setInviteMessage] = useState("");
-  const [inviteMemberships, setInviteMemberships] = useState<
-    { cohortId: string; role: MembershipRole }[]
-  >([]);
   const [submitting, setSubmitting] = useState(false);
   const [inviteError, setInviteError] = useState("");
   const [inviteResult, setInviteResult] = useState<{
@@ -93,19 +59,15 @@ export function AdminUsersPageClient({
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const filtered =
-    roleFilter === "all" ? allUsers : allUsers.filter((u) => u.role === roleFilter);
-
+    roleFilter === "all"
+      ? allUsers
+      : allUsers.filter((user) => accountAccess(user.role) === roleFilter);
   const counts = {
     total: allUsers.length,
-    members: allUsers.filter((u) => u.role === "member").length,
-    mentors: allUsers.filter((u) => u.role === "mentor").length,
-    admins: allUsers.filter((u) => u.role === "admin").length,
-    notOnboarded: allUsers.filter((u) => !u.onboarded).length,
+    members: allUsers.filter((user) => user.role !== "admin").length,
+    admins: allUsers.filter((user) => user.role === "admin").length,
+    pending: allUsers.filter((user) => !user.onboarded).length,
   };
-
-  function origin() {
-    return typeof window !== "undefined" ? window.location.origin : "";
-  }
 
   async function handleCopy(url: string, id: string) {
     try {
@@ -113,7 +75,7 @@ export function AdminUsersPageClient({
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 2000);
     } catch {
-      // clipboard unavailable — silently ignore
+      setCopiedId(null);
     }
   }
 
@@ -123,22 +85,17 @@ export function AdminUsersPageClient({
     setInvitePhone("");
     setInviteRole("member");
     setInviteMessage("");
-    setInviteMemberships([]);
     setInviteResult(null);
     setInviteError("");
   }
 
-  function updateInviteMembership(
-    index: number,
-    patch: Partial<{ cohortId: string; role: MembershipRole }>
-  ) {
-    setInviteMemberships((prev) =>
-      prev.map((m, i) => (i === index ? { ...m, ...patch } : m))
-    );
+  function closeInviteForm() {
+    setShowInviteForm(false);
+    resetInviteForm();
   }
 
-  async function handleInviteSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  async function handleInviteSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setSubmitting(true);
     setInviteError("");
     try {
@@ -149,41 +106,25 @@ export function AdminUsersPageClient({
         role: inviteRole,
         message: inviteMessage.trim() || undefined,
         applicationId: prefill?.applicationId,
-        memberships: inviteMemberships.filter((m) => m.cohortId),
       });
-      setInviteResult({ inviteUrl: result.inviteUrl, whatsappUrl: result.whatsappUrl });
+      setInviteResult({
+        inviteUrl: result.inviteUrl,
+        whatsappUrl: result.whatsappUrl,
+      });
       router.refresh();
-    } catch (err: unknown) {
-      setInviteError(err instanceof Error ? err.message : "Erro ao criar convite.");
+    } catch (error) {
+      setInviteError(
+        error instanceof Error ? error.message : "Erro ao criar convite.",
+      );
     } finally {
       setSubmitting(false);
     }
   }
 
-  function closeInviteForm() {
-    setShowInviteForm(false);
-    resetInviteForm();
-  }
-
   async function handleDeleteUser(user: AdminUser) {
-    const impact: string[] = [];
-    if (user._count.sessionsMentored > 0) {
-      impact.push(
-        `${user._count.sessionsMentored} sessão(ões) que mentorou — apagadas para todos os participantes`
-      );
-    }
-    if (user._count.evaluationsGiven > 0) {
-      impact.push(
-        `${user._count.evaluationsGiven} avaliação(ões) que deu como mentor — apagadas`
-      );
-    }
-    const warning =
-      impact.length > 0
-        ? `\n\nIsto também apaga:\n- ${impact.join("\n- ")}`
-        : "";
     if (
-      !confirm(
-        `Eliminar ${user.name} permanentemente? Esta ação não pode ser revertida.${warning}`
+      !window.confirm(
+        `Eliminar ${user.name} permanentemente? Esta ação não pode ser revertida.`,
       )
     ) {
       return;
@@ -191,51 +132,50 @@ export function AdminUsersPageClient({
     try {
       await deleteUser(user.id);
       router.refresh();
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao eliminar utilizador.");
+    } catch (error) {
+      window.alert(
+        error instanceof Error ? error.message : "Erro ao eliminar pessoa.",
+      );
     }
   }
 
   return (
     <div className="min-h-screen bg-wepac-dark px-6 py-10 lg:px-12">
       <div className="mx-auto max-w-5xl">
-        <div className="flex items-center justify-between">
+        <header className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="font-barlow text-3xl font-bold text-wepac-white">
-              Users
-            </h1>
+            <h1 className="font-barlow text-3xl font-bold text-wepac-white">People</h1>
             <p className="mt-1 text-sm text-wepac-text-tertiary">
-              {counts.total} people — {counts.members} Standard, {counts.mentors} Mentor workspace,{" "}
-              {counts.admins} Admin access
+              Manage identity and workspace access. Relationships are created in their
+              own flows.
             </p>
           </div>
           <button
-            onClick={() => (showInviteForm ? closeInviteForm() : setShowInviteForm(true))}
+            onClick={() =>
+              showInviteForm ? closeInviteForm() : setShowInviteForm(true)
+            }
             className="bg-wepac-white px-4 py-2 text-sm font-bold text-wepac-black"
           >
-            {showInviteForm ? "Cancelar" : "+ Convidar"}
+            {showInviteForm ? "Cancel" : "+ Invite Person"}
           </button>
-        </div>
+        </header>
 
-        {/* Invite form */}
         {showInviteForm && (
-          <div className="mt-6 border border-wepac-border bg-wepac-card p-6">
+          <section className="mt-6 border border-wepac-border bg-wepac-card p-6">
             <h2 className="font-barlow text-lg font-bold text-wepac-white">
-              Invite User
+              Invite Person
             </h2>
-            {prefill?.applicationId && !inviteResult && (
-              <p className="mt-2 text-xs text-wepac-text-tertiary">
-                Ao enviar, a candidatura de origem passa automaticamente a{" "}
-                <span className="text-wepac-white">Convidado</span>.
-              </p>
-            )}
+            <p className="mt-2 max-w-2xl text-xs leading-relaxed text-wepac-text-tertiary">
+              This creates an account invitation only. Mentorships, Pack Memberships
+              and Cycle Enrollments require separate acceptance.
+            </p>
 
             {inviteResult ? (
               <div className="mt-4 space-y-4">
-                <p className="text-sm text-wepac-success">Convite criado com sucesso.</p>
+                <p className="text-sm text-wepac-success">Invite created.</p>
                 <div>
                   <label className="block text-xs text-wepac-text-tertiary">
-                    Link de convite
+                    Invite link
                   </label>
                   <div className="mt-1 flex gap-2">
                     <input
@@ -245,164 +185,97 @@ export function AdminUsersPageClient({
                     />
                     <button
                       onClick={() => handleCopy(inviteResult.inviteUrl, "new")}
-                      className="whitespace-nowrap bg-wepac-input px-3 py-2 text-xs font-medium text-wepac-white hover:bg-wepac-accent-muted hover:text-wepac-black"
+                      className="whitespace-nowrap bg-wepac-input px-3 py-2 text-xs font-medium text-wepac-white"
                     >
-                      {copiedId === "new" ? "Copiado!" : "Copiar"}
+                      {copiedId === "new" ? "Copied" : "Copy"}
                     </button>
                   </div>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3">
                   {inviteResult.whatsappUrl && (
                     <a
                       href={inviteResult.whatsappUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="bg-green-600/20 px-4 py-2 text-sm font-medium text-green-400 hover:bg-green-600/30"
+                      className="bg-green-600/20 px-4 py-2 text-sm font-medium text-green-400"
                     >
-                      Enviar por WhatsApp
+                      Send via WhatsApp
                     </a>
                   )}
                   <button
                     onClick={closeInviteForm}
                     className="bg-wepac-white px-4 py-2 text-sm font-bold text-wepac-black"
                   >
-                    Concluir
+                    Done
                   </button>
                 </div>
               </div>
             ) : (
               <form onSubmit={handleInviteSubmit} className="mt-4 grid gap-4 sm:grid-cols-3">
                 <div>
-                  <label className="block text-xs text-wepac-text-tertiary">Nome</label>
+                  <label htmlFor="invite-name" className="block text-xs text-wepac-text-tertiary">
+                    Name
+                  </label>
                   <input
+                    id="invite-name"
                     value={inviteName}
-                    onChange={(e) => setInviteName(e.target.value)}
+                    onChange={(event) => setInviteName(event.target.value)}
                     required
-                    className="mt-1 w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
+                    className="mt-1 w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-wepac-text-tertiary">Email</label>
+                  <label htmlFor="invite-email" className="block text-xs text-wepac-text-tertiary">
+                    Email
+                  </label>
                   <input
+                    id="invite-email"
                     type="email"
                     value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
+                    onChange={(event) => setInviteEmail(event.target.value)}
                     required
-                    className="mt-1 w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
+                    className="mt-1 w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-wepac-text-tertiary">Telefone</label>
+                  <label htmlFor="invite-phone" className="block text-xs text-wepac-text-tertiary">
+                    Phone
+                  </label>
                   <input
+                    id="invite-phone"
                     type="tel"
                     value={invitePhone}
-                    onChange={(e) => setInvitePhone(e.target.value)}
-                    placeholder="+351 912 345 678"
-                    className="mt-1 w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white placeholder-wepac-text-tertiary outline-none focus:ring-1 focus:ring-wepac-white/50"
+                    onChange={(event) => setInvitePhone(event.target.value)}
+                    className="mt-1 w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-wepac-text-tertiary">Papel</label>
+                  <label htmlFor="invite-role" className="block text-xs text-wepac-text-tertiary">
+                    Workspace access
+                  </label>
                   <select
+                    id="invite-role"
                     value={inviteRole}
-                    onChange={(e) => setInviteRole(e.target.value as UserRole)}
-                    className="mt-1 w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
+                    onChange={(event) =>
+                      setInviteRole(event.target.value as AccountAccess)
+                    }
+                    className="mt-1 w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none"
                   >
                     <option value="member">Standard access</option>
-                    <option value="mentor">Mentor workspace access</option>
                     <option value="admin">Admin access</option>
                   </select>
                 </div>
                 <div className="sm:col-span-3">
-                  <label className="block text-xs text-wepac-text-tertiary">
-                    Mensagem pessoal (opcional — aparece no email de convite)
+                  <label htmlFor="invite-message" className="block text-xs text-wepac-text-tertiary">
+                    Personal message (optional)
                   </label>
                   <textarea
+                    id="invite-message"
                     value={inviteMessage}
-                    onChange={(e) => setInviteMessage(e.target.value)}
+                    onChange={(event) => setInviteMessage(event.target.value)}
                     rows={3}
-                    placeholder="Ex.: Vimos a tua candidatura e adorámos o teu percurso — mal podemos esperar para te ter connosco."
-                    className="mt-1 w-full resize-none bg-wepac-input px-3 py-2 text-sm text-wepac-white placeholder-wepac-text-tertiary outline-none focus:ring-1 focus:ring-wepac-white/50"
+                    className="mt-1 w-full resize-none bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none"
                   />
-                </div>
-                {/* Legacy cohort assignments; not target Cycle Enrollment. */}
-                <div className="sm:col-span-3">
-                  <label className="block text-xs text-wepac-text-tertiary">
-                    Legacy cohort assignments (optional)
-                  </label>
-                  <p className="mt-1 text-xs text-wepac-warning">
-                    These write CohortMembership records. They are not target Cycle
-                    Enrollments, Cycle Facilitators, or Pack Memberships.
-                  </p>
-                  <div className="mt-1 space-y-2">
-                    {inviteMemberships.map((m, i) => (
-                      <div key={i} className="flex gap-2">
-                        <select
-                          value={m.cohortId}
-                          onChange={(e) =>
-                            updateInviteMembership(i, {
-                              cohortId: e.target.value,
-                            })
-                          }
-                          className="w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
-                        >
-                          <option value="">Choose a legacy cohort…</option>
-                          {cohorts
-                            .filter(
-                              (c) =>
-                                c.id === m.cohortId ||
-                                !inviteMemberships.some(
-                                  (other, j) =>
-                                    j !== i && other.cohortId === c.id
-                                )
-                            )
-                            .map((c) => (
-                              <option key={c.id} value={c.id}>
-                                {c.pack.name} — {c.name}
-                              </option>
-                            ))}
-                        </select>
-                        <select
-                          value={m.role}
-                          onChange={(e) =>
-                            updateInviteMembership(i, {
-                              role: e.target.value as MembershipRole,
-                            })
-                          }
-                          className="w-36 bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
-                        >
-                          <option value="member">Participant</option>
-                          <option value="mentor">Facilitator</option>
-                        </select>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setInviteMemberships((prev) =>
-                              prev.filter((_, j) => j !== i)
-                            )
-                          }
-                          className="px-2 text-wepac-text-tertiary hover:text-wepac-white"
-                          aria-label="Remove legacy cohort"
-                        >
-                          &times;
-                        </button>
-                      </div>
-                    ))}
-                    {inviteMemberships.length < cohorts.length && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setInviteMemberships((prev) => [
-                            ...prev,
-                            { cohortId: "", role: "member" },
-                          ])
-                        }
-                        className="border border-wepac-white/20 px-3 py-1.5 text-xs text-wepac-white/60 transition-colors hover:text-wepac-white"
-                      >
-                        + Add legacy cohort
-                      </button>
-                    )}
-                  </div>
                 </div>
                 {inviteError && (
                   <p className="text-sm text-wepac-error sm:col-span-3">{inviteError}</p>
@@ -413,60 +286,50 @@ export function AdminUsersPageClient({
                     disabled={submitting}
                     className="bg-wepac-white px-6 py-2 text-sm font-bold text-wepac-black disabled:opacity-50"
                   >
-                    {submitting ? "A enviar..." : "Enviar Convite"}
+                    {submitting ? "Sending..." : "Send Invite"}
                   </button>
                 </div>
               </form>
             )}
-          </div>
+          </section>
         )}
 
-        {/* Stats */}
         <div className="mt-8 grid gap-4 sm:grid-cols-4">
           {[
-            { label: "Total", value: counts.total },
-            { label: "Standard access", value: counts.members },
-            { label: "Mentor workspace", value: counts.mentors },
-            { label: "Pending", value: counts.notOnboarded },
-          ].map((s) => (
-            <div key={s.label} className="border border-wepac-border bg-wepac-card p-4">
-              <p className="text-xs text-wepac-text-tertiary">{s.label}</p>
-              <p className="mt-1 font-barlow text-2xl font-bold text-wepac-white">{s.value}</p>
+            { label: "People", value: counts.total },
+            { label: "Standard", value: counts.members },
+            { label: "Admins", value: counts.admins },
+            { label: "Pending", value: counts.pending },
+          ].map((stat) => (
+            <div key={stat.label} className="border border-wepac-border bg-wepac-card p-4">
+              <p className="text-xs text-wepac-text-tertiary">{stat.label}</p>
+              <p className="mt-1 font-barlow text-2xl font-bold text-wepac-white">
+                {stat.value}
+              </p>
             </div>
           ))}
         </div>
 
-        {/* Filter */}
-        <div className="mt-8 flex gap-2">
-          {(["all", "member", "mentor", "admin"] as const).map((r) => (
+        <div className="mt-8 flex flex-wrap gap-2" aria-label="People filters">
+          {(["all", "member", "admin"] as const).map((role) => (
             <button
-              key={r}
-              onClick={() => setRoleFilter(r)}
+              key={role}
+              onClick={() => setRoleFilter(role)}
               className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                roleFilter === r
+                roleFilter === role
                   ? "bg-wepac-white text-wepac-black"
                   : "bg-wepac-card text-wepac-text-tertiary hover:text-wepac-white"
               }`}
             >
-              {r === "all" ? "Todos" : ROLE_LABELS[r]}
+              {role === "all" ? "All" : ACCOUNT_ACCESS_LABELS[role]}
             </button>
           ))}
         </div>
 
-        {/* User list */}
         <div className="mt-6 space-y-3">
-          {filtered.length === 0 && (
-            <p className="py-8 text-center text-sm text-wepac-text-tertiary">
-              Nenhum utilizador encontrado.
-            </p>
-          )}
           {filtered.map((user) => {
-            const membership = user.memberships[0];
-            const inviteUrl = user.inviteToken
-              ? `${origin()}/wepacker/invite/${user.inviteToken}`
-              : null;
             return (
-              <div
+              <article
                 key={user.id}
                 className="flex flex-col gap-3 border border-wepac-border bg-wepac-card p-4 sm:flex-row sm:items-center sm:justify-between"
               >
@@ -474,7 +337,7 @@ export function AdminUsersPageClient({
                   <div className="flex h-10 w-10 items-center justify-center bg-wepac-white/10 text-sm font-bold text-wepac-white">
                     {user.name
                       .split(" ")
-                      .map((n) => n[0])
+                      .map((part) => part[0])
                       .join("")
                       .slice(0, 2)}
                   </div>
@@ -484,56 +347,31 @@ export function AdminUsersPageClient({
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
-                  {!user.onboarded && inviteUrl && (
-                    <>
-                      <button
-                        onClick={() => handleCopy(inviteUrl, user.id)}
-                        title="Copiar link de convite"
-                        className="bg-wepac-input px-2 py-1 text-xs text-wepac-text-secondary transition-colors hover:bg-wepac-accent-muted hover:text-wepac-black"
-                      >
-                        {copiedId === user.id ? "Copiado!" : "Copiar link"}
-                      </button>
-                      {user.phone && (
-                        <a
-                          href={buildWhatsappUrl(user.name, user.phone, inviteUrl)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          title="Enviar convite por WhatsApp"
-                          className="flex h-7 w-7 items-center justify-center bg-green-600/20 text-base transition-colors hover:bg-green-600/40"
-                        >
-                          <svg viewBox="0 0 24 24" className="h-4 w-4 fill-green-400">
-                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                          </svg>
-                        </a>
-                      )}
-                    </>
-                  )}
                   {!user.onboarded && (
                     <span className="bg-wepac-warning-bg px-2 py-0.5 text-xs font-medium text-wepac-warning">
-                      Pendente
+                      Pending
                     </span>
                   )}
                   <span className="bg-wepac-input px-2 py-0.5 text-xs text-wepac-text-tertiary">
-                    {ROLE_LABELS[user.role]}
+                    {ACCOUNT_ACCESS_LABELS[accountAccess(user.role)]}
                   </span>
-                  {membership && (
-                    <span className="bg-wepac-input px-2 py-0.5 text-xs text-wepac-text-tertiary">
-                      Legacy delivery: {membership.cohort.name}
-                    </span>
-                  )}
                   {user.id !== currentUserId && (
                     <button
                       onClick={() => handleDeleteUser(user)}
-                      title="Eliminar utilizador (RGPD)"
-                      className="text-xs text-red-400/60 transition-colors hover:text-red-400"
+                      className="text-xs text-red-400/70 hover:text-red-400"
                     >
-                      Eliminar
+                      Delete
                     </button>
                   )}
                 </div>
-              </div>
+              </article>
             );
           })}
+          {filtered.length === 0 && (
+            <p className="py-8 text-center text-sm text-wepac-text-tertiary">
+              No people found.
+            </p>
+          )}
         </div>
       </div>
     </div>

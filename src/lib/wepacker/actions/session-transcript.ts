@@ -13,6 +13,11 @@ export async function attachSessionTranscript(
   sessionId: string,
   transcript: string,
 ) {
+  if (process.env.SESSION_TRANSCRIPT_WRITES_ENABLED !== "true") {
+    throw new Error(
+      "Novos Session Transcript attachments estão temporariamente indisponíveis até o consentimento e a retenção estarem formalizados.",
+    );
+  }
   const { actorId } = await assertSessionOrganizer(sessionId);
   const trimmed = transcript.trim();
   if (!trimmed) throw new Error("Transcrição vazia.");

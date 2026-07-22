@@ -11,53 +11,15 @@ datasource db {
 
 enum UserRole {
   member
-  mentor
   admin
 }
 
-enum MemberLevel {
-  seed
-  growth
-  signature
-  partner
-}
-
-enum MemberPhase {
-  diagnosis
-  structuring
-  development
-  activation
-  consolidation
-}
-
-enum CohortStatus {
-  draft
-  active
-  completed
-  archived
-}
-
-enum MembershipRole {
-  member
-  mentor
-}
-
-enum MembershipStatus {
-  active
-  paused
-  exited
-}
-
-// Origin metadata for Domain Graph v2 records. `legacy_inference` is
-// intentionally explicit: inferred records must also set reviewRequired=true
-// and are never created by this migration. Database checks quarantine every
-// reviewRequired record from an active status until a human clears the flag.
+// Origin metadata for records explicitly created in the canonical graph.
 enum DomainRecordSource {
   explicit
   invitation
   admin
   system
-  legacy_inference
 }
 
 enum PersonConnectionType {
@@ -99,9 +61,19 @@ enum PackMembershipStatus {
   removed
 }
 
-enum CommunityPackStatus {
+enum PackStatus {
   draft
   active
+  archived
+
+  @@map("CommunityPackStatus")
+}
+
+enum CycleStatus {
+  draft
+  published
+  active
+  completed
   archived
 }
 
@@ -142,18 +114,6 @@ enum StagePlacementStatus {
   voided
 }
 
-enum EvaluationType {
-  self
-  mentor
-  professional
-}
-
-enum EvaluationMoment {
-  entry
-  mid
-  exit
-}
-
 enum GoalScope {
   annual
   quarterly
@@ -165,22 +125,17 @@ enum GoalStatus {
   completed
 }
 
-enum TaskStatus {
-  todo
+enum ActionStatus {
+  pending
   in_progress
-  done
+  completed
+  cancelled
 }
 
-enum TaskOrigin {
-  plan
-  session
-  mentor
+enum ActionOrigin {
   self
-}
-
-enum SessionType {
-  individual
-  group
+  plan
+  session_proposal
 }
 
 enum SessionStatus {
@@ -190,8 +145,8 @@ enum SessionStatus {
   no_show
 }
 
-// The purpose of a session, from the WEPACKER mountain imaginary —
-// orthogonal to SessionType (which is FORMAT: individual/group).
+// The purpose of a session, from the WEPACKER mountain imaginary. Session
+// format is derived from the explicit attendee count rather than persisted.
 enum SessionKind {
   checkpoint
   recon
@@ -200,13 +155,15 @@ enum SessionKind {
   summit
 }
 
-enum AreaKey {
+enum PillarKey {
   physical
   emotional
   character
   spiritual
   intellectual
   social
+
+  @@map("AreaKey")
 }
 
 // A Trail is a bounded personal transformation a WEPACker defines and owns.
@@ -228,69 +185,44 @@ enum DebriefStatus {
   failed
 }
 
+enum NotificationType {
+  pack_invited
+  pack_accepted
+  connection_requested
+  connection_accepted
+  mentorship_invited
+  mentorship_accepted
+  session_scheduled
+  session_updated
+  session_cancelled
+  session_followup_updated
+  new_message
+}
+
+enum EmailOutboxStatus {
+  pending
+  processing
+  sent
+  failed
+  superseded
+}
+
+enum SupportPreviewAuditEventType {
+  reauth_denied
+  reauth_rate_limited
+  grant_created
+  projection_accessed
+  grant_revoked
+}
+
+enum SupportPreviewReasonCode {
+  reported_issue
+  incident_response
+  data_correction
+  quality_assurance
+}
+
 // ===== WEPACKER PLATFORM — MODELS =====
-
-// LEGACY DELIVERY MODEL. These rows historically mixed audience, practice
-// and product concepts. They are not target Community Packs or verified
-// Disciplines; see CommunityPack and the Domain Graph v2 ADR.
-model Pack {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  name        String
-  tagline     String   @default("")
-  description String   @default("")
-  active      Boolean  @default(true)
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  cohorts Cohort[]
-
-  @@map("packs")
-}
-
-// LEGACY DELIVERY MODEL. A Cohort is not a target Cycle until reviewed and
-// explicitly mapped.
-model Cohort {
-  id        String       @id @default(cuid())
-  packId    String
-  name      String
-  status    CohortStatus @default(draft)
-  startsAt  DateTime?
-  endsAt    DateTime?
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-
-  pack              Pack               @relation(fields: [packId], references: [id], onDelete: Cascade)
-  memberships       CohortMembership[]
-  cycleEnrollments  CycleEnrollment[]
-  cycleFacilitators CycleFacilitator[]
-  sessions          Session[]
-
-  @@map("cohorts")
-}
-
-// LEGACY DELIVERY MODEL. This row is not target Cycle Enrollment, Cycle
-// Facilitator, Pack Membership, Connection or Mentorship. Tasks remain here
-// only as contained legacy data during migration.
-model CohortMembership {
-  id           String           @id @default(cuid())
-  cohortId     String
-  userId       String
-  role         MembershipRole   @default(member)
-  status       MembershipStatus @default(active)
-  level        MemberLevel      @default(seed)
-  currentPhase MemberPhase      @default(diagnosis)
-  joinedAt     DateTime         @default(now())
-
-  cohort Cohort @relation(fields: [cohortId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tasks  Task[]
-
-  @@unique([cohortId, userId])
-  @@index([userId])
-  @@map("cohort_memberships")
-}
 
 model User {
   id              String    @id @default(cuid())
@@ -301,44 +233,51 @@ model User {
   inviteToken     String?   @unique
   inviteExpiresAt DateTime?
   onboarded       Boolean   @default(false)
+  // Incremented whenever credentials change. JWTs carry the version minted at
+  // login; protected reads reject a token after this value changes.
+  sessionVersion  Int       @default(1)
   avatarUrl       String?
   bio             String?
   phone           String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  memberships                CohortMembership[]
-  agreements                 Agreement[]
-  evaluations                Evaluation[]              @relation("EvaluationSubject")
-  evaluationsGiven           Evaluation[]              @relation("EvaluationEvaluator")
-  strategicMapScores         StrategicMapScore[]       @relation("StrategicMapSubject")
-  strategicMapsGiven         StrategicMapScore[]       @relation("StrategicMapEvaluator")
-  lifePlan                   LifePlan?
-  lifePlanVersions           LifePlanVersion[]
-  strategicPlans             StrategicPlan[]
-  trails                     Trail[]
-  tasksAssigned              Task[]                    @relation("TaskAssigner")
-  sessionsMentored           Session[]
-  sessionAttendances         SessionAttendee[]
-  sessionTranscriptsUploaded Session[]                 @relation("SessionTranscriptUploader")
-  sessionDebriefsGenerated   SessionDebrief[]
-  conversationLinks          ConversationParticipant[]
-  messages                   Message[]
-  comments                   Comment[]
-  passwordResetTokens        PasswordResetToken[]
-  connectionsAsFirst         PersonConnection[]        @relation("PersonConnectionFirstUser")
-  connectionsAsSecond        PersonConnection[]        @relation("PersonConnectionSecondUser")
-  connectionsRequested       PersonConnection[]        @relation("PersonConnectionRequestedBy")
-  mentorshipsAsMentor        Mentorship[]              @relation("MentorshipMentor")
-  mentorshipsAsMentee        Mentorship[]              @relation("MentorshipMentee")
-  mentorshipInvitationsSent  Mentorship[]              @relation("MentorshipInvitedBy")
-  communityPacksCreated      CommunityPack[]           @relation("CommunityPackCreator")
-  packMemberships            PackMembership[]
-  packInvitationsSent        PackMembership[]          @relation("PackMembershipInvitedBy")
-  cycleEnrollments           CycleEnrollment[]
-  cycleFacilitations         CycleFacilitator[]
-  stagePlacements            StagePlacement[]          @relation("StagePlacementSubject")
-  stagePlacementsMade        StagePlacement[]          @relation("StagePlacementPlacedBy")
+  agreements                   Agreement[]
+  lifeMap                      LifeMap?
+  lifeMapVersions              LifeMapVersion[]
+  strategicPlans               StrategicPlan[]
+  trails                       Trail[]
+  actionsAssigned              Action[]                   @relation("ActionAssignee")
+  actionsCreated               Action[]                   @relation("ActionCreator")
+  sessionsOrganized            Session[]                  @relation("SessionOrganizer")
+  sessionAttendances           SessionAttendee[]
+  sessionTranscriptsUploaded   Session[]                  @relation("SessionTranscriptUploader")
+  sessionDebriefsGenerated     SessionDebrief[]
+  conversationLinks            ConversationParticipant[]
+  messages                     Message[]
+  passwordResetTokens          PasswordResetToken[]
+  connectionsAsFirst           PersonConnection[]         @relation("PersonConnectionFirstUser")
+  connectionsAsSecond          PersonConnection[]         @relation("PersonConnectionSecondUser")
+  connectionsRequested         PersonConnection[]         @relation("PersonConnectionRequestedBy")
+  mentorshipsAsMentor          Mentorship[]               @relation("MentorshipMentor")
+  mentorshipsAsMentee          Mentorship[]               @relation("MentorshipMentee")
+  mentorshipInvitationsSent    Mentorship[]               @relation("MentorshipInvitedBy")
+  packsCreated                 Pack[]                     @relation("PackCreator")
+  personalPack                 Pack?                      @relation("PackPersonalOwner")
+  packMemberships              PackMembership[]
+  packInvitationsSent          PackMembership[]           @relation("PackMembershipInvitedBy")
+  cyclesCreated                Cycle[]                    @relation("CycleCreator")
+  cycleEnrollments             CycleEnrollment[]
+  cycleFacilitations           CycleFacilitator[]
+  stagePlacements              StagePlacement[]           @relation("StagePlacementSubject")
+  stagePlacementsMade          StagePlacement[]           @relation("StagePlacementPlacedBy")
+  notificationsReceived        Notification[]             @relation("NotificationRecipient")
+  notificationsTriggered       Notification[]             @relation("NotificationActor")
+  emailOutboxItems             EmailOutbox[]              @relation("EmailOutboxRecipient")
+  supportPreviewGrantsCreated  SupportPreviewGrant[]      @relation("SupportPreviewGrantActor")
+  supportPreviewGrantsTargeted SupportPreviewGrant[]      @relation("SupportPreviewGrantTarget")
+  supportPreviewAuditAsActor   SupportPreviewAuditEvent[] @relation("SupportPreviewAuditActor")
+  supportPreviewAuditAsTarget  SupportPreviewAuditEvent[] @relation("SupportPreviewAuditTarget")
 
   @@map("users")
 }
@@ -360,7 +299,6 @@ model PersonConnection {
   labelForFirstUser  String?
   labelForSecondUser String?
   source             DomainRecordSource     @default(explicit)
-  reviewRequired     Boolean                @default(false)
   requestedAt        DateTime               @default(now())
   acceptedAt         DateTime?
   endedAt            DateTime?
@@ -388,7 +326,6 @@ model Mentorship {
   invitedById      String
   status           MentorshipStatus   @default(pending)
   source           DomainRecordSource @default(explicit)
-  reviewRequired   Boolean            @default(false)
   invitedAt        DateTime           @default(now())
   mentorAcceptedAt DateTime?
   menteeAcceptedAt DateTime?
@@ -402,6 +339,7 @@ model Mentorship {
   mentee    User      @relation("MentorshipMentee", fields: [menteeId], references: [id], onDelete: Restrict)
   invitedBy User      @relation("MentorshipInvitedBy", fields: [invitedById], references: [id], onDelete: Restrict)
   sessions  Session[]
+  actions   Action[]
 
   @@index([mentorId, menteeId])
   @@index([mentorId, status])
@@ -410,81 +348,130 @@ model Mentorship {
   @@map("mentorships")
 }
 
-// Target community aggregate. It is intentionally separate from legacy Pack,
-// whose current rows describe profile/practice concepts such as Artist. No
-// legacy Pack row is reused or inferred as a CommunityPack by this migration.
-model CommunityPack {
-  id             String              @id @default(cuid())
-  slug           String              @unique
-  name           String
-  description    String              @default("")
-  status         CommunityPackStatus @default(draft)
-  source         DomainRecordSource  @default(explicit)
-  reviewRequired Boolean             @default(false)
-  createdById    String
-  activatedAt    DateTime?
-  archivedAt     DateTime?
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
+// A Pack is a real community only. The physical `community_packs` name keeps
+// Release A additive while the old `packs` table remains for the previous
+// release; Release B removes that legacy table.
+model Pack {
+  id              String             @id @default(cuid())
+  slug            String             @unique
+  name            String
+  description     String             @default("")
+  status          PackStatus         @default(draft)
+  source          DomainRecordSource @default(explicit)
+  createdById     String
+  personalOwnerId String?            @unique
+  activatedAt     DateTime?
+  archivedAt      DateTime?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
 
-  createdBy   User             @relation("CommunityPackCreator", fields: [createdById], references: [id], onDelete: Restrict)
-  memberships PackMembership[]
+  createdBy     User             @relation("PackCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  personalOwner User?            @relation("PackPersonalOwner", fields: [personalOwnerId], references: [id], onDelete: Restrict)
+  memberships   PackMembership[]
 
-  @@index([status])
-  @@index([createdById])
+  @@index([status], map: "community_packs_status_idx")
+  @@index([createdById], map: "community_packs_createdById_idx")
   @@map("community_packs")
 }
 
-// Community belonging only. This deliberately has no relationship to legacy
-// Pack or CohortMembership: delivery participation must never silently become
-// community belonging.
+// Community belonging is independent from Cycle participation, Mentorship and
+// every private personal-planning artifact. A target-controlled decline is a
+// durable terminal state; `left` remains the voluntary post-acceptance exit.
 model PackMembership {
-  id              String               @id @default(cuid())
-  communityPackId String
-  userId          String
-  invitedById     String
-  role            PackMembershipRole   @default(member)
-  status          PackMembershipStatus @default(invited)
-  source          DomainRecordSource   @default(explicit)
-  reviewRequired  Boolean              @default(false)
-  invitedAt       DateTime             @default(now())
-  joinedAt        DateTime?
-  endedAt         DateTime?
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
+  id          String               @id @default(cuid())
+  packId      String               @map("communityPackId")
+  userId      String
+  invitedById String
+  role        PackMembershipRole   @default(member)
+  status      PackMembershipStatus @default(invited)
+  source      DomainRecordSource   @default(explicit)
+  invitedAt   DateTime             @default(now())
+  joinedAt    DateTime?
+  endedAt     DateTime?
+  // Target-controlled refusal marker. Status remains the rollback-compatible
+  // `removed`; a non-null marker prevents the inviter from reopening it.
+  declinedAt  DateTime?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
 
-  communityPack CommunityPack @relation(fields: [communityPackId], references: [id], onDelete: Restrict)
-  user          User          @relation(fields: [userId], references: [id], onDelete: Restrict)
-  invitedBy     User          @relation("PackMembershipInvitedBy", fields: [invitedById], references: [id], onDelete: Restrict)
+  pack      Pack @relation(fields: [packId], references: [id], onDelete: Restrict)
+  user      User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  invitedBy User @relation("PackMembershipInvitedBy", fields: [invitedById], references: [id], onDelete: Restrict)
 
-  @@unique([communityPackId, userId])
-  @@index([communityPackId, status])
-  @@index([userId, status])
-  @@index([invitedById])
+  @@unique([packId, userId], map: "pack_memberships_communityPackId_userId_key")
+  @@index([packId, status], map: "pack_memberships_communityPackId_status_idx")
+  @@index([userId, status], map: "pack_memberships_userId_status_idx")
+  @@index([invitedById], map: "pack_memberships_invitedById_idx")
   @@map("pack_memberships")
 }
 
-// Participant consent edge for a product-facing Cycle, temporarily backed by
-// the legacy Cohort container. It is intentionally distinct from facilitation.
+// A serious practice through which the universal Six Pillars are trained.
+model Discipline {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String   @default("")
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cycles Cycle[]
+
+  @@index([active])
+  @@map("disciplines")
+}
+
+// A time-bounded Academy experience. Draft Cycles may be incomplete; database
+// checks in the migration require Stage and a valid date range before publish.
+model Cycle {
+  id                  String             @id @default(cuid())
+  slug                String             @unique
+  name                String
+  description         String             @default("")
+  status              CycleStatus        @default(draft)
+  stage               StageKey?
+  primaryDisciplineId String?
+  createdById         String
+  startsAt            DateTime?
+  endsAt              DateTime?
+  source              DomainRecordSource @default(explicit)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  primaryDiscipline Discipline?        @relation(fields: [primaryDisciplineId], references: [id], onDelete: Restrict)
+  createdBy         User               @relation("CycleCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  enrollments       CycleEnrollment[]
+  facilitators      CycleFacilitator[]
+  sessions          Session[]
+  actions           Action[]
+
+  @@index([status, startsAt])
+  @@index([stage])
+  @@index([primaryDisciplineId])
+  @@index([createdById])
+  @@map("cycles")
+}
+
+// Participant consent edge for a Cycle, intentionally distinct from
+// facilitation and from Pack Membership.
 model CycleEnrollment {
-  id             String                @id @default(cuid())
-  cohortId       String
-  userId         String
-  status         CycleEnrollmentStatus @default(invited)
-  source         DomainRecordSource    @default(explicit)
-  reviewRequired Boolean               @default(false)
-  invitedAt      DateTime              @default(now())
-  joinedAt       DateTime?
-  completedAt    DateTime?
-  endedAt        DateTime?
-  createdAt      DateTime              @default(now())
-  updatedAt      DateTime              @updatedAt
+  id          String                @id @default(cuid())
+  cycleId     String
+  userId      String
+  status      CycleEnrollmentStatus @default(invited)
+  source      DomainRecordSource    @default(explicit)
+  invitedAt   DateTime              @default(now())
+  joinedAt    DateTime?
+  completedAt DateTime?
+  endedAt     DateTime?
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
 
-  cohort Cohort @relation(fields: [cohortId], references: [id], onDelete: Restrict)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Restrict)
+  cycle Cycle @relation(fields: [cycleId], references: [id], onDelete: Restrict)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Restrict)
 
-  @@unique([cohortId, userId])
-  @@index([cohortId, status])
+  @@unique([cycleId, userId])
+  @@index([cycleId, status])
   @@index([userId, status])
   @@map("cycle_enrollments")
 }
@@ -493,24 +480,23 @@ model CycleEnrollment {
 // a CycleEnrollment; separate tables prevent one role from overwriting the
 // other and keep authorization scopes independent.
 model CycleFacilitator {
-  id             String                 @id @default(cuid())
-  cohortId       String
-  userId         String
-  role           CycleFacilitatorRole   @default(facilitator)
-  status         CycleFacilitatorStatus @default(invited)
-  source         DomainRecordSource     @default(explicit)
-  reviewRequired Boolean                @default(false)
-  invitedAt      DateTime               @default(now())
-  acceptedAt     DateTime?
-  endedAt        DateTime?
-  createdAt      DateTime               @default(now())
-  updatedAt      DateTime               @updatedAt
+  id         String                 @id @default(cuid())
+  cycleId    String
+  userId     String
+  role       CycleFacilitatorRole   @default(facilitator)
+  status     CycleFacilitatorStatus @default(invited)
+  source     DomainRecordSource     @default(explicit)
+  invitedAt  DateTime               @default(now())
+  acceptedAt DateTime?
+  endedAt    DateTime?
+  createdAt  DateTime               @default(now())
+  updatedAt  DateTime               @updatedAt
 
-  cohort Cohort @relation(fields: [cohortId], references: [id], onDelete: Restrict)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Restrict)
+  cycle Cycle @relation(fields: [cycleId], references: [id], onDelete: Restrict)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Restrict)
 
-  @@unique([cohortId, userId])
-  @@index([cohortId, status])
+  @@unique([cycleId, userId])
+  @@index([cycleId, status])
   @@index([userId, status])
   @@map("cycle_facilitators")
 }
@@ -523,7 +509,6 @@ model StagePlacement {
   stage          StageKey
   status         StagePlacementStatus @default(active)
   source         DomainRecordSource   @default(explicit)
-  reviewRequired Boolean              @default(false)
   placedById     String?
   effectiveFrom  DateTime             @default(now())
   effectiveUntil DateTime?
@@ -546,62 +531,13 @@ model Agreement {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, version])
   @@map("agreements")
 }
 
-// Belongs to the person (User), not a specific CohortMembership — one
-// person has a single diagnosis history across every pack they join.
-model Evaluation {
-  id             String           @id @default(cuid())
-  userId         String
-  evaluatorId    String
-  evaluationType EvaluationType
-  moment         EvaluationMoment
-  completedAt    DateTime?
-
-  user      User              @relation("EvaluationSubject", fields: [userId], references: [id], onDelete: Cascade)
-  evaluator User              @relation("EvaluationEvaluator", fields: [evaluatorId], references: [id], onDelete: Cascade)
-  scores    EvaluationScore[]
-
-  @@index([userId])
-  @@map("evaluations")
-}
-
-model EvaluationScore {
-  id           String  @id @default(cuid())
-  evaluationId String
-  area         AreaKey
-  indicator    String
-  score        Int
-  notes        String?
-
-  evaluation Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
-
-  @@map("evaluation_scores")
-}
-
-// Belongs to the person (User), not a specific CohortMembership.
-model StrategicMapScore {
-  id             String  @id @default(cuid())
-  userId         String
-  evaluatorId    String
-  month          String
-  longTermScore  Int
-  annualScore    Int
-  quarterlyScore Int
-  monthlyScore   Int
-  notes          String?
-
-  user      User @relation("StrategicMapSubject", fields: [userId], references: [id], onDelete: Cascade)
-  evaluator User @relation("StrategicMapEvaluator", fields: [evaluatorId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@map("strategic_map_scores")
-}
-
-// Belongs to the person (User) — a single mutable PPV per person, not
-// per membership. `userId` is unique: one row per person.
-model LifePlan {
+// The current whole-life map. The physical table remains `life_plans` during
+// the compatibility release; the Prisma/API concept is canonical immediately.
+model LifeMap {
   id          String   @id @default(cuid())
   userId      String   @unique
   whoIAm      String   @default("")
@@ -616,10 +552,10 @@ model LifePlan {
   @@map("life_plans")
 }
 
-// Append-only version history for LifePlan. A row is written with the
-// PREVIOUS state right before a LifePlan is overwritten, so no update or
+// Append-only version history for LifeMap. A row is written with the
+// previous state right before a LifeMap is overwritten, so no update or
 // delete should ever target this model — it exists purely to keep history.
-model LifePlanVersion {
+model LifeMapVersion {
   id          String   @id @default(cuid())
   userId      String
   whoIAm      String   @default("")
@@ -635,8 +571,8 @@ model LifePlanVersion {
   @@map("life_plan_versions")
 }
 
-// Belongs to the person (User) — a personal transformation Trail. Not
-// linked to Cohort/Journey in this version (see enum TrailStatus above).
+// A personal transformation Trail belongs to its Person and can contextualize
+// Actions without depending on a Pack, Cycle or Mentorship.
 model Trail {
   id           String      @id @default(cuid())
   userId       String
@@ -644,31 +580,32 @@ model Trail {
   purpose      String      @default("")
   whyItMatters String      @default("")
   destination  String      @default("")
-  areas        AreaKey[]
+  areas        PillarKey[]
   status       TrailStatus @default(active)
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  actions Action[]
 
   @@index([userId])
   @@map("trails")
 }
 
-// Belongs to the person (User), not a specific CohortMembership — one
-// strategic plan history per person, spanning every pack they join.
+// Strategic planning belongs to the Person and remains independent from every
+// Pack, Cycle and Mentorship relationship.
 model StrategicPlan {
-  id                  String    @id @default(cuid())
+  id                  String      @id @default(cuid())
   userId              String
   quarter             String
-  longTermVision      String    @default("")
-  positioning         String    @default("")
-  focusAreas          AreaKey[]
-  quarterlyReflection String    @default("")
+  longTermVision      String      @default("")
+  positioning         String      @default("")
+  focusAreas          PillarKey[]
+  quarterlyReflection String      @default("")
 
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  goals          Goal[]
-  monthlyActions MonthlyAction[]
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goals   Goal[]
+  actions Action[]
 
   @@index([userId])
   @@map("strategic_plans")
@@ -684,66 +621,72 @@ model Goal {
   deadline        String
   status          GoalStatus @default(not_started)
 
-  strategicPlan  StrategicPlan   @relation(fields: [strategicPlanId], references: [id], onDelete: Cascade)
-  monthlyActions MonthlyAction[]
-  tasks          Task[]
+  strategicPlan StrategicPlan @relation(fields: [strategicPlanId], references: [id], onDelete: Cascade)
+  actions       Action[]
 
   @@map("goals")
 }
 
-model MonthlyAction {
-  id              String     @id @default(cuid())
-  strategicPlanId String
-  month           String
-  title           String
-  goalId          String?
-  deadline        String
-  status          TaskStatus @default(todo)
-
-  strategicPlan StrategicPlan @relation(fields: [strategicPlanId], references: [id], onDelete: Cascade)
-  goal          Goal?         @relation(fields: [goalId], references: [id], onDelete: SetNull)
-
-  @@map("monthly_actions")
-}
-
-model Task {
-  id              String     @id @default(cuid())
-  membershipId    String
-  assignedById    String?
+// A concrete commitment owned by its assignee Person. Release A allows only
+// self-creation; createdById is nullable solely so future erasure can preserve
+// the Action without retaining an author identifier. Optional relationships
+// provide context but never confer cross-Person authorization.
+model Action {
+  id              String       @id @default(cuid())
+  assigneeId      String
+  createdById     String?
   title           String
   description     String?
-  origin          TaskOrigin @default(self)
+  status          ActionStatus @default(pending)
+  origin          ActionOrigin @default(self)
+  dueAt           DateTime?
+  strategicPlanId String?
   goalId          String?
-  deadline        String
-  status          TaskStatus @default(todo)
-  // Set when origin is "session": the mentoring session this task was
-  // created from, for traceability back to the outcome that spawned it.
+  trailId         String?
   sourceSessionId String?
+  cycleId         String?
+  mentorshipId    String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
-  membership    CohortMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
-  assignedBy    User?            @relation("TaskAssigner", fields: [assignedById], references: [id], onDelete: SetNull)
-  goal          Goal?            @relation(fields: [goalId], references: [id], onDelete: SetNull)
-  sourceSession Session?         @relation(fields: [sourceSessionId], references: [id], onDelete: SetNull)
-  comments      Comment[]        @relation("TaskComments")
+  assignee      User           @relation("ActionAssignee", fields: [assigneeId], references: [id], onDelete: Cascade)
+  createdBy     User?          @relation("ActionCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  strategicPlan StrategicPlan? @relation(fields: [strategicPlanId], references: [id], onDelete: SetNull)
+  goal          Goal?          @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  trail         Trail?         @relation(fields: [trailId], references: [id], onDelete: SetNull)
+  sourceSession Session?       @relation(fields: [sourceSessionId], references: [id], onDelete: SetNull)
+  cycle         Cycle?         @relation(fields: [cycleId], references: [id], onDelete: SetNull)
+  mentorship    Mentorship?    @relation(fields: [mentorshipId], references: [id], onDelete: SetNull)
 
-  @@map("tasks")
+  @@index([assigneeId, status, dueAt])
+  @@index([createdById])
+  @@index([strategicPlanId])
+  @@index([goalId])
+  @@index([trailId])
+  @@index([sourceSessionId])
+  @@index([cycleId])
+  @@index([mentorshipId])
+  @@map("actions")
 }
 
-// A Session has explicit attendees. It can optionally reference legacy
-// delivery context (`cohortId`), but that is not a target Cycle mapping.
-// Attendees are people (`User`), never inferred from a container.
+// A Session has one organizer and explicit Person attendees. Cycle and
+// Mentorship are optional context only and never add attendees implicitly.
+// Format is derived from attendee count.
 model Session {
   id               String        @id @default(cuid())
-  cohortId         String?
+  cycleId          String?
   mentorshipId     String?
-  mentorId         String
-  sessionType      SessionType
+  organizerId      String        @map("mentorId")
   kind             SessionKind   @default(checkpoint)
   scheduledAt      DateTime
   durationMinutes  Int           @default(60)
   status           SessionStatus @default(scheduled)
+  // Monotonic revision for calendar-affecting transitions. Every persisted
+  // Session notification increments this value in the same transaction and
+  // copies it to Notification.resourceVersion / ICS SEQUENCE.
+  calendarRevision Int           @default(0)
   // Video call link — auto-generated on creation (see generateMeetingUrl in
-  // src/lib/wepacker/actions/session.ts) or replaced by the mentor with a
+  // src/lib/wepacker/actions/session.ts) or replaced by the organizer with a
   // manual Zoom/Teams/etc link via updateSession. Member-safe: no privacy
   // concerns like privateNote, so it's fine on every member-facing read
   // path (ownAttendeeSessionSelect, dashboard's next session).
@@ -756,19 +699,13 @@ model Session {
   // check-then-create race) is what actually prevents a duplicate
   // Session on a retried BOOKING_CREATED.
   calcomBookingUid String?       @unique
-  // Deprecated for UI writes: a single mentor->everyone blob, wrong for
-  // group sessions. Superseded by the per-attendee note fields below
-  // (privateNote / sharedNote / sharedNotePublished / outcome). Kept for
-  // backward compatibility with existing data; do not add new writers.
-  notes            String?
-  notesPublished   Boolean       @default(false)
   discussionPoints String?
 
   // Raw meeting transcript (markdown/plain text) — pasted, or read
   // client-side from an uploaded .txt/.md file and sent as text. Source
-  // input for the AI debrief engine. Mentor-only: must never be added to
+  // input for the AI debrief engine. Organizer-only: must never be added to
   // ownAttendeeSessionInclude, the member-facing select, or any other
-  // member-facing read path (see src/lib/wepacker/actions/session.ts).
+  // attendee-facing read path (see src/lib/wepacker/actions/session.ts).
   transcript             String?
   // Monotonic source version for debrief generation. Content hashes alone
   // cannot distinguish a same-content replacement or an A -> B -> A cycle.
@@ -776,38 +713,56 @@ model Session {
   transcriptUploadedAt   DateTime?
   transcriptUploadedById String?
 
-  cohort               Cohort?           @relation(fields: [cohortId], references: [id], onDelete: Cascade)
-  mentorship           Mentorship?       @relation(fields: [mentorshipId], references: [id], onDelete: SetNull)
-  mentor               User              @relation(fields: [mentorId], references: [id], onDelete: Cascade)
-  transcriptUploadedBy User?             @relation("SessionTranscriptUploader", fields: [transcriptUploadedById], references: [id], onDelete: SetNull)
-  attendees            SessionAttendee[]
-  sourcedTasks         Task[]
-  debrief              SessionDebrief?
+  cycle                   Cycle?                     @relation(fields: [cycleId], references: [id], onDelete: SetNull)
+  mentorship              Mentorship?                @relation(fields: [mentorshipId], references: [id], onDelete: SetNull)
+  organizer               User                       @relation("SessionOrganizer", fields: [organizerId], references: [id], onDelete: Restrict)
+  transcriptUploadedBy    User?                      @relation("SessionTranscriptUploader", fields: [transcriptUploadedById], references: [id], onDelete: SetNull)
+  attendees               SessionAttendee[]
+  calcomBookingReferences CalcomBookingReference[]
+  sourcedActions          Action[]
+  debrief                 SessionDebrief?
+  supportPreviewGrants    SupportPreviewGrant[]
+  supportPreviewAudit     SupportPreviewAuditEvent[]
 
+  @@index([cycleId])
   @@index([mentorshipId])
   @@map("sessions")
 }
 
-// One AI-generated debrief draft per session (upsert on sessionId —
-// regenerating overwrites this row rather than keeping history, matching
-// the review UI's "descartar e gerar novo" flow). Nothing here is ever
-// member-visible: approving a suggestion writes straight to the real
-// table (SessionAttendee via updateSessionAttendee, Task via
-// createTaskFromSession) — this row is scratch space for the mentor's
-// review, not a published artefact.
+// Immutable aliases for every Cal.com UID ever associated with a Session.
+// Cal.com issues a new uid on every BOOKING_RESCHEDULED and supplies the old
+// one as rescheduleUid. Keeping the full chain makes late webhook replays
+// idempotent and lets later cancellation resolve the current uid.
+model CalcomBookingReference {
+  id        String   @id @default(cuid())
+  sessionId String
+  uid       String   @unique
+  createdAt DateTime @default(now())
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@map("calcom_booking_references")
+}
+
+// One Hub-generated debrief draft per session. Hub is generation-only:
+// regeneration replaces this organizer-only scratch row, and no output is
+// automatically delivered to an attendee. The organizer may explicitly apply
+// outcome/shared-note suggestions to SessionAttendee. Action proposals remain
+// draft output only and are never persisted or delivered in this slice.
 model SessionDebrief {
   id                     String        @id @default(cuid())
   sessionId              String        @unique
+  contractVersion        String
   status                 DebriefStatus
-  engineImpl             String? // "anthropic-direct" | "hub"
+  engineImpl             String? // "hub"
   model                  String?
   // DebriefResult.perAttendee (src/lib/wepacker/debrief/types.ts)
   perAttendeeSuggestions Json?
-  // DebriefResult.internalEvaluation
-  internalEvaluation     Json?
-  // DebriefResult.resultDocumentHtml — null for group sessions (v1 only
-  // generates a personal result document for individual sessions).
-  resultDocumentHtml     String?
+  // DebriefResult.internalSynthesis. Release A adds this target column while
+  // the old physical internalEvaluation/resultDocumentHtml columns remain
+  // temporarily available to the previous runtime; Release B drops both.
+  internalSynthesis      Json?
   // User-safe error message when status = failed (never the raw SDK
   // error, never transcript/prompt content).
   error                  String?
@@ -827,16 +782,19 @@ model SessionAttendee {
   userId    String
   attended  Boolean @default(false)
 
-  // Mentor-only, never shown to the member.
+  // Organizer-only, never shown to the attendee.
   privateNote         String?
   // Shown to the member, but only once sharedNotePublished is true.
   sharedNote          String?
   sharedNotePublished Boolean @default(false)
+  // Monotonic transition version for attendee-visible follow-up. It makes
+  // notification staging unique across unpublish/republish and edit cycles.
+  followupRevision    Int     @default(0)
   // What was agreed/gained in the session, for this person specifically.
   outcome             String?
 
   session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@unique([sessionId, userId])
   @@map("session_attendees")
@@ -873,34 +831,128 @@ model Message {
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([conversationId, userId, createdAt])
   @@map("messages")
 }
 
-model Comment {
-  id              String   @id @default(cuid())
-  userId          String
-  taskId          String?
-  commentableType String
-  commentableId   String
-  body            String
-  createdAt       DateTime @default(now())
+// Recipient-specific, content-free event ledger. Names, email addresses and
+// relationship labels are re-read only after the event's resource grant is
+// authorized; they are never copied into this row.
+model Notification {
+  id              String           @id @default(cuid())
+  recipientId     String
+  actorId         String?
+  type            NotificationType
+  resourceId      String
+  // Optional monotonic, content-free resource version used to reject stale
+  // delivery intents after a later state transition.
+  resourceVersion Int?
+  href            String
+  dedupeKey       String           @unique
+  readAt          DateTime?
+  createdAt       DateTime         @default(now())
 
-  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  task Task? @relation("TaskComments", fields: [taskId], references: [id], onDelete: Cascade)
+  recipient   User         @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  actor       User?        @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+  emailIntent EmailOutbox?
 
-  @@index([commentableType, commentableId])
-  @@map("comments")
+  @@index([recipientId, readAt, createdAt])
+  @@index([resourceId, type])
+  @@map("notifications")
+}
+
+// Durable email intent. Delivery re-reads and authorizes the target resource
+// immediately before rendering a transactional template.
+model EmailOutbox {
+  id             String            @id @default(cuid())
+  notificationId String            @unique
+  recipientId    String
+  dedupeKey      String            @unique
+  status         EmailOutboxStatus @default(pending)
+  attempts       Int               @default(0)
+  nextAttemptAt  DateTime          @default(now())
+  lockedAt       DateTime?
+  sentAt         DateTime?
+  lastErrorKind  String?
+  lastSmtpCode   Int?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  recipient    User         @relation("EmailOutboxRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([status, nextAttemptAt])
+  @@index([recipientId, status, createdAt])
+  @@map("email_outbox")
+}
+
+// A short-lived, resource-scoped Admin support grant. It authorizes one
+// explicit attendee's read-only projection of one Session without changing
+// the actor's identity, JWT, role or mutation authority.
+model SupportPreviewGrant {
+  id                        String                   @id @default(cuid())
+  actorId                   String
+  targetUserId              String
+  sessionId                 String
+  reasonCode                SupportPreviewReasonCode
+  ticketReferenceDigest     String?                  @db.Char(64)
+  ticketReferenceRedactedAt DateTime?
+  reauthenticatedAt         DateTime
+  expiresAt                 DateTime
+  revokedAt                 DateTime?
+  createdAt                 DateTime                 @default(now())
+
+  actor       User                       @relation("SupportPreviewGrantActor", fields: [actorId], references: [id], onDelete: Restrict)
+  target      User                       @relation("SupportPreviewGrantTarget", fields: [targetUserId], references: [id], onDelete: Restrict)
+  session     Session                    @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  auditEvents SupportPreviewAuditEvent[]
+
+  @@index([actorId, expiresAt])
+  @@index([sessionId, targetUserId, expiresAt])
+  @@index([expiresAt])
+  @@map("support_preview_grants")
+}
+
+// Content-free ledger, append-only under normal application operations.
+// The same database owner can bypass the trigger, so this is accidental-change
+// integrity rather than a forensic or non-repudiation control. References
+// become nullable only through the reviewed retention/anonymization transaction.
+model SupportPreviewAuditEvent {
+  id           String                       @id @default(cuid())
+  grantId      String?
+  actorId      String?
+  targetUserId String?
+  sessionId    String?
+  reasonCode   SupportPreviewReasonCode
+  type         SupportPreviewAuditEventType
+  anonymizedAt DateTime?
+  createdAt    DateTime                     @default(now())
+
+  grant   SupportPreviewGrant? @relation(fields: [grantId], references: [id], onDelete: Restrict)
+  actor   User?                @relation("SupportPreviewAuditActor", fields: [actorId], references: [id], onDelete: Restrict)
+  target  User?                @relation("SupportPreviewAuditTarget", fields: [targetUserId], references: [id], onDelete: Restrict)
+  session Session?             @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+
+  @@index([grantId, createdAt])
+  @@index([actorId, createdAt])
+  @@index([actorId, type, createdAt])
+  @@index([sessionId, targetUserId, createdAt], map: "support_preview_audit_session_target_created_idx")
+  @@index([createdAt])
+  @@map("support_preview_audit_events")
 }
 
 model PasswordResetToken {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
-  token     String   @unique
+  token     String    @unique
   expiresAt DateTime
-  createdAt DateTime @default(now())
+  usedAt    DateTime?
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId, createdAt])
   @@map("password_reset_tokens")
 }
 
@@ -963,8 +1015,6 @@ model BetaSignup {
   motivation   String?
   status       BetaSignupStatus @default(pending)
   notes        String?
-  // Pack the application targets; existing rows default to the artist pack.
-  packSlug     String           @default("artist")
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
 

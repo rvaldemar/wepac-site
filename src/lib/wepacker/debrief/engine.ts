@@ -1,22 +1,22 @@
 import type { DebriefInput, DebriefResult } from "@/lib/wepacker/debrief/types";
-import { AnthropicDebriefEngine } from "@/lib/wepacker/debrief/anthropic";
+import { DebriefEngineError } from "@/lib/wepacker/debrief/types";
 import { HubDebriefEngine } from "@/lib/wepacker/debrief/hub";
 
-// Two-impl seam behind generateSessionDebrief: AnthropicDirect calls the
-// Anthropic API directly; HubClient calls the Agents Hub playbook
-// "wepac-session-debrief" (code W01 — see OPS_LOG.md, tenant WEPAC,
-// GDPR-restricted Anthropic-only, HITL). Selected via env DEBRIEF_ENGINE.
 export interface DebriefEngine {
-  readonly name: "anthropic-direct" | "hub";
+  readonly name: "hub";
   generateDebrief(input: DebriefInput): Promise<DebriefResult>;
 }
 
-// env DEBRIEF_ENGINE ("anthropic" | "hub"), default "anthropic". "hub"
-// fails loud at construction (not here) when its own env vars are missing
-// — see HubDebriefEngine's constructor — never a silent fallback to
-// AnthropicDirect.
+// Content processing stays fail-closed until W01 v3 has been published and the
+// Hub team has returned its service-principal and synthetic certification.
+// There is deliberately no direct Anthropic production or fallback path.
 export function getDebriefEngine(): DebriefEngine {
-  const impl = process.env.DEBRIEF_ENGINE;
-  if (impl === "hub") return new HubDebriefEngine();
-  return new AnthropicDebriefEngine();
+  const engine = process.env.DEBRIEF_ENGINE?.trim() || "disabled";
+  if (engine === "hub") return new HubDebriefEngine();
+  if (engine === "disabled") {
+    throw new DebriefEngineError(
+      "Session Debrief está temporariamente indisponível.",
+    );
+  }
+  throw new DebriefEngineError("Configuração de Session Debrief inválida.");
 }

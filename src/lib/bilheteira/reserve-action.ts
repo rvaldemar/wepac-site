@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { sendTicketEmail } from "@/lib/bilheteira/ticket-email";
 import { getStripe, isStripeConfigured } from "@/lib/bilheteira/stripe";
+import { logSafeError } from "@/lib/wepacker/log-safe-error";
 
 function back(path: string, error: string): never {
   redirect(`${path}?error=${encodeURIComponent(error)}`);
@@ -119,7 +120,7 @@ export async function reserveAction(formData: FormData): Promise<void> {
         coverImage: event.coverImage,
       });
     } catch (err) {
-      console.error("[bilheteira] email send failed", err);
+      console.error("[bilheteira] ticket_email_failed", logSafeError(err));
     }
     redirect(`/bilheteira/ticket/${ticket.id}?welcome=1`);
   }
@@ -197,12 +198,11 @@ export async function reserveAction(formData: FormData): Promise<void> {
     // (needed upfront so the webhook can locate it by id). Without cleanup
     // this Payment would sit as "pending" and keep counting against
     // capacity for the full 30-minute window despite no checkout existing.
-    console.error("[bilheteira] stripe session creation failed", err);
+    console.error("[bilheteira] stripe_session_creation_failed", logSafeError(err));
     await prisma.payment.delete({ where: { id: payment.id } }).catch((deleteErr) => {
       console.error(
         "[bilheteira] failed to clean up orphaned payment",
-        payment.id,
-        deleteErr
+        logSafeError(deleteErr),
       );
     });
     back(backPath, "Não foi possível iniciar o pagamento. Tenta novamente.");

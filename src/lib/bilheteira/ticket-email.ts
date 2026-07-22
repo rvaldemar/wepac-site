@@ -1,16 +1,10 @@
-import nodemailer from "nodemailer";
-
-const hasAuth = process.env.SMTP_USER && process.env.SMTP_PASSWORD;
-const SMTP_PORT = parseInt(process.env.SMTP_PORT || "587");
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.zoho.eu",
-  port: SMTP_PORT,
-  secure: SMTP_PORT === 465,
-  ...(hasAuth
-    ? { auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD } }
-    : { tls: { rejectUnauthorized: false } }),
-});
+import {
+  assertSafeEmailUrl,
+  emailTransporter as transporter,
+  escapeEmailHtml,
+  safeEmailHeaderText,
+  safeEmailRecipient,
+} from "@/lib/email-security";
 
 const FROM = process.env.SMTP_FROM || "info@wepac.pt";
 
@@ -61,9 +55,11 @@ export async function sendVerificationEmail(
   name: string,
   verifyUrl: string
 ) {
+  const safeName = escapeEmailHtml(name);
+  const safeVerifyUrl = escapeEmailHtml(assertSafeEmailUrl(verifyUrl));
   await transporter.sendMail({
     from: FROM,
-    to,
+    to: safeEmailRecipient(to),
     subject: "Confirma o teu email — Bilheteira WEPAC",
     html: `
       <div style="font-family: Inter, Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 40px 24px; color: #000;">
@@ -73,13 +69,13 @@ export async function sendVerificationEmail(
         <p style="font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #666; margin: 0 0 24px;">
           Confirmação de email
         </p>
-        <p style="font-size: 15px; line-height: 1.5;">Olá ${name},</p>
+        <p style="font-size: 15px; line-height: 1.5;">Olá ${safeName},</p>
         <p style="font-size: 15px; line-height: 1.5;">
           Para activares a tua conta de administrador da Bilheteira WEPAC,
           confirma o teu email clicando no botão abaixo.
         </p>
         <p style="margin-top: 28px;">
-          <a href="${verifyUrl}" style="display:inline-block;background:#000;color:#fff;padding:14px 28px;text-decoration:none;font-family:'Barlow',Arial,sans-serif;font-weight:700;letter-spacing:2px;text-transform:uppercase;font-size:13px;">
+          <a href="${safeVerifyUrl}" style="display:inline-block;background:#000;color:#fff;padding:14px 28px;text-decoration:none;font-family:'Barlow',Arial,sans-serif;font-weight:700;letter-spacing:2px;text-transform:uppercase;font-size:13px;">
             Confirmar email
           </a>
         </p>
@@ -96,15 +92,22 @@ export async function sendVerificationEmail(
 }
 
 export async function sendTicketEmail(data: TicketEmailData) {
-  const base = process.env.APP_URL || "https://wepac.pt";
-  const url = `${base}/bilheteira/ticket/${data.ticketId}`;
+  const base = assertSafeEmailUrl(process.env.APP_URL || "https://wepac.pt");
+  const url = assertSafeEmailUrl(
+    new URL(`/bilheteira/ticket/${encodeURIComponent(data.ticketId)}`, base).toString(),
+  );
   const coverSrc = data.coverImage
-    ? data.coverImage.startsWith("http")
-      ? data.coverImage
-      : `${base}${data.coverImage}`
+    ? assertSafeEmailUrl(new URL(data.coverImage, base).toString())
     : null;
+  const safeBuyerName = escapeEmailHtml(data.buyerName);
+  const safeEventTitle = escapeEmailHtml(data.eventTitle);
+  const safeEventSubtitle = data.eventSubtitle
+    ? escapeEmailHtml(data.eventSubtitle)
+    : null;
+  const safeVenue = escapeEmailHtml(data.venue);
+  const safeTierName = escapeEmailHtml(data.tierName);
   const coverBlock = coverSrc
-    ? `<img src="${coverSrc}" alt="${data.eventTitle}" style="display:block;width:100%;max-width:560px;height:auto;margin-bottom:24px;" />`
+    ? `<img src="${escapeEmailHtml(coverSrc)}" alt="${safeEventTitle}" style="display:block;width:100%;max-width:560px;height:auto;margin-bottom:24px;" />`
     : "";
   const paymentNote =
     data.priceCents > 0
@@ -113,8 +116,8 @@ export async function sendTicketEmail(data: TicketEmailData) {
 
   await transporter.sendMail({
     from: FROM,
-    to: data.to,
-    subject: `Bilhete · ${data.eventTitle} — WEPAC`,
+    to: safeEmailRecipient(data.to),
+    subject: safeEmailHeaderText(`Bilhete · ${data.eventTitle} — WEPAC`),
     html: `
       <div style="font-family: Inter, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 24px; color: #000;">
         ${coverBlock}
@@ -125,26 +128,26 @@ export async function sendTicketEmail(data: TicketEmailData) {
           Confirmação de reserva
         </p>
         <p style="font-size: 15px; line-height: 1.5;">
-          Olá ${data.buyerName},
+          Olá ${safeBuyerName},
         </p>
         <p style="font-size: 15px; line-height: 1.5;">
           A tua reserva está confirmada. Apresenta este bilhete à entrada.
         </p>
         <div style="margin-top: 24px; padding: 20px; background: #fafaf7; border: 1px solid #e5e3de;">
           <div style="font-family:'Barlow', Arial, sans-serif; font-weight: 900; font-size: 22px; letter-spacing: -0.4px;">
-            ${data.eventTitle}
+            ${safeEventTitle}
           </div>
-          ${data.eventSubtitle ? `<div style="font-size:14px;color:#444;margin-top:4px;">${data.eventSubtitle}</div>` : ""}
+          ${safeEventSubtitle ? `<div style="font-size:14px;color:#444;margin-top:4px;">${safeEventSubtitle}</div>` : ""}
           <table style="margin-top: 16px; font-size: 14px;">
             <tr><td style="padding:4px 12px 4px 0;color:#666;">Data</td><td>${formatDate(data.startsAt)} · ${formatTime(data.startsAt)}</td></tr>
-            <tr><td style="padding:4px 12px 4px 0;color:#666;">Local</td><td>${data.venue}</td></tr>
-            <tr><td style="padding:4px 12px 4px 0;color:#666;">Tier</td><td><strong>${data.tierName}</strong></td></tr>
+            <tr><td style="padding:4px 12px 4px 0;color:#666;">Local</td><td>${safeVenue}</td></tr>
+            <tr><td style="padding:4px 12px 4px 0;color:#666;">Tier</td><td><strong>${safeTierName}</strong></td></tr>
             <tr><td style="padding:4px 12px 4px 0;color:#666;">Lugares</td><td>${data.seats}</td></tr>
           </table>
           ${paymentNote}
         </div>
         <p style="margin-top: 28px;">
-          <a href="${url}" style="display:inline-block;background:#000;color:#fff;padding:14px 28px;text-decoration:none;font-family:'Barlow',Arial,sans-serif;font-weight:700;letter-spacing:2px;text-transform:uppercase;font-size:13px;">
+          <a href="${escapeEmailHtml(url)}" style="display:inline-block;background:#000;color:#fff;padding:14px 28px;text-decoration:none;font-family:'Barlow',Arial,sans-serif;font-weight:700;letter-spacing:2px;text-transform:uppercase;font-size:13px;">
             Ver bilhete
           </a>
         </p>

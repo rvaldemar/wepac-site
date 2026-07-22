@@ -22,13 +22,10 @@ export interface SessionItem {
   id: string;
   scheduledAt: string;
   durationMinutes: number;
-  sessionType: string;
+  attendeeCount: number;
   kind: SessionKind;
   status: string;
-  mentorName: string;
-  notes: string | null;
-  notesPublished: boolean;
-  discussionPoints: string | null;
+  organizerName: string;
   outcome: string | null;
   sharedNote: string | null;
   meetingUrl: string | null;
@@ -80,13 +77,13 @@ export function SessionCard({
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <span className="bg-wepac-input px-2 py-0.5 text-xs text-wepac-text-tertiary">
-          {session.sessionType === "individual" ? "Individual" : "Grupo"}
+          {session.attendeeCount === 1 ? "Individual" : "Group"}
         </span>
         <span className="bg-wepac-input px-2 py-0.5 text-xs text-wepac-text-tertiary">
           {SESSION_KIND_LABELS[session.kind]?.label ?? session.kind}
         </span>
         <span className="bg-wepac-input px-2 py-0.5 text-xs text-wepac-text-tertiary">
-          {session.mentorName}
+          {session.organizerName}
         </span>
         {session.status === "scheduled" && session.meetingUrl && (
           <a
@@ -99,9 +96,7 @@ export function SessionCard({
           </a>
         )}
       </div>
-      {(session.outcome ||
-        session.sharedNote ||
-        (session.notesPublished && session.notes)) && (
+      {(session.outcome || session.sharedNote) && (
         <div className="mt-4 border-t border-wepac-border pt-4">
           {session.outcome && (
             <>
@@ -116,31 +111,11 @@ export function SessionCard({
           {session.sharedNote && (
             <>
               <h4 className="mt-3 text-xs font-bold uppercase text-wepac-text-tertiary">
-                Nota do Mentor
+                Shared note
               </h4>
               <p className="mt-2 text-sm leading-relaxed text-wepac-text-secondary">
                 {session.sharedNote}
               </p>
-            </>
-          )}
-          {session.notesPublished && session.notes && (
-            <>
-              <h4 className="mt-3 text-xs font-bold uppercase text-wepac-text-tertiary">
-                Notas do Mentor
-              </h4>
-              <p className="mt-2 text-sm leading-relaxed text-wepac-text-secondary">
-                {session.notes}
-              </p>
-              {session.discussionPoints && (
-                <>
-                  <h4 className="mt-3 text-xs font-bold uppercase text-wepac-text-tertiary">
-                    Pontos discutidos
-                  </h4>
-                  <p className="mt-1 text-sm text-wepac-text-secondary">
-                    {session.discussionPoints}
-                  </p>
-                </>
-              )}
             </>
           )}
         </div>
@@ -173,7 +148,7 @@ export default function SessionsPageClient({
             Sessions
           </h1>
           <p className="mt-1 text-sm text-wepac-text-tertiary">
-            Past and upcoming Sessions with your Mentor.
+            Past and upcoming Sessions you explicitly joined.
           </p>
         </div>
         <div className="flex gap-1">
@@ -202,8 +177,8 @@ export default function SessionsPageClient({
             Book a Session
           </h2>
           <p className="mt-2 max-w-md text-sm text-wepac-text-secondary">
-            Marca uma Session diretamente na agenda do teu Mentor — escolhe o
-            dia e a hora que preferires.
+            Choose an available time through the WEPAC booking calendar. Your
+            confirmed Session will identify its organizer.
           </p>
           <a
             href={calcomBookingUrl}

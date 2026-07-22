@@ -27,18 +27,32 @@ const memberNavGroups: NavGroup[] = [
     items: [
       { label: "My Journey", href: "/wepacker/dashboard", icon: "◆" },
       { label: "Basecamp", href: "/wepacker/basecamp", icon: "◫", nested: true },
-      { label: "Legacy Assessment", href: "/wepacker/diagnosis", icon: "◎", nested: true },
-      { label: "Life Map", href: "/wepacker/ppv", icon: "◇", nested: true },
-      { label: "Strategic Plan", href: "/wepacker/plan", icon: "▣", nested: true },
+      { label: "Life Map", href: "/wepacker/life-map", icon: "◇", nested: true },
+      { label: "Goals", href: "/wepacker/goals", icon: "▣", nested: true },
       { label: "Trails", href: "/wepacker/trails", icon: "⟡", nested: true },
+      { label: "Actions", href: "/wepacker/actions", icon: "☑", nested: true },
+      { label: "Sessions", href: "/wepacker/sessions", icon: "◷", nested: true },
     ],
+  },
+  {
+    header: "Relationships",
+    items: [
+      { label: "Mentorships", href: "/wepacker/mentorships", icon: "↗" },
+      { label: "Connections", href: "/wepacker/connections", icon: "∞" },
+    ],
+  },
+  {
+    header: "Communities",
+    items: [{ label: "Packs", href: "/wepacker/communities", icon: "◈" }],
+  },
+  {
+    header: "Academy",
+    items: [{ label: "My Academy", href: "/wepacker/academy", icon: "△" }],
   },
   {
     header: "Activity",
     items: [
-      { label: "Legacy Tasks", href: "/wepacker/tasks", icon: "☑" },
-      { label: "Sessions", href: "/wepacker/sessions", icon: "◷" },
-      { label: "Mentorships", href: "/wepacker/mentorships", icon: "↗" },
+      { label: "Notifications", href: "/wepacker/notifications", icon: "●" },
       { label: "Messages", href: "/wepacker/messages", icon: "✉" },
       { label: "Profile", href: "/wepacker/profile", icon: "◉" },
     ],
@@ -48,9 +62,10 @@ const memberNavGroups: NavGroup[] = [
 const mentorNavGroups: NavGroup[] = [
   {
     items: [
-      { label: "Mentor Dashboard", href: "/wepacker/mentor", icon: "◆", exact: true },
+      { label: "Organizer Workspace", href: "/wepacker/mentor", icon: "◆", exact: true },
       { label: "Mentorships", href: "/wepacker/mentorships", icon: "↗" },
       { label: "Sessions", href: "/wepacker/mentor/sessions", icon: "◷" },
+      { label: "Notifications", href: "/wepacker/notifications", icon: "●" },
     ],
   },
 ];
@@ -58,24 +73,32 @@ const mentorNavGroups: NavGroup[] = [
 const adminNavGroups: NavGroup[] = [
   {
     items: [
-      { label: "Users", href: "/wepacker/admin/users", icon: "◉" },
-      { label: "Legacy Delivery", href: "/wepacker/admin/cohorts", icon: "▣" },
+      { label: "People", href: "/wepacker/admin/users", icon: "◉" },
       { label: "Leads", href: "/wepacker/admin/leads", icon: "◈" },
-      { label: "Settings", href: "/wepacker/admin/settings", icon: "⚙" },
+      {
+        label: "Support Preview",
+        href: "/wepacker/admin/support-preview",
+        icon: "◇",
+      },
+      { label: "Notifications", href: "/wepacker/notifications", icon: "●" },
     ],
   },
 ];
 
 interface SidebarProps {
   unreadMessages?: number;
-  pendingTasks?: number;
+  pendingActions?: number;
   pendingMentorships?: number;
+  unreadNotifications?: number;
+  canAccessMentorWorkspace?: boolean;
 }
 
 export function PlatformSidebar({
   unreadMessages = 0,
-  pendingTasks = 0,
+  pendingActions = 0,
   pendingMentorships = 0,
+  unreadNotifications = 0,
+  canAccessMentorWorkspace = false,
 }: SidebarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -87,15 +110,25 @@ export function PlatformSidebar({
   const { data: session } = useSession();
   const role = session?.user?.role;
 
-  const isMentor = pathname.includes("/mentor");
+  const isMentor =
+    pathname === "/wepacker/mentor" ||
+    pathname.startsWith("/wepacker/mentor/");
   const isAdmin = pathname.includes("/admin");
 
-  let navGroups = memberNavGroups;
-  if (isMentor) navGroups = mentorNavGroups;
-  if (isAdmin) navGroups = adminNavGroups;
-
-  const canMentor = role === "mentor" || role === "admin";
   const canAdmin = role === "admin";
+
+  let navGroups = memberNavGroups;
+  if (isMentor) {
+    navGroups = canAccessMentorWorkspace
+      ? mentorNavGroups
+      : mentorNavGroups.map((group) => ({
+          ...group,
+          items: group.items.filter(
+            (item) => item.href !== "/wepacker/mentor",
+          ),
+        }));
+  }
+  if (isAdmin) navGroups = adminNavGroups;
 
   function isActive(item: NavItem): boolean {
     if (item.exact) return pathname === item.href;
@@ -104,8 +137,9 @@ export function PlatformSidebar({
 
   function getBadgeCount(label: string): number {
     if (label === "Messages") return unreadMessages;
-    if (label === "Tasks") return pendingTasks;
+    if (label === "Actions") return pendingActions;
     if (label === "Mentorships") return pendingMentorships;
+    if (label === "Notifications") return unreadNotifications;
     return 0;
   }
 
@@ -144,13 +178,22 @@ export function PlatformSidebar({
 
   const contextLinks = (onNavigate?: () => void) => (
     <>
-      {!isMentor && !isAdmin && canMentor && (
+      {!isMentor && !isAdmin && canAccessMentorWorkspace && (
         <Link
           href="/wepacker/mentor"
           onClick={onNavigate}
           className="block px-3 py-2 text-xs text-wepac-text-tertiary transition-colors hover:text-wepac-text-secondary"
         >
-          Mentor Dashboard →
+          Organizer Workspace →
+        </Link>
+      )}
+      {!isMentor && !isAdmin && canAccessMentorWorkspace && (
+        <Link
+          href="/wepacker/mentor/sessions"
+          onClick={onNavigate}
+          className="block px-3 py-2 text-xs text-wepac-text-tertiary transition-colors hover:text-wepac-text-secondary"
+        >
+          Manage Sessions →
         </Link>
       )}
       {!isMentor && !isAdmin && canAdmin && (
@@ -235,9 +278,9 @@ export function PlatformSidebar({
           aria-modal="true"
           aria-label="Menu de navegação"
           tabIndex={-1}
-          className="fixed inset-0 z-40 bg-wepac-black/95 pt-14 lg:hidden"
+          className="fixed inset-0 z-40 overflow-y-auto overscroll-contain bg-wepac-black/95 pt-14 lg:hidden"
         >
-          <nav className="flex flex-col gap-1 p-4">
+          <nav className="flex min-h-full flex-col gap-1 p-4 pb-8">
             {navLinks(closeMobileMenu)}
             <div className="my-4 border-t border-wepac-border" />
             {contextLinks(closeMobileMenu)}

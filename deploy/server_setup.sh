@@ -63,10 +63,18 @@ sudo systemctl enable wepac
 # Setup nginx (HTTP only first, for certbot)
 echo "Setting up nginx (HTTP only for certbot)..."
 sudo tee /etc/nginx/sites-available/${APP_NAME} > /dev/null << EOF
+log_format wepac_safe '\$remote_addr [\$time_local] '
+                       '"\$request_method \$server_protocol" \$status \$body_bytes_sent '
+                       'rt=\$request_time uct=\$upstream_connect_time '
+                       'uht=\$upstream_header_time urt=\$upstream_response_time';
+
 server {
     listen 80;
     listen [::]:80;
     server_name ${DOMAIN} www.${DOMAIN};
+
+    access_log /var/log/nginx/wepac_access.log wepac_safe;
+    error_log /dev/null crit;
 
     location /.well-known/acme-challenge/ {
         root ${APP_DIR}/shared/public;
@@ -75,7 +83,7 @@ server {
     location / {
         proxy_pass http://127.0.0.1:3003;
         proxy_http_version 1.1;
-        proxy_set_header Host \$host;
+        proxy_set_header Host ${DOMAIN};
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;

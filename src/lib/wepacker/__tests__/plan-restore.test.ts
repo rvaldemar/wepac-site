@@ -3,29 +3,29 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // Mock prisma and the authorization guards so this tests the restore
 // semantics (append-only: current content is snapshotted, selected
 // version becomes current) rather than the auth layer.
-const lifePlanFindUnique = vi.fn();
-const lifePlanUpsert = vi.fn();
-const lifePlanVersionFindUnique = vi.fn();
-const lifePlanVersionCreate = vi.fn();
+const lifeMapFindUnique = vi.fn();
+const lifeMapUpsert = vi.fn();
+const lifeMapVersionFindUnique = vi.fn();
+const lifeMapVersionCreate = vi.fn();
 
 vi.mock("@/lib/db", () => ({
   prisma: {
-    lifePlan: {
-      findUnique: (...args: unknown[]) => lifePlanFindUnique(...args),
-      upsert: (...args: unknown[]) => lifePlanUpsert(...args),
+    lifeMap: {
+      findUnique: (...args: unknown[]) => lifeMapFindUnique(...args),
+      upsert: (...args: unknown[]) => lifeMapUpsert(...args),
     },
-    lifePlanVersion: {
-      findUnique: (...args: unknown[]) => lifePlanVersionFindUnique(...args),
-      create: (...args: unknown[]) => lifePlanVersionCreate(...args),
+    lifeMapVersion: {
+      findUnique: (...args: unknown[]) => lifeMapVersionFindUnique(...args),
+      create: (...args: unknown[]) => lifeMapVersionCreate(...args),
     },
     $transaction: async (fn: (tx: unknown) => unknown) =>
       fn({
-        lifePlan: {
-          findUnique: (...args: unknown[]) => lifePlanFindUnique(...args),
-          upsert: (...args: unknown[]) => lifePlanUpsert(...args),
+        lifeMap: {
+          findUnique: (...args: unknown[]) => lifeMapFindUnique(...args),
+          upsert: (...args: unknown[]) => lifeMapUpsert(...args),
         },
-        lifePlanVersion: {
-          create: (...args: unknown[]) => lifePlanVersionCreate(...args),
+        lifeMapVersion: {
+          create: (...args: unknown[]) => lifeMapVersionCreate(...args),
         },
       }),
   },
@@ -38,15 +38,16 @@ vi.mock("@/lib/wepacker/guards", () => ({
   assertUserAccess: (...args: unknown[]) => assertUserAccess(...args),
   assertUserOwner: (...args: unknown[]) => assertUserOwnerMock(...args),
   assertMentorOfUser: vi.fn(),
+  requireUser: vi.fn(),
 }));
 
-import { restoreLifePlanVersion } from "@/lib/wepacker/actions/plan";
+import { restoreLifeMapVersion } from "@/lib/wepacker/actions/plan";
 
 beforeEach(() => {
-  lifePlanFindUnique.mockReset();
-  lifePlanUpsert.mockReset();
-  lifePlanVersionFindUnique.mockReset();
-  lifePlanVersionCreate.mockReset();
+  lifeMapFindUnique.mockReset();
+  lifeMapUpsert.mockReset();
+  lifeMapVersionFindUnique.mockReset();
+  lifeMapVersionCreate.mockReset();
   assertUserAccess.mockReset();
   assertUserAccess.mockResolvedValue({
     actor: { id: "user-1", role: "member" },
@@ -59,9 +60,9 @@ beforeEach(() => {
   });
 });
 
-describe("restoreLifePlanVersion", () => {
+describe("restoreLifeMapVersion", () => {
   it("enforces owner-only access via assertUserOwner", async () => {
-    lifePlanVersionFindUnique.mockResolvedValue({
+    lifeMapVersionFindUnique.mockResolvedValue({
       id: "v1",
       userId: "user-1",
       whoIAm: "a",
@@ -70,26 +71,26 @@ describe("restoreLifePlanVersion", () => {
       whyIDo: "d",
       commitments: "e",
     });
-    lifePlanFindUnique.mockResolvedValue(null);
-    lifePlanUpsert.mockResolvedValue({ id: "lp-1" });
+    lifeMapFindUnique.mockResolvedValue(null);
+    lifeMapUpsert.mockResolvedValue({ id: "map-1" });
 
-    await restoreLifePlanVersion("user-1", "v1");
+    await restoreLifeMapVersion("user-1", "v1");
 
     expect(assertUserOwnerMock).toHaveBeenCalledWith("user-1");
     expect(assertUserAccess).not.toHaveBeenCalled();
   });
 
   it("throws when the version does not exist", async () => {
-    lifePlanVersionFindUnique.mockResolvedValue(null);
+    lifeMapVersionFindUnique.mockResolvedValue(null);
 
-    await expect(restoreLifePlanVersion("user-1", "missing")).rejects.toThrow(
-      "Versão não encontrada."
+    await expect(restoreLifeMapVersion("user-1", "missing")).rejects.toThrow(
+      "Versão não encontrada.",
     );
-    expect(lifePlanUpsert).not.toHaveBeenCalled();
+    expect(lifeMapUpsert).not.toHaveBeenCalled();
   });
 
   it("throws when the version belongs to a different user", async () => {
-    lifePlanVersionFindUnique.mockResolvedValue({
+    lifeMapVersionFindUnique.mockResolvedValue({
       id: "v1",
       userId: "other-user",
       whoIAm: "",
@@ -99,10 +100,10 @@ describe("restoreLifePlanVersion", () => {
       commitments: "",
     });
 
-    await expect(restoreLifePlanVersion("user-1", "v1")).rejects.toThrow(
-      "Versão não encontrada."
+    await expect(restoreLifeMapVersion("user-1", "v1")).rejects.toThrow(
+      "Versão não encontrada.",
     );
-    expect(lifePlanUpsert).not.toHaveBeenCalled();
+    expect(lifeMapUpsert).not.toHaveBeenCalled();
   });
 
   it("snapshots the current life plan into history before applying the restored content", async () => {
@@ -123,14 +124,14 @@ describe("restoreLifePlanVersion", () => {
       whyIDo: "current-why",
       commitments: "current-commit",
     };
-    lifePlanVersionFindUnique.mockResolvedValue(version);
-    lifePlanFindUnique.mockResolvedValue(current);
-    lifePlanUpsert.mockResolvedValue({ ...version, id: "lp-1" });
+    lifeMapVersionFindUnique.mockResolvedValue(version);
+    lifeMapFindUnique.mockResolvedValue(current);
+    lifeMapUpsert.mockResolvedValue({ ...version, id: "map-1" });
 
-    await restoreLifePlanVersion("user-1", "v1");
+    await restoreLifeMapVersion("user-1", "v1");
 
-    expect(lifePlanVersionCreate).toHaveBeenCalledTimes(1);
-    expect(lifePlanVersionCreate.mock.calls[0][0].data).toEqual({
+    expect(lifeMapVersionCreate).toHaveBeenCalledTimes(1);
+    expect(lifeMapVersionCreate.mock.calls[0][0].data).toEqual({
       userId: "user-1",
       whoIAm: "current-who",
       whereIAm: "current-where",
@@ -139,8 +140,8 @@ describe("restoreLifePlanVersion", () => {
       commitments: "current-commit",
     });
 
-    expect(lifePlanUpsert).toHaveBeenCalledTimes(1);
-    const upsertArg = lifePlanUpsert.mock.calls[0][0];
+    expect(lifeMapUpsert).toHaveBeenCalledTimes(1);
+    const upsertArg = lifeMapUpsert.mock.calls[0][0];
     expect(upsertArg.where).toEqual({ userId: "user-1" });
     expect(upsertArg.update).toEqual({
       whoIAm: "old-who",
@@ -161,13 +162,13 @@ describe("restoreLifePlanVersion", () => {
       whyIDo: "old-why",
       commitments: "old-commit",
     };
-    lifePlanVersionFindUnique.mockResolvedValue(version);
-    lifePlanFindUnique.mockResolvedValue(null);
-    lifePlanUpsert.mockResolvedValue({ ...version, id: "lp-1" });
+    lifeMapVersionFindUnique.mockResolvedValue(version);
+    lifeMapFindUnique.mockResolvedValue(null);
+    lifeMapUpsert.mockResolvedValue({ ...version, id: "map-1" });
 
-    await restoreLifePlanVersion("user-1", "v1");
+    await restoreLifeMapVersion("user-1", "v1");
 
-    expect(lifePlanVersionCreate).not.toHaveBeenCalled();
-    expect(lifePlanUpsert).toHaveBeenCalledTimes(1);
+    expect(lifeMapVersionCreate).not.toHaveBeenCalled();
+    expect(lifeMapUpsert).toHaveBeenCalledTimes(1);
   });
 });

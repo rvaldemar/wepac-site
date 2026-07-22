@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { submitApplication } from "@/lib/wepacker/actions/application";
 
-// Public application form used on the /artist marketing page — feeds the
-// WEPACKER applications pipeline targeting the artist pack.
-export function BetaSignupForm({ packSlug = "artist" }: { packSlug?: string }) {
+// Public application form used on the /artist marketing page. It creates a
+// generic WEPACKER application and never implies a Pack or Cycle relationship.
+export function BetaSignupForm() {
   const [status, setStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
@@ -20,11 +20,10 @@ export function BetaSignupForm({ packSlug = "artist" }: { packSlug?: string }) {
     const fd = new FormData(form);
 
     const data = {
-      packSlug,
       name: fd.get("name") as string,
       email: fd.get("email") as string,
       phone: (fd.get("phone") as string) || undefined,
-      area: (fd.get("area") as string) || undefined,
+      artisticArea: (fd.get("artisticArea") as string) || undefined,
       socialLinks: (fd.get("socialLinks") as string) || undefined,
       motivation: (fd.get("motivation") as string) || undefined,
     };
@@ -80,7 +79,8 @@ export function BetaSignupForm({ packSlug = "artist" }: { packSlug?: string }) {
         />
         <input
           type="text"
-          name="area"
+          name="artisticArea"
+          defaultValue="Arts"
           placeholder="A tua área artística"
           className="border border-wepac-gray/30 bg-black px-4 py-3 text-sm text-white placeholder:text-white/30 focus:border-white focus:outline-none"
         />

@@ -1,5 +1,5 @@
 import { requirePageRole } from "@/lib/wepacker/page-guards";
-import { getAllUsers, getCohorts } from "@/lib/wepacker/actions/admin";
+import { getAllUsers } from "@/lib/wepacker/actions/admin";
 import { AdminUsersPageClient } from "./page-client";
 
 export default async function AdminUsersPage({
@@ -13,17 +13,11 @@ export default async function AdminUsersPage({
   }>;
 }) {
   const currentUser = await requirePageRole(["admin"]);
-
-  const [users, cohorts, params] = await Promise.all([
-    getAllUsers(),
-    getCohorts(),
-    searchParams,
-  ]);
+  const [users, params] = await Promise.all([getAllUsers(), searchParams]);
 
   return (
     <AdminUsersPageClient
       users={JSON.parse(JSON.stringify(users))}
-      cohorts={JSON.parse(JSON.stringify(cohorts))}
       currentUserId={currentUser.id}
       prefill={
         params.name || params.email

@@ -13,7 +13,6 @@ import { join } from "node:path";
 // safe fields.
 
 const FILES = [
-  "src/lib/wepacker/debrief/anthropic.ts",
   "src/lib/wepacker/debrief/hub.ts",
   "src/lib/wepacker/actions/debrief.ts",
   "src/lib/wepacker/actions/session-transcript.ts",

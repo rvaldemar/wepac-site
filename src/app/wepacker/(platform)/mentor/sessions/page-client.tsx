@@ -3,123 +3,99 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type {
-  SessionKind,
-  SessionStatus,
-  SessionType,
-} from "@/lib/wepacker/types";
+import type { SessionKind, SessionStatus } from "@/lib/wepacker/types";
 import { SESSION_KIND_KEYS, SESSION_KIND_LABELS } from "@/lib/wepacker/types";
 import { SessionsCalendar } from "@/components/wepacker/SessionsCalendar";
 import {
   createSession,
+  getCycleSessionAttendeeCandidate,
   setAttendance,
   updateSession,
   updateSessionAttendee,
 } from "@/lib/wepacker/actions/session";
-import { createTaskFromSession } from "@/lib/wepacker/actions/task";
 
 const STATUS_LABELS: Record<SessionStatus, string> = {
-  scheduled: "Agendada",
-  completed: "Realizada",
-  cancelled: "Cancelada",
-  no_show: "Falta",
+  scheduled: "Scheduled",
+  completed: "Completed",
+  cancelled: "Cancelled",
+  no_show: "No show",
 };
 
 interface AttendeeRow {
   id: string;
   attended: boolean;
-  // Mentor-only, never shown to the member.
   privateNote: string | null;
-  // Shown to the member only once sharedNotePublished is true.
   sharedNote: string | null;
   sharedNotePublished: boolean;
-  // What was agreed/gained in the session, for this person specifically.
   outcome: string | null;
   user: { id: string; name: string };
 }
 
 interface SessionRow {
   id: string;
-  cohortId: string | null;
-  sessionType: SessionType;
   kind: SessionKind;
   scheduledAt: string;
   durationMinutes: number;
   status: SessionStatus;
-  notes: string | null;
-  notesPublished: boolean;
   discussionPoints: string | null;
   meetingUrl: string | null;
+  attendeeCount: number;
   attendees: AttendeeRow[];
-  mentor: { id: string; name: string };
+  organizer: { id: string; name: string };
   transcriptUploadedAt: string | null;
-  debrief: { id: string } | null;
+  debrief: { id: string; contractVersion: string } | null;
 }
 
-interface CohortMembershipRow {
-  id: string;
-  role: "member" | "mentor";
-  status: "active" | "paused" | "exited";
-  user: { id: string; name: string; email: string };
-}
-
-interface CohortRow {
-  id: string;
-  name: string;
-  pack: { id: string; slug: string; name: string };
-  memberships: CohortMembershipRow[];
-}
-
-// A mentored person, independent of any specific Cycle — used to populate the
-// participant picker when a Session has no Cycle/Discipline context.
 interface MentoredMemberRow {
   id: string;
   name: string;
   email: string;
 }
 
+interface FacilitatedCycleRow {
+  id: string;
+  name: string;
+  status: "published" | "active";
+  role: "lead" | "facilitator";
+}
+
 interface MentorSessionsProps {
   sessions: SessionRow[];
-  cohorts: CohortRow[];
   members: MentoredMemberRow[];
+  facilitatedCycles: FacilitatedCycleRow[];
   currentUserId: string;
-  canManagePrivateArtifacts: boolean;
 }
 
 function toDatetimeLocalValue(date: Date): string {
-  const pad = (n: number) => String(n).padStart(2, "0");
+  const pad = (value: number) => String(value).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(
     date.getHours(),
   )}:${pad(date.getMinutes())}`;
 }
 
+function sessionFormat(attendeeCount: number): string {
+  return attendeeCount === 1 ? "Individual" : "Group";
+}
+
 export function MentorSessionsClient({
   sessions: rawSessions,
-  cohorts,
   members,
+  facilitatedCycles,
   currentUserId,
-  canManagePrivateArtifacts,
 }: MentorSessionsProps) {
   const router = useRouter();
   const [showCreate, setShowCreate] = useState(false);
   const [view, setView] = useState<"list" | "calendar">("list");
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
-    null,
-  );
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
 
   const sessions = [...rawSessions].sort(
-    (a, b) =>
-      new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime(),
+    (first, second) =>
+      new Date(second.scheduledAt).getTime() -
+      new Date(first.scheduledAt).getTime(),
   );
   const selectedSession =
-    sessions.find((s) => s.id === selectedSessionId) ?? null;
+    sessions.find((session) => session.id === selectedSessionId) ?? null;
 
-  // ===== Create form state =====
-  // A legacy cohort is optional compatibility context. Attendance always
-  // comes from the people explicitly selected below.
-  const [associateCohort, setAssociateCohort] = useState(false);
-  const [cohortId, setCohortId] = useState(cohorts[0]?.id ?? "");
-  const [sessionType, setSessionType] = useState<SessionType>("individual");
   const [sessionKind, setSessionKind] = useState<SessionKind>("checkpoint");
   const [scheduledAt, setScheduledAt] = useState(
     toDatetimeLocalValue(new Date()),
@@ -127,69 +103,87 @@ export function MentorSessionsClient({
   const [durationMinutes, setDurationMinutes] = useState(60);
   const [discussionPoints, setDiscussionPoints] = useState("");
   const [attendeeIds, setAttendeeIds] = useState<string[]>([]);
+  const [selectedCycleId, setSelectedCycleId] = useState("");
+  const [cycleCandidateEmail, setCycleCandidateEmail] = useState("");
+  const [cycleCandidates, setCycleCandidates] = useState<MentoredMemberRow[]>([]);
+  const [resolvingCycleCandidate, setResolvingCycleCandidate] = useState(false);
+  const [cycleCandidateError, setCycleCandidateError] = useState<string | null>(
+    null,
+  );
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
-  const selectedCohort = cohorts.find((c) => c.id === cohortId);
-  // Participants are always identified by userId — from the selected
-  // legacy cohort participants when one is associated, or from every person
-  // available through active Mentorship + the measured legacy fallback.
-  const participantOptions = associateCohort
-    ? (selectedCohort?.memberships ?? [])
-        .filter(
-          (m) =>
-            m.role === "member" &&
-            m.status === "active" &&
-            m.user.id !== currentUserId,
-        )
-        .map((m) => ({
-          userId: m.user.id,
-          name: m.user.name,
-          email: m.user.email,
-        }))
-    : members.map((m) => ({ userId: m.id, name: m.name, email: m.email }));
+  const availablePeople = Array.from(
+    new Map(
+      [...members, ...(selectedCycleId ? cycleCandidates : [])].map((person) => [
+        person.id,
+        person,
+      ]),
+    ).values(),
+  );
 
   function toggleAttendee(userId: string) {
-    setAttendeeIds((prev) => {
-      if (sessionType === "individual") {
-        return prev.includes(userId) ? [] : [userId];
-      }
-      return prev.includes(userId)
-        ? prev.filter((attendeeId) => attendeeId !== userId)
-        : [...prev, userId];
-    });
+    setAttendeeIds((previous) =>
+      previous.includes(userId)
+        ? previous.filter((attendeeId) => attendeeId !== userId)
+        : [...previous, userId],
+    );
   }
 
-  function toggleAssociateCohort(checked: boolean) {
-    setAssociateCohort(checked);
+  function changeSessionContext(cycleId: string) {
+    setSelectedCycleId(cycleId);
     setAttendeeIds([]);
+    setCycleCandidates([]);
+    setCycleCandidateEmail("");
+    setCycleCandidateError(null);
+  }
+
+  async function handleResolveCycleCandidate() {
+    if (!selectedCycleId || !cycleCandidateEmail.trim()) return;
+    setResolvingCycleCandidate(true);
+    setCycleCandidateError(null);
+    try {
+      const candidate = await getCycleSessionAttendeeCandidate(
+        selectedCycleId,
+        cycleCandidateEmail,
+      );
+      if (!candidate) {
+        setCycleCandidateError(
+          "No Person was added. Check the exact account email.",
+        );
+        return;
+      }
+      setCycleCandidates((previous) =>
+        previous.some(({ id }) => id === candidate.id)
+          ? previous
+          : [...previous, candidate],
+      );
+      setAttendeeIds((previous) =>
+        previous.includes(candidate.id) ? previous : [...previous, candidate.id],
+      );
+      setCycleCandidateEmail("");
+    } catch {
+      setCycleCandidateError("Não foi possível adicionar esta Person.");
+    } finally {
+      setResolvingCycleCandidate(false);
+    }
   }
 
   async function handleCreate() {
-    if (associateCohort && !cohortId) {
-      setCreateError("Choose a legacy cohort.");
-      return;
-    }
     if (attendeeIds.length === 0) {
-      setCreateError("Escolhe pelo menos um participante.");
+      setCreateError("Choose at least one participant.");
       return;
     }
-    if (sessionType === "individual" && attendeeIds.length !== 1) {
-      setCreateError(
-        "Uma Session individual requer exatamente um participante.",
-      );
+    if (!scheduledAt || Number.isNaN(new Date(scheduledAt).getTime())) {
+      setCreateError("Choose a valid date and time.");
       return;
     }
-    if (sessionType === "group" && attendeeIds.length < 2) {
-      setCreateError("Uma Group Session requer pelo menos dois participantes.");
-      return;
-    }
+
     setCreating(true);
     setCreateError(null);
     try {
       await createSession({
-        cohortId: associateCohort ? cohortId : undefined,
-        sessionType,
+        cycleId: selectedCycleId || undefined,
         kind: sessionKind,
         scheduledAt: new Date(scheduledAt).toISOString(),
         durationMinutes,
@@ -200,16 +194,18 @@ export function MentorSessionsClient({
       setSessionKind("checkpoint");
       setDiscussionPoints("");
       setAttendeeIds([]);
+      setSelectedCycleId("");
+      setCycleCandidates([]);
+      setCycleCandidateEmail("");
       router.refresh();
-    } catch (e) {
-      console.error("Failed to create session:", e);
-      setCreateError("Erro ao criar sessão. Tenta novamente.");
+    } catch (error) {
+      console.error("Failed to create Session:", error);
+      setCreateError("Não foi possível criar a Session. Tenta novamente.");
     } finally {
       setCreating(false);
     }
   }
 
-  // ===== Per-session edit state =====
   const [savingSessionId, setSavingSessionId] = useState<string | null>(null);
 
   async function handleStatusChange(sessionId: string, status: SessionStatus) {
@@ -217,8 +213,8 @@ export function MentorSessionsClient({
     try {
       await updateSession(sessionId, { status });
       router.refresh();
-    } catch (e) {
-      console.error("Failed to update session status:", e);
+    } catch (error) {
+      console.error("Failed to update Session status:", error);
     } finally {
       setSavingSessionId(null);
     }
@@ -232,15 +228,11 @@ export function MentorSessionsClient({
     try {
       await setAttendance(sessionId, userId, attended);
       router.refresh();
-    } catch (e) {
-      console.error("Failed to update attendance:", e);
+    } catch (error) {
+      console.error("Failed to update attendance:", error);
     }
   }
 
-  // ===== Meeting link: copy + manual override =====
-  // Only one session's link editor is open at a time. Copying uses the
-  // clipboard API with a brief inline confirmation (PT-PT), matching the
-  // rest of the page's per-action feedback pattern.
   const [copiedLinkSessionId, setCopiedLinkSessionId] = useState<string | null>(
     null,
   );
@@ -257,11 +249,15 @@ export function MentorSessionsClient({
     try {
       await navigator.clipboard.writeText(url);
       setCopiedLinkSessionId(sessionId);
-      setTimeout(() => {
-        setCopiedLinkSessionId((prev) => (prev === sessionId ? null : prev));
-      }, 2000);
-    } catch (e) {
-      console.error("Failed to copy meeting link:", e);
+      setTimeout(
+        () =>
+          setCopiedLinkSessionId((current) =>
+            current === sessionId ? null : current,
+          ),
+        2000,
+      );
+    } catch (error) {
+      console.error("Failed to copy meeting link:", error);
     }
   }
 
@@ -271,14 +267,9 @@ export function MentorSessionsClient({
     setMeetingUrlError(null);
   }
 
-  function cancelLinkEditor() {
-    setLinkEditorSessionId(null);
-    setMeetingUrlError(null);
-  }
-
   async function handleSaveMeetingUrl(sessionId: string) {
     if (!meetingUrlDraft.trim()) {
-      setMeetingUrlError("O link não pode ficar vazio.");
+      setMeetingUrlError("The link cannot be empty.");
       return;
     }
     setSavingMeetingUrlId(sessionId);
@@ -287,19 +278,14 @@ export function MentorSessionsClient({
       await updateSession(sessionId, { meetingUrl: meetingUrlDraft.trim() });
       setLinkEditorSessionId(null);
       router.refresh();
-    } catch (e) {
-      console.error("Failed to update meeting link:", e);
-      setMeetingUrlError("Erro ao guardar link. Tenta novamente.");
+    } catch (error) {
+      console.error("Failed to update meeting link:", error);
+      setMeetingUrlError("Não foi possível guardar o link.");
     } finally {
       setSavingMeetingUrlId(null);
     }
   }
 
-  // ===== Per-attendee notes/outcome edit state =====
-  // Only one attendee row is edited at a time, identified by
-  // "<sessionId>:<userId>" — mirrors the previous single-editor pattern so
-  // an in-progress draft never gets clobbered by a router.refresh() caused
-  // by an unrelated action (status change, another attendee's checkbox).
   function attendeeKey(sessionId: string, userId: string): string {
     return `${sessionId}:${userId}`;
   }
@@ -326,17 +312,13 @@ export function MentorSessionsClient({
     setAttendeeSharedNote(attendee.sharedNote ?? "");
     setAttendeeOutcome(attendee.outcome ?? "");
     setAttendeeSharedNotePublished(attendee.sharedNotePublished);
-    setAttendeeFeedback((prev) => ({ ...prev, [key]: undefined }));
-  }
-
-  function cancelEditAttendee() {
-    setEditingAttendeeKey(null);
+    setAttendeeFeedback((previous) => ({ ...previous, [key]: undefined }));
   }
 
   async function handleSaveAttendeeNotes(sessionId: string, userId: string) {
     const key = attendeeKey(sessionId, userId);
     setSavingAttendeeKey(key);
-    setAttendeeFeedback((prev) => ({ ...prev, [key]: undefined }));
+    setAttendeeFeedback((previous) => ({ ...previous, [key]: undefined }));
     try {
       await updateSessionAttendee(sessionId, userId, {
         privateNote: attendeePrivateNote,
@@ -344,96 +326,29 @@ export function MentorSessionsClient({
         outcome: attendeeOutcome,
         sharedNotePublished: attendeeSharedNotePublished,
       });
-      setAttendeeFeedback((prev) => ({
-        ...prev,
-        [key]: { type: "success", text: "Notas guardadas." },
+      setAttendeeFeedback((previous) => ({
+        ...previous,
+        [key]: { type: "success", text: "Notes saved." },
       }));
       setEditingAttendeeKey(null);
       router.refresh();
-    } catch (e) {
-      console.error("Failed to save attendee notes:", e);
-      setAttendeeFeedback((prev) => ({
-        ...prev,
-        [key]: {
-          type: "error",
-          text: "Erro ao guardar notas. Tenta novamente.",
-        },
+    } catch (error) {
+      console.error("Failed to save attendee notes:", error);
+      setAttendeeFeedback((previous) => ({
+        ...previous,
+        [key]: { type: "error", text: "Não foi possível guardar as notas." },
       }));
     } finally {
       setSavingAttendeeKey(null);
     }
   }
 
-  // ===== "Criar tarefa" from a saved outcome =====
-  // Only one attendee's inline task form is open at a time, keyed the
-  // same way as the notes editor (attendeeKey). Title is prefilled from
-  // the saved outcome so the mentor can create the task in one click;
-  // the deadline is optional, unlike the standard mentor task form.
-  const [taskFormKey, setTaskFormKey] = useState<string | null>(null);
-  const [taskTitle, setTaskTitle] = useState("");
-  const [taskDeadline, setTaskDeadline] = useState("");
-  const [creatingTaskKey, setCreatingTaskKey] = useState<string | null>(null);
-  const [taskFeedback, setTaskFeedback] = useState<
-    Record<string, { type: "success" | "error"; text: string } | undefined>
-  >({});
-
-  function openTaskForm(sessionId: string, attendee: AttendeeRow) {
-    const key = attendeeKey(sessionId, attendee.user.id);
-    setTaskFormKey(key);
-    setTaskTitle(attendee.outcome ?? "");
-    setTaskDeadline("");
-    setTaskFeedback((prev) => ({ ...prev, [key]: undefined }));
-  }
-
-  function cancelTaskForm() {
-    setTaskFormKey(null);
-  }
-
-  async function handleCreateTaskFromOutcome(
-    sessionId: string,
-    userId: string,
-  ) {
-    const key = attendeeKey(sessionId, userId);
-    if (!taskTitle.trim()) {
-      setTaskFeedback((prev) => ({
-        ...prev,
-        [key]: { type: "error", text: "O título é obrigatório." },
-      }));
-      return;
-    }
-    setCreatingTaskKey(key);
-    setTaskFeedback((prev) => ({ ...prev, [key]: undefined }));
-    try {
-      await createTaskFromSession({
-        sessionId,
-        userId,
-        title: taskTitle.trim(),
-        deadline: taskDeadline,
-      });
-      setTaskFormKey(null);
-      setTaskFeedback((prev) => ({
-        ...prev,
-        [key]: { type: "success", text: "Tarefa criada." },
-      }));
-      router.refresh();
-    } catch (e) {
-      console.error("Failed to create task from session outcome:", e);
-      setTaskFeedback((prev) => ({
-        ...prev,
-        [key]: {
-          type: "error",
-          text: "Erro ao criar tarefa. Tenta novamente.",
-        },
-      }));
-    } finally {
-      setCreatingTaskKey(null);
-    }
-  }
-
   function renderSessionCard(session: SessionRow) {
-    const attendeeNames = session.attendees.map((a) => a.user.name).join(", ");
+    const attendeeNames = session.attendees
+      .map((attendee) => attendee.user.name)
+      .join(", ");
     return (
-      <div
+      <article
         key={session.id}
         className="border border-wepac-border bg-wepac-card p-4"
       >
@@ -453,20 +368,21 @@ export function MentorSessionsClient({
               })}
             </p>
             <p className="mt-0.5 text-xs text-wepac-text-tertiary">
-              {session.sessionType === "individual" ? "Individual" : "Group"} ·{" "}
+              {sessionFormat(session.attendeeCount)} ·{" "}
               {SESSION_KIND_LABELS[session.kind]?.label ?? session.kind} ·{" "}
               {attendeeNames} · {session.durationMinutes} min
             </p>
             {session.discussionPoints && (
               <p className="mt-1 text-xs text-wepac-text-tertiary">
-                Pontos: {session.discussionPoints}
+                Discussion: {session.discussionPoints}
               </p>
             )}
           </div>
           <select
+            aria-label="Session status"
             value={session.status}
-            onChange={(e) =>
-              handleStatusChange(session.id, e.target.value as SessionStatus)
+            onChange={(event) =>
+              handleStatusChange(session.id, event.target.value as SessionStatus)
             }
             disabled={savingSessionId === session.id}
             className={`px-2 py-1 text-xs ${
@@ -477,24 +393,23 @@ export function MentorSessionsClient({
                   : "bg-wepac-input text-wepac-text-tertiary"
             }`}
           >
-            {(Object.keys(STATUS_LABELS) as SessionStatus[]).map((s) => (
-              <option key={s} value={s}>
-                {STATUS_LABELS[s]}
+            {(Object.keys(STATUS_LABELS) as SessionStatus[]).map((status) => (
+              <option key={status} value={status}>
+                {STATUS_LABELS[status]}
               </option>
             ))}
           </select>
         </div>
 
-        {/* Video call link */}
         <div className="mt-3 border-t border-wepac-border pt-3">
           {linkEditorSessionId === session.id ? (
             <div className="space-y-2">
               <label className="block text-xs text-wepac-text-tertiary">
-                Link da videochamada
+                Video call link
               </label>
               <input
                 value={meetingUrlDraft}
-                onChange={(e) => setMeetingUrlDraft(e.target.value)}
+                onChange={(event) => setMeetingUrlDraft(event.target.value)}
                 placeholder="https://..."
                 className="w-full bg-wepac-input px-3 py-2 text-xs text-wepac-white"
               />
@@ -507,16 +422,13 @@ export function MentorSessionsClient({
                   disabled={savingMeetingUrlId === session.id}
                   className="bg-wepac-white px-3 py-1.5 text-xs font-bold text-wepac-black disabled:opacity-30"
                 >
-                  {savingMeetingUrlId === session.id
-                    ? "A guardar..."
-                    : "Guardar"}
+                  {savingMeetingUrlId === session.id ? "Saving..." : "Save"}
                 </button>
                 <button
-                  onClick={cancelLinkEditor}
-                  disabled={savingMeetingUrlId === session.id}
+                  onClick={() => setLinkEditorSessionId(null)}
                   className="border border-wepac-border px-3 py-1.5 text-xs text-wepac-text-secondary"
                 >
-                  Cancelar
+                  Cancel
                 </button>
               </div>
             </div>
@@ -530,7 +442,7 @@ export function MentorSessionsClient({
                     rel="noopener noreferrer"
                     className="text-wepac-white hover:underline"
                   >
-                    Entrar na chamada →
+                    Join call →
                   </a>
                   <button
                     onClick={() =>
@@ -538,9 +450,7 @@ export function MentorSessionsClient({
                     }
                     className="text-wepac-text-secondary hover:underline"
                   >
-                    {copiedLinkSessionId === session.id
-                      ? "Link copiado!"
-                      : "Copiar link"}
+                    {copiedLinkSessionId === session.id ? "Copied" : "Copy link"}
                   </button>
                 </>
               )}
@@ -550,231 +460,130 @@ export function MentorSessionsClient({
                 }
                 className="text-wepac-text-secondary hover:underline"
               >
-                {session.meetingUrl ? "Substituir link" : "Adicionar link"}
+                {session.meetingUrl ? "Replace link" : "Add link"}
               </button>
             </div>
           )}
         </div>
 
-        {/* Attendance */}
-        <div className="mt-3 flex flex-wrap gap-2 border-t border-wepac-border pt-3">
-          {session.attendees.map((a) => (
+        <div className="mt-3 flex flex-wrap gap-3 border-t border-wepac-border pt-3">
+          {session.attendees.map((attendee) => (
             <label
-              key={a.id}
+              key={attendee.id}
               className="flex items-center gap-1.5 text-xs text-wepac-text-tertiary"
             >
               <input
                 type="checkbox"
-                checked={a.attended}
-                onChange={(e) =>
-                  handleAttendance(session.id, a.user.id, e.target.checked)
+                checked={attendee.attended}
+                onChange={(event) =>
+                  handleAttendance(
+                    session.id,
+                    attendee.user.id,
+                    event.target.checked,
+                  )
                 }
               />
-              {a.user.name}
+              {attendee.user.name} attended
             </label>
           ))}
         </div>
 
-        {/* Per-attendee notes and outcome */}
         <div className="mt-3 space-y-2 border-t border-wepac-border pt-3">
           <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
-            Notas por participante
+            Notes by participant
           </p>
-          {session.attendees.map((a) => {
-            const key = attendeeKey(session.id, a.user.id);
-            const isEditingAttendee = editingAttendeeKey === key;
-            const isSavingAttendee = savingAttendeeKey === key;
+          {session.attendees.map((attendee) => {
+            const key = attendeeKey(session.id, attendee.user.id);
+            const isEditing = editingAttendeeKey === key;
             const feedback = attendeeFeedback[key];
             return (
-              <div
-                key={a.id}
-                className="border border-wepac-border bg-wepac-input/40 p-3"
-              >
+              <div key={attendee.id} className="border border-wepac-border bg-wepac-input/40 p-3">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-xs font-medium text-wepac-white">
-                    {a.user.name}
+                    {attendee.user.name}
                   </p>
-                  {!isEditingAttendee && (
+                  {!isEditing && (
                     <button
-                      onClick={() => startEditAttendee(session.id, a)}
+                      onClick={() => startEditAttendee(session.id, attendee)}
                       className="text-xs text-wepac-white hover:underline"
                     >
-                      Editar notas
+                      Edit notes
                     </button>
                   )}
                 </div>
 
-                {isEditingAttendee ? (
+                {isEditing ? (
                   <div className="mt-2 space-y-2">
-                    <div>
-                      <label className="block text-xs text-wepac-text-tertiary">
-                        Nota privada (só o mentor vê)
-                      </label>
+                    <label className="block text-xs text-wepac-text-tertiary">
+                      Private note
                       <textarea
                         value={attendeePrivateNote}
-                        onChange={(e) => setAttendeePrivateNote(e.target.value)}
+                        onChange={(event) => setAttendeePrivateNote(event.target.value)}
                         rows={2}
                         className="mt-1 w-full bg-wepac-input px-3 py-2 text-xs text-wepac-text-secondary"
-                        placeholder="Nota privada"
                       />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-wepac-text-tertiary">
-                        Nota partilhada com o membro
-                      </label>
+                    </label>
+                    <label className="block text-xs text-wepac-text-tertiary">
+                      Shared note
                       <textarea
                         value={attendeeSharedNote}
-                        onChange={(e) => setAttendeeSharedNote(e.target.value)}
+                        onChange={(event) => setAttendeeSharedNote(event.target.value)}
                         rows={2}
                         className="mt-1 w-full bg-wepac-input px-3 py-2 text-xs text-wepac-text-secondary"
-                        placeholder="Nota partilhada"
                       />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-wepac-text-tertiary">
-                        O que ficou combinado
-                      </label>
+                    </label>
+                    <label className="block text-xs text-wepac-text-tertiary">
+                      Agreed outcome
                       <textarea
                         value={attendeeOutcome}
-                        onChange={(e) => setAttendeeOutcome(e.target.value)}
+                        onChange={(event) => setAttendeeOutcome(event.target.value)}
                         rows={2}
                         className="mt-1 w-full bg-wepac-input px-3 py-2 text-xs text-wepac-text-secondary"
-                        placeholder="O que ficou combinado"
                       />
-                    </div>
+                    </label>
                     <label className="flex items-center gap-1.5 text-xs text-wepac-text-tertiary">
                       <input
                         type="checkbox"
                         checked={attendeeSharedNotePublished}
-                        onChange={(e) =>
-                          setAttendeeSharedNotePublished(e.target.checked)
+                        onChange={(event) =>
+                          setAttendeeSharedNotePublished(event.target.checked)
                         }
                       />
-                      Publicar nota ao membro
+                      Publish shared note to participant
                     </label>
                     {feedback?.type === "error" && (
-                      <p className="text-xs text-wepac-error">
-                        {feedback.text}
-                      </p>
+                      <p className="text-xs text-wepac-error">{feedback.text}</p>
                     )}
                     <div className="flex gap-2">
                       <button
                         onClick={() =>
-                          handleSaveAttendeeNotes(session.id, a.user.id)
+                          handleSaveAttendeeNotes(session.id, attendee.user.id)
                         }
-                        disabled={isSavingAttendee}
+                        disabled={savingAttendeeKey === key}
                         className="bg-wepac-white px-3 py-1.5 text-xs font-bold text-wepac-black disabled:opacity-30"
                       >
-                        {isSavingAttendee ? "A guardar..." : "Guardar"}
+                        {savingAttendeeKey === key ? "Saving..." : "Save"}
                       </button>
                       <button
-                        onClick={cancelEditAttendee}
-                        disabled={isSavingAttendee}
+                        onClick={() => setEditingAttendeeKey(null)}
                         className="border border-wepac-border px-3 py-1.5 text-xs text-wepac-text-secondary"
                       >
-                        Cancelar
+                        Cancel
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <div className="mt-2 space-y-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-xs text-wepac-text-tertiary">
-                        Combinado: {a.outcome || "—"}
-                      </p>
-                      {canManagePrivateArtifacts && taskFormKey !== key && (
-                        <button
-                          onClick={() => openTaskForm(session.id, a)}
-                          className="shrink-0 text-xs text-wepac-white hover:underline"
-                        >
-                          Criar tarefa
-                        </button>
-                      )}
-                    </div>
-                    <p className="text-xs text-wepac-text-tertiary">
-                      Nota partilhada: {a.sharedNote || "—"}{" "}
-                      {a.sharedNote && (
-                        <span
-                          className={
-                            a.sharedNotePublished
-                              ? "text-wepac-success"
-                              : "text-wepac-text-tertiary"
-                          }
-                        >
-                          (
-                          {a.sharedNotePublished
-                            ? "publicada"
-                            : "não publicada"}
-                          )
-                        </span>
-                      )}
+                  <div className="mt-2 space-y-1 text-xs text-wepac-text-tertiary">
+                    <p>Outcome: {attendee.outcome || "—"}</p>
+                    <p>
+                      Shared note: {attendee.sharedNote || "—"}{" "}
+                      {attendee.sharedNote &&
+                        (attendee.sharedNotePublished ? "(published)" : "(private draft)")}
                     </p>
-                    <p className="text-xs text-wepac-text-tertiary">
-                      Nota privada: {a.privateNote || "—"}
-                    </p>
+                    <p>Private note: {attendee.privateNote || "—"}</p>
                     {feedback?.type === "success" && (
-                      <p className="text-xs text-wepac-success">
-                        {feedback.text}
-                      </p>
+                      <p className="text-wepac-success">{feedback.text}</p>
                     )}
-
-                    {canManagePrivateArtifacts && taskFormKey === key && (
-                      <div className="mt-2 space-y-2 border-t border-wepac-border pt-2">
-                        <div>
-                          <label className="block text-xs text-wepac-text-tertiary">
-                            Título da tarefa
-                          </label>
-                          <input
-                            value={taskTitle}
-                            onChange={(e) => setTaskTitle(e.target.value)}
-                            className="mt-1 w-full bg-wepac-input px-3 py-2 text-xs text-wepac-white"
-                            placeholder="Título da tarefa"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-wepac-text-tertiary">
-                            Prazo (opcional)
-                          </label>
-                          <input
-                            type="date"
-                            value={taskDeadline}
-                            onChange={(e) => setTaskDeadline(e.target.value)}
-                            className="mt-1 w-full bg-wepac-input px-3 py-2 text-xs text-wepac-white"
-                          />
-                        </div>
-                        {taskFeedback[key]?.type === "error" && (
-                          <p className="text-xs text-wepac-error">
-                            {taskFeedback[key]?.text}
-                          </p>
-                        )}
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() =>
-                              handleCreateTaskFromOutcome(session.id, a.user.id)
-                            }
-                            disabled={creatingTaskKey === key}
-                            className="bg-wepac-white px-3 py-1.5 text-xs font-bold text-wepac-black disabled:opacity-30"
-                          >
-                            {creatingTaskKey === key
-                              ? "A criar..."
-                              : "Criar tarefa"}
-                          </button>
-                          <button
-                            onClick={cancelTaskForm}
-                            disabled={creatingTaskKey === key}
-                            className="border border-wepac-border px-3 py-1.5 text-xs text-wepac-text-secondary"
-                          >
-                            Cancelar
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                    {taskFeedback[key]?.type === "success" &&
-                      taskFormKey !== key && (
-                        <p className="text-xs text-wepac-success">
-                          {taskFeedback[key]?.text}
-                        </p>
-                      )}
                   </div>
                 )}
               </div>
@@ -782,8 +591,6 @@ export function MentorSessionsClient({
           })}
         </div>
 
-        {/* Raw transcript content belongs only in the dedicated Session
-            workspace; the list carries lifecycle metadata, never the body. */}
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-wepac-border pt-3">
           <div>
             <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
@@ -795,13 +602,14 @@ export function MentorSessionsClient({
                 : "No transcript attached"}
             </p>
           </div>
-          {session.mentor.id === currentUserId ? (
+          {session.organizer.id === currentUserId ? (
             <Link
               href={`/wepacker/mentor/sessions/${session.id}`}
               className="border border-wepac-border px-3 py-1.5 text-xs text-wepac-text-secondary hover:text-wepac-white"
             >
               {session.transcriptUploadedAt
-                ? session.debrief
+                ? session.debrief?.contractVersion ===
+                  "wepac-session-debrief-v3"
                   ? "Open Debrief"
                   : "Open Transcript"
                 : "Attach Transcript"}
@@ -812,221 +620,210 @@ export function MentorSessionsClient({
             </span>
           )}
         </div>
-
-        {/* Legacy session-level notes — read-only, no new writes */}
-        {session.notes && (
-          <div className="mt-3 border-t border-wepac-border pt-3">
-            <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
-              Notas antigas (legacy)
-            </p>
-            <p className="mt-1 text-xs text-wepac-text-tertiary">
-              {session.notes}
-            </p>
-          </div>
-        )}
-      </div>
+      </article>
     );
   }
 
   return (
     <div className="p-6 lg:p-8">
-      <div className="flex items-center justify-between">
+      <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-barlow text-2xl font-bold text-wepac-white">
-            Sessions
-          </h1>
+          <h1 className="font-barlow text-2xl font-bold text-wepac-white">Sessions</h1>
           <p className="mt-1 text-sm text-wepac-text-tertiary">
-            Manage Mentorship Sessions. A legacy cohort can be attached only as
-            measured compatibility context; it is not a target Cycle.
+            Manage Sessions through accepted Mentorships or active Cycle
+            Facilitation. Every participant is chosen explicitly.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex gap-1">
-            {[
-              { key: "list" as const, label: "Lista" },
-              { key: "calendar" as const, label: "Calendário" },
-            ].map((tab) => (
+            {(["list", "calendar"] as const).map((tab) => (
               <button
-                key={tab.key}
-                onClick={() => setView(tab.key)}
-                className={`px-4 py-2 text-sm transition-colors ${
-                  view === tab.key
+                key={tab}
+                onClick={() => setView(tab)}
+                className={`px-4 py-2 text-sm capitalize transition-colors ${
+                  view === tab
                     ? "bg-wepac-white text-wepac-black"
-                    : "bg-wepac-card text-wepac-text-tertiary hover:text-wepac-text-secondary"
+                    : "bg-wepac-card text-wepac-text-tertiary hover:text-wepac-white"
                 }`}
               >
-                {tab.label}
+                {tab}
               </button>
             ))}
           </div>
-          <button
-            onClick={() => setShowCreate(!showCreate)}
-            className="bg-wepac-white px-4 py-2 text-sm font-bold text-wepac-black"
-          >
-            + New Session
-          </button>
+          {(members.length > 0 || facilitatedCycles.length > 0) && (
+            <button
+              onClick={() => setShowCreate((visible) => !visible)}
+              className="bg-wepac-white px-4 py-2 text-sm font-bold text-wepac-black"
+            >
+              + New Session
+            </button>
+          )}
         </div>
-      </div>
+      </header>
 
       {showCreate && (
-        <div className="mt-6 border border-wepac-white/20 bg-wepac-card p-6">
-          <h3 className="text-sm font-bold text-wepac-white">Create Session</h3>
-          <label className="mt-4 flex items-center gap-1.5 text-xs text-wepac-text-tertiary">
-            <input
-              type="checkbox"
-              checked={associateCohort}
-              onChange={(e) => toggleAssociateCohort(e.target.checked)}
-            />
-            Attach legacy cohort context
-          </label>
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {associateCohort && (
-              <div>
-                <label className="block text-xs text-wepac-text-tertiary">
-                  Legacy cohort
-                </label>
-                <select
-                  value={cohortId}
-                  onChange={(e) => {
-                    setCohortId(e.target.value);
-                    setAttendeeIds([]);
-                  }}
-                  className="mt-1 w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white"
-                >
-                  {cohorts.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} — legacy track: {c.pack.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+        <section className="mt-6 border border-wepac-white/20 bg-wepac-card p-6">
+          <div className="flex items-center justify-between gap-4">
             <div>
+              <h2 className="text-sm font-bold text-wepac-white">Create Session</h2>
+              <p className="mt-1 text-xs text-wepac-text-tertiary">
+                {attendeeIds.length === 0
+                  ? "Choose participants to set the format."
+                  : `${sessionFormat(attendeeIds.length)} · ${attendeeIds.length} participant${attendeeIds.length === 1 ? "" : "s"}`}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2">
               <label className="block text-xs text-wepac-text-tertiary">
-                Format
+                Session context
               </label>
               <select
-                value={sessionType}
-                onChange={(e) => {
-                  const nextType = e.target.value as SessionType;
-                  setSessionType(nextType);
-                  if (nextType === "individual") {
-                    setAttendeeIds((current) => current.slice(0, 1));
-                  }
-                }}
+                value={selectedCycleId}
+                onChange={(event) => changeSessionContext(event.target.value)}
                 className="mt-1 w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white"
               >
-                <option value="individual">Individual</option>
-                <option value="group">Group</option>
+                <option value="">Accepted Mentorships</option>
+                {facilitatedCycles.map((cycle) => (
+                  <option key={cycle.id} value={cycle.id}>
+                    Cycle · {cycle.name}
+                  </option>
+                ))}
               </select>
+              <p className="mt-1 text-[11px] text-wepac-text-tertiary">
+                Context authorizes this organizer only. It never adds attendees.
+              </p>
             </div>
             <div>
-              <label className="block text-xs text-wepac-text-tertiary">
-                Data e hora
-              </label>
+              <label className="block text-xs text-wepac-text-tertiary">Date and time</label>
               <input
                 type="datetime-local"
                 value={scheduledAt}
-                onChange={(e) => setScheduledAt(e.target.value)}
+                onChange={(event) => setScheduledAt(event.target.value)}
                 className="mt-1 w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white"
               />
             </div>
             <div>
-              <label className="block text-xs text-wepac-text-tertiary">
-                Duração (min)
-              </label>
+              <label className="block text-xs text-wepac-text-tertiary">Duration (min)</label>
               <input
                 type="number"
+                min={15}
+                step={15}
                 value={durationMinutes}
-                onChange={(e) => setDurationMinutes(Number(e.target.value))}
+                onChange={(event) => setDurationMinutes(Number(event.target.value))}
                 className="mt-1 w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white"
               />
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-xs text-wepac-text-tertiary">
-                Session purpose
-              </label>
+              <label className="block text-xs text-wepac-text-tertiary">Session purpose</label>
               <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {SESSION_KIND_KEYS.map((k) => (
+                {SESSION_KIND_KEYS.map((kind) => (
                   <button
-                    key={k}
+                    key={kind}
                     type="button"
-                    onClick={() => setSessionKind(k)}
+                    onClick={() => setSessionKind(kind)}
                     className={`px-3 py-2 text-left transition-colors ${
-                      sessionKind === k
+                      sessionKind === kind
                         ? "bg-wepac-white text-wepac-black"
                         : "bg-wepac-input text-wepac-text-tertiary"
                     }`}
                   >
                     <span className="block text-xs font-bold">
-                      {SESSION_KIND_LABELS[k].label}
+                      {SESSION_KIND_LABELS[kind].label}
                     </span>
                     <span className="block text-[11px] opacity-80">
-                      {SESSION_KIND_LABELS[k].description}
+                      {SESSION_KIND_LABELS[kind].description}
                     </span>
                   </button>
                 ))}
               </div>
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-xs text-wepac-text-tertiary">
-                Participantes
-              </label>
+              <label className="block text-xs text-wepac-text-tertiary">Participants</label>
               <div className="mt-1 flex flex-wrap gap-2">
-                {participantOptions.map((m) => (
+                {availablePeople.map((member) => (
                   <button
-                    key={m.userId}
+                    key={member.id}
                     type="button"
-                    onClick={() => toggleAttendee(m.userId)}
+                    onClick={() => toggleAttendee(member.id)}
                     className={`px-3 py-1.5 text-xs transition-colors ${
-                      attendeeIds.includes(m.userId)
+                      attendeeIds.includes(member.id)
                         ? "bg-wepac-white text-wepac-black"
                         : "bg-wepac-input text-wepac-text-tertiary"
                     }`}
                   >
-                    {m.name} · {m.email}
+                    {member.name} · {member.email}
                   </button>
                 ))}
-                {participantOptions.length === 0 && (
+                {availablePeople.length === 0 && !selectedCycleId && (
                   <p className="text-xs text-wepac-text-tertiary">
-                    {associateCohort
-                      ? "No active participants in this legacy cohort."
-                      : "Sem Mentees disponíveis."}
+                    No accepted Mentees available. Create a Mentorship first.
                   </p>
                 )}
               </div>
+              {selectedCycleId && (
+                <div className="mt-3">
+                  <p className="text-[11px] text-wepac-text-tertiary">
+                    Add a known Person by exact account email. Cycle Enrollment is
+                    not required and is not created.
+                  </p>
+                  <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                    <input
+                      type="email"
+                      value={cycleCandidateEmail}
+                      onChange={(event) => setCycleCandidateEmail(event.target.value)}
+                      placeholder="person@example.com"
+                      className="min-w-0 flex-1 bg-wepac-input px-3 py-2 text-sm text-wepac-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleResolveCycleCandidate}
+                      disabled={
+                        resolvingCycleCandidate || !cycleCandidateEmail.trim()
+                      }
+                      className="border border-wepac-border px-4 py-2 text-xs text-wepac-white disabled:opacity-30"
+                    >
+                      {resolvingCycleCandidate ? "Adding…" : "Add Person"}
+                    </button>
+                  </div>
+                  {cycleCandidateError && (
+                    <p className="mt-2 text-xs text-wepac-error">
+                      {cycleCandidateError}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
             <div className="sm:col-span-2">
               <label className="block text-xs text-wepac-text-tertiary">
-                Pontos de discussão (opcional)
+                Discussion points (optional)
               </label>
               <textarea
                 value={discussionPoints}
-                onChange={(e) => setDiscussionPoints(e.target.value)}
+                onChange={(event) => setDiscussionPoints(event.target.value)}
                 rows={2}
                 className="mt-1 w-full bg-wepac-input px-3 py-2 text-sm text-wepac-white"
               />
             </div>
           </div>
-          {createError && (
-            <p className="mt-3 text-xs text-wepac-error">{createError}</p>
-          )}
+          {createError && <p className="mt-3 text-xs text-wepac-error">{createError}</p>}
           <div className="mt-4 flex gap-2">
             <button
               onClick={handleCreate}
-              disabled={creating}
+              disabled={creating || attendeeIds.length === 0}
               className="bg-wepac-white px-4 py-2 text-sm font-bold text-wepac-black disabled:opacity-30"
             >
-              {creating ? "A criar..." : "Criar"}
+              {creating ? "Creating..." : "Create"}
             </button>
             <button
               onClick={() => setShowCreate(false)}
               className="border border-wepac-border px-4 py-2 text-sm text-wepac-text-secondary"
             >
-              Cancelar
+              Cancel
             </button>
           </div>
-        </div>
+        </section>
       )}
 
       {view === "calendar" ? (
@@ -1041,7 +838,7 @@ export function MentorSessionsClient({
               renderSessionCard(selectedSession)
             ) : (
               <p className="text-sm text-wepac-text-tertiary">
-                Seleciona uma sessão no calendário para ver o detalhe.
+                Select a Session to see its details.
               </p>
             )}
           </div>
@@ -1050,9 +847,7 @@ export function MentorSessionsClient({
         <div className="mt-8 space-y-3">
           {sessions.map((session) => renderSessionCard(session))}
           {sessions.length === 0 && (
-            <p className="text-sm text-wepac-text-tertiary">
-              Sem sessões ainda.
-            </p>
+            <p className="text-sm text-wepac-text-tertiary">No Sessions yet.</p>
           )}
         </div>
       )}

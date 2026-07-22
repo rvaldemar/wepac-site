@@ -2,18 +2,18 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
+import { requireUser } from "@/lib/wepacker/guards";
 import {
-  getMentoredCohortIds,
-  requireRole,
-  requireUser,
-} from "@/lib/wepacker/guards";
-import {
-  sendMentorshipAcceptedEmail,
-  sendMentorshipInvitationEmail,
-} from "@/lib/email";
-import { logSafeError } from "@/lib/wepacker/log-safe-error";
+  dispatchPersistedNotificationEvents,
+  persistMentorshipEvent,
+} from "@/lib/wepacker/notifications";
 
 const LIVE_MENTORSHIP_STATUSES = ["pending", "active", "paused"] as const;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
 
 function assertMentorshipWritesEnabled() {
   if (process.env.MENTORSHIP_WRITES_ENABLED !== "true") {
@@ -37,45 +37,22 @@ function isPrismaUniqueConflict(error: unknown): boolean {
   );
 }
 
-function sendInvitationNotification(input: {
-  mentorshipId: string;
-  to: string;
-  recipientName: string;
-  mentorName: string;
-}) {
-  void sendMentorshipInvitationEmail(input).catch((error) => {
-    console.error("Mentorship invitation email failed", {
-      mentorshipId: input.mentorshipId,
-      ...logSafeError(error),
-    });
-  });
-}
-
-function sendAcceptedNotification(input: {
-  mentorshipId: string;
-  to: string;
-  recipientName: string;
-  menteeName: string;
-}) {
-  void sendMentorshipAcceptedEmail(input).catch((error) => {
-    console.error("Mentorship accepted email failed", {
-      mentorshipId: input.mentorshipId,
-      ...logSafeError(error),
-    });
-  });
-}
-
 export async function getMyMentorships() {
   const actor = await requireUser();
   const rows = await prisma.mentorship.findMany({
     where: {
-      OR: [{ mentorId: actor.id }, { menteeId: actor.id }],
+      OR: [
+        { menteeId: actor.id },
+        // Outgoing pending rows stay undiscoverable after the generic invite
+        // acknowledgement. Otherwise a refresh would turn this read into the
+        // account-enumeration oracle the write deliberately avoids.
+        { mentorId: actor.id, status: { not: "pending" } },
+      ],
     },
     select: {
       id: true,
       status: true,
       invitedById: true,
-      reviewRequired: true,
       invitedAt: true,
       activatedAt: true,
       endedAt: true,
@@ -93,111 +70,57 @@ export async function getMyMentorships() {
   }));
 }
 
-export async function getMentorshipInviteCandidates() {
+export async function inviteMentee(menteeEmail: string) {
   assertMentorshipWritesEnabled();
-  const actor = await requireRole(["mentor", "admin"]);
-  const live = await prisma.mentorship.findMany({
-    where: {
-      mentorId: actor.id,
-      status: { in: [...LIVE_MENTORSHIP_STATUSES] },
-    },
-    select: { menteeId: true },
-  });
-  const excludedIds = [actor.id, ...live.map((row) => row.menteeId)];
-
-  if (actor.role === "admin") {
-    return prisma.user.findMany({
-      where: { id: { notIn: excludedIds } },
-      select: { id: true, name: true, email: true },
-      orderBy: { createdAt: "asc" },
-    });
-  }
-
-  const cohortIds = await getMentoredCohortIds(actor.id);
-  if (cohortIds.length === 0) return [];
-  const rows = await prisma.cohortMembership.findMany({
-    where: {
-      cohortId: { in: cohortIds },
-      role: "member",
-      status: "active",
-      userId: { notIn: excludedIds },
-    },
-    select: {
-      userId: true,
-      user: { select: { id: true, name: true, email: true } },
-    },
-    orderBy: { joinedAt: "asc" },
-  });
-
-  return Array.from(new Map(rows.map((row) => [row.userId, row.user])).values());
-}
-
-async function assertCanInviteMentee(
-  actor: { id: string; role: "member" | "mentor" | "admin" },
-  menteeId: string
-) {
-  if (!menteeId || menteeId === actor.id) {
-    throw new Error("Escolhe outra pessoa.");
+  const actor = await requireUser();
+  const email = normalizeEmail(menteeEmail);
+  if (!EMAIL_PATTERN.test(email)) {
+    throw new Error("Email inválido.");
   }
 
   const mentee = await prisma.user.findUnique({
-    where: { id: menteeId },
-    select: { id: true, name: true, email: true },
-  });
-  if (!mentee) throw new Error("Pessoa não encontrada.");
-  if (actor.role === "admin") return mentee;
-
-  const cohortIds = await getMentoredCohortIds(actor.id);
-  const legacyRelationship = await prisma.cohortMembership.findFirst({
-    where: {
-      userId: menteeId,
-      cohortId: { in: cohortIds },
-      role: "member",
-      status: "active",
-    },
+    where: { email },
     select: { id: true },
   });
-  if (!legacyRelationship) throw new Error("Sem permissão.");
-  return mentee;
-}
-
-export async function inviteMentee(menteeId: string) {
-  assertMentorshipWritesEnabled();
-  const actor = await requireRole(["mentor", "admin"]);
-  const mentee = await assertCanInviteMentee(actor, menteeId);
-  const mentor = await prisma.user.findUnique({
-    where: { id: actor.id },
-    select: { name: true },
-  });
-  if (!mentor) throw new Error("Mentor não encontrado.");
+  // Keep not-found and self-invite indistinguishable to avoid turning this
+  // write endpoint into an account-enumeration oracle.
+  if (!mentee || mentee.id === actor.id) {
+    return { submitted: true } as const;
+  }
 
   const now = new Date();
   try {
-    const mentorship = await prisma.mentorship.create({
-      data: {
-        mentorId: actor.id,
-        menteeId,
-        invitedById: actor.id,
-        status: "pending",
-        source: "invitation",
-        reviewRequired: false,
-        invitedAt: now,
-        mentorAcceptedAt: now,
-      },
-      select: { id: true },
+    const result = await prisma.$transaction(async (tx) => {
+      const mentorship = await tx.mentorship.create({
+        data: {
+          mentorId: actor.id,
+          menteeId: mentee.id,
+          invitedById: actor.id,
+          status: "pending",
+          source: "invitation",
+          invitedAt: now,
+          mentorAcceptedAt: now,
+        },
+        select: { id: true },
+      });
+      const events = await persistMentorshipEvent(tx, {
+        mentorshipId: mentorship.id,
+        recipientId: mentee.id,
+        actorId: actor.id,
+        type: "mentorship_invited",
+      });
+      return { events };
     });
 
-    sendInvitationNotification({
-      mentorshipId: mentorship.id,
-      to: mentee.email,
-      recipientName: mentee.name,
-      mentorName: mentor.name,
-    });
+    dispatchPersistedNotificationEvents(result.events);
     revalidateMentorshipSurfaces();
-    return mentorship;
+    return { submitted: true } as const;
   } catch (error) {
     if (isPrismaUniqueConflict(error)) {
-      throw new Error("Já existe uma Mentorship pendente ou ativa com esta pessoa.");
+      // Missing, self, and an existing live edge all receive the same
+      // acknowledgement. The caller cannot use this action to confirm whether
+      // an account or relationship exists.
+      return { submitted: true } as const;
     }
     throw error;
   }
@@ -217,48 +140,59 @@ export async function respondToMentorship(
   const actor = await requireUser();
   const now = new Date();
 
-  const updated = await prisma.mentorship.updateMany({
-    where: {
-      id: mentorshipId,
-      menteeId: actor.id,
-      status: "pending",
-      reviewRequired: false,
-      ...(response === "accept"
-        ? { mentorAcceptedAt: { not: null } }
-        : {}),
-    },
-    data:
-      response === "accept"
-        ? {
-            status: "active",
-            menteeAcceptedAt: now,
-            activatedAt: now,
-          }
-        : {
-            status: "declined",
-            endedAt: now,
-          },
-  });
-  if (updated.count !== 1) {
-    throw new Error("Invitation indisponível ou sem permissão.");
-  }
-
-  if (response === "accept") {
-    const relationship = await prisma.mentorship.findUnique({
-      where: { id: mentorshipId },
-      select: {
-        mentor: { select: { name: true, email: true } },
-        mentee: { select: { name: true } },
+  const events = await prisma.$transaction(async (tx) => {
+    const updated = await tx.mentorship.updateMany({
+      where: {
+        id: mentorshipId,
+        menteeId: actor.id,
+        status: "pending",
+        ...(response === "accept"
+          ? { mentorAcceptedAt: { not: null } }
+          : {}),
       },
+      data:
+        response === "accept"
+          ? {
+              status: "active",
+              menteeAcceptedAt: now,
+              activatedAt: now,
+            }
+          : {
+              status: "declined",
+              endedAt: now,
+            },
     });
-    if (relationship) {
-      sendAcceptedNotification({
-        mentorshipId,
-        to: relationship.mentor.email,
-        recipientName: relationship.mentor.name,
-        menteeName: relationship.mentee.name,
-      });
+    if (updated.count !== 1) {
+      throw new Error("Invitation indisponível ou sem permissão.");
     }
+    await tx.notification.updateMany({
+      where: {
+        recipientId: actor.id,
+        resourceId: mentorshipId,
+        type: "mentorship_invited",
+        readAt: null,
+      },
+      data: { readAt: now },
+    });
+    if (response !== "accept") return [];
+
+    const relationship = await tx.mentorship.findUnique({
+      where: { id: mentorshipId },
+      select: { mentorId: true, menteeId: true },
+    });
+    if (!relationship || relationship.menteeId !== actor.id) {
+      throw new Error("Invitation indisponível ou sem permissão.");
+    }
+    return persistMentorshipEvent(tx, {
+      mentorshipId,
+      recipientId: relationship.mentorId,
+      actorId: actor.id,
+      type: "mentorship_accepted",
+    });
+  });
+
+  if (events.length > 0) {
+    dispatchPersistedNotificationEvents(events);
   }
 
   revalidateMentorshipSurfaces();

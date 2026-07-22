@@ -11,12 +11,8 @@ import { describe, it, expect, vi } from "vitest";
 
 const findMany = vi.fn();
 const findFirst = vi.fn();
-const requireUser = vi.fn(async () => ({
-  id: "user-1",
-  role: "member",
-}));
-const requireMembership = vi.fn(async () => {
-  throw new Error("Session reads must not require a Journey membership.");
+const requireUser = vi.fn(async () => {
+  return { id: "user-1", role: "member" };
 });
 
 vi.mock("@/lib/db", () => ({
@@ -29,10 +25,8 @@ vi.mock("@/lib/db", () => ({
 }));
 
 vi.mock("@/lib/wepacker/guards", () => ({
-  requireMembership: () => requireMembership(),
   requireUser: () => requireUser(),
-  requireRole: vi.fn(async () => ({ id: "user-1", role: "member" })),
-  getMentoredCohortIds: vi.fn(async () => []),
+  resolveSessionAttendeeAuthorization: vi.fn(),
 }));
 
 import {
@@ -43,14 +37,12 @@ import {
 
 const fakeRow = {
   id: "session-1",
-  cohortId: null,
-  sessionType: "individual",
+  cycleId: null,
+  mentorshipId: "mentorship-1",
   kind: "checkpoint",
   scheduledAt: new Date("2026-01-01"),
   durationMinutes: 60,
   status: "scheduled",
-  notes: null,
-  notesPublished: false,
   discussionPoints: null,
   attendees: [
     {
@@ -62,7 +54,8 @@ const fakeRow = {
       user: { id: "user-1", name: "Alex" },
     },
   ],
-  mentor: { id: "mentor-1", name: "Mentor" },
+  organizer: { id: "organizer-1", name: "Organizer" },
+  _count: { attendees: 1 },
 };
 
 function assertNoTranscriptField(value: unknown) {
@@ -90,8 +83,7 @@ describe("member session reads never leak the transcript", () => {
     expect(callArgs.select).not.toHaveProperty("transcript");
     expect(callArgs.select).not.toHaveProperty("transcriptUploadedAt");
     expect(callArgs.select).not.toHaveProperty("transcriptUploadedById");
-    expect(requireUser).toHaveBeenCalled();
-    expect(requireMembership).not.toHaveBeenCalled();
+    expect(requireUser).toHaveBeenCalledOnce();
   });
 
   it("getNextSession row carries no transcript field", async () => {
@@ -103,7 +95,6 @@ describe("member session reads never leak the transcript", () => {
     expect(callArgs).toHaveProperty("select");
     expect(callArgs).not.toHaveProperty("include");
     expect(callArgs.select).not.toHaveProperty("transcript");
-    expect(requireMembership).not.toHaveBeenCalled();
   });
 
   it("getNextSession returns null untouched", async () => {
@@ -112,24 +103,28 @@ describe("member session reads never leak the transcript", () => {
     expect(row).toBeNull();
   });
 
-  it("removes unpublished legacy discussion points from the member payload", async () => {
+  it("removes an unpublished attendee shared note from the member payload", async () => {
     findMany.mockResolvedValueOnce([
       {
         ...fakeRow,
-        notes: "private note",
-        notesPublished: false,
-        discussionPoints: "private discussion points",
+        attendees: [
+          {
+            ...fakeRow.attendees[0],
+            sharedNote: "private until explicitly published",
+            sharedNotePublished: false,
+          },
+        ],
       },
     ]);
 
     const [row] = await getMySessions();
 
-    expect(row.notes).toBeNull();
-    expect(row.discussionPoints).toBeNull();
+    expect(row.attendees[0].sharedNote).toBeNull();
+    expect(row).toMatchObject({ attendeeCount: 1, format: "individual" });
   });
 
-  it("mentor/admin Session lists carry metadata but never raw transcript content", async () => {
-    requireUser.mockResolvedValueOnce({ id: "admin-1", role: "admin" });
+  it("organizer Session lists carry metadata but never raw transcript content", async () => {
+    requireUser.mockResolvedValueOnce({ id: "organizer-1", role: "member" });
     findMany.mockResolvedValueOnce([]);
 
     await getMentoredSessions();

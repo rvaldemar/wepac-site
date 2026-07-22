@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MAX_TRANSCRIPT_CHARS } from "@/lib/wepacker/debrief/types";
 
 const sessionUpdate = vi.fn();
@@ -29,10 +29,11 @@ import {
 describe("Session transcript actions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubEnv("SESSION_TRANSCRIPT_WRITES_ENABLED", "true");
     assertSessionOrganizer.mockResolvedValue({
-      actorId: "mentor-1",
-      mentorId: "mentor-1",
-      cohortId: null,
+      actorId: "organizer-1",
+      organizerId: "organizer-1",
+      cycleId: null,
       mentorshipId: "mentorship-1",
     });
     sessionUpdate.mockResolvedValue({ id: "session-1" });
@@ -40,6 +41,21 @@ describe("Session transcript actions", () => {
     transaction.mockImplementation(async (operations: Promise<unknown>[]) =>
       Promise.all(operations),
     );
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("blocks new attachments by default before authorization or writes", async () => {
+    vi.stubEnv("SESSION_TRANSCRIPT_WRITES_ENABLED", "false");
+
+    await expect(
+      attachSessionTranscript("session-1", "private text"),
+    ).rejects.toThrow("temporariamente indisponíveis");
+    expect(assertSessionOrganizer).not.toHaveBeenCalled();
+    expect(sessionUpdate).not.toHaveBeenCalled();
+    expect(transaction).not.toHaveBeenCalled();
   });
 
   it("attaches normalized text and purges the previous derived debrief atomically", async () => {
@@ -54,7 +70,7 @@ describe("Session transcript actions", () => {
         transcript: "Alex: hello",
         transcriptRevision: { increment: 1 },
         transcriptUploadedAt: expect.any(Date),
-        transcriptUploadedById: "mentor-1",
+        transcriptUploadedById: "organizer-1",
       },
       select: { id: true, transcriptUploadedAt: true },
     });

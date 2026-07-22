@@ -13,6 +13,8 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 // "checkpoint") — see OPS_LOG for the sequencing note.
 export type CalcomBookingPayload = {
   uid: string;
+  // BOOKING_RESCHEDULED uses a new uid and points back to the previous one.
+  rescheduleUid?: string;
   organizer: { email: string };
   attendees: { email: string }[];
   startTime: string;

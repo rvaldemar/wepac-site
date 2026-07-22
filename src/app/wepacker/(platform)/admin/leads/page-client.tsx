@@ -40,7 +40,6 @@ interface Application {
   motivation: string | null;
   status: "pending" | "contacted" | "invited" | "joined" | "rejected";
   notes: string | null;
-  packSlug: string;
   createdAt: string;
 }
 
@@ -67,11 +66,9 @@ function stageOf(item: InboxItem): Stage {
 
 function originLabel(item: InboxItem): string {
   if (item.kind === "application") {
-    return item.data.packSlug === "wepacker"
-      ? "Candidatura · WEPACKER (geral)"
-      : item.data.packSlug === "artist"
-        ? "Candidatura · Discipline: Arts"
-        : `Candidatura · legacy source: ${item.data.packSlug}`;
+    return item.data.artisticArea
+      ? `Candidatura · ${item.data.artisticArea}`
+      : "Candidatura · WEPACKER";
   }
   switch (item.data.source) {
     case "chat":
@@ -384,7 +381,6 @@ export function AdminLeadsPageClient({
                   : ([
                       ["Email", selectedApp!.email],
                       ["Telefone", selectedApp!.phone],
-                      ["Legacy application source", selectedApp!.packSlug],
                       ["Área", selectedApp!.artisticArea],
                       ["Redes sociais", selectedApp!.socialLinks],
                       ["Motivação", selectedApp!.motivation],

@@ -7,11 +7,11 @@ import { test as base, expect } from "@playwright/test";
 // viewport (e.g. the onboarding "Continuar" CTA), which is real but
 // irrelevant to what these flows are testing.
 export const test = base.extend({
-  page: async ({ page }, use) => {
+  page: async ({ page }, providePage) => {
     await page.addInitScript(() => {
       window.localStorage.setItem("cookie_consent", "accepted");
     });
-    await use(page);
+    await providePage(page);
   },
 });
 

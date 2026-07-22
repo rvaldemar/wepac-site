@@ -3,23 +3,21 @@ import { Fragment } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { FadeIn } from "@/components/FadeIn";
-import { StaticRadar } from "@/components/wepacker/StaticRadar";
 import { BetaSignupForm } from "@/components/wepacker/BetaSignupForm";
 
 export const metadata: Metadata = {
-  title: "Artistas WEPAC",
+  title: "WEPAC for Artists",
   description:
-    "O sistema integrado de desenvolvimento artístico da WEPAC. Excelência artística. Estrutura humana. Impacto real.",
+    "WEPAC for Artists aplica o caminho WEPAC à Discipline Arts: desenvolvimento humano integral, prática artística e relações reais.",
 };
 
-const AREAS = [
-  { name: "Físico", desc: "O corpo como instrumento de trabalho e presença" },
-  { name: "Afetivo", desc: "Vida emocional e capacidade expressiva" },
-  { name: "Caráter", desc: "Disciplina, ética e consistência profissional" },
-  { name: "Espiritual", desc: "Profundidade, propósito e sentido" },
-  { name: "Intelectual", desc: "Pensamento, estratégia e visão de mercado" },
-  { name: "Social", desc: "Relação, rede, comunicação e comunidade" },
-  { name: "Artístico-Cultural", desc: "Expressão, imaginação, técnica e memória cultural" },
+const PILLARS = [
+  { name: "Physical", desc: "O corpo como base de presença, energia e prática" },
+  { name: "Emotional", desc: "Vida emocional, expressão e capacidade de recuperação" },
+  { name: "Character", desc: "Disciplina, ética e consistência" },
+  { name: "Spiritual", desc: "Profundidade, propósito e sentido" },
+  { name: "Intellectual", desc: "Pensamento, aprendizagem e visão" },
+  { name: "Social", desc: "Relação, comunicação e comunidade" },
 ];
 
 const PRINCIPIOS = [
@@ -40,26 +38,18 @@ const VALORES = [
   "Proximidade",
 ];
 
-const NIVEIS = [
+const STAGES = [
   {
-    name: "Semente",
-    nameEn: "Seed",
-    desc: "Base, estrutura, clarificação. O artista encontra direcção.",
+    name: "Easy Peasy",
+    desc: "Explorar com segurança, ganhar consciência e criar bases sustentáveis.",
   },
   {
-    name: "Crescimento",
-    nameEn: "Growth",
-    desc: "Consistência, posicionamento, primeiras ativações. O artista ganha forma.",
+    name: "Step Up",
+    desc: "Assumir responsabilidade, consolidar prática e transformar intenção em compromisso.",
   },
   {
-    name: "Assinatura",
-    nameEn: "Signature",
-    desc: "Posicionamento premium, marca artística sólida. O artista impõe-se.",
-  },
-  {
-    name: "Parceiro",
-    nameEn: "Partner",
-    desc: "Colaboração estratégica, liderança, influência. O artista lidera.",
+    name: "YUP",
+    desc: "Integrar identidade, autonomia e contribuição com impacto real nos outros.",
   },
 ];
 
@@ -81,34 +71,28 @@ const EQUIPA_PERFIS = [
 
 const PLATFORM_FEATURES = [
   {
-    title: "Mapa de Desenvolvimento",
-    desc: "Diagnóstico visual em 7 áreas: físico, afetivo, caráter, espiritual, intelectual, social e artístico-cultural. Compara a tua evolução ao longo do tempo.",
-    hasRadar: true,
+    title: "My Journey",
+    desc: "O teu percurso contínuo como Person, orientado pelo teu Stage e pelos Six Pillars.",
   },
   {
-    title: "Life Plan",
+    title: "Life Map",
     desc: "Quem sou. Onde estou. Para onde vou. Porquê. O que me comprometo a fazer. Cinco reflexões que definem a tua direcção.",
-    hasRadar: false,
   },
   {
-    title: "Plano Estratégico",
-    desc: "Visão a longo prazo, objetivos anuais, metas trimestrais e ações mensais. Estratégia com estrutura.",
-    hasRadar: false,
+    title: "Trails and Goals",
+    desc: "Transformações concretas e objetivos claros que ligam direção, prática e resultado.",
   },
   {
-    title: "Sessões com Mentor",
-    desc: "Sessões individuais e de grupo com o teu mentor. Notas, pontos de discussão e acompanhamento contínuo.",
-    hasRadar: false,
+    title: "Actions",
+    desc: "Próximos passos que pertencem à Person e podem ganhar contexto num Goal, Trail ou Session.",
   },
   {
-    title: "Tarefas e Ações",
-    desc: "Tarefas do plano, da sessão, do mentor ou tuas. Tudo num sítio, com prazos e progresso.",
-    hasRadar: false,
+    title: "Sessions",
+    desc: "Encontros com participantes explícitos, formato derivado do grupo e registo do que ficou combinado.",
   },
   {
-    title: "Mensagens",
-    desc: "Comunicação directa com o teu mentor e equipa. Sem ruído, sem distrações.",
-    hasRadar: false,
+    title: "Mentorship",
+    desc: "Uma relação direta e consentida entre Mentor e Mentee. Não é um contentor da tua Journey.",
   },
 ];
 
@@ -182,7 +166,7 @@ export default function ArtistPage() {
         <div className="relative z-10 mx-auto max-w-4xl text-center">
           <FadeIn>
             <p className="text-xs font-medium uppercase tracking-[0.3em] text-wepac-gray">
-              Pack Artista
+              WEPAC for Artists
             </p>
           </FadeIn>
           <FadeIn delay={0.15}>
@@ -196,7 +180,7 @@ export default function ArtistPage() {
           </FadeIn>
           <FadeIn delay={0.3}>
             <p className="mt-8 text-lg text-white/80 md:text-xl">
-              O sistema integrado de desenvolvimento artístico da WEPAC.
+              A Discipline Arts dentro do caminho de desenvolvimento da WEPAC.
             </p>
           </FadeIn>
           <FadeIn delay={0.45}>
@@ -223,18 +207,18 @@ export default function ArtistPage() {
         <div className="mx-auto max-w-4xl">
           <FadeIn>
             <p className="text-xs font-medium uppercase tracking-[0.2em] text-wepac-gray">
-              O Programa
+              Arts · Discipline
             </p>
             <h2 className="mt-3 font-barlow text-3xl font-bold text-white md:text-5xl">
-              O que é o Pack Artista WEPAC
+              O que é WEPAC for Artists
             </h2>
           </FadeIn>
           <FadeIn delay={0.1}>
             <p className="mt-8 text-lg leading-relaxed text-white/80">
-              Não é escola. Não é agência. Não é mentoria. É um sistema
-              integrado de desenvolvimento, ativação e consolidação de artistas.
-              Trabalhamos o artista como pessoa, profissional e marca — com
-              método, estrutura e direcção.
+              É a expressão da WEPAC para pessoas cuja prática é Arts. A
+              Discipline dá contexto à prática artística, mas a My Journey
+              continua a pertencer à Person — com Life Map, Trails, Goals,
+              Actions e Sessions próprias.
             </p>
           </FadeIn>
           <FadeIn delay={0.2}>
@@ -264,30 +248,8 @@ export default function ArtistPage() {
           </FadeIn>
 
           <div className="mt-16 grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {/* Card 1: Mapa — full width */}
-            <FadeIn className="lg:col-span-2">
-              <div className="border border-wepac-gray/30 bg-black p-6 transition-colors hover:border-white">
-                <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-2">
-                  <div>
-                    <h3 className="font-barlow text-xl font-bold text-white">
-                      {PLATFORM_FEATURES[0].title}
-                    </h3>
-                    <p className="mt-3 text-sm leading-relaxed text-white/60">
-                      {PLATFORM_FEATURES[0].desc}
-                    </p>
-                  </div>
-                  <div className="flex justify-center">
-                    <div className="w-full max-w-xs">
-                      <StaticRadar className="w-full" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </FadeIn>
-
-            {/* Cards 2-6 */}
-            {PLATFORM_FEATURES.slice(1).map((feature, i) => (
-              <FadeIn key={feature.title} delay={(i + 1) * 0.08} className="flex">
+            {PLATFORM_FEATURES.map((feature, i) => (
+              <FadeIn key={feature.title} delay={i * 0.08} className="flex">
                 <div className="flex flex-1 flex-col border border-wepac-gray/30 bg-black p-6 transition-colors hover:border-white">
                   <h3 className="font-barlow text-xl font-bold text-white">
                     {feature.title}
@@ -323,18 +285,19 @@ export default function ArtistPage() {
                     Camada 1
                   </p>
                   <h3 className="mt-2 font-barlow text-2xl font-bold text-white">
-                    Áreas do Saber
+                    Six Pillars
                   </h3>
                   <p className="mt-1 text-sm text-white/50">
-                    Onde trabalhamos
+                    Universais em toda My Journey
                   </p>
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {AREAS.map((area) => (
+                    {PILLARS.map((pillar) => (
                       <span
-                        key={area.name}
+                        key={pillar.name}
                         className="border border-wepac-gray/20 bg-black px-3 py-1.5 text-sm text-wepac-gray"
+                        title={pillar.desc}
                       >
-                        {area.name}
+                        {pillar.name}
                       </span>
                     ))}
                   </div>
@@ -390,30 +353,60 @@ export default function ArtistPage() {
               </FadeIn>
             </div>
 
-            {/* Right: Radar chart */}
             <FadeIn delay={0.15}>
-              <div className="flex items-center justify-center">
-                <div className="w-full max-w-sm">
-                  <StaticRadar className="w-full" />
-                  <p className="mt-4 text-center text-xs text-white/50">
-                    Mapa de Desenvolvimento — 7 Áreas do Saber
-                  </p>
-                </div>
+              <div className="grid gap-4">
+                {[
+                  {
+                    title: "Arts",
+                    type: "Discipline",
+                    desc: "O contexto de prática desta experiência WEPAC.",
+                  },
+                  {
+                    title: "Pack",
+                    type: "Community",
+                    desc: "Um grupo de pessoas com pertença e relações reais — nunca um caminho de desenvolvimento.",
+                  },
+                  {
+                    title: "Academy",
+                    type: "Cycles",
+                    desc: "Experiências de aprendizagem com duração definida, início e fim.",
+                  },
+                  {
+                    title: "Mentorship",
+                    type: "Relationship",
+                    desc: "Uma relação consentida entre Mentor e Mentee, sem possuir a Journey.",
+                  },
+                ].map((concept) => (
+                  <div
+                    key={concept.title}
+                    className="border border-wepac-gray/30 bg-black p-6"
+                  >
+                    <p className="text-xs font-medium uppercase tracking-[0.2em] text-wepac-gray">
+                      {concept.type}
+                    </p>
+                    <h3 className="mt-2 font-barlow text-2xl font-bold text-white">
+                      {concept.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-white/60">
+                      {concept.desc}
+                    </p>
+                  </div>
+                ))}
               </div>
             </FadeIn>
           </div>
         </div>
       </section>
 
-      {/* 5. O QUE RECEBES */}
+      {/* 5. COMO FUNCIONA */}
       <section className="relative z-10 bg-[rgba(255,255,255,0.02)] px-6 py-20 lg:px-8 lg:py-24">
         <div className="mx-auto max-w-6xl">
           <FadeIn>
             <p className="text-xs font-medium uppercase tracking-[0.2em] text-wepac-gray">
-              Serviços
+              Na prática
             </p>
             <h2 className="mt-3 font-barlow text-3xl font-bold text-white md:text-5xl">
-              O que o artista recebe
+              Como o caminho ganha forma
             </h2>
           </FadeIn>
 
@@ -424,14 +417,13 @@ export default function ArtistPage() {
                   Desenvolvimento humano e artístico
                 </h3>
                 <ul className="mt-4 space-y-2 text-sm text-wepac-gray">
-                  <li>Acompanhamento psicológico e emocional</li>
-                  <li>Mentoria artística e de carreira</li>
-                  <li>Formação contínua</li>
-                  <li>Life Plan</li>
-                  <li>Plano Estratégico de Carreira</li>
+                  <li>Life Map pessoal</li>
+                  <li>Trails ligadas aos Six Pillars</li>
+                  <li>Goals que tornam a direção concreta</li>
+                  <li>Actions assumidas pela Person</li>
                 </ul>
                 <p className="mt-4 text-xs text-white/40">
-                  Na plataforma: Diagnóstico, Life Plan e acompanhamento psicológico
+                  A Journey pertence sempre à Person.
                 </p>
               </div>
             </FadeIn>
@@ -439,15 +431,15 @@ export default function ArtistPage() {
             <FadeIn delay={0.1} className="flex">
               <div className="flex flex-1 flex-col border border-wepac-gray/30 bg-black p-6 transition-colors hover:border-white">
                 <h3 className="font-barlow text-xl font-bold text-white">
-                  Gestão e administração
+                  Mentorship e Sessions
                 </h3>
                 <ul className="mt-4 space-y-2 text-sm text-wepac-gray">
-                  <li>Contabilidade</li>
-                  <li>Fiscalidade</li>
-                  <li>Gestão de carreira</li>
+                  <li>Mentor e Mentee ligados por consentimento</li>
+                  <li>Sessions com participantes explícitos</li>
+                  <li>Preparação, notas e próximos passos</li>
                 </ul>
                 <p className="mt-4 text-xs text-white/40">
-                  Na plataforma: Plano estratégico, contabilidade e fiscalidade
+                  Mentorship é uma Relationship, não um contentor.
                 </p>
               </div>
             </FadeIn>
@@ -455,16 +447,15 @@ export default function ArtistPage() {
             <FadeIn delay={0.15} className="flex">
               <div className="flex flex-1 flex-col border border-wepac-gray/30 bg-black p-6 transition-colors hover:border-white">
                 <h3 className="font-barlow text-xl font-bold text-white">
-                  Marketing e comunicação
+                  Arts como Discipline
                 </h3>
                 <ul className="mt-4 space-y-2 text-sm text-wepac-gray">
-                  <li>Gestão de redes sociais</li>
-                  <li>Gestão de tráfego pago</li>
-                  <li>Produção de conteúdo</li>
-                  <li>Branding e posicionamento</li>
+                  <li>Prática artística com intenção</li>
+                  <li>Desenvolvimento técnico e criativo</li>
+                  <li>Identidade, colaboração e contribuição</li>
                 </ul>
                 <p className="mt-4 text-xs text-white/40">
-                  Na plataforma: Redes sociais, tráfego pago e branding
+                  Arts contextualiza a Journey; não cria outra hierarquia.
                 </p>
               </div>
             </FadeIn>
@@ -472,15 +463,15 @@ export default function ArtistPage() {
             <FadeIn delay={0.2} className="flex">
               <div className="flex flex-1 flex-col border border-wepac-gray/30 bg-black p-6 transition-colors hover:border-white">
                 <h3 className="font-barlow text-xl font-bold text-white">
-                  Ativação e mercado
+                  Community e Cycles
                 </h3>
                 <ul className="mt-4 space-y-2 text-sm text-wepac-gray">
-                  <li>Booking e representação</li>
-                  <li>Integração em projetos WEPAC</li>
-                  <li>Produção de materiais promocionais</li>
+                  <li>Packs para pertença e relações</li>
+                  <li>Academy para experiências de aprendizagem</li>
+                  <li>Cycles com duração, início e fim definidos</li>
                 </ul>
                 <p className="mt-4 text-xs text-white/40">
-                  Na plataforma: Booking, representação e materiais promocionais
+                  Comunidade e aprendizagem são contextos distintos.
                 </p>
               </div>
             </FadeIn>
@@ -501,8 +492,8 @@ export default function ArtistPage() {
           </FadeIn>
           <FadeIn delay={0.1}>
             <p className="mt-8 text-lg leading-relaxed text-white/80">
-              O programa é sustentado por uma equipa multidisciplinar que
-              intervém directamente no desenvolvimento do artista.
+              WEPAC for Artists é sustentado por uma equipa multidisciplinar
+              que acompanha o desenvolvimento da Person e da sua prática.
             </p>
           </FadeIn>
           <div className="mt-10 flex flex-wrap gap-4">
@@ -525,27 +516,27 @@ export default function ArtistPage() {
               Percurso
             </p>
             <h2 className="mt-3 font-barlow text-3xl font-bold text-white md:text-5xl">
-              Percurso do artista
+              Three Stages of My Journey
             </h2>
           </FadeIn>
 
           <div className="mt-16 flex flex-col items-stretch gap-0 lg:flex-row">
-            {NIVEIS.map((nivel, i) => (
-              <Fragment key={nivel.nameEn}>
+            {STAGES.map((stage, i) => (
+              <Fragment key={stage.name}>
                 <FadeIn delay={i * 0.1} className="flex flex-1 flex-col">
                   <div className="flex flex-1 flex-col border border-wepac-gray/30 bg-black p-6 transition-colors hover:border-white">
                     <span className="text-xs font-medium uppercase tracking-[0.2em] text-white/50">
-                      Nível {i + 1}
+                      Stage {i + 1}
                     </span>
                     <h3 className="mt-2 font-barlow text-2xl font-bold text-wepac-gray">
-                      {nivel.name}
+                      {stage.name}
                     </h3>
                     <p className="mt-3 text-sm leading-relaxed text-white/80">
-                      {nivel.desc}
+                      {stage.desc}
                     </p>
                   </div>
                 </FadeIn>
-                {i < NIVEIS.length - 1 && (
+                {i < STAGES.length - 1 && (
                   <>
                     <div className="flex items-center justify-center py-3 lg:hidden">
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-white/40">
@@ -639,7 +630,7 @@ export default function ArtistPage() {
               Candidatura
             </p>
             <h2 className="mt-3 font-barlow text-3xl font-bold text-white md:text-5xl">
-              Candidata-te ao Pack Artista
+              Candidata-te ao WEPAC for Artists
             </h2>
             <p className="mt-4 text-lg text-white/60">
               Preenche o formulário. A equipa analisa o teu perfil e entra em contacto.

@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { sendMessage, startConversation, markAsRead } from "@/lib/wepacker/actions/message";
+import { sendMessage, markAsRead } from "@/lib/wepacker/actions/message";
 
 interface Message {
   id: string;
@@ -16,7 +16,6 @@ interface Message {
 interface Participant {
   id: string;
   name: string;
-  role: string;
 }
 
 interface Conversation {
@@ -25,23 +24,15 @@ interface Conversation {
   messages: Message[];
 }
 
-interface Contact {
-  id: string;
-  name: string;
-  role: string;
-}
-
 interface Props {
   userId: string;
   conversations: Conversation[];
-  contacts: Contact[];
 }
 
-export default function MessagesPageClient({ userId, conversations, contacts }: Props) {
+export default function MessagesPageClient({ userId, conversations }: Props) {
   const router = useRouter();
   const [activeConvo, setActiveConvo] = useState<string | undefined>(undefined);
   const [newMessage, setNewMessage] = useState("");
-  const [showContacts, setShowContacts] = useState(false);
   const [sending, setSending] = useState(false);
 
   // Mobile starts on the conversation list (matches SSR, avoids hydration
@@ -75,51 +66,21 @@ export default function MessagesPageClient({ userId, conversations, contacts }: 
   const listPaneClass = activeConvo ? "hidden lg:block" : "block";
   const detailPaneClass = activeConvo ? "flex" : "hidden lg:flex";
 
-  async function handleStartConversation(contactId: string) {
-    await startConversation(contactId);
-    setShowContacts(false);
-    router.refresh();
-  }
-
   return (
     <div className="flex h-[calc(100vh-3.5rem)] lg:h-screen">
       {/* Conversation list */}
       <div
         className={`${listPaneClass} w-full flex-shrink-0 border-r border-wepac-border bg-wepac-black lg:w-72`}
       >
-        <div className="flex items-center justify-between border-b border-wepac-border p-4">
+        <div className="border-b border-wepac-border p-4">
           <h1 className="font-barlow text-lg font-bold text-wepac-white">Messages</h1>
-          <button
-            onClick={() => setShowContacts((v) => !v)}
-            className="text-xs text-wepac-white hover:underline"
-          >
-            {showContacts ? "Fechar" : "+ Nova"}
-          </button>
         </div>
 
-        {showContacts && (
-          <div className="border-b border-wepac-border">
-            {contacts.length === 0 ? (
-              <p className="p-4 text-xs text-wepac-text-tertiary">Sem contactos disponíveis.</p>
-            ) : (
-              contacts.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => handleStartConversation(c.id)}
-                  className="block w-full px-4 py-3 text-left text-sm text-wepac-text-secondary transition-colors hover:bg-wepac-card"
-                >
-                  {c.name}
-                  <span className="ml-2 text-xs text-wepac-text-tertiary">({c.role})</span>
-                </button>
-              ))
-            )}
-          </div>
-        )}
-
         <div className="overflow-y-auto">
-          {conversations.length === 0 && !showContacts && (
+          {conversations.length === 0 && (
             <p className="p-4 text-sm text-wepac-text-tertiary">
-              Ainda sem conversas. Inicia uma nova.
+              No explicit Message Conversations yet. Starting a Conversation
+              remains unavailable until a separate Message grant is accepted.
             </p>
           )}
           {conversations.map((convo) => {
@@ -238,7 +199,7 @@ export default function MessagesPageClient({ userId, conversations, contacts }: 
         ) : (
           <div className="flex flex-1 items-center justify-center">
             <p className="text-sm text-wepac-text-tertiary">
-              Seleciona uma conversa ou inicia uma nova.
+              Select an existing Conversation.
             </p>
           </div>
         )}

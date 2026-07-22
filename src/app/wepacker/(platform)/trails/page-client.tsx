@@ -4,9 +4,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
 import {
-  AREA_LABELS,
+  PILLAR_LABELS,
   TRAIL_STATUS_LABELS,
-  type AreaKey,
+  type PillarKey,
   type TrailStatus,
 } from "@/lib/wepacker/types";
 import { createTrail } from "@/lib/wepacker/actions/trail";
@@ -18,7 +18,7 @@ interface Trail {
   purpose: string;
   whyItMatters: string;
   destination: string;
-  areas: AreaKey[];
+  areas: PillarKey[];
   status: TrailStatus;
   createdAt: string;
   updatedAt: string;
@@ -124,7 +124,7 @@ export default function TrailsPageClient({ userId, trails }: Props) {
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {trail.areas.map((a) => (
                   <span key={a} className="bg-wepac-white/10 px-2 py-0.5 text-xs text-wepac-white">
-                    {AREA_LABELS[a]}
+                    {PILLAR_LABELS[a]}
                   </span>
                 ))}
               </div>
@@ -147,11 +147,11 @@ function TrailSetupForm({
   const [purpose, setPurpose] = useState("");
   const [whyItMatters, setWhyItMatters] = useState("");
   const [destination, setDestination] = useState("");
-  const [areas, setAreas] = useState<AreaKey[]>([]);
+  const [areas, setAreas] = useState<PillarKey[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function toggleArea(area: AreaKey) {
+  function toggleArea(area: PillarKey) {
     setAreas((prev) => (prev.includes(area) ? prev.filter((a) => a !== area) : [...prev, area]));
   }
 
@@ -199,7 +199,7 @@ function TrailSetupForm({
       <div>
         <label className="block text-sm text-wepac-text-secondary">Pillars touched</label>
         <div className="mt-2 flex flex-wrap gap-2">
-          {(Object.keys(AREA_LABELS) as AreaKey[]).map((area) => (
+          {(Object.keys(PILLAR_LABELS) as PillarKey[]).map((area) => (
             <button
               key={area}
               type="button"
@@ -210,7 +210,7 @@ function TrailSetupForm({
                   : "bg-wepac-input text-wepac-text-tertiary"
               }`}
             >
-              {AREA_LABELS[area]}
+              {PILLAR_LABELS[area]}
             </button>
           ))}
         </div>

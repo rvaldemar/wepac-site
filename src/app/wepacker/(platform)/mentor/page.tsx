@@ -1,35 +1,43 @@
-import { requirePageRole } from "@/lib/wepacker/page-guards";
-import { getMentoredSessions } from "@/lib/wepacker/actions/session";
-import { getMyMentorships } from "@/lib/wepacker/actions/mentorship";
+import { redirect } from "next/navigation";
+import { requirePageUser } from "@/lib/wepacker/page-guards";
+import {
+  getFacilitatedCycles,
+  getMentoredMembers,
+  getMentoredSessions,
+} from "@/lib/wepacker/actions/session";
 import { MentorDashboardClient } from "./page-client";
 
 export default async function MentorDashboardPage() {
-  const user = await requirePageRole(["mentor", "admin"]);
+  await requirePageUser();
 
-  const [sessions, mentorships] = await Promise.all([
+  const [sessions, mentees, facilitatedCycles] = await Promise.all([
     getMentoredSessions(),
-    getMyMentorships(),
+    getMentoredMembers(),
+    getFacilitatedCycles(),
   ]);
+  if (
+    sessions.length === 0 &&
+    mentees.length === 0 &&
+    facilitatedCycles.length === 0
+  ) {
+    redirect("/wepacker/dashboard");
+  }
 
   return (
     <MentorDashboardClient
       sessions={sessions.map((session) => ({
         id: session.id,
-        sessionType: session.sessionType,
         status: session.status,
         scheduledAt: session.scheduledAt.toISOString(),
         durationMinutes: session.durationMinutes,
+        attendeeCount: session.attendees.length,
         attendees: session.attendees.map((attendee) => ({
           id: attendee.id,
           user: attendee.user,
         })),
       }))}
-      activeMentorships={mentorships.filter(
-        (row) =>
-          row.mentor.id === user.id &&
-          row.status === "active" &&
-          !row.reviewRequired
-      ).length}
+      activeMentorships={mentees.length}
+      activeFacilitations={facilitatedCycles.length}
     />
   );
 }

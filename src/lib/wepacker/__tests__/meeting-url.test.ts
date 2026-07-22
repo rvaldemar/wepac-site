@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { generateMeetingUrl } from "@/lib/wepacker/meeting-url";
+import {
+  generateMeetingUrl,
+  normalizeMeetingUrl,
+} from "@/lib/wepacker/meeting-url";
 
 // Regression/spec test for the video-call link generator used by
 // createSession. The room slug must be crypto-random and independent of
@@ -28,5 +31,26 @@ describe("generateMeetingUrl", () => {
       Array.from({ length: 50 }, () => generateMeetingUrl("https://meet.example.org"))
     );
     expect(urls.size).toBe(50);
+  });
+});
+
+describe("normalizeMeetingUrl", () => {
+  it("accepts HTTPS and loopback-only HTTP", () => {
+    expect(normalizeMeetingUrl("https://meet.example.org/room")).toBe(
+      "https://meet.example.org/room",
+    );
+    expect(normalizeMeetingUrl("http://127.0.0.1:3000/room")).toBe(
+      "http://127.0.0.1:3000/room",
+    );
+  });
+
+  it.each([
+    "javascript:alert(1)",
+    "data:text/html,<script>alert(1)</script>",
+    "http://meet.example.org/room",
+    "https://user:password@meet.example.org/room",
+    "not a URL",
+  ])("rejects an unsafe meeting URL: %s", (value) => {
+    expect(() => normalizeMeetingUrl(value)).toThrow("Invalid Session link");
   });
 });

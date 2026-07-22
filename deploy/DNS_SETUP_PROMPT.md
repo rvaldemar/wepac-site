@@ -58,6 +58,13 @@ sudo certbot certonly --webroot \
 
 ```bash
 sudo tee /etc/nginx/sites-available/wepac > /dev/null << 'NGINX'
+# Access logs deliberately omit URL paths, query strings and referrers because
+# WEPACKER invite/reset URLs carry bearer credentials.
+log_format wepac_safe '$remote_addr [$time_local] '
+                       '"$request_method $server_protocol" $status $body_bytes_sent '
+                       'rt=$request_time uct=$upstream_connect_time '
+                       'uht=$upstream_header_time urt=$upstream_response_time';
+
 upstream wepac_node {
     server 127.0.0.1:3003;
 }
@@ -67,6 +74,9 @@ server {
     listen 80;
     listen [::]:80;
     server_name wepac.pt www.wepac.pt;
+
+    access_log /var/log/nginx/wepac_access.log wepac_safe;
+    error_log /dev/null crit;
 
     location /.well-known/acme-challenge/ {
         root /var/www/wepac/shared/public;
@@ -82,6 +92,9 @@ server {
     listen 443 ssl http2;
     listen [::]:443 ssl http2;
     server_name www.wepac.pt;
+
+    access_log /var/log/nginx/wepac_access.log wepac_safe;
+    error_log /dev/null crit;
 
     ssl_certificate /etc/letsencrypt/live/wepac.pt/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/wepac.pt/privkey.pem;
@@ -104,8 +117,8 @@ server {
 
     root /var/www/wepac/current/public;
 
-    access_log /var/log/nginx/wepac_access.log;
-    error_log /var/log/nginx/wepac_error.log;
+    access_log /var/log/nginx/wepac_access.log wepac_safe;
+    error_log /dev/null crit;
 
     gzip on;
     gzip_vary on;
@@ -128,7 +141,7 @@ server {
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
+        proxy_set_header Host wepac.pt;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;

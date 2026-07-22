@@ -3,6 +3,7 @@ import type Stripe from "stripe";
 import { prisma } from "@/lib/db";
 import { getStripe } from "@/lib/bilheteira/stripe";
 import { sendTicketEmail } from "@/lib/bilheteira/ticket-email";
+import { logSafeError } from "@/lib/wepacker/log-safe-error";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -80,7 +81,7 @@ async function fulfillCheckout(session: Stripe.Checkout.Session) {
       coverImage: payment.event.coverImage,
     });
   } catch (err) {
-    console.error("[stripe webhook] email send failed", err);
+    console.error("[stripe webhook] ticket_email_failed", logSafeError(err));
   }
 }
 
@@ -127,7 +128,7 @@ export async function POST(req: NextRequest) {
   try {
     event = getStripe().webhooks.constructEvent(body, signature, secret);
   } catch (err) {
-    console.error("[stripe webhook] signature failed", err);
+    console.error("[stripe webhook] signature_failed", logSafeError(err));
     return NextResponse.json(
       { error: "signature verification failed" },
       { status: 400 }
@@ -160,7 +161,7 @@ export async function POST(req: NextRequest) {
         break;
     }
   } catch (err) {
-    console.error("[stripe webhook] handler error", err);
+    console.error("[stripe webhook] handler_failed", logSafeError(err));
     return NextResponse.json({ error: "handler failed" }, { status: 500 });
   }
 

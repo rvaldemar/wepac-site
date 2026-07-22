@@ -4,7 +4,7 @@ import ProfilePageClient from "./page-client";
 
 export default async function ProfilePage() {
   await requirePageUser();
-  const { user, membership, stage } = await getMyContext();
+  const { user, stage } = await getMyContext();
 
-  return <ProfilePageClient user={user} membership={membership} stage={stage} />;
+  return <ProfilePageClient user={user} stage={stage} />;
 }
