@@ -956,7 +956,11 @@ enum BetaSignupStatus {
 model BetaSignup {
   id           String           @id @default(cuid())
   name         String
-  email        String           @unique
+  // No longer globally unique: WEPAC now runs several public application
+  // offers (Society, Summer University, Clínica, ...) distinguished by
+  // packSlug, and the same person is allowed one standing application per
+  // offer. See the @@unique([email, packSlug]) below.
+  email        String
   phone        String?
   artisticArea String?
   socialLinks  String?
@@ -968,6 +972,7 @@ model BetaSignup {
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
 
+  @@unique([email, packSlug])
   @@map("beta_signups")
 }
 

@@ -37,19 +37,18 @@ export async function acceptInvite(token: string, password: string) {
   });
 
   // Best effort: close the loop candidatura -> convite -> conta criada.
-  // Matched by email (unique on BetaSignup) — a missing/already-rejected
-  // application never blocks account creation.
+  // Matched by email — BetaSignup is now unique per (email, packSlug), not
+  // per email, so this person may hold several standing applications
+  // (Society, Summer University, ...) at once. Advance every one of them
+  // that isn't already rejected: joining the platform closes the loop on
+  // all of a person's pending offers, not just whichever one happened to
+  // trigger this invite. A missing/already-rejected application never
+  // blocks account creation.
   try {
-    const application = await prisma.betaSignup.findUnique({
-      where: { email: user.email },
-      select: { status: true },
+    await prisma.betaSignup.updateMany({
+      where: { email: user.email, status: { not: "rejected" } },
+      data: { status: "joined" },
     });
-    if (application && application.status !== "rejected") {
-      await prisma.betaSignup.update({
-        where: { email: user.email },
-        data: { status: "joined" },
-      });
-    }
   } catch (e) {
     console.error("Failed to auto-advance application status on join:", e);
   }
