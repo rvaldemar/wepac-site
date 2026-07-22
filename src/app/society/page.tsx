@@ -104,7 +104,7 @@ export default function SocietyPage() {
       </header>
 
       {/* 1. Hero — whatever door, the same invitation */}
-      <section className="px-6 py-16 lg:px-12 lg:py-28">
+      <section className="px-6 pt-8 pb-24 lg:px-12 lg:py-28">
         <div className="mx-auto max-w-4xl text-center">
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-wepac-gray">
             WEPAC Society
