@@ -115,6 +115,11 @@ mkdir -p "${DEPLOY_STAGE}/.next/static"
 cp -R .next/static/. "${DEPLOY_STAGE}/.next/static/"
 rm -rf -- "${DEPLOY_STAGE}/public"
 cp -R public "${DEPLOY_STAGE}/public"
+# Next.js standalone output tracing already copies a partial prisma/ directory
+# (whatever the runtime imports touch). Replace it wholesale with the
+# repository's full prisma/ so schema.prisma lands at DEPLOY_STAGE/prisma/
+# instead of nesting under DEPLOY_STAGE/prisma/prisma/.
+rm -rf -- "${DEPLOY_STAGE}/prisma"
 cp -R prisma "${DEPLOY_STAGE}/prisma"
 mkdir -p "${DEPLOY_STAGE}/deploy"
 cp deploy/nginx.conf "${DEPLOY_STAGE}/deploy/nginx.conf"
