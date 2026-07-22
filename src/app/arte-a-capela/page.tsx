@@ -450,7 +450,7 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
                   key={row.label}
                   className="flex items-baseline justify-between gap-4 border-b border-black/10 pb-3"
                 >
-                  <dt className="text-[11px] uppercase tracking-[0.18em] text-black/50">
+                  <dt className="text-[11px] uppercase tracking-[0.18em] text-black/60">
                     {row.label}
                   </dt>
                   <dd className="text-[15px] font-medium text-right">{row.value}</dd>
@@ -458,7 +458,7 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
               ))}
             </dl>
 
-            <p className="mt-8 text-[12px] text-black/45 leading-[1.6]">
+            <p className="mt-8 text-[12px] text-black/58 leading-[1.6]">
               Lugares limitados. Bilhete enviado por e-mail após confirmação
               do pagamento.
             </p>
@@ -466,8 +466,18 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
 
           {/* Right column — every tier, in order, each its own way in.
               This replaces an inline checkout that duplicated the real
-              ticketing product; the tier itself deep-links there. */}
-          <div className="lg:pl-16 pt-14 lg:pt-0">
+              ticketing product; the tier itself deep-links there. When
+              there is nothing to list, the block is centred against the
+              left column's height instead of trailing off — the ternary
+              below only ever changes what fills this space, never the
+              live-tier layout itself. */}
+          <div
+            className={`lg:pl-16 pt-14 lg:pt-0${
+              event.slug && tiers.length > 0
+                ? ""
+                : " lg:flex lg:flex-col lg:justify-center"
+            }`}
+          >
             {cancelled && (
               <p className="mb-6 text-[13px] text-black/70 border border-black/20 bg-black/5 px-4 py-3">
                 Pagamento cancelado. Se foi engano, podes tentar novamente.
@@ -481,7 +491,7 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
 
             {event.slug && tiers.length > 0 ? (
               <div className="space-y-10">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-black/50">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-black/60">
                   Escolhe o teu lugar
                 </p>
 
@@ -514,15 +524,23 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
                 {/* Same VAT exemption sentence the real ticketing page
                     carries for this identical price — see
                     src/app/bilheteira/[slug]/page.tsx. */}
-                <p className="text-[12px] text-black/45 leading-[1.6]">
+                <p className="text-[12px] text-black/58 leading-[1.6]">
                   Preços isentos de IVA ao abrigo do art.º 9.º do CIVA.
                 </p>
               </div>
             ) : (
-              <div className="space-y-6">
-                <p className="text-[15px] text-black/70 leading-[1.6]">
-                  Ainda não há bilhetes disponíveis para este evento aqui.
-                  Consulta a bilheteira para todos os eventos publicados.
+              <div className="max-w-[420px] border-t border-black/10 pt-10 space-y-8">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-black/60">
+                  Disponibilidade
+                </p>
+                <h3
+                  className={`${serif} text-[30px] sm:text-[36px] leading-[1.2]`}
+                >
+                  Ainda não há bilhetes publicados para este evento.
+                </h3>
+                <p className="text-[14px] text-black/58 leading-[1.7]">
+                  A bilheteira reúne todos os eventos da WEPAC com lugares
+                  em aberto — a programação completa está sempre lá.
                 </p>
                 <Link
                   href="/bilheteira"
