@@ -207,3 +207,31 @@ Consequências para a slice 1, a respeitar na construção:
    do grupo, não de consentimento: ninguém fica preso — delega e sai.
 4. Quem convoca os encontros é um owner ou moderator; a transferência de ownership é, na prática,
    a passagem de quem convoca. É por isso que esta adenda responde à condição operacional do §6.
+
+---
+
+## DECISÃO — não construir agora (2026-07-22)
+
+O §6 acima define três condições operacionais e diz que uma resposta negativa é motivo de paragem.
+Foram colocadas ao Rui e o resultado é:
+
+1. **Dono do Pack** — resolvido. Ver a adenda de ownership: criador é owner, com delegação e
+   transferência, portanto o Pack sobrevive à saída de quem o cria.
+2. **Cadência de encontro que já exista offline** — **não existe ainda.**
+3. **Pessoas nomeadas para o primeiro Pack** — **ainda não há essa informação.**
+
+**Não se constrói a slice 1 enquanto 2 e 3 não tiverem resposta.** O desenho fica pronto e é para
+usar tal como está quando tiverem — o trabalho de arquitetura não se repete.
+
+O raciocínio, para não ser rediscutido: um Pack regista um ritmo, não o cria. Construído sem ritmo
+nenhum, entrega uma lista onde ninguém volta e um bloco de encontros permanentemente vazio — e a
+plataforma já carrega uma superfície social morta (o item Mensagens na sidebar sobre uma função que
+devolve lista vazia). Duas seriam prova visível, para quem entra, de que a comunidade não existe.
+
+**Gatilho para retomar:** haver um encontro real marcado, com data e sítio, e uma lista nominal de
+quem lá vai estar. Nessa altura a ordem certa é: primeiro o encontro acontece, depois o Pack
+regista-o. Não o contrário.
+
+**Entretanto, a copy pública mantém-se como está:** a landing não promete comunidade, encontros nem
+contacto entre membros, e essa continua a ser a única posição honesta. Ver
+`src/app/wepacker/(public)/page.tsx`.
