@@ -4,6 +4,27 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-22 (4) — WEPAC Society: entrada em `/society` e Universidade de Verão
+
+27º deploy. Release em produção a partir de `feat/arte-a-capela-base`. Sem migrations aplicadas em prod nesta release (a nova migration de candidaturas segue no código e aplica-se no próximo `migrate deploy`; ver abaixo).
+
+**Reestruturação decidida pelo Rui durante a sessão.** O produto é **um só: WEPAC Society**. Uma pessoa candidata-se à Society, a ser **WEPACker**. Academia, Care, RH, casa, aldeia e afins são **agregadores do menu lateral** da plataforma — organização interna para quem já é membro, não ofertas separadas com páginas próprias. O que se dirigirá a públicos diferentes são **campanhas**, organizadas pelas dimensões da vida das pessoas. Isto corrigiu um modelo errado a meio do trabalho (ver "retiradas" abaixo).
+
+- **`/society` (nova, pública):** a entrada. Escrita a partir do livro-manifesto do Rui — abre em "E tu?" com o argumento de que seja qual for a porta o convite é o mesmo, passa pelo "já és um packer, falta-te o WE", pelo retrato concreto do que é ser WEPACker à segunda-feira de manhã, e pela equação autonomia/serviço. Prova social real e publicamente consentida (Álvaro Luís, André Vítor, Alex Florindo, Jotta Pê), enquadrada como pessoas que a WEPAC apoia — **nunca** como ex-participantes de um programa. Entrada gratuita e primeiro Life Map gratuito ditos sem rodeios.
+- **`/wepacker` deixa de ser landing** e redireciona para `/wepacker/login`. Tudo o resto sob `/wepacker/*` intocado.
+- **`/society/universidade-verao` (nova, pública):** Universidade de Verão WEPAC Society. Tese do Rui: transformar energia potencial em energia. Idades 18-26, um fim de semana residencial, local e programa secretos até à convocação, candidaturas até **10 de agosto de 2026**. Seis factos por decidir (data, teto de custo, lugares financiados, número de lugares, data de resposta, mentores) estão a `null` no ficheiro de dados: **as secções não renderizam e nenhum número foi inventado**. CTA de candidatura desativado até o funil estar pronto.
+- **Candidaturas passam a ser únicas por (email, oferta)** em vez de por pessoa. `beta_signups.email @unique` → `@@unique([email, packSlug])`. Sem isto, o primeiro WEPACker a candidatar-se à Universidade **apagava silenciosamente** a sua candidatura à Society. `acceptInvite` também assumia uma candidatura por email e foi corrigido. Migration validada numa base descartável (30 migrations) e segura por construção: a constraint antiga é estritamente mais forte que a nova.
+
+**Retiradas deliberadamente do lote, com o trabalho preservado em branch:**
+- **Clínica WEPAC** (`feat/clinica-landing`, 568f8cd) — página completa, com board de ética clínica. **Não vai a produção** enquanto estiverem abertos 5 bloqueadores legais documentados no topo de `src/data/clinica.ts`: registo/licenciamento ERS, equipa com cédulas e diretor técnico identificado, morada da V1, identificação legal do operador no rodapé, e parecer jurídico de direito da saúde. Decisão do Rui: por agora não há "clínica"; a área passa a chamar-se **Care** e é descrita sem vocabulário de saúde.
+- **Academia** (`feat/academia-landing`, 1f59b12) — página completa. Retirada por contradizer o modelo de produto único: uma página `/academia` apresenta como oferta autónoma o que é um agregador interno. Serve de base a uma campanha quando os públicos estiverem definidos.
+
+**Gate:** tsc limpo, build compila, vitest **237/238** (a única falha é o red pré-existente em `hub-debrief-engine.test.ts`, do lote hub-debrief). Smoke: `/society` e `/society/universidade-verao` a 200, `/academia` e `/clinica` a 404 como esperado, `/wepacker` a 307, serviço active, sem overflow horizontal, e grep de "clínica/terapia/saúde mental" na página da Society devolve vazio.
+
+**Pendente do Rui:** os seis factos da Universidade de Verão (o board recomenda **publicar a data** — a data secreta não filtra por compromisso, filtra por quem tem agosto livre, e garante desistências depois da seleção); confirmar se "A Travessia" fica como nome desta edição; e o teto de custo, sem o qual a página não pode falar de dinheiro.
+
+---
+
 ## 2026-07-22 (3) — Fidelidade de design da Arte à Capela + remoção de conteúdo fictício
 
 23º a 26º deploy (quatro releases no mesmo ciclo; a última é `/var/www/wepac/releases/20260722180947`). Sem migrations em nenhuma.
