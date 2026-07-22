@@ -178,3 +178,32 @@ A Pack *registers* a rhythm; it does not create one. If WEPAC has no recurring o
 3. Name the individuals for the first Pack, explicitly, not by cohort.
 
 Secondary operational failures, in order of likelihood: scope creep from roster to feed during slice one (hold the 8-week gate numbers); projection creep — one careless `include: { user: true }` in a later PR leaks emails, which is why the assertion is on the serialized payload and `packMemberSelect` lives in exactly one module; and someone proposing to backfill from `CohortMembership` "because those people already know each other", which `schema.prisma:437-439` and two DB check constraints forbid on both policy and structural grounds.
+
+---
+
+## ADENDA — Ownership, decidido pelo Rui (2026-07-22)
+
+O board desenhou `PackMembershipRole` como `owner | moderator | member` mas não tratou a
+transferência. O Rui fechou-o assim:
+
+- **Quem cria o Pack é owner.** Continua a ser escrito como membership `owner` na mesma transação
+  em que o Pack é criado — o desenho acima depende disso para que a lista nunca seja visível a um
+  admin não-membro.
+- **Um owner pode delegar sem sair** — passa a haver mais do que um owner ao mesmo tempo, ou
+  promove alguém a moderator, mantendo-se owner.
+- **Um owner pode sair de owner delegando** — transfere o papel e deixa de o ser, permanecendo ou
+  não como membro do Pack.
+
+Consequências para a slice 1, a respeitar na construção:
+
+1. `PackMembershipRole` já suporta os três papéis; o que falta são as ações de promoção,
+   despromoção e transferência, e não podem ser um `update` solto — cada uma é uma ação com
+   autorização própria (só um owner ativo pode promover ou transferir).
+2. **Invariante:** um Pack ativo nunca fica sem nenhum owner ativo. Sair de owner exige que outro
+   membro seja promovido na mesma transação; sair do Pack sendo o último owner é recusado com uma
+   mensagem que diz porquê. Isto tem de ter teste, e o teste tem de ser falsificado.
+3. A saída livre desenhada acima (`leavePack`, um clique, nunca bloqueada por flag) mantém-se para
+   quem não é o último owner. O último owner é a única excepção, e é uma excepção de integridade
+   do grupo, não de consentimento: ninguém fica preso — delega e sai.
+4. Quem convoca os encontros é um owner ou moderator; a transferência de ownership é, na prática,
+   a passagem de quem convoca. É por isso que esta adenda responde à condição operacional do §6.
