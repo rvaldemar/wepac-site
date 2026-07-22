@@ -26,6 +26,7 @@ const ptSerif = PT_Serif({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://wepac.pt"),
   title: {
     default: "WEPAC",
     template: "%s | WEPAC",
@@ -50,7 +51,7 @@ export const metadata: Metadata = {
     "concertos em igrejas",
     "educação musical",
     "desenvolvimento artístico",
-    "programa artistas",
+    "WEPAC for Artists",
     "curadoria artística",
     "música clássica",
     "jazz",

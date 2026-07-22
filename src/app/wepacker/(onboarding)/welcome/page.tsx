@@ -22,7 +22,7 @@ export default function WelcomePage() {
           <p>
             Aqui vais encontrar o teu Life Map — quem sou, onde estou, para
             onde vou, porquê, e que compromissos assumo —,
-            o teu Strategic Plan, Trails e Sessions. Mentorships, Cycles e Packs
+            os teus Goals, Trails e Sessions. Mentorships, Cycles e Packs
             aparecem apenas quando essas relações forem aceites explicitamente.
           </p>
           <p>

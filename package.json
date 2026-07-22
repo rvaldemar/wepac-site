@@ -4,14 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:e2e": "E2E_ALLOW_DB_RESET=1 playwright test",
-    "test:e2e:ui": "E2E_ALLOW_DB_RESET=1 playwright test --ui",
-    "test:e2e:build": "E2E_ALLOW_DB_RESET=1 E2E_SERVER=build playwright test",
+    "test:e2e": "E2E_ALLOW_DB_RESET=1 SESSION_TRANSCRIPT_WRITES_ENABLED=true playwright test",
+    "test:e2e:ui": "E2E_ALLOW_DB_RESET=1 SESSION_TRANSCRIPT_WRITES_ENABLED=true playwright test --ui",
+    "test:e2e:build": "E2E_ALLOW_DB_RESET=1 SESSION_TRANSCRIPT_WRITES_ENABLED=true E2E_SERVER=build playwright test",
     "test:e2e:report": "playwright show-report",
+    "support-preview:retention": "tsx scripts/support-preview-retention.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

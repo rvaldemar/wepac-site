@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const assertSessionOrganizer = vi.fn();
 const sessionFindUnique = vi.fn();
 const sessionFindUniqueOrThrow = vi.fn();
-const debriefFindUnique = vi.fn();
+const debriefFindFirst = vi.fn();
 const transaction = vi.fn();
 const lockedTranscript = vi.fn();
 const txUpsert = vi.fn();
@@ -26,7 +26,7 @@ vi.mock("@/lib/db", () => ({
         sessionFindUniqueOrThrow(...args),
     },
     sessionDebrief: {
-      findUnique: (...args: unknown[]) => debriefFindUnique(...args),
+      findFirst: (...args: unknown[]) => debriefFindFirst(...args),
     },
     $transaction: (...args: unknown[]) => transaction(...args),
   },
@@ -35,24 +35,42 @@ vi.mock("@/lib/db", () => ({
 import { generateSessionDebrief } from "@/lib/wepacker/actions/debrief";
 
 const engineResult = {
-  perAttendee: [],
-  internalEvaluation: {
+  contractVersion: "wepac-session-debrief-v3",
+  perAttendee: [
+    {
+      attendeeRef: "attendee-1",
+      outcomeSuggestion: "summary",
+      sharedNoteSuggestion: "",
+      confidence: "medium",
+      actions: [],
+    },
+  ],
+  internalSynthesis: {
     sessionSummary: "summary",
-    areaObservations: {},
-    practiceObservations: null,
+    pillarObservations: {
+      physical: { signal: "not_discussed", evidence: "" },
+      emotional: { signal: "not_discussed", evidence: "" },
+      character: { signal: "not_discussed", evidence: "" },
+      spiritual: { signal: "not_discussed", evidence: "" },
+      intellectual: { signal: "not_discussed", evidence: "" },
+      social: { signal: "not_discussed", evidence: "" },
+    },
+    disciplineObservations: null,
     risks: [],
     recommendedFollowUps: [],
+    suggestedSessionKind: null,
   },
   resultDocumentHtml: null,
 };
 
 const readyRow = {
   id: "debrief-1",
+  contractVersion: "wepac-session-debrief-v3",
   status: "ready",
   engineImpl: "test",
   model: "claude-sonnet-5",
-  perAttendeeSuggestions: [],
-  internalEvaluation: engineResult.internalEvaluation,
+  perAttendeeSuggestions: engineResult.perAttendee,
+  internalSynthesis: engineResult.internalSynthesis,
   resultDocumentHtml: null,
   error: null,
   requestedAt: new Date("2026-07-21T10:00:00Z"),
@@ -64,20 +82,18 @@ describe("debrief transcript revision fence", () => {
     vi.clearAllMocks();
     assertSessionOrganizer.mockResolvedValue({
       actorId: "mentor-1",
-      mentorId: "mentor-1",
-      cohortId: null,
-      mentorshipId: null,
     });
-    debriefFindUnique.mockResolvedValue(null);
+    debriefFindFirst.mockResolvedValue(null);
     sessionFindUnique.mockResolvedValue({
       transcript: "version one",
       transcriptRevision: 7,
     });
     sessionFindUniqueOrThrow.mockResolvedValue({
-      attendees: [],
-      cohort: null,
+      attendees: [{ id: "attendee-1" }],
+      cycle: null,
       kind: "checkpoint",
       discussionPoints: null,
+      transcriptRevision: 7,
     });
     generateDebrief.mockResolvedValue(engineResult);
     txUpsert.mockResolvedValue(readyRow);
@@ -99,6 +115,17 @@ describe("debrief transcript revision fence", () => {
       generateSessionDebrief("session-1", { force: true }),
     ).resolves.toMatchObject({ id: "debrief-1", status: "ready" });
     expect(txUpsert).toHaveBeenCalledOnce();
+    expect(generateDebrief).toHaveBeenCalledWith({
+      contractVersion: "wepac-session-debrief-v3",
+      sessionRef: "session-1",
+      transcriptRevision: 7,
+      transcript: "version one",
+      sessionKind: "checkpoint",
+      discussionPoints: null,
+      attendees: [{ attendeeRef: "attendee-1" }],
+      disciplineContext: null,
+      releaseMode: "draft_only",
+    });
   });
 
   it("does not resurrect a stale debrief after replacement", async () => {

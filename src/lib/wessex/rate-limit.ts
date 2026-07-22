@@ -123,14 +123,20 @@ export const visitorRateLimiter = new VisitorRateLimiter();
 // one our trusted proxy appended). Absent both (direct connections in
 // local dev), a shared "unknown" bucket is acceptable for a low-traffic
 // informational chat.
-export function getVisitorIp(req: Request): string {
-  const realIp = req.headers.get("x-real-ip")?.trim();
+export function getVisitorIpFromHeaders(
+  headers: Pick<Headers, "get">,
+): string {
+  const realIp = headers.get("x-real-ip")?.trim();
   if (realIp) return realIp;
-  const forwardedFor = req.headers.get("x-forwarded-for");
+  const forwardedFor = headers.get("x-forwarded-for");
   if (forwardedFor) {
     const parts = forwardedFor.split(",");
     const last = parts[parts.length - 1]?.trim();
     if (last) return last;
   }
   return "unknown";
+}
+
+export function getVisitorIp(req: Request): string {
+  return getVisitorIpFromHeaders(req.headers);
 }

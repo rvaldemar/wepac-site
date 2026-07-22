@@ -76,7 +76,7 @@ export default function AgreementPage() {
                   // called with a defined argument — update() with no
                   // args resolves to a plain GET session read instead,
                   // silently leaving the JWT's onboarded flag stale and
-                  // stranding the member in a welcome/assessment redirect
+                  // stranding the member in an onboarding redirect
                   // loop after finishing onboarding.
                   await update({});
                   router.push("/wepacker/dashboard");

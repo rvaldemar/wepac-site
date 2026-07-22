@@ -19,7 +19,6 @@ interface MentorshipSummary {
   id: string;
   status: MentorshipStatus;
   invitedById: string;
-  reviewRequired: boolean;
   invitedAt: string;
   activatedAt: string | null;
   endedAt: string | null;
@@ -27,16 +26,11 @@ interface MentorshipSummary {
   mentee: PersonSummary;
 }
 
-interface Candidate extends PersonSummary {
-  email: string;
-}
-
 interface Props {
   currentUserId: string;
   canInvite: boolean;
   writesEnabled: boolean;
   mentorships: MentorshipSummary[];
-  candidates: Candidate[];
 }
 
 const STATUS_LABELS: Record<MentorshipStatus, string> = {
@@ -60,10 +54,9 @@ export default function MentorshipsPageClient({
   canInvite,
   writesEnabled,
   mentorships,
-  candidates,
 }: Props) {
   const router = useRouter();
-  const [candidateId, setCandidateId] = useState(candidates[0]?.id ?? "");
+  const [candidateEmail, setCandidateEmail] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
   const [inviteBusy, setInviteBusy] = useState(false);
   const [error, setError] = useState("");
@@ -77,9 +70,7 @@ export default function MentorshipsPageClient({
     () => mentorships.filter((row) => row.mentor.id === currentUserId),
     [currentUserId, mentorships]
   );
-  const pendingIncoming = incoming.filter(
-    (row) => row.status === "pending" && !row.reviewRequired
-  );
+  const pendingIncoming = incoming.filter((row) => row.status === "pending");
 
   async function runRelationshipAction(
     id: string,
@@ -106,14 +97,16 @@ export default function MentorshipsPageClient({
 
   async function handleInvite(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!candidateId) return;
+    if (!candidateEmail.trim()) return;
     setInviteBusy(true);
     setError("");
     setNotice("");
     try {
-      await inviteMentee(candidateId);
-      setNotice("Invitation enviada. A Mentorship só fica ativa depois da aceitação.");
-      setCandidateId("");
+      await inviteMentee(candidateEmail.trim());
+      setNotice(
+        "Request submitted. If the email matches an eligible Person, they will receive the invitation.",
+      );
+      setCandidateEmail("");
       router.refresh();
     } catch (actionError) {
       setError(
@@ -136,7 +129,7 @@ export default function MentorshipsPageClient({
           Uma Mentorship é uma relação direta entre Mentor e Mentee. Não exige
           Cycle Enrollment nem Pack Membership. Nesta fase, permite apenas
           descoberta mútua e agendamento de Sessions; não abre Life Map, Trails,
-          Assessments, Tasks ou Messages.
+          Actions ou Messages.
         </p>
         {!writesEnabled && (
           <p className="mt-4 border border-wepac-warning/40 bg-wepac-warning-bg p-4 text-sm text-wepac-warning">
@@ -219,38 +212,28 @@ export default function MentorshipsPageClient({
             <p className="mt-1 text-sm text-wepac-text-tertiary">
               A outra pessoa recebe a invitation dentro da plataforma e por email.
             </p>
-            {candidates.length > 0 ? (
-              <form onSubmit={handleInvite} className="mt-4 flex flex-col gap-3 sm:flex-row">
-                <label className="sr-only" htmlFor="mentee-candidate">
-                  Mentee
-                </label>
-                <select
-                  id="mentee-candidate"
-                  value={candidateId}
-                  onChange={(event) => setCandidateId(event.target.value)}
-                  required
-                  className="min-w-0 flex-1 bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none"
-                >
-                  <option value="">Choose a person…</option>
-                  {candidates.map((candidate) => (
-                    <option key={candidate.id} value={candidate.id}>
-                      {candidate.name} — {candidate.email}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  type="submit"
-                  disabled={inviteBusy || !candidateId}
-                  className="bg-wepac-white px-5 py-2 text-sm font-bold text-wepac-black disabled:opacity-50"
-                >
-                  {inviteBusy ? "Sending…" : "Send invitation"}
-                </button>
-              </form>
-            ) : (
-              <p className="mt-4 text-sm text-wepac-text-tertiary">
-                No eligible people available.
-              </p>
-            )}
+            <form onSubmit={handleInvite} className="mt-4 flex flex-col gap-3 sm:flex-row">
+              <label className="sr-only" htmlFor="mentee-email">
+                Mentee email
+              </label>
+              <input
+                id="mentee-email"
+                type="email"
+                value={candidateEmail}
+                onChange={(event) => setCandidateEmail(event.target.value)}
+                required
+                placeholder="person@example.com"
+                autoComplete="off"
+                className="min-w-0 flex-1 bg-wepac-input px-3 py-2 text-sm text-wepac-white outline-none"
+              />
+              <button
+                type="submit"
+                disabled={inviteBusy || !candidateEmail.trim()}
+                className="bg-wepac-white px-5 py-2 text-sm font-bold text-wepac-black disabled:opacity-50"
+              >
+                {inviteBusy ? "Sending…" : "Send invitation"}
+              </button>
+            </form>
           </section>
         )}
 
@@ -318,11 +301,6 @@ function MentorshipList({
                 </div>
                 <StatusBadge status={row.status} />
               </div>
-              {row.reviewRequired && (
-                <p className="mt-3 text-xs text-wepac-warning">
-                  Awaiting human review; this relationship grants no access.
-                </p>
-              )}
               {(["pending", "active", "paused"] as MentorshipStatus[]).includes(
                 row.status
               ) && (

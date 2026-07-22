@@ -4,6 +4,7 @@ declare module "next-auth" {
   interface User {
     role?: string;
     onboarded?: boolean;
+    sessionVersion?: number;
   }
 
   interface Session {
@@ -13,6 +14,7 @@ declare module "next-auth" {
       email: string;
       role: string;
       onboarded: boolean;
+      sessionVersion: number;
     };
   }
 }
@@ -22,5 +24,6 @@ declare module "next-auth/jwt" {
     id?: string;
     role?: string;
     onboarded?: boolean;
+    sessionVersion?: number;
   }
 }

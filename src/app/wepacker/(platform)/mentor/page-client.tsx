@@ -4,10 +4,10 @@ import Link from "next/link";
 
 interface SessionRow {
   id: string;
-  sessionType: "individual" | "group";
   status: "scheduled" | "completed" | "cancelled" | "no_show";
   scheduledAt: string;
   durationMinutes: number;
+  attendeeCount: number;
   attendees: Array<{
     id: string;
     user: { id: string; name: string };
@@ -17,11 +17,13 @@ interface SessionRow {
 interface MentorDashboardProps {
   sessions: SessionRow[];
   activeMentorships: number;
+  activeFacilitations: number;
 }
 
 export function MentorDashboardClient({
   sessions,
   activeMentorships,
+  activeFacilitations,
 }: MentorDashboardProps) {
   const upcoming = sessions
     .filter((session) => session.status === "scheduled")
@@ -34,15 +36,15 @@ export function MentorDashboardClient({
   return (
     <div className="p-6 lg:p-8">
       <h1 className="font-barlow text-2xl font-bold text-wepac-white">
-        Mentor Dashboard
+        Organizer Workspace
       </h1>
       <p className="mt-1 max-w-3xl text-sm leading-relaxed text-wepac-text-tertiary">
         This workspace shows explicit Mentorships and the Sessions you are
         authorized to manage. A Mentorship does not open a Mentee&apos;s Life Map,
-        Trails, Assessments, Tasks, or Messages.
+        Trails, Actions, or Messages.
       </p>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2">
+      <div className="mt-8 grid gap-4 sm:grid-cols-3">
         <Link
           href="/wepacker/mentorships"
           className="border border-wepac-border bg-wepac-card p-5 transition-colors hover:border-wepac-white/40"
@@ -52,6 +54,17 @@ export function MentorDashboardClient({
           </p>
           <p className="mt-1 text-sm text-wepac-text-tertiary">
             Active Mentorships
+          </p>
+        </Link>
+        <Link
+          href="/wepacker/academy"
+          className="border border-wepac-border bg-wepac-card p-5 transition-colors hover:border-wepac-white/40"
+        >
+          <p className="font-barlow text-3xl font-bold text-wepac-white">
+            {activeFacilitations}
+          </p>
+          <p className="mt-1 text-sm text-wepac-text-tertiary">
+            Active Facilitations
           </p>
         </Link>
         <Link
@@ -98,7 +111,7 @@ export function MentorDashboardClient({
                 })}
               </p>
               <p className="mt-1 text-xs text-wepac-text-tertiary">
-                {session.sessionType === "individual" ? "Individual" : "Group"}
+                {session.attendeeCount === 1 ? "Individual" : "Group"}
                 {" · "}
                 {session.attendees.map((attendee) => attendee.user.name).join(", ")}
               </p>

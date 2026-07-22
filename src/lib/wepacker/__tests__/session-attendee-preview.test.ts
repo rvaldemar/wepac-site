@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const sessionFindUnique = vi.fn();
-const requireRole = vi.fn();
+const requireUser = vi.fn();
 
 vi.mock("@/lib/db", () => ({
   prisma: {
@@ -10,36 +10,39 @@ vi.mock("@/lib/db", () => ({
     },
   },
 }));
-
 vi.mock("@/lib/wepacker/guards", () => ({
-  requireRole: (...args: unknown[]) => requireRole(...args),
-  requireUser: vi.fn(),
-  assertMentorOfCohort: vi.fn(),
-  getMentoredCohortIds: vi.fn(async () => []),
+  requireUser: (...args: unknown[]) => requireUser(...args),
   resolveSessionAttendeeAuthorization: vi.fn(),
+}));
+vi.mock("@/lib/email", () => ({
+  sendSessionInviteEmail: vi.fn(),
+  sendSessionCancelEmail: vi.fn(),
+  sendSharedNotePublishedEmail: vi.fn(),
+}));
+vi.mock("@/lib/wepacker/ics", () => ({
+  buildSessionInviteIcs: vi.fn(),
+  buildSessionCancelIcs: vi.fn(),
+  nextIcsSequence: vi.fn(() => 1),
 }));
 
 import { getSessionAttendeePreview } from "@/lib/wepacker/actions/session";
 
 const guardRow = {
-  cohortId: null,
+  cycleId: null,
   mentorshipId: "mentorship-1",
-  mentorId: "mentor-1",
+  organizerId: "organizer-1",
 };
 
-function previewRow(sharedNotePublished: boolean, notesPublished: boolean) {
+function previewRow(sharedNotePublished: boolean) {
   return {
     id: "session-1",
     scheduledAt: new Date("2026-08-01T10:00:00Z"),
     durationMinutes: 60,
-    sessionType: "individual",
     kind: "checkpoint",
     status: "scheduled",
-    notes: "legacy private until published",
-    notesPublished,
-    discussionPoints: "discussion",
     meetingUrl: "https://meet.example/session-1",
-    mentor: { id: "mentor-1", name: "Rui" },
+    organizer: { id: "organizer-1", name: "Rui" },
+    _count: { attendees: 1 },
     attendees: [
       {
         outcome: "agreed outcome",
@@ -51,73 +54,59 @@ function previewRow(sharedNotePublished: boolean, notesPublished: boolean) {
   };
 }
 
-describe("Preview attendee view", () => {
+describe("attendee-safe Session preview", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    requireRole.mockResolvedValue({ id: "mentor-1", role: "mentor" });
+    requireUser.mockResolvedValue({ id: "organizer-1", role: "member" });
   });
 
-  it("returns only the selected attendee's member-safe Session projection", async () => {
+  it("returns only the selected attendee's safe projection", async () => {
     sessionFindUnique
       .mockResolvedValueOnce(guardRow)
-      .mockResolvedValueOnce(previewRow(false, false));
+      .mockResolvedValueOnce(previewRow(false));
 
     const result = await getSessionAttendeePreview("session-1", "alex-1");
-
     expect(result).toMatchObject({
-      viewer: { id: "mentor-1", name: "Rui" },
+      viewer: { id: "organizer-1", name: "Rui" },
       attendee: { id: "alex-1", name: "Alex" },
       session: {
-        notes: null,
-        discussionPoints: null,
+        attendeeCount: 1,
+        format: "individual",
+        organizerName: "Rui",
         outcome: "agreed outcome",
         sharedNote: null,
       },
     });
-    const query = sessionFindUnique.mock.calls[1]?.[0];
+    const query = sessionFindUnique.mock.calls[1][0];
     expect(query.select).not.toHaveProperty("transcript");
     expect(query.select).not.toHaveProperty("debrief");
+    expect(query.select).not.toHaveProperty("discussionPoints");
     expect(query.select.attendees.where).toEqual({ userId: "alex-1" });
     expect(query.select.attendees.select).not.toHaveProperty("privateNote");
-    expect(query.select.attendees.select.user.select).toEqual({
-      id: true,
-      name: true,
-    });
   });
 
-  it("shows only notes deliberately published to that attendee", async () => {
+  it("returns an explicitly published shared note", async () => {
     sessionFindUnique
       .mockResolvedValueOnce(guardRow)
-      .mockResolvedValueOnce(previewRow(true, true));
-
+      .mockResolvedValueOnce(previewRow(true));
     const result = await getSessionAttendeePreview("session-1", "alex-1");
-
-    expect(result?.session).toMatchObject({
-      notes: "legacy private until published",
-      discussionPoints: "discussion",
-      sharedNote: "shared only after publish",
-    });
+    expect(result?.session.sharedNote).toBe("shared only after publish");
   });
 
   it("does not let Admin bypass organizer ownership", async () => {
-    requireRole.mockResolvedValueOnce({ id: "admin-1", role: "admin" });
-    sessionFindUnique.mockResolvedValueOnce({
-      ...guardRow,
-      mentorId: "mentor-1",
-    });
-
+    requireUser.mockResolvedValueOnce({ id: "admin-1", role: "admin" });
+    sessionFindUnique.mockResolvedValueOnce(guardRow);
     await expect(
       getSessionAttendeePreview("session-1", "alex-1"),
-    ).rejects.toThrow("Sem permissão");
+    ).rejects.toThrow("Permission denied.");
     expect(sessionFindUnique).toHaveBeenCalledOnce();
   });
 
-  it("returns no preview when the target is not an explicit attendee", async () => {
+  it("returns null when the target is not an explicit attendee", async () => {
     sessionFindUnique.mockResolvedValueOnce(guardRow).mockResolvedValueOnce({
-      ...previewRow(false, false),
+      ...previewRow(false),
       attendees: [],
     });
-
     await expect(
       getSessionAttendeePreview("session-1", "stranger-1"),
     ).resolves.toBeNull();

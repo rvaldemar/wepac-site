@@ -6,7 +6,7 @@ import { AdminLeadsPageClient } from "./page-client";
 export const metadata = { title: "Leads" };
 
 // Central inbox: Wessex leads (chat/form), /contacto submissions and
-// WEPACKER pack applications, merged chronologically.
+// Generic WEPACKER applications, merged chronologically.
 export default async function AdminLeadsPage() {
   await requirePageRole(["admin"]);
   const [leads, applications] = await Promise.all([

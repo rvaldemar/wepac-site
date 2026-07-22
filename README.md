@@ -1,90 +1,126 @@
 # WEPAC — Companhia de Artes
 
-Site institucional e plataforma **WEPACKER** de desenvolvimento humano integral. O target domain graph é Person-centred; see [`docs/architecture/domain-graph-v2.md`](docs/architecture/domain-graph-v2.md). `Pack`, `Cohort` and `CohortMembership` remain legacy delivery tables during the additive migration and are not target community/Cycle semantics.
-
-**Departamentos:** Wessex (performance), Easy Peasy (educação artística), Arte à Capela (património/espaços sagrados).
+Institutional site and **WEPACKER** whole-person development platform. The
+canonical product and authorization model is the Person-centred graph in
+[`docs/architecture/domain-graph.md`](docs/architecture/domain-graph.md).
 
 ## Stack
 
-| Camada | Tecnologia |
-|--------|-----------|
+| Layer | Technology |
+| --- | --- |
 | Framework | Next.js 16, React 19, TypeScript |
 | Styling | Tailwind CSS v4, Framer Motion |
-| Auth | NextAuth v5 (Credentials, JWT) |
+| Auth | NextAuth v5 with JWT Sessions |
 | Database | PostgreSQL 16, Prisma ORM |
-| AI | Anthropic SDK (Claude) |
+| AI | Anthropic SDK for Wessex chat; Agents Hub seam for Session Debrief |
 | Email | Nodemailer |
 
-## Setup local
+## Local setup
 
 ```bash
-# 1. Instalar dependências
-npm install
-
-# 2. Configurar environment
+npm ci
 cp .env.example .env.local
-# Editar .env.local com valores locais (DATABASE_URL, NEXTAUTH_SECRET, etc.)
-
-# 3. Base de dados
 npx prisma migrate dev
-npx prisma db seed
-
-# 4. Correr
+WEPACKER_SEED_ALLOW_DB_RESET=1 \
+  WEPACKER_SEED_DATABASE_NAME=wepac_local_dev \
+  npx prisma db seed
 npm run dev
 ```
 
-A app fica disponível em `http://localhost:3000`.
+The application runs at `http://localhost:3000`.
 
-## Estrutura
+The seed deletes and rebuilds WEPACKER fixtures. Run it only against a
+disposable local or E2E database, never staging or production.
 
-```
+## Repository
+
+```text
 src/
 ├── app/
-│   ├── (site)/          # Site público (home, sobre, serviços, projetos, ...)
-│   ├── wepacker/        # WEPACKER platform
-│   ├── artists/alpha/   # Legacy redirects
-│   └── api/             # API routes (auth, wessex chat)
-├── components/          # React components
-├── lib/                 # Auth, DB, email, server actions, types
-└── middleware.ts        # Route protection por role
+│   ├── (site)/          public WEPAC site
+│   ├── wepacker/        WEPACKER product
+│   ├── api/             auth and integration routes
+│   └── bilheteira/      ticketing product
+├── components/
+└── lib/
 prisma/
-├── schema.prisma        # Schema da base de dados
-├── seed.ts              # Seed com users de teste
-└── migrations/          # Histórico de migrations
+├── schema.prisma
+├── seed.ts
+├── migrations/          immutable deployed migration history
+└── release-b/           reviewed physical contraction artifact
 deploy/
-└── deploy.sh            # Build local + rsync para servidor
+└── deploy.sh
 ```
 
-## WEPACKER
+## WEPACKER domain
 
-- **My Journey** — one whole-life view per Person/WEPACker
-- **Stage** — Easy Peasy, Step Up or YUP; never inferred without verified data
-- **Life Map and Trails** — Person-owned private artifacts
-- **Mentorship** — directed, bilateral and independent from Packs/Cycles
-- **Sessions** — explicit attendees; direct active Mentorship supports cohortless scheduling
-- **Session Transcript** — organizer-private UTF-8 text import (`.txt`, `.md`, `.vtt`, `.srt`); original file is not retained
-- **Preview attendee view** — read-only, Session-scoped support preview; never identity impersonation
-- **Packs** — target communities only; separate from legacy `Pack` rows
-- **Cycles** — time-bounded delivery with separate Enrollment and Facilitator edges
-- **Privacy** — Mentorship grants Session capability only; no implicit Life Map, Assessment, Task or Message access
-- **Legacy Assessment/Tasks** — visibly contained until target Stage-calibrated flows are implemented
-- **Leads** — pipeline de contactos (formulário + chat)
-- **Admin** — gestão de settings e leads; no implicit access to private Journey artifacts
+- **Person / WEPACker** is the centre of the graph.
+- **My Journey** is one whole-life view containing Stage, Life Map, Trails,
+  Goals, Actions and explicit Session attendance.
+- **Stage** is exactly Easy Peasy, Step Up or YUP.
+- **Action** belongs directly to its assignee Person; cross-Person assignment is
+  disabled until an explicit acceptance flow exists.
+- **Mentorship** is a directed relationship and initially authorizes only the
+  minimum identity discovery and explicit Sessions.
+- **Pack** means a real community only; Pack Membership never grants private
+  Journey access.
+- **Cycle** is a time-bounded Academy experience with separate Enrollment and
+  Facilitation edges and an optional Discipline.
+- **Session** has one organizer and explicit Person attendees. Individual or
+  Group presentation is derived from attendee count.
+- **Support Preview** is a read-only projection of one explicit attendee's
+  Session view. Exact organizers use their resource capability; Admin support
+  requires fresh password re-authentication and a 15-minute audited grant. It
+  never impersonates the Person or exposes the Admin to the meeting URL.
+- **Six Pillars** are Physical, Emotional, Character, Spiritual, Intellectual
+  and Social. Arts is a Discipline, not a seventh Pillar.
+- **Session Transcript** is organizer-private text. The original attached file
+  is not retained, and replacing it invalidates its derived Debrief.
+- **Session Debrief** is disabled until the WEPAC-owned W01 v3 Playbook passes
+  Hub certification. There is no direct-model fallback.
 
-## Deploy
+Public WEPACKER intake is generic at `/wepacker/intake`. It creates an
+application only; it never creates Pack Membership, Cycle Enrollment or
+Mentorship.
 
-Build local + rsync para servidor via `deploy/deploy.sh`. Ver `OPS_LOG.md` para histórico de problemas em produção.
+## Validation
 
 ```bash
-./deploy/deploy.sh
-# Após deploy, no servidor:
-npx prisma@6.19.2 generate
-sudo systemctl restart wepac
+npx prisma validate
+npx prisma generate
+npm test
+npx tsc --noEmit
+npm run lint
+npm run build
+npm run test:e2e:build
 ```
 
-## Convenções
+The E2E suite reseeds its configured database. `E2E_ALLOW_DB_RESET=1` must never
+be used with a non-disposable database.
 
-- Canonical product/domain terms in English; supporting prose may be PT-PT
-- Cores: `#000`, `#FFF`, `#DEE0DB`
-- Tipografia: Barlow Bold (títulos), Inter (corpo)
-- Código, commits e comentários em inglês
+## Releases
+
+`deploy/deploy.sh` builds locally, uploads an immutable release and runs Prisma
+migrations before switching the live application. The retired physical delivery
+contract is therefore removed in two operational releases:
+
+1. Release A ships the target runtime with no retired reads, writes, routes or
+   authorization fallbacks.
+2. Release B runs the reviewed contraction only after the Release A stability
+   gate and a verified backup/restore drill.
+
+See [`legacy-contract-removal.md`](docs/architecture/legacy-contract-removal.md)
+for the deletion allowlist and gates. Consult `OPS_LOG.md` before production
+diagnosis or deployment. The Support Preview audit, retention and erasure
+boundary is documented in
+[`support-preview-audit-plan.md`](docs/architecture/support-preview-audit-plan.md).
+Transactional in-app and email coverage, authorization and worker operations
+are documented in
+[`notifications.md`](docs/operations/notifications.md).
+
+## Conventions
+
+- Canonical product and domain terms are English; supporting prose may be PT-PT.
+- Colours: `#000`, `#FFF`, `#DEE0DB`.
+- Typography: Barlow Bold for headings, Inter for body copy.
+- Code, comments and commits are English.

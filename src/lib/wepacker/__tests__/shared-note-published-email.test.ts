@@ -1,14 +1,23 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// Story T1/M: publishing a shared session note (sharedNotePublished
-// false -> true) should email the member once. Re-saving an
-// already-published note, or an update that never touches
-// sharedNotePublished at all, must never re-send.
+// Attendee-visible Session follow-up is one generic event. A first publish,
+// an edit while published, an outcome change, and a visibility transition
+// each advance a locked revision. Organizer-private fields never notify.
 
 const sessionFindUnique = vi.fn();
-const attendeeFindUnique = vi.fn();
 const attendeeUpdate = vi.fn();
-const userFindUnique = vi.fn();
+const txQueryRaw = vi.fn();
+const persistSessionFollowupUpdatedEvent = vi.fn();
+const dispatchPersistedNotificationEvents = vi.fn();
+const prismaTransaction = vi.fn(
+  async (callback: (tx: unknown) => Promise<unknown>) =>
+    callback({
+      $queryRaw: (...args: unknown[]) => txQueryRaw(...args),
+      sessionAttendee: {
+        update: (...args: unknown[]) => attendeeUpdate(...args),
+      },
+    }),
+);
 
 vi.mock("@/lib/db", () => ({
   prisma: {
@@ -16,85 +25,211 @@ vi.mock("@/lib/db", () => ({
       findUnique: (...args: unknown[]) => sessionFindUnique(...args),
     },
     sessionAttendee: {
-      findUnique: (...args: unknown[]) => attendeeFindUnique(...args),
       update: (...args: unknown[]) => attendeeUpdate(...args),
     },
-    user: {
-      findUnique: (...args: unknown[]) => userFindUnique(...args),
-    },
+    $transaction: (callback: (tx: unknown) => Promise<unknown>) =>
+      prismaTransaction(callback),
   },
 }));
 
 vi.mock("@/lib/wepacker/guards", () => ({
-  assertMentorOfCohort: vi.fn(),
-  assertMentorOfUsers: vi.fn(),
-  getMentoredCohortIds: vi.fn(async () => []),
-  requireMembership: vi.fn(),
-  requireRole: vi.fn(),
-  requireUser: vi.fn(async () => ({ id: "mentor-1", role: "mentor" })),
+  requireUser: vi.fn(async () => ({ id: "organizer-1", role: "member" })),
+  resolveSessionAttendeeAuthorization: vi.fn(),
 }));
 
-const sendSharedNotePublishedEmail = vi.fn(async (..._args: unknown[]) => undefined);
-vi.mock("@/lib/email", () => ({
-  sendSessionInviteEmail: vi.fn(async (..._args: unknown[]) => undefined),
-  sendSessionCancelEmail: vi.fn(async (..._args: unknown[]) => undefined),
-  sendSharedNotePublishedEmail: (...args: unknown[]) =>
-    sendSharedNotePublishedEmail(...args),
-}));
-
-vi.mock("@/lib/wepacker/ics", () => ({
-  buildSessionInviteIcs: vi.fn(),
-  buildSessionCancelIcs: vi.fn(),
-  nextIcsSequence: vi.fn(() => 1),
+vi.mock("@/lib/wepacker/notifications", () => ({
+  persistSessionFollowupUpdatedEvent: (...args: unknown[]) =>
+    persistSessionFollowupUpdatedEvent(...args),
+  dispatchPersistedNotificationEvents: (...args: unknown[]) =>
+    dispatchPersistedNotificationEvents(...args),
+  persistSessionEvent: vi.fn(),
+  sessionTransitionDedupeScope: vi.fn(() => "transition-scope"),
 }));
 
 import { updateSessionAttendee } from "@/lib/wepacker/actions/session";
 
-describe("updateSessionAttendee — shared note published email", () => {
+const emptyBefore = {
+  sharedNote: null,
+  sharedNotePublished: false,
+  outcome: null,
+  followupRevision: 0,
+};
+
+describe("updateSessionAttendee — generic Session follow-up notification", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    sessionFindUnique.mockResolvedValue({ cohortId: null, mentorId: "mentor-1" });
-    userFindUnique.mockResolvedValue({ name: "Member One", email: "member1@wepac.pt" });
+    sessionFindUnique.mockResolvedValue({
+      cycleId: null,
+      mentorshipId: null,
+      organizerId: "organizer-1",
+    });
+    persistSessionFollowupUpdatedEvent.mockResolvedValue([
+      { notificationId: "notification-1", outboxId: "outbox-1" },
+    ]);
   });
 
-  it("sends the email when sharedNotePublished flips false -> true", async () => {
-    attendeeFindUnique.mockResolvedValueOnce({ sharedNotePublished: false });
-    attendeeUpdate.mockResolvedValueOnce({ id: "attendee-1", sharedNotePublished: true });
+  it("notifies on the first shared-note publication and advances revision", async () => {
+    txQueryRaw.mockResolvedValueOnce([emptyBefore]);
+    attendeeUpdate.mockResolvedValueOnce({
+      id: "attendee-1",
+      sharedNote: "Boa evolução esta semana.",
+      sharedNotePublished: true,
+      outcome: null,
+      followupRevision: 1,
+    });
 
     await updateSessionAttendee("session-1", "member-1", {
       sharedNote: "Boa evolução esta semana.",
       sharedNotePublished: true,
     });
 
-    await vi.waitFor(() => {
-      expect(sendSharedNotePublishedEmail).toHaveBeenCalledTimes(1);
+    expect(attendeeUpdate).toHaveBeenCalledWith({
+      where: {
+        sessionId_userId: { sessionId: "session-1", userId: "member-1" },
+      },
+      data: {
+        sharedNote: "Boa evolução esta semana.",
+        sharedNotePublished: true,
+        followupRevision: { increment: 1 },
+      },
     });
-    expect(sendSharedNotePublishedEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ to: "member1@wepac.pt", recipientName: "Member One" })
+    expect(persistSessionFollowupUpdatedEvent).toHaveBeenCalledWith(
+      expect.any(Object),
+      {
+        sessionId: "session-1",
+        recipientId: "member-1",
+        actorId: "organizer-1",
+        transitionScope: "0->1",
+      },
+    );
+    expect(dispatchPersistedNotificationEvents).toHaveBeenCalledWith([
+      { notificationId: "notification-1", outboxId: "outbox-1" },
+    ]);
+  });
+
+  it("notifies when a currently-published shared note is edited", async () => {
+    txQueryRaw.mockResolvedValueOnce([
+      {
+        sharedNote: "Antes",
+        sharedNotePublished: true,
+        outcome: null,
+        followupRevision: 4,
+      },
+    ]);
+    attendeeUpdate.mockResolvedValueOnce({
+      id: "attendee-1",
+      sharedNote: "Depois",
+      sharedNotePublished: true,
+      outcome: null,
+      followupRevision: 5,
+    });
+
+    await updateSessionAttendee("session-1", "member-1", {
+      sharedNote: "Depois",
+    });
+
+    expect(persistSessionFollowupUpdatedEvent).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({ transitionScope: "4->5" }),
     );
   });
 
-  it("does not re-send when the note was already published", async () => {
-    attendeeFindUnique.mockResolvedValueOnce({ sharedNotePublished: true });
-    attendeeUpdate.mockResolvedValueOnce({ id: "attendee-1", sharedNotePublished: true });
+  it("notifies for an outcome-only change without requiring a published note", async () => {
+    txQueryRaw.mockResolvedValueOnce([
+      { ...emptyBefore, outcome: "Anterior", followupRevision: 1 },
+    ]);
+    attendeeUpdate.mockResolvedValueOnce({
+      id: "attendee-1",
+      ...emptyBefore,
+      outcome: "Novo acordo",
+      followupRevision: 2,
+    });
 
     await updateSessionAttendee("session-1", "member-1", {
-      sharedNote: "Texto editado.",
+      outcome: "Novo acordo",
+    });
+
+    expect(persistSessionFollowupUpdatedEvent).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({ transitionScope: "1->2" }),
+    );
+  });
+
+  it("does not lock or notify for organizer-private or attendance fields", async () => {
+    attendeeUpdate.mockResolvedValueOnce({
+      id: "attendee-1",
+      attended: true,
+      privateNote: "Only the organizer sees this",
+    });
+
+    await updateSessionAttendee("session-1", "member-1", {
+      attended: true,
+      privateNote: "Only the organizer sees this",
+    });
+
+    expect(txQueryRaw).not.toHaveBeenCalled();
+    expect(persistSessionFollowupUpdatedEvent).not.toHaveBeenCalled();
+    expect(dispatchPersistedNotificationEvents).toHaveBeenCalledWith([]);
+  });
+
+  it("does not notify a no-op re-save of the same published note", async () => {
+    txQueryRaw.mockResolvedValueOnce([
+      {
+        sharedNote: "Sem alteração",
+        sharedNotePublished: true,
+        outcome: null,
+        followupRevision: 3,
+      },
+    ]);
+    attendeeUpdate.mockResolvedValueOnce({
+      id: "attendee-1",
+      sharedNote: "Sem alteração",
+      sharedNotePublished: true,
+      outcome: null,
+      followupRevision: 3,
+    });
+
+    await updateSessionAttendee("session-1", "member-1", {
+      sharedNote: "Sem alteração",
       sharedNotePublished: true,
     });
 
-    // Give any (incorrectly) fired fan-off a tick to happen before asserting.
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(sendSharedNotePublishedEmail).not.toHaveBeenCalled();
+    expect(persistSessionFollowupUpdatedEvent).not.toHaveBeenCalled();
+    expect(dispatchPersistedNotificationEvents).toHaveBeenCalledWith([]);
   });
 
-  it("does not query a before-snapshot or send when sharedNotePublished is untouched", async () => {
-    attendeeUpdate.mockResolvedValueOnce({ id: "attendee-1", attended: true });
+  it("rejects publishing an empty shared note", async () => {
+    txQueryRaw.mockResolvedValueOnce([emptyBefore]);
 
-    await updateSessionAttendee("session-1", "member-1", { attended: true });
+    await expect(
+      updateSessionAttendee("session-1", "member-1", {
+        sharedNote: "   ",
+        sharedNotePublished: true,
+      }),
+    ).rejects.toThrow("A published shared note cannot be empty.");
 
-    expect(attendeeFindUnique).not.toHaveBeenCalled();
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(sendSharedNotePublishedEmail).not.toHaveBeenCalled();
+    expect(attendeeUpdate).not.toHaveBeenCalled();
+    expect(persistSessionFollowupUpdatedEvent).not.toHaveBeenCalled();
+  });
+
+  it("rejects unchecked relation fields instead of passing caller data to Prisma", async () => {
+    await expect(
+      updateSessionAttendee("session-1", "member-1", {
+        attended: true,
+        userId: "another-person",
+      } as unknown as { attended?: boolean }),
+    ).rejects.toThrow("Invalid attendee update fields");
+
+    expect(attendeeUpdate).not.toHaveBeenCalled();
+  });
+
+  it("rejects oversized attendee notes", async () => {
+    await expect(
+      updateSessionAttendee("session-1", "member-1", {
+        privateNote: "x".repeat(30_001),
+      }),
+    ).rejects.toThrow("Invalid attendee update");
+
+    expect(attendeeUpdate).not.toHaveBeenCalled();
   });
 });

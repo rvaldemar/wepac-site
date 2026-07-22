@@ -56,11 +56,8 @@ function ContactoContent() {
     const form = e.currentTarget;
     const data = new FormData(form);
 
-    // Persist to the central leads inbox and send the formsubmit email in
-    // parallel — success if either lands, so neither is a single point of
-    // failure.
-    const [dbResult, mailResult] = await Promise.allSettled([
-      submitContactLead({
+    try {
+      await submitContactLead({
         name: (data.get("name") as string) || "",
         email: (data.get("email") as string) || "",
         subject: (data.get("subject") as string) || undefined,
@@ -68,33 +65,14 @@ function ContactoContent() {
         ensemble: (data.get("ensemble") as string) || undefined,
         service: (data.get("service") as string) || undefined,
         total: (data.get("total") as string) || undefined,
-      }),
-      fetch("https://formsubmit.co/ajax/info@wepac.pt", {
-        method: "POST",
-        body: data,
-      }).then((res) => {
-        if (!res.ok) throw new Error("formsubmit failed");
-      }),
-    ]);
-
-    // The DB lead is canonical (the central leads inbox — see OPS_LOG). If it
-    // lands, the message counts as delivered even when the formsubmit email
-    // notification fails; we just log that failure for follow-up.
-    if (dbResult.status === "fulfilled") {
-      if (mailResult.status === "rejected") {
-        console.error("Contact form: formsubmit notification failed", mailResult.reason);
-      }
+        honey: (data.get("honey") as string) || undefined,
+      });
       setSubmitted(true);
-    } else if (mailResult.status === "fulfilled") {
-      // DB write failed but the email notification still reached WEPAC, so the
-      // lead isn't lost — show success too, but log the DB failure so it can
-      // be investigated (it means this lead is missing from the admin backoffice).
-      console.error("Contact form: lead DB write failed", dbResult.reason);
-      setSubmitted(true);
-    } else {
+    } catch {
       setError(true);
+    } finally {
+      setSending(false);
     }
-    setSending(false);
   }
 
   return (
@@ -205,16 +183,13 @@ function ContactoContent() {
                 ) : (
                   <form onSubmit={handleSubmit} className="mt-8 space-y-6">
                     <input
-                      type="hidden"
-                      name="_subject"
-                      value={
-                        subject === "servicos" && ensemble
-                          ? `Encomenda Wessex: ${ensemble} — ${total}€`
-                          : "Nova mensagem do site wepac.pt"
-                      }
+                      type="text"
+                      name="honey"
+                      className="hidden"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      aria-hidden="true"
                     />
-                    <input type="hidden" name="_template" value="table" />
-                    <input type="text" name="_honey" className="hidden" />
                     {ensemble && (
                       <input type="hidden" name="ensemble" value={ensemble} />
                     )}
@@ -236,6 +211,7 @@ function ContactoContent() {
                         id="name"
                         name="name"
                         required
+                        maxLength={200}
                         className="mt-2 w-full border-b border-wepac-white/20 bg-transparent py-3 text-wepac-white outline-none transition-colors focus:border-wepac-white"
                       />
                     </div>
@@ -251,6 +227,7 @@ function ContactoContent() {
                         id="email"
                         name="email"
                         required
+                        maxLength={320}
                         className="mt-2 w-full border-b border-wepac-white/20 bg-transparent py-3 text-wepac-white outline-none transition-colors focus:border-wepac-white"
                       />
                     </div>
@@ -297,11 +274,19 @@ function ContactoContent() {
                         name="message"
                         rows={5}
                         required
+                        maxLength={10000}
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         className="mt-2 w-full border-b border-wepac-white/20 bg-transparent py-3 text-wepac-white outline-none transition-colors focus:border-wepac-white resize-none"
                       />
                     </div>
+                    <p className="text-xs leading-relaxed text-wepac-white/50">
+                      Usamos estes dados apenas para responder ao seu pedido. Consulte a nossa{" "}
+                      <a href="/privacidade" className="underline hover:text-wepac-white">
+                        Política de Privacidade
+                      </a>
+                      .
+                    </p>
                     {error && (
                       <p className="text-red-400 text-sm">
                         Não foi possível enviar a mensagem. Tente novamente ou

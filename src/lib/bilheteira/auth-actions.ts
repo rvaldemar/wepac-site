@@ -6,6 +6,7 @@ import { randomBytes } from "node:crypto";
 import { hashSync, compareSync } from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { sendVerificationEmail } from "@/lib/bilheteira/ticket-email";
+import { logSafeError } from "@/lib/wepacker/log-safe-error";
 import {
   setSessionCookie,
   clearSessionCookie,
@@ -70,7 +71,7 @@ export async function signupAction(formData: FormData): Promise<void> {
   try {
     await issueVerification(admin);
   } catch (err) {
-    console.error("[bilheteira] verification email failed", err);
+    console.error("[bilheteira] verification_email_failed", logSafeError(err));
     back(
       "/bilheteira/signup",
       "Conta criada mas não foi possível enviar o email. Contacta o admin."
@@ -93,7 +94,7 @@ export async function resendVerificationAction(formData: FormData): Promise<void
     try {
       await issueVerification(admin);
     } catch (err) {
-      console.error("[bilheteira] resend failed", err);
+      console.error("[bilheteira] verification_resend_failed", logSafeError(err));
     }
   }
   redirect(`/bilheteira/verify-sent?email=${encodeURIComponent(email)}&resent=1`);

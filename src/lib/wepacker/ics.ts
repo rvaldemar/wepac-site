@@ -28,7 +28,7 @@ export interface SessionIcsInput {
   // create → update → update chain) so calendar clients recognize each
   // send as a newer revision of the same event rather than a duplicate.
   // Deliberately NOT derived in here (no Session.updatedAt column exists
-  // to key off) — callers own sequencing; see actions/session.ts.
+  // to key off) — callers own sequencing; see notifications.ts.
   sequence: number;
 }
 
@@ -107,7 +107,7 @@ export function buildSessionIcs(
   const descriptionParts = [
     method === "CANCEL"
       ? `Esta sessão WEPACKER (${kindLabel}) foi cancelada.`
-      : `Sessão de mentoria WEPACKER (${kindLabel}).`,
+      : `Session WEPACKER (${kindLabel}).`,
     input.meetingUrl && method !== "CANCEL"
       ? `Link da sessão: ${input.meetingUrl}`
       : null,
@@ -157,20 +157,4 @@ export function buildSessionCancelIcs(
   now?: Date
 ): string {
   return buildSessionIcs(input, "CANCEL", now);
-}
-
-// RFC 5545 only requires SEQUENCE to increase across revisions of the
-// same UID, not that it increment by exactly 1 — so instead of adding a
-// version column to Session, we derive it from wall-clock time, which is
-// monotonic across the create → reschedule → cancel calls for a given
-// session (each happens at a strictly later real moment than the last).
-// Anchored to a fixed project epoch rather than 1970 to keep the numbers
-// small. Milliseconds (not seconds) so two calendar sends issued within
-// the same wall-clock second — e.g. a mentor reschedule immediately
-// followed by a meeting-link edit — still produce strictly increasing
-// values instead of colliding on one integer.
-const SEQUENCE_EPOCH_MS = Date.UTC(2026, 0, 1);
-
-export function nextIcsSequence(now: Date = new Date()): number {
-  return Math.max(0, now.getTime() - SEQUENCE_EPOCH_MS);
 }

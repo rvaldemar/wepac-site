@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requirePageUser } from "@/lib/wepacker/page-guards";
-import { getLifePlan, getStrategicPlan } from "@/lib/wepacker/actions/plan";
+import { getLifeMap, getStrategicPlan } from "@/lib/wepacker/actions/plan";
 import { getTrails } from "@/lib/wepacker/actions/trail";
 import { TRAIL_STATUS_LABELS, type TrailStatus } from "@/lib/wepacker/types";
 
@@ -17,8 +17,8 @@ export default async function BasecampPage() {
   const user = await requirePageUser();
   const userId = user.id;
 
-  const [lifePlan, strategicPlan, trails] = await Promise.all([
-    getLifePlan(userId),
+  const [lifeMap, strategicPlan, trails] = await Promise.all([
+    getLifeMap(userId),
     getStrategicPlan(userId),
     getTrails(userId),
   ]);
@@ -39,8 +39,8 @@ export default async function BasecampPage() {
         Basecamp
       </h1>
       <p className="mt-1 text-sm text-wepac-text-tertiary">
-        O ponto de partida do teu desenvolvimento — Life Map, Strategic Plan
-        e Trails em curso.
+        O ponto de partida do teu desenvolvimento — Life Map, Goals e Trails
+        em curso.
       </p>
 
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -50,35 +50,35 @@ export default async function BasecampPage() {
             Life Map
           </h2>
           <p className="mt-2 flex-1 text-sm text-wepac-text-tertiary">
-            {lifePlan
+            {lifeMap
               ? `Última atualização: ${new Date(
-                  lifePlan.updatedAt
+                  lifeMap.updatedAt
                 ).toLocaleDateString("pt-PT")}`
               : "Ainda não começaste o teu Life Map."}
           </p>
           <Link
-            href="/wepacker/ppv"
+            href="/wepacker/life-map"
             className="mt-4 inline-block bg-wepac-white px-4 py-2 text-center text-sm font-bold text-wepac-black transition-colors hover:bg-wepac-accent-muted"
           >
-            {lifePlan ? "Ver Life Map" : "Criar Life Map"}
+            {lifeMap ? "Ver Life Map" : "Criar Life Map"}
           </Link>
         </div>
 
-        {/* Strategic Plan */}
+        {/* Goals */}
         <div className="flex flex-col border border-wepac-border bg-wepac-card p-6">
           <h2 className="font-barlow text-lg font-bold text-wepac-white">
-            Strategic Plan
+            Goals
           </h2>
           <p className="mt-2 flex-1 text-sm text-wepac-text-tertiary">
             {strategicPlan
               ? `${strategicPlan.quarter} — ${completedGoals}/${totalGoals} objetivos concluídos`
-              : "Ainda não tens um plano estratégico."}
+              : "Ainda não definiste Goals."}
           </p>
           <Link
-            href="/wepacker/plan"
+            href="/wepacker/goals"
             className="mt-4 inline-block bg-wepac-white px-4 py-2 text-center text-sm font-bold text-wepac-black transition-colors hover:bg-wepac-accent-muted"
           >
-            {strategicPlan ? "Ver Strategic Plan" : "Criar Strategic Plan"}
+            {strategicPlan ? "Ver Goals" : "Criar Goals"}
           </Link>
         </div>
 

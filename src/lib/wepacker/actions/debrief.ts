@@ -1,16 +1,19 @@
 "use server";
 
 import { createHash } from "node:crypto";
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { assertSessionOrganizer } from "@/lib/wepacker/actions/session";
 import { getDebriefEngine } from "@/lib/wepacker/debrief/engine";
 import {
+  DEBRIEF_CONTRACT_VERSION,
+  MAX_DISCUSSION_POINTS_CHARS,
   DebriefEngineError,
+  parseDebriefResult,
   type DebriefAttendeeContext,
+  type DebriefDisciplineContext,
   type DebriefInput,
-  type DebriefPackContext,
-  type InternalEvaluation,
+  type InternalSynthesis,
   type PerAttendeeDebrief,
 } from "@/lib/wepacker/debrief/types";
 
@@ -24,8 +27,7 @@ export interface SessionDebriefView {
   engineImpl: string | null;
   model: string | null;
   perAttendee: PerAttendeeDebrief[];
-  internalEvaluation: InternalEvaluation | null;
-  resultDocumentHtml: string | null;
+  internalSynthesis: InternalSynthesis | null;
   error: string | null;
   requestedAt: string;
   generatedAt: string | null;
@@ -77,26 +79,52 @@ function transcriptChangedError(): Error {
 
 function toView(row: {
   id: string;
+  contractVersion: string;
   status: string;
   engineImpl: string | null;
   model: string | null;
   perAttendeeSuggestions: unknown;
-  internalEvaluation: unknown;
-  resultDocumentHtml: string | null;
+  internalSynthesis: unknown;
   error: string | null;
   requestedAt: Date;
   generatedAt: Date | null;
-}): SessionDebriefView {
+}): SessionDebriefView | null {
+  if (
+    row.contractVersion !== DEBRIEF_CONTRACT_VERSION ||
+    (row.status !== "ready" && row.status !== "failed")
+  ) {
+    return null;
+  }
+
+  if (row.status === "failed") {
+    return {
+      id: row.id,
+      status: "failed",
+      engineImpl: row.engineImpl,
+      model: row.model,
+      perAttendee: [],
+      internalSynthesis: null,
+      error: row.error,
+      requestedAt: row.requestedAt.toISOString(),
+      generatedAt: row.generatedAt ? row.generatedAt.toISOString() : null,
+    };
+  }
+
+  const result = parseDebriefResult({
+    contractVersion: row.contractVersion,
+    perAttendee: row.perAttendeeSuggestions,
+    internalSynthesis: row.internalSynthesis,
+    resultDocumentHtml: null,
+  });
+  if (!result) return null;
+
   return {
     id: row.id,
-    status: row.status as "ready" | "failed",
+    status: "ready",
     engineImpl: row.engineImpl,
     model: row.model,
-    perAttendee:
-      (row.perAttendeeSuggestions as PerAttendeeDebrief[] | null) ?? [],
-    internalEvaluation:
-      (row.internalEvaluation as InternalEvaluation | null) ?? null,
-    resultDocumentHtml: row.resultDocumentHtml,
+    perAttendee: result.perAttendee,
+    internalSynthesis: result.internalSynthesis,
     error: row.error,
     requestedAt: row.requestedAt.toISOString(),
     generatedAt: row.generatedAt ? row.generatedAt.toISOString() : null,
@@ -107,14 +135,12 @@ export async function getSessionDebrief(
   sessionId: string,
 ): Promise<SessionDebriefView | null> {
   await assertSessionOrganizer(sessionId);
-  const row = await prisma.sessionDebrief.findUnique({ where: { sessionId } });
+  const row = await prisma.sessionDebrief.findFirst({
+    where: { sessionId, contractVersion: DEBRIEF_CONTRACT_VERSION },
+  });
   return row ? toView(row) : null;
 }
 
-// v1 simplification (not populated): DebriefAttendeeContext.recentAreaScores
-// and .activeGoals are left undefined here — wiring those in from
-// computeAreaScores()/getGoals() is a follow-up enrichment, not required
-// for the engine seam to work; both fields are optional in the contract.
 async function buildDebriefInput(
   sessionId: string,
   transcript: string,
@@ -122,35 +148,40 @@ async function buildDebriefInput(
   const session = await prisma.session.findUniqueOrThrow({
     where: { id: sessionId },
     include: {
-      attendees: { include: { user: { select: { id: true, name: true } } } },
-      cohort: { include: { pack: true } },
+      attendees: { select: { id: true } },
+      cycle: { include: { primaryDiscipline: true } },
     },
   });
 
-  const attendees: DebriefAttendeeContext[] = session.attendees.map((a) => ({
-    userId: a.user.id,
-    name: a.user.name,
-    packSlug: session.cohort?.pack.slug,
-  }));
+  if (session.attendees.length !== 1) {
+    throw new Error("Session Debrief está disponível apenas para Individual Sessions.");
+  }
+  if ((session.discussionPoints?.length ?? 0) > MAX_DISCUSSION_POINTS_CHARS) {
+    throw new Error("Os pontos de discussão excedem o limite do Debrief.");
+  }
 
-  const packContext: DebriefPackContext | null = session.cohort
+  const attendee: DebriefAttendeeContext = {
+    attendeeRef: session.attendees[0].id,
+  };
+
+  const disciplineContext: DebriefDisciplineContext | null =
+    session.cycle?.primaryDiscipline
     ? {
-        packSlug: session.cohort.pack.slug,
-        packName: session.cohort.pack.name,
-        practiceLabel:
-          session.cohort.pack.tagline ||
-          session.cohort.pack.description ||
-          session.cohort.pack.name,
+        disciplineKey: session.cycle.primaryDiscipline.slug,
+        practiceLabel: session.cycle.primaryDiscipline.name,
       }
     : null;
 
   return {
-    sessionId,
+    contractVersion: DEBRIEF_CONTRACT_VERSION,
+    sessionRef: sessionId,
+    transcriptRevision: session.transcriptRevision,
     transcript,
     sessionKind: session.kind,
     discussionPoints: session.discussionPoints,
-    attendees,
-    packContext,
+    attendees: [attendee],
+    disciplineContext,
+    releaseMode: "draft_only",
   };
 }
 
@@ -165,10 +196,11 @@ export async function generateSessionDebrief(
   const { actorId } = await assertSessionOrganizer(sessionId);
 
   if (!opts?.force) {
-    const existing = await prisma.sessionDebrief.findUnique({
-      where: { sessionId },
+    const existing = await prisma.sessionDebrief.findFirst({
+      where: { sessionId, contractVersion: DEBRIEF_CONTRACT_VERSION },
     });
-    if (existing) return toView(existing);
+    const existingView = existing ? toView(existing) : null;
+    if (existingView) return existingView;
   }
 
   const session = await prisma.session.findUnique({
@@ -189,7 +221,16 @@ export async function generateSessionDebrief(
     // same failed-SessionDebrief-row flow as a generateDebrief() failure,
     // not bubble up as an unhandled server-action exception.
     const engine = getDebriefEngine();
-    const result = await engine.generateDebrief(input);
+    const rawResult = await engine.generateDebrief(input);
+    const result = parseDebriefResult(
+      rawResult,
+      input.attendees[0].attendeeRef,
+    );
+    if (!result) {
+      throw new DebriefEngineError(
+        "O Hub devolveu um Debrief incompatível com o contrato W01 v3.",
+      );
+    }
     // Prisma's Json input type has no structural relation to our
     // DebriefResult sub-types — round-trip through JSON to get a plain
     // Prisma.InputJsonValue (also strips any `undefined` field values,
@@ -197,8 +238,8 @@ export async function generateSessionDebrief(
     const perAttendeeJson = JSON.parse(
       JSON.stringify(result.perAttendee),
     ) as Prisma.InputJsonValue;
-    const internalEvaluationJson = JSON.parse(
-      JSON.stringify(result.internalEvaluation),
+    const internalSynthesisJson = JSON.parse(
+      JSON.stringify(result.internalSynthesis),
     ) as Prisma.InputJsonValue;
     const row = await withMatchingTranscript(
       sessionId,
@@ -209,22 +250,22 @@ export async function generateSessionDebrief(
           where: { sessionId },
           create: {
             sessionId,
+            contractVersion: DEBRIEF_CONTRACT_VERSION,
             status: "ready",
             engineImpl: engine.name,
-            model: "claude-sonnet-5",
+            model: null,
             perAttendeeSuggestions: perAttendeeJson,
-            internalEvaluation: internalEvaluationJson,
-            resultDocumentHtml: result.resultDocumentHtml,
+            internalSynthesis: internalSynthesisJson,
             requestedById: actorId,
             generatedAt: new Date(),
           },
           update: {
+            contractVersion: DEBRIEF_CONTRACT_VERSION,
             status: "ready",
             engineImpl: engine.name,
-            model: "claude-sonnet-5",
+            model: null,
             perAttendeeSuggestions: perAttendeeJson,
-            internalEvaluation: internalEvaluationJson,
-            resultDocumentHtml: result.resultDocumentHtml,
+            internalSynthesis: internalSynthesisJson,
             error: null,
             requestedById: actorId,
             requestedAt: new Date(),
@@ -232,7 +273,13 @@ export async function generateSessionDebrief(
           },
         }),
     );
-    return toView(row);
+    const view = toView(row);
+    if (!view) {
+      throw new DebriefEngineError(
+        "O Debrief guardado não cumpre o contrato W01 v3.",
+      );
+    }
+    return view;
   } catch (err) {
     if (err instanceof TranscriptChangedDuringGenerationError) {
       throw transcriptChangedError();
@@ -257,15 +304,22 @@ export async function generateSessionDebrief(
             where: { sessionId },
             create: {
               sessionId,
+              contractVersion: DEBRIEF_CONTRACT_VERSION,
               status: "failed",
               error: message,
               requestedById: actorId,
             },
             update: {
+              contractVersion: DEBRIEF_CONTRACT_VERSION,
               status: "failed",
+              engineImpl: null,
+              model: null,
+              perAttendeeSuggestions: Prisma.DbNull,
+              internalSynthesis: Prisma.DbNull,
               error: message,
               requestedById: actorId,
               requestedAt: new Date(),
+              generatedAt: null,
             },
           }),
       );

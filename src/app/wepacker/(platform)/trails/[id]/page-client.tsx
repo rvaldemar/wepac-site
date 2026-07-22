@@ -4,9 +4,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 import {
-  AREA_LABELS,
+  PILLAR_LABELS,
   TRAIL_STATUS_LABELS,
-  type AreaKey,
+  type PillarKey,
   type TrailStatus,
 } from "@/lib/wepacker/types";
 import { updateTrailStatus } from "@/lib/wepacker/actions/trail";
@@ -18,7 +18,7 @@ interface Trail {
   purpose: string;
   whyItMatters: string;
   destination: string;
-  areas: AreaKey[];
+  areas: PillarKey[];
   status: TrailStatus;
   createdAt: string;
   updatedAt: string;
@@ -84,7 +84,7 @@ export default function TrailDetailPageClient({ trail }: Props) {
         <div className="mt-4 flex flex-wrap gap-1.5">
           {trail.areas.map((a) => (
             <span key={a} className="bg-wepac-white/10 px-2 py-0.5 text-xs text-wepac-white">
-              {AREA_LABELS[a]}
+              {PILLAR_LABELS[a]}
             </span>
           ))}
         </div>

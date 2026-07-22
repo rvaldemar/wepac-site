@@ -1,13 +1,13 @@
 import { test, expect } from "./fixtures/test";
 
 // Sofia is seeded with onboarded:false. Universal onboarding ends at the
-// Agreement; a legacy delivery Assessment is never inferred as required.
+// Agreement and then opens the person's own My Journey.
 test("unonboarded person is forced through welcome -> agreement", async ({
   page,
 }) => {
   await page.goto("/wepacker/login");
   await page.getByLabel("Email").fill("sofia@example.com");
-  await page.getByLabel("Password").fill("password123");
+  await page.getByLabel("Password").fill("wepack2026");
   await page.getByRole("button", { name: "Entrar" }).click();
   await expect(page).toHaveURL(/\/wepacker\/welcome/); // middleware gate
 

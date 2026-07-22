@@ -2,11 +2,7 @@
 
 import { useState } from "react";
 import { updateMyProfile } from "@/lib/wepacker/actions/user";
-import {
-  STAGE_LABELS,
-  type MembershipContext,
-  type StageKey,
-} from "@/lib/wepacker/types";
+import { STAGE_LABELS, type StageKey } from "@/lib/wepacker/types";
 
 interface Props {
   user: {
@@ -17,11 +13,10 @@ interface Props {
     bio: string | null;
     phone: string | null;
   };
-  membership: MembershipContext | null;
   stage: StageKey | null;
 }
 
-export default function ProfilePageClient({ user, membership, stage }: Props) {
+export default function ProfilePageClient({ user, stage }: Props) {
   const [name, setName] = useState(user.name);
   const [bio, setBio] = useState(user.bio ?? "");
   const [phone, setPhone] = useState(user.phone ?? "");
@@ -67,25 +62,6 @@ export default function ProfilePageClient({ user, membership, stage }: Props) {
             </div>
           </div>
         </div>
-
-        {membership && (
-          <div className="border border-wepac-border bg-wepac-card p-5">
-            <h2 className="text-sm font-bold text-wepac-white">Legacy delivery record</h2>
-            <div className="mt-3 space-y-1 text-sm text-wepac-text-secondary">
-              <p>{membership.cohortName}</p>
-              <p className="text-xs text-wepac-text-tertiary">
-                Este registo ainda não é um target Cycle Enrollment nem uma Pack
-                Membership.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {!membership && (
-          <p className="text-sm text-wepac-text-tertiary">
-            No legacy delivery record. This does not affect My Journey.
-          </p>
-        )}
 
         {/* Form */}
         <div>

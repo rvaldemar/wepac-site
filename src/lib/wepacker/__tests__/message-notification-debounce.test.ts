@@ -6,8 +6,23 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const participantFindUnique = vi.fn();
 const messageCreate = vi.fn();
-const messageFindFirst = vi.fn();
 const participantFindMany = vi.fn();
+const queryRaw = vi.fn();
+const persistNewMessageEvent = vi.fn();
+const dispatchPersistedNotificationEvents = vi.fn();
+const prismaTransaction = vi.fn(
+  async (callback: (tx: unknown) => Promise<unknown>) =>
+    callback({
+      $queryRaw: (...args: unknown[]) => queryRaw(...args),
+      conversationParticipant: {
+        findUnique: (...args: unknown[]) => participantFindUnique(...args),
+        findMany: (...args: unknown[]) => participantFindMany(...args),
+      },
+      message: {
+        create: (...args: unknown[]) => messageCreate(...args),
+      },
+    }),
+);
 
 vi.mock("@/lib/db", () => ({
   prisma: {
@@ -17,8 +32,9 @@ vi.mock("@/lib/db", () => ({
     },
     message: {
       create: (...args: unknown[]) => messageCreate(...args),
-      findFirst: (...args: unknown[]) => messageFindFirst(...args),
     },
+    $transaction: (callback: (tx: unknown) => Promise<unknown>) =>
+      prismaTransaction(callback),
   },
 }));
 
@@ -27,9 +43,11 @@ vi.mock("@/lib/wepacker/guards", () => ({
   requireUser: vi.fn(async () => ({ id: "sender-1", role: "member", name: "Sender One" })),
 }));
 
-const sendNewMessageEmail = vi.fn(async (..._args: unknown[]) => undefined);
-vi.mock("@/lib/email", () => ({
-  sendNewMessageEmail: (...args: unknown[]) => sendNewMessageEmail(...args),
+vi.mock("@/lib/wepacker/notifications", () => ({
+  persistNewMessageEvent: (...args: unknown[]) =>
+    persistNewMessageEvent(...args),
+  dispatchPersistedNotificationEvents: (...args: unknown[]) =>
+    dispatchPersistedNotificationEvents(...args),
 }));
 
 import { sendMessage } from "@/lib/wepacker/actions/message";
@@ -39,29 +57,33 @@ describe("sendMessage — new message notification debounce", () => {
     vi.clearAllMocks();
     participantFindUnique.mockResolvedValue({ id: "participant-1" });
     participantFindMany.mockResolvedValue([
-      { user: { name: "Recipient One", email: "recipient1@wepac.pt" } },
+      { userId: "recipient-1" },
+    ]);
+    persistNewMessageEvent.mockResolvedValue([
+      { notificationId: "notification-1", outboxId: "outbox-1" },
     ]);
   });
 
-  it("sends an email for the first message of a conversation burst", async () => {
+  it("stages both notification channels for the first message of a conversation burst", async () => {
     messageCreate.mockResolvedValueOnce({
       id: "message-1",
       createdAt: new Date("2026-08-01T10:00:00.000Z"),
     });
-    messageFindFirst.mockResolvedValueOnce(null); // no recent prior message
+    queryRaw
+      .mockResolvedValueOnce([{ pg_advisory_xact_lock: null }])
+      .mockResolvedValueOnce([]); // no recent prior message
 
     await sendMessage("conversation-1", "Olá!");
 
-    await vi.waitFor(() => {
-      expect(sendNewMessageEmail).toHaveBeenCalledTimes(1);
+    expect(persistNewMessageEvent).toHaveBeenCalledWith(expect.any(Object), {
+      conversationId: "conversation-1",
+      messageId: "message-1",
+      recipientId: "recipient-1",
+      actorId: "sender-1",
     });
-    expect(sendNewMessageEmail).toHaveBeenCalledWith(
-      expect.objectContaining({
-        to: "recipient1@wepac.pt",
-        recipientName: "Recipient One",
-        senderName: "Sender One",
-      })
-    );
+    expect(dispatchPersistedNotificationEvents).toHaveBeenCalledWith([
+      { notificationId: "notification-1", outboxId: "outbox-1" },
+    ]);
   });
 
   it("skips the email when the sender already messaged this conversation within 30 minutes", async () => {
@@ -69,13 +91,16 @@ describe("sendMessage — new message notification debounce", () => {
       id: "message-2",
       createdAt: new Date("2026-08-01T10:05:00.000Z"),
     });
-    messageFindFirst.mockResolvedValueOnce({ id: "message-1" }); // recent prior message found
+    queryRaw
+      .mockResolvedValueOnce([{ pg_advisory_xact_lock: null }])
+      .mockResolvedValueOnce([{ id: "message-1" }]);
 
     await sendMessage("conversation-1", "Ainda aqui?");
 
     // Give any (incorrectly) fired fan-off a tick to happen before asserting.
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(sendNewMessageEmail).not.toHaveBeenCalled();
+    expect(persistNewMessageEvent).not.toHaveBeenCalled();
+    expect(dispatchPersistedNotificationEvents).toHaveBeenCalledWith([]);
   });
 
   it("sends again once the debounce window has elapsed", async () => {
@@ -83,12 +108,68 @@ describe("sendMessage — new message notification debounce", () => {
       id: "message-3",
       createdAt: new Date("2026-08-01T11:00:00.000Z"),
     });
-    messageFindFirst.mockResolvedValueOnce(null); // outside the window — none found
+    queryRaw
+      .mockResolvedValueOnce([{ pg_advisory_xact_lock: null }])
+      .mockResolvedValueOnce([]); // outside the window — none found
 
     await sendMessage("conversation-1", "De volta.");
 
-    await vi.waitFor(() => {
-      expect(sendNewMessageEmail).toHaveBeenCalledTimes(1);
+    expect(persistNewMessageEvent).toHaveBeenCalledOnce();
+    expect(dispatchPersistedNotificationEvents).toHaveBeenCalledOnce();
+  });
+
+  it("takes the sender+Conversation advisory lock and checks the burst before insert", async () => {
+    const order: string[] = [];
+    queryRaw
+      .mockImplementationOnce(async () => {
+        order.push("lock");
+        return [{ pg_advisory_xact_lock: null }];
+      })
+      .mockImplementationOnce(async (...args: unknown[]) => {
+        order.push("debounce-read");
+        expect(String.raw(args[0] as TemplateStringsArray)).toContain(
+          "clock_timestamp()",
+        );
+        return [];
+      });
+    messageCreate.mockImplementationOnce(async () => {
+      order.push("create");
+      return {
+        id: "message-concurrent",
+        createdAt: new Date("2026-08-01T10:00:00.000Z"),
+      };
     });
+
+    await sendMessage("conversation-1", "Concurrent first message");
+
+    expect(order).toEqual(["lock", "debounce-read", "create"]);
+    expect(queryRaw).toHaveBeenCalledTimes(2);
+  });
+
+  it("debounces even when transaction-start timestamps are equal or reversed", async () => {
+    queryRaw
+      .mockResolvedValueOnce([{ pg_advisory_xact_lock: null }])
+      .mockResolvedValueOnce([{ id: "prior-same-millisecond" }]);
+    messageCreate.mockResolvedValueOnce({
+      id: "message-with-earlier-created-at",
+      // This is deliberately earlier than the conceptual prior row. The
+      // algorithm no longer compares the two transaction-start timestamps.
+      createdAt: new Date("2026-08-01T09:59:59.999Z"),
+    });
+
+    await sendMessage("conversation-1", "Timestamp race");
+
+    expect(persistNewMessageEvent).not.toHaveBeenCalled();
+    expect(dispatchPersistedNotificationEvents).toHaveBeenCalledWith([]);
+  });
+
+  it("rejects oversized or forged serialized message input before storage", async () => {
+    await expect(
+      sendMessage("conversation-1", "x".repeat(10_001)),
+    ).rejects.toThrow("Mensagem demasiado longa");
+    await expect(
+      sendMessage({ id: "conversation-1" }, "Olá"),
+    ).rejects.toThrow("Conversation ID must be a string");
+    expect(messageCreate).not.toHaveBeenCalled();
   });
 });

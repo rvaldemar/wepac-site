@@ -4,6 +4,7 @@ import { getRepertoireSummaryText } from "@/data/wessex-repertoire";
 import { saveLead } from "@/lib/leads";
 import { getChatEngine, ChatEngineError } from "@/lib/wessex/chat-engine";
 import { getVisitorIp, visitorRateLimiter } from "@/lib/wessex/rate-limit";
+import { logSafeError } from "@/lib/wepacker/log-safe-error";
 
 const SAVE_LEAD_TOOL: Anthropic.Tool = {
   name: "save_lead",
@@ -79,7 +80,7 @@ Impacto: 500+ alunos alcançados, 50+ eventos realizados, 15+ parceiros, 10+ esp
 
 ## METODOLOGIA WEPAC
 
-Assenta em três pilares:
+Expressa-se através de três arquétipos de marca (não são os Six Pillars do WEPACKER):
 1. O Criador — Inovação artística, formatos culturais novos.
 2. O Sábio — Rigor metodológico, visão estratégica.
 3. O Cuidador — Empatia, inclusão, impacto social.
@@ -94,7 +95,7 @@ Arte à Capela — Património e artes. Transforma espaços patrimoniais e espir
 
 Wessex — Serviços musicais. Performances de excelência para eventos privados, corporativos e institucionais.
 
-Programa Artistas WEPAC — Sistema integrado de desenvolvimento artístico para artistas emergentes. Fase Alpha. Inscrições em wepac.pt/artist.
+WEPAC for Artists — A Discipline Arts dentro da My Journey WEPAC. A Person mantém o seu Life Map, Trails, Goals, Actions e Sessions. Packs são Communities; Academy organiza Cycles com duração definida; Mentorship é uma Relationship consentida. Candidaturas em wepac.pt/artist.
 
 ## WESSEX — DETALHE
 
@@ -167,7 +168,7 @@ Então:
 - Formata preços sempre com EUR (ex: 800 EUR)
 - A Equipa de Som pode ser adicionada a qualquer ensemble por 200 EUR
 - Para música sob medida e ensembles personalizados, o orçamento é feito sob consulta — sugere sempre contactar info@wepac.pt
-- Se perguntarem sobre Easy Peasy, Arte à Capela ou o Programa Artistas, responde com conhecimento e entusiasmo
+- Se perguntarem sobre Easy Peasy, Arte à Capela ou WEPAC for Artists, responde com conhecimento e entusiasmo
 - Se perguntarem coisas completamente fora do âmbito da WEPAC, redireciona com simpatia
 - Quando relevante, sugere páginas do site: wepac.pt/servicos, wepac.pt/servicos/orcamento, wepac.pt/contacto, wepac.pt/artist, etc.`;
 
@@ -250,7 +251,7 @@ export async function POST(req: Request) {
                   consentGiven: consentGiven ?? false,
                 });
               } catch (e) {
-                console.error("save_lead tool error:", e);
+                console.error("[wessex chat] save_lead_failed", logSafeError(e));
                 toolResult = '{"success": false, "error": "Failed to save"}';
               }
 
@@ -277,7 +278,7 @@ export async function POST(req: Request) {
 
           controller.close();
         } catch (error: unknown) {
-          console.error("Chat API error:", error);
+          console.error("[wessex chat] stream_failed", logSafeError(error));
           controller.enqueue(
             encoder.encode(
               "\n\nDesculpa, ocorreu um erro. Tenta novamente ou contacta-nos em info@wepac.pt."

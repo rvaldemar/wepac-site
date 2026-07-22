@@ -5,23 +5,20 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type {
   SessionKind,
-  SessionType,
   SessionStatus,
-  AreaKey,
+  PillarKey,
 } from "@/lib/wepacker/types";
-import { AREA_LABELS, SESSION_KIND_LABELS } from "@/lib/wepacker/types";
+import { PILLAR_LABELS, SESSION_KIND_LABELS } from "@/lib/wepacker/types";
 import { updateSessionAttendee } from "@/lib/wepacker/actions/session";
 import {
   attachSessionTranscript,
   clearSessionTranscript,
 } from "@/lib/wepacker/actions/session-transcript";
-import { createTaskFromSession } from "@/lib/wepacker/actions/task";
 import { generateSessionDebrief } from "@/lib/wepacker/actions/debrief";
 import type { SessionDebriefView } from "@/lib/wepacker/actions/debrief";
 import { MAX_TRANSCRIPT_CHARS } from "@/lib/wepacker/debrief/types";
 import type {
-  AreaObservation,
-  AttendeeTaskSuggestion,
+  PillarObservation,
   PerAttendeeDebrief,
 } from "@/lib/wepacker/debrief/types";
 import {
@@ -29,15 +26,6 @@ import {
   TRANSCRIPT_FILE_ACCEPT,
   TRANSCRIPT_FILE_FORMATS,
 } from "@/lib/wepacker/transcript-file";
-
-// Local, display-only mirror of the labels used on the tasks pages (see
-// mentor/tasks/page-client.tsx) — not worth exporting from types.ts for a
-// single read-only panel.
-const TASK_STATUS_LABELS: Record<string, string> = {
-  todo: "To-do",
-  in_progress: "Em curso",
-  done: "Feito",
-};
 
 interface AttendeeRow {
   id: string;
@@ -51,7 +39,6 @@ interface AttendeeRow {
 
 interface SessionDetail {
   id: string;
-  sessionType: SessionType;
   kind: SessionKind;
   scheduledAt: string;
   status: SessionStatus;
@@ -60,60 +47,34 @@ interface SessionDetail {
   transcript: string | null;
   transcriptUploadedAt: string | null;
   attendees: AttendeeRow[];
-  mentor: { id: string; name: string };
-}
-
-// Serialized mirror of SessionPrepAreaSummary/HistoryEntry/PendingTask/
-// Participant from @/lib/wepacker/actions/session-prep — Dates cross the
-// server/client boundary as ISO strings (see `serialize` in page.tsx).
-interface PrepAreaSummary {
-  area: AreaKey;
-  label: string;
-  composite: number;
-}
-
-interface PrepHistoryEntry {
-  sessionId: string;
-  scheduledAt: string;
-  kind: SessionKind;
-  sharedNote: string | null;
-  outcome: string | null;
-}
-
-interface PrepPendingTask {
-  id: string;
-  title: string;
-  deadline: string;
-  status: "todo" | "in_progress" | "done";
-}
-
-interface PrepParticipant {
-  userId: string;
-  name: string;
-  hasEvaluation: boolean;
-  strengths: PrepAreaSummary[];
-  growthAreas: PrepAreaSummary[];
-  lastOutcome: string | null;
-  recentHistory: PrepHistoryEntry[];
-  pendingTasks: PrepPendingTask[];
+  organizer: { id: string; name: string };
 }
 
 interface Props {
   session: SessionDetail;
   debrief: SessionDebriefView | null;
-  preparation: PrepParticipant[];
-  canManagePrivateArtifacts: boolean;
+  transcriptWritesEnabled: boolean;
+  debriefGenerationEnabled: boolean;
 }
 
 function attendeeKey(userId: string): string {
   return userId;
 }
 
+function DebriefGenerationUnavailable() {
+  return (
+    <p className="mt-4 border border-wepac-border bg-wepac-input/40 p-3 text-xs leading-relaxed text-wepac-text-tertiary">
+      Debrief generation is unavailable until W01 v3 is published and certified.
+      The Transcript remains private to the Session organizer.
+    </p>
+  );
+}
+
 export function SessionDebriefClient({
   session,
   debrief: initialDebrief,
-  preparation,
-  canManagePrivateArtifacts,
+  transcriptWritesEnabled,
+  debriefGenerationEnabled,
 }: Props) {
   const router = useRouter();
   const [debrief, setDebrief] = useState<SessionDebriefView | null>(
@@ -122,7 +83,7 @@ export function SessionDebriefClient({
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [editingTranscript, setEditingTranscript] = useState(
-    !session.transcript,
+    transcriptWritesEnabled && !session.transcript,
   );
   const [transcriptText, setTranscriptText] = useState<string | null>(
     session.transcript,
@@ -136,12 +97,6 @@ export function SessionDebriefClient({
   const [transcriptError, setTranscriptError] = useState<string | null>(null);
   const [savingTranscript, setSavingTranscript] = useState(false);
   const [removingTranscript, setRemovingTranscript] = useState(false);
-
-  // ===== Preparation panel: collapsed by default, one entry per
-  // participant — see the "empty state" render below.
-  const [expandedPrepUserId, setExpandedPrepUserId] = useState<string | null>(
-    preparation[0]?.userId ?? null,
-  );
 
   // ===== Per-attendee suggestion editing =====
   const [editedOutcome, setEditedOutcome] = useState<Record<string, string>>(
@@ -159,12 +114,6 @@ export function SessionDebriefClient({
   const [attendeeFeedback, setAttendeeFeedback] = useState<
     Record<string, { type: "success" | "error"; text: string } | undefined>
   >({});
-  const [creatingTaskKey, setCreatingTaskKey] = useState<string | null>(null);
-  const [taskFeedback, setTaskFeedback] = useState<
-    Record<string, { type: "success" | "error"; text: string } | undefined>
-  >({});
-  const [showResultDoc, setShowResultDoc] = useState(false);
-
   // ===== Meeting link: copy-to-clipboard feedback (PT-PT), same pattern
   // as the sessions list card — see mentor/sessions/page-client.tsx.
   const [copiedMeetingLink, setCopiedMeetingLink] = useState(false);
@@ -249,7 +198,8 @@ export function SessionDebriefClient({
   }
 
   function suggestionFor(userId: string): PerAttendeeDebrief | undefined {
-    return debrief?.perAttendee.find((p) => p.userId === userId);
+    const attendeeRef = session.attendees.find((a) => a.user.id === userId)?.id;
+    return debrief?.perAttendee.find((p) => p.attendeeRef === attendeeRef);
   }
 
   function outcomeValue(userId: string): string {
@@ -263,6 +213,7 @@ export function SessionDebriefClient({
   }
 
   async function handleGenerate(force: boolean) {
+    if (!debriefGenerationEnabled) return;
     if (force) {
       const anyUnapplied = session.attendees.some((a) => {
         const suggestion = suggestionFor(a.user.id);
@@ -359,59 +310,27 @@ export function SessionDebriefClient({
     }
   }
 
-  async function handleCreateTask(
-    userId: string,
-    task: AttendeeTaskSuggestion,
-    index: number,
-  ) {
-    const key = `${userId}:${index}`;
-    setCreatingTaskKey(key);
-    setTaskFeedback((prev) => ({ ...prev, [key]: undefined }));
-    try {
-      await createTaskFromSession({
-        sessionId: session.id,
-        userId,
-        title: task.title,
-        description: task.description,
-        deadline: task.deadline ?? "",
-      });
-      setTaskFeedback((prev) => ({
-        ...prev,
-        [key]: { type: "success", text: "Tarefa criada." },
-      }));
-    } catch (e) {
-      console.error("Failed to create task from debrief suggestion:", e);
-      setTaskFeedback((prev) => ({
-        ...prev,
-        [key]: {
-          type: "error",
-          text: "Erro ao criar tarefa. Tenta novamente.",
-        },
-      }));
-    } finally {
-      setCreatingTaskKey(null);
-    }
-  }
-
-  function copyInternalEvaluation() {
-    if (!debrief?.internalEvaluation) return;
-    const ie = debrief.internalEvaluation;
+  function copyInternalSynthesis() {
+    if (!debrief?.internalSynthesis) return;
+    const synthesis = debrief.internalSynthesis;
     const lines = [
-      `Resumo: ${ie.sessionSummary}`,
+      `Resumo: ${synthesis.sessionSummary}`,
       "",
-      "Áreas:",
-      ...Object.values(ie.areaObservations).map(
-        (o: AreaObservation) =>
-          `- ${AREA_LABELS[o.area as AreaKey]} (${o.signal}): ${o.evidence}`,
+      "Pillars:",
+      ...Object.entries(synthesis.pillarObservations).map(
+        ([pillar, observation]: [string, PillarObservation]) =>
+          `- ${PILLAR_LABELS[pillar as PillarKey]} (${observation.signal}): ${observation.evidence}`,
       ),
       "",
-      ie.practiceObservations ? `Prática: ${ie.practiceObservations}` : "",
+      synthesis.disciplineObservations
+        ? `Discipline: ${synthesis.disciplineObservations}`
+        : "",
       "",
       "Riscos:",
-      ...ie.risks.map((r) => `- ${r}`),
+      ...synthesis.risks.map((risk) => `- ${risk}`),
       "",
       "Próximos passos recomendados:",
-      ...ie.recommendedFollowUps.map((r) => `- ${r}`),
+      ...synthesis.recommendedFollowUps.map((item) => `- ${item}`),
     ];
     void navigator.clipboard.writeText(lines.join("\n"));
   }
@@ -469,178 +388,23 @@ export function SessionDebriefClient({
         </Link>
       </div>
 
-      {/* Preparation panel: one collapsible card per participant, built
-          entirely from data that already exists (past sessions,
-          evaluations, tasks). Only relevant before the session has taken
-          place / been debriefed — hidden once there's a transcript, same
-          as the empty state below. */}
-      {!transcriptText && preparation.length > 0 && (
-        <div className="mt-8 space-y-3">
-          <h2 className="text-sm font-bold text-wepac-white">Preparação</h2>
-          {preparation.map((p) => {
-            const isExpanded = expandedPrepUserId === p.userId;
-            return (
-              <div
-                key={p.userId}
-                className="border border-wepac-border bg-wepac-card"
-              >
-                <button
-                  onClick={() =>
-                    setExpandedPrepUserId(isExpanded ? null : p.userId)
-                  }
-                  className="flex w-full items-center justify-between p-4 text-left"
-                >
-                  <span className="text-sm font-medium text-wepac-white">
-                    {p.name}
-                  </span>
-                  <span className="text-wepac-text-tertiary">
-                    {isExpanded ? "−" : "+"}
-                  </span>
-                </button>
-
-                {isExpanded && (
-                  <div className="space-y-4 border-t border-wepac-border p-4">
-                    {/* O que ficou combinado na última sessão */}
-                    <div>
-                      <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
-                        Ficou combinado (última sessão)
-                      </p>
-                      <p className="mt-1 text-xs text-wepac-text-secondary">
-                        {p.lastOutcome || "Sem registo de sessões anteriores."}
-                      </p>
-                    </div>
-
-                    {canManagePrivateArtifacts && (
-                      <>
-                        {/* Legacy Assessment summary — Admin-only until grants. */}
-                        <div>
-                          <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
-                            Radar resumido
-                          </p>
-                          {!p.hasEvaluation ? (
-                            <p className="mt-1 text-xs text-wepac-text-tertiary">
-                              Ainda sem avaliação.
-                            </p>
-                          ) : (
-                            <div className="mt-1 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                              <div>
-                                <p className="text-[10px] text-wepac-text-tertiary">
-                                  Pontos fortes
-                                </p>
-                                <div className="mt-1 flex flex-wrap gap-1.5">
-                                  {p.strengths.map((s) => (
-                                    <span
-                                      key={s.area}
-                                      className="bg-wepac-success-bg px-2 py-0.5 text-[10px] text-wepac-success"
-                                    >
-                                      {s.label} · {s.composite}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                              <div>
-                                <p className="text-[10px] text-wepac-text-tertiary">
-                                  A desenvolver
-                                </p>
-                                <div className="mt-1 flex flex-wrap gap-1.5">
-                                  {p.growthAreas.map((g) => (
-                                    <span
-                                      key={g.area}
-                                      className="bg-wepac-input px-2 py-0.5 text-[10px] text-wepac-text-secondary"
-                                    >
-                                      {g.label} · {g.composite}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Legacy Tasks — Admin-only until grants. */}
-                        <div>
-                          <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
-                            Tarefas pendentes (de sessões)
-                          </p>
-                          {p.pendingTasks.length === 0 ? (
-                            <p className="mt-1 text-xs text-wepac-text-tertiary">
-                              Sem tarefas pendentes.
-                            </p>
-                          ) : (
-                            <ul className="mt-1 space-y-1">
-                              {p.pendingTasks.map((t) => (
-                                <li
-                                  key={t.id}
-                                  className="flex items-center justify-between text-xs"
-                                >
-                                  <span className="text-wepac-text-secondary">
-                                    {t.title}
-                                  </span>
-                                  <span className="text-[10px] text-wepac-text-tertiary">
-                                    {TASK_STATUS_LABELS[t.status] ?? t.status} ·{" "}
-                                    {t.deadline}
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </div>
-                      </>
-                    )}
-
-                    {/* Últimas notas partilhadas / outcomes */}
-                    <div>
-                      <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
-                        Previous Sessions
-                      </p>
-                      {p.recentHistory.length === 0 ? (
-                        <p className="mt-1 text-xs text-wepac-text-tertiary">
-                          Sem sessões anteriores.
-                        </p>
-                      ) : (
-                        <ul className="mt-1 space-y-2">
-                          {p.recentHistory.map((h) => (
-                            <li
-                              key={h.sessionId}
-                              className="border-l border-wepac-border pl-2"
-                            >
-                              <p className="text-[10px] text-wepac-text-tertiary">
-                                {new Date(h.scheduledAt).toLocaleDateString(
-                                  "pt-PT",
-                                )}{" "}
-                                · {SESSION_KIND_LABELS[h.kind]?.label ?? h.kind}
-                              </p>
-                              {h.outcome && (
-                                <p className="text-xs text-wepac-text-secondary">
-                                  Combinado: {h.outcome}
-                                </p>
-                              )}
-                              {h.sharedNote && (
-                                <p className="text-xs text-wepac-text-secondary">
-                                  Nota: {h.sharedNote}
-                                </p>
-                              )}
-                              {!h.outcome && !h.sharedNote && (
-                                <p className="text-xs text-wepac-text-tertiary">
-                                  Sem notas.
-                                </p>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+      {/* Transcript capture lives in the Session workspace itself. Files are
+          read as text in the browser; only validated text reaches the server. */}
+      {!transcriptWritesEnabled && (
+        <div className="mt-8 border border-wepac-border bg-wepac-card p-6">
+          <h2 className="text-sm font-bold text-wepac-white">
+            Session Transcript
+          </h2>
+          <p className="mt-2 text-xs text-wepac-text-tertiary">
+            New Transcript attachments and replacements are temporarily
+            unavailable while Session-specific consent, age or Parent/Guardian
+            evidence, and retention controls are being formalized. An existing
+            Transcript can still be removed below.
+          </p>
         </div>
       )}
 
-      {/* Transcript capture lives in the Session workspace itself. Files are
-          read as text in the browser; only validated text reaches the server. */}
-      {editingTranscript && (
+      {transcriptWritesEnabled && editingTranscript && (
         <div className="mt-8 border border-wepac-border bg-wepac-card p-6">
           <h2 className="text-sm font-bold text-wepac-white">
             {transcriptText
@@ -724,16 +488,18 @@ export function SessionDebriefClient({
               </p>
             </div>
             <div className="flex flex-wrap gap-3 text-xs">
-              <button
-                onClick={() => {
-                  setTranscriptDraft(transcriptText);
-                  setTranscriptError(null);
-                  setEditingTranscript(true);
-                }}
-                className="text-wepac-white hover:underline"
-              >
-                Replace
-              </button>
+              {transcriptWritesEnabled && (
+                <button
+                  onClick={() => {
+                    setTranscriptDraft(transcriptText);
+                    setTranscriptError(null);
+                    setEditingTranscript(true);
+                  }}
+                  className="text-wepac-white hover:underline"
+                >
+                  Replace
+                </button>
+              )}
               <button
                 onClick={handleRemoveTranscript}
                 disabled={removingTranscript}
@@ -747,28 +513,32 @@ export function SessionDebriefClient({
             {transcriptText}
           </pre>
           {!debrief && (
-            <>
-              {generateError && (
-                <p className="mt-3 text-xs text-wepac-error">{generateError}</p>
-              )}
-              <button
-                onClick={() => handleGenerate(false)}
-                disabled={generating}
-                className="mt-4 bg-wepac-white px-4 py-2 text-sm font-bold text-wepac-black disabled:opacity-30"
-              >
-                {generating
-                  ? "A gerar debrief... (pode demorar até 30s)"
-                  : "Generate Debrief"}
-              </button>
-              {generateError && (
+            debriefGenerationEnabled ? (
+              <>
+                {generateError && (
+                  <p className="mt-3 text-xs text-wepac-error">{generateError}</p>
+                )}
                 <button
                   onClick={() => handleGenerate(false)}
-                  className="ml-2 mt-4 border border-wepac-border px-4 py-2 text-sm text-wepac-text-secondary"
+                  disabled={generating}
+                  className="mt-4 bg-wepac-white px-4 py-2 text-sm font-bold text-wepac-black disabled:opacity-30"
                 >
-                  Tentar novamente
+                  {generating
+                    ? "A gerar debrief... (pode demorar até 30s)"
+                    : "Generate Debrief"}
                 </button>
-              )}
-            </>
+                {generateError && (
+                  <button
+                    onClick={() => handleGenerate(false)}
+                    className="ml-2 mt-4 border border-wepac-border px-4 py-2 text-sm text-wepac-text-secondary"
+                  >
+                    Tentar novamente
+                  </button>
+                )}
+              </>
+            ) : (
+              <DebriefGenerationUnavailable />
+            )
           )}
         </div>
       )}
@@ -779,13 +549,17 @@ export function SessionDebriefClient({
           <p className="text-sm text-wepac-error">
             {debrief.error ?? "Erro ao gerar debrief."}
           </p>
-          <button
-            onClick={() => handleGenerate(true)}
-            disabled={generating}
-            className="mt-4 bg-wepac-white px-4 py-2 text-sm font-bold text-wepac-black disabled:opacity-30"
-          >
-            {generating ? "A gerar debrief..." : "Tentar novamente"}
-          </button>
+          {debriefGenerationEnabled ? (
+            <button
+              onClick={() => handleGenerate(true)}
+              disabled={generating}
+              className="mt-4 bg-wepac-white px-4 py-2 text-sm font-bold text-wepac-black disabled:opacity-30"
+            >
+              {generating ? "A gerar debrief..." : "Tentar novamente"}
+            </button>
+          ) : (
+            <DebriefGenerationUnavailable />
+          )}
         </div>
       )}
 
@@ -919,63 +693,35 @@ export function SessionDebriefClient({
                     </div>
                   )}
 
-                  {canManagePrivateArtifacts &&
-                    suggestion &&
-                    suggestion.tasks.length > 0 && (
+                  {suggestion && suggestion.actions.length > 0 && (
                       <div className="mt-3 space-y-2 border-t border-wepac-border pt-3">
                         <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
-                          Tarefas sugeridas
+                          Action proposals
                         </p>
-                        {suggestion.tasks.map((task, index) => {
-                          const key = `${a.user.id}:${index}`;
-                          const feedback = taskFeedback[key];
-                          return (
+                        <p className="text-[10px] text-wepac-text-tertiary">
+                          Proposals only. Nothing is assigned, persisted or
+                          delivered automatically.
+                        </p>
+                        {suggestion.actions.map((action, index) => (
                             <div
-                              key={key}
-                              className="flex flex-wrap items-center justify-between gap-2 bg-wepac-input/40 p-2"
+                              key={`${a.id}:${index}`}
+                              className="bg-wepac-input/40 p-2"
                             >
-                              <div>
-                                <p className="text-xs text-wepac-white">
-                                  {task.title}
+                              <p className="text-xs text-wepac-white">
+                                {action.title}
+                              </p>
+                              {action.description && (
+                                <p className="text-[10px] text-wepac-text-tertiary">
+                                  {action.description}
                                 </p>
-                                {task.description && (
-                                  <p className="text-[10px] text-wepac-text-tertiary">
-                                    {task.description}
-                                  </p>
-                                )}
-                                {task.deadline && (
-                                  <p className="text-[10px] text-wepac-text-tertiary">
-                                    Prazo: {task.deadline}
-                                  </p>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                {feedback?.type === "success" ? (
-                                  <span className="text-xs text-wepac-success">
-                                    {feedback.text}
-                                  </span>
-                                ) : (
-                                  <button
-                                    onClick={() =>
-                                      handleCreateTask(a.user.id, task, index)
-                                    }
-                                    disabled={creatingTaskKey === key}
-                                    className="bg-wepac-white px-2 py-1 text-[10px] font-bold text-wepac-black disabled:opacity-30"
-                                  >
-                                    {creatingTaskKey === key
-                                      ? "A criar..."
-                                      : "Criar tarefa"}
-                                  </button>
-                                )}
-                                {feedback?.type === "error" && (
-                                  <span className="text-[10px] text-wepac-error">
-                                    {feedback.text}
-                                  </span>
-                                )}
-                              </div>
+                              )}
+                              {action.dueDate && (
+                                <p className="text-[10px] text-wepac-text-tertiary">
+                                  Due: {action.dueDate}
+                                </p>
+                              )}
                             </div>
-                          );
-                        })}
+                          ))}
                       </div>
                     )}
                 </div>
@@ -983,61 +729,60 @@ export function SessionDebriefClient({
             })}
           </div>
 
-          {/* b. Internal evaluation */}
-          {debrief.internalEvaluation && (
+          {debrief.internalSynthesis && (
             <div className="border border-wepac-border bg-wepac-card p-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-bold text-wepac-white">
-                  Internal review
+                  Internal synthesis
                 </h2>
                 <button
-                  onClick={copyInternalEvaluation}
+                  onClick={copyInternalSynthesis}
                   className="text-xs text-wepac-white hover:underline"
                 >
                   Copiar
                 </button>
               </div>
               <p className="mt-2 text-xs text-wepac-text-secondary">
-                {debrief.internalEvaluation.sessionSummary}
+                {debrief.internalSynthesis.sessionSummary}
               </p>
               <div className="mt-3 space-y-1">
-                {Object.values(debrief.internalEvaluation.areaObservations).map(
-                  (o: AreaObservation) => (
+                {Object.entries(debrief.internalSynthesis.pillarObservations).map(
+                  ([pillar, observation]: [string, PillarObservation]) => (
                     <p
-                      key={o.area}
+                      key={pillar}
                       className="text-xs text-wepac-text-tertiary"
                     >
                       <span className="font-bold text-wepac-white">
-                        {AREA_LABELS[o.area as AreaKey]}
+                        {PILLAR_LABELS[pillar as PillarKey]}
                       </span>{" "}
-                      [{o.signal}] {o.evidence}
+                      [{observation.signal}] {observation.evidence}
                     </p>
                   ),
                 )}
               </div>
-              {debrief.internalEvaluation.practiceObservations && (
+              {debrief.internalSynthesis.disciplineObservations && (
                 <p className="mt-2 text-xs text-wepac-text-tertiary">
-                  Prática: {debrief.internalEvaluation.practiceObservations}
+                  Discipline: {debrief.internalSynthesis.disciplineObservations}
                 </p>
               )}
-              {debrief.internalEvaluation.risks.length > 0 && (
+              {debrief.internalSynthesis.risks.length > 0 && (
                 <div className="mt-2">
                   <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
                     Riscos
                   </p>
-                  {debrief.internalEvaluation.risks.map((r, i) => (
+                  {debrief.internalSynthesis.risks.map((r, i) => (
                     <p key={i} className="text-xs text-wepac-text-tertiary">
                       - {r}
                     </p>
                   ))}
                 </div>
               )}
-              {debrief.internalEvaluation.recommendedFollowUps.length > 0 && (
+              {debrief.internalSynthesis.recommendedFollowUps.length > 0 && (
                 <div className="mt-2">
                   <p className="text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
                     Próximos passos recomendados
                   </p>
-                  {debrief.internalEvaluation.recommendedFollowUps.map(
+                  {debrief.internalSynthesis.recommendedFollowUps.map(
                     (r, i) => (
                       <p key={i} className="text-xs text-wepac-text-tertiary">
                         - {r}
@@ -1049,63 +794,23 @@ export function SessionDebriefClient({
             </div>
           )}
 
-          {/* c. Result document — sandboxed preview only, never a
-              same-origin blob tab. resultDocumentHtml is model output
-              derived from an untrusted transcript. */}
-          <div className="border border-wepac-border bg-wepac-card p-4">
-            <h2 className="text-sm font-bold text-wepac-white">
-              Documento de resultado
-            </h2>
-            {!debrief.resultDocumentHtml ? (
-              <p className="mt-2 text-xs text-wepac-text-tertiary">
-                Sem documento de resultado — só é gerado para sessões
-                individuais.
-              </p>
-            ) : (
-              <>
-                <div className="mt-2 flex gap-3">
-                  <button
-                    onClick={() => setShowResultDoc((v) => !v)}
-                    className="text-xs text-wepac-white hover:underline"
-                  >
-                    {showResultDoc
-                      ? "Ocultar pré-visualização"
-                      : "Pré-visualizar"}
-                  </button>
-                  <a
-                    href={`data:text/html;charset=utf-8,${encodeURIComponent(
-                      debrief.resultDocumentHtml,
-                    )}`}
-                    download={`debrief-${session.id}.html`}
-                    className="text-xs text-wepac-white hover:underline"
-                  >
-                    Transferir
-                  </a>
-                </div>
-                {showResultDoc && (
-                  <iframe
-                    srcDoc={debrief.resultDocumentHtml}
-                    sandbox=""
-                    className="mt-3 h-[600px] w-full border border-wepac-border bg-white"
-                    title="Pré-visualização do documento de resultado"
-                  />
-                )}
-              </>
-            )}
-          </div>
-
-          {/* d. Regenerate */}
           <div>
-            {generateError && (
-              <p className="mb-2 text-xs text-wepac-error">{generateError}</p>
+            {debriefGenerationEnabled ? (
+              <>
+                {generateError && (
+                  <p className="mb-2 text-xs text-wepac-error">{generateError}</p>
+                )}
+                <button
+                  onClick={() => handleGenerate(true)}
+                  disabled={generating}
+                  className="border border-wepac-border px-4 py-2 text-xs text-wepac-text-secondary disabled:opacity-30"
+                >
+                  {generating ? "A gerar..." : "Descartar debrief e gerar novo"}
+                </button>
+              </>
+            ) : (
+              <DebriefGenerationUnavailable />
             )}
-            <button
-              onClick={() => handleGenerate(true)}
-              disabled={generating}
-              className="border border-wepac-border px-4 py-2 text-xs text-wepac-text-secondary disabled:opacity-30"
-            >
-              {generating ? "A gerar..." : "Descartar debrief e gerar novo"}
-            </button>
           </div>
         </div>
       )}

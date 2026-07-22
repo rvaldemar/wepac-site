@@ -1,7 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import type { Prisma } from "@prisma/client";
-import type { MembershipContext, UserRole } from "@/lib/wepacker/types";
+import type { UserRole } from "@prisma/client";
 
 export type SessionUser = {
   id: string;
@@ -9,19 +8,53 @@ export type SessionUser = {
   email: string;
   role: UserRole;
   onboarded: boolean;
+  sessionVersion: number;
 };
 
 export async function getSessionUser(): Promise<SessionUser | null> {
   const session = await auth();
   if (!session?.user?.id) return null;
-  return session.user as SessionUser;
+
+  // The JWT proves which account originally authenticated; it is not the
+  // current authorization source. Roles, onboarding state and even account
+  // existence can change while a JWT is still valid, so every protected
+  // server read/action resolves the current Person from the database.
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      onboarded: true,
+      sessionVersion: true,
+    },
+  });
+  if (
+    !user ||
+    typeof session.user.sessionVersion !== "number" ||
+    user.sessionVersion !== session.user.sessionVersion
+  ) {
+    return null;
+  }
+  return user;
 }
 
-// Guards throw instead of redirecting so they are safe both in pages
-// (error boundary) and in server actions invoked as raw POSTs.
-export async function requireUser(): Promise<SessionUser> {
+// Authentication-only boundary for the onboarding flow. Product reads and
+// writes must use requireUser below so a stale JWT cannot bypass a revoked
+// onboarding state.
+export async function requireAuthenticatedUser(): Promise<SessionUser> {
   const user = await getSessionUser();
   if (!user) throw new Error("Não autenticado.");
+  return user;
+}
+
+// Guards throw instead of redirecting so they are safe in Server Actions.
+// Every platform capability resolves the current onboarding state from the
+// database; the JWT is identity evidence only.
+export async function requireUser(): Promise<SessionUser> {
+  const user = await requireAuthenticatedUser();
+  if (!user.onboarded) throw new Error("Onboarding incompleto.");
   return user;
 }
 
@@ -35,108 +68,17 @@ export async function requireAdmin(): Promise<SessionUser> {
   return requireRole(["admin"]);
 }
 
-const membershipContextInclude = {
-  cohort: { include: { pack: true } },
-} as const;
-
-type MembershipWithCohort = Prisma.CohortMembershipGetPayload<{
-  include: typeof membershipContextInclude;
-}>;
-
-function toContext(m: MembershipWithCohort): MembershipContext {
-  return {
-    membershipId: m.id,
-    role: m.role,
-    level: m.level,
-    currentPhase: m.currentPhase,
-    cohortId: m.cohortId,
-    cohortName: m.cohort.name,
-    packId: m.cohort.packId,
-    packSlug: m.cohort.pack.slug,
-    packName: m.cohort.pack.name,
-  };
-}
-
-// The signed-in user's active membership (most recent if several).
-export async function getMyMembership(): Promise<MembershipContext | null> {
-  const user = await requireUser();
-  const membership = await prisma.cohortMembership.findFirst({
-    where: { userId: user.id, status: "active" },
-    include: membershipContextInclude,
-    orderBy: { joinedAt: "desc" },
-  });
-  return membership ? toContext(membership) : null;
-}
-
-export async function requireMembership(): Promise<{
-  user: SessionUser;
-  membership: MembershipContext;
-}> {
-  const user = await requireUser();
-  const membership = await getMyMembership();
-  if (!membership) throw new Error("Sem membership ativa.");
-  return { user, membership };
-}
-
-// Cohort ids where the actor participates as mentor.
-export async function getMentoredCohortIds(userId: string): Promise<string[]> {
-  const rows = await prisma.cohortMembership.findMany({
-    where: { userId, role: "mentor", status: "active" },
-    select: { cohortId: true },
-  });
-  return rows.map((r) => r.cohortId);
-}
-
-// Legacy membership artifacts are private to their owner. Admin status is not
-// an artifact grant or an implicit break-glass path.
-export async function assertMembershipAccess(
-  membershipId: string
-): Promise<{ actor: SessionUser; membership: MembershipContext; ownerUserId: string }> {
-  const actor = await requireUser();
-  const membership = await prisma.cohortMembership.findUnique({
-    where: { id: membershipId },
-    include: membershipContextInclude,
-  });
-  if (!membership) throw new Error("Membership não encontrada.");
-
-  if (membership.userId !== actor.id) {
-    throw new Error("Sem permissão.");
-  }
-  return {
-    actor,
-    membership: toContext(membership),
-    ownerUserId: membership.userId,
-  };
-}
-
-// Mentor of the cohort or admin — for cohort-scoped writes (sessions).
-export async function assertMentorOfCohort(
-  cohortId: string
-): Promise<SessionUser> {
-  const actor = await requireUser();
-  if (actor.role === "admin") return actor;
-  const mentored = await getMentoredCohortIds(actor.id);
-  if (!mentored.includes(cohortId)) throw new Error("Sem permissão.");
-  return actor;
-}
-
-// ===== SESSION-ONLY MENTORING AUTHORIZATION =====
+// ===== SESSION-ONLY MENTORSHIP AUTHORIZATION =====
 //
-// This resolver is deliberately separate from isMentoredUser and the generic
-// person-data guards below. An active Mentorship grants only the minimum
-// capability needed to discover a Mentee for scheduling and create an explicit
-// Session with them. It must never become an implicit grant for Life Map,
-// Trails, Assessments, Tasks, Messages, or any other personal data.
+// An active, fully accepted Mentorship grants only the minimum capability
+// needed to schedule explicit Sessions. Community Packs, Cycles and account
+// roles never imply this relationship. Admin authorization is handled by the
+// resource action, not hidden inside this relationship resolver.
 export type SessionAttendeeAuthorization =
   | {
       authorized: true;
       source: "mentorship";
       mentorshipId: string;
-    }
-  | {
-      authorized: true;
-      source: "legacy_cohort";
-      mentorshipId: null;
     }
   | {
       authorized: false;
@@ -145,20 +87,18 @@ export type SessionAttendeeAuthorization =
     };
 
 export async function resolveSessionAttendeeAuthorization(
-  mentorId: string,
+  organizerId: string,
   attendeeUserId: string,
-  options: { legacyCohortId?: string } = {}
 ): Promise<SessionAttendeeAuthorization> {
-  if (mentorId === attendeeUserId) {
+  if (organizerId === attendeeUserId) {
     return { authorized: false, source: null, mentorshipId: null };
   }
 
   const mentorship = await prisma.mentorship.findFirst({
     where: {
-      mentorId,
+      mentorId: organizerId,
       menteeId: attendeeUserId,
       status: "active",
-      reviewRequired: false,
       mentorAcceptedAt: { not: null },
       menteeAcceptedAt: { not: null },
       activatedAt: { not: null },
@@ -166,106 +106,45 @@ export async function resolveSessionAttendeeAuthorization(
     },
     select: { id: true },
   });
-  if (mentorship) {
-    return {
-      authorized: true,
-      source: "mentorship",
-      mentorshipId: mentorship.id,
-    };
-  }
 
-  const mentoredCohortIds = options.legacyCohortId
-    ? [options.legacyCohortId]
-    : await getMentoredCohortIds(mentorId);
-  if (mentoredCohortIds.length === 0) {
-    return { authorized: false, source: null, mentorshipId: null };
-  }
-
-  // Transitional compatibility only: both ends of the legacy relationship
-  // must still be active, and the attendee must be a member participant. The
-  // result identifies its source so callers can measure and eventually remove
-  // this fallback without widening any generic access guard.
-  const legacyMembership = await prisma.cohortMembership.findFirst({
-    where: {
-      userId: attendeeUserId,
-      role: "member",
-      status: "active",
-      cohortId: { in: mentoredCohortIds },
-      cohort: {
-        memberships: {
-          some: {
-            userId: mentorId,
-            role: "mentor",
-            status: "active",
-          },
-        },
-      },
-    },
-    select: { id: true },
-  });
-
-  return legacyMembership
-    ? { authorized: true, source: "legacy_cohort", mentorshipId: null }
+  return mentorship
+    ? {
+        authorized: true,
+        source: "mentorship",
+        mentorshipId: mentorship.id,
+      }
     : { authorized: false, source: null, mentorshipId: null };
 }
 
-// ===== LEGACY RELATIONSHIP LOOKUP =====
-//
-// Retained only for measured transitional compatibility where a caller names
-// that legacy source explicitly. It is not a capability resolver and must not
-// be used for Life Map, Trails, Assessments, Tasks, Messages, or other private
-// Person data.
-export async function isMentoredUser(actorId: string, userId: string): Promise<boolean> {
-  const mentoredCohortIds = await getMentoredCohortIds(actorId);
-  if (mentoredCohortIds.length === 0) return false;
-  const membership = await prisma.cohortMembership.findFirst({
-    where: { userId, cohortId: { in: mentoredCohortIds } },
-    select: { id: true },
-  });
-  return membership !== null;
-}
-
 // Person-level data is owner-only until a dedicated, accepted and revocable
-// artifact grant exists. Admin, Mentorship and Cycle context are not grants.
+// artifact grant exists. Admin, Mentorship, Cycle and Pack context are not
+// grants.
 export async function assertUserAccess(
-  userId: string
+  userId: string,
 ): Promise<{ actor: SessionUser; ownerUserId: string }> {
   const actor = await requireUser();
-  if (userId !== actor.id) {
-    throw new Error("Sem permissão.");
-  }
+  if (userId !== actor.id) throw new Error("Sem permissão.");
   return { actor, ownerUserId: userId };
 }
 
-// Owner-only guard for Person-authored writes such as Life Map text.
 export async function assertUserOwner(
-  userId: string
+  userId: string,
 ): Promise<{ actor: SessionUser; ownerUserId: string }> {
-  const actor = await requireUser();
-  if (userId !== actor.id) {
-    throw new Error("Sem permissão.");
-  }
-  return { actor, ownerUserId: userId };
+  return assertUserAccess(userId);
 }
 
-// Cross-person writes are disabled until explicit artifact grants exist. The
-// legacy name remains only to keep call sites fail-closed during migration.
+// Cross-person artifact writes remain unavailable until their own grant model
+// and acceptance flow exist. Session authorization uses the resolver above.
 export async function assertMentorOfUser(
-  userId: string
+  userId: string,
 ): Promise<{ actor: SessionUser; ownerUserId: string }> {
-  const actor = await requireUser();
-  void actor;
+  await requireUser();
   void userId;
   throw new Error("Explicit artifact grant required.");
 }
 
-// Disabled cross-person guard. Session authorization has its own resolver and
-// must never rely on this generic function.
-export async function assertMentorOfUsers(
-  userIds: string[]
-): Promise<SessionUser> {
-  const actor = await requireUser();
-  void actor;
+export async function assertMentorOfUsers(userIds: string[]): Promise<SessionUser> {
+  await requireUser();
   void userIds;
   throw new Error("Explicit artifact grant required.");
 }

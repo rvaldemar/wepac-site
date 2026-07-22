@@ -16,13 +16,11 @@ export type ExpeditionSessionStatus =
   | "cancelled"
   | "no_show";
 
-export type ExpeditionSessionType = "individual" | "group";
-
 export interface ExpeditionSession {
   id: string;
   scheduledAt: string; // ISO date string
   status: ExpeditionSessionStatus;
-  sessionType: ExpeditionSessionType;
+  attendeeCount: number;
   kind: SessionKind;
 }
 

@@ -8,6 +8,7 @@ import type { UserRole } from "@/lib/wepacker/types";
 export async function requirePageUser(): Promise<SessionUser> {
   const user = await getSessionUser();
   if (!user) redirect("/wepacker/login");
+  if (!user.onboarded) redirect("/wepacker/welcome");
   return user;
 }
 

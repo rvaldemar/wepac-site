@@ -1,107 +1,245 @@
-// Canonical contract for the session-debrief epic — the seam every
-// frente (transcript capture, review UI, AI engine) builds against.
-//
-// Ownership (board decision): this file, the Session transcript columns,
-// and the SessionDebrief model are owned by the CAPTURE+REVIEW frente.
-// The ENGINE frente (DebriefEngine implementations) conforms to the
-// shapes below — it must not redefine them.
-//
-// Ratified 6 areas (board decision, see the AreaKey-reducing migration
-// dated 2026-07-20): AreaKey has exactly 6 scored values, full stop. A
-// pack's own practice (music, sport, ...) is carried as unscored free
-// text (practiceObservations) elsewhere in this file, never as a scored
-// member of AreaObservation.
+import {
+  PILLAR_KEYS,
+  SESSION_KIND_KEYS,
+  type PillarKey,
+  type SessionKind,
+} from "@/lib/wepacker/types";
 
-import type { AreaKey, SessionKind } from "@/lib/wepacker/types";
-
-// A mentor-pasted or uploaded transcript is plain text/markdown, capped
-// well above a multi-hour session's plain-text size.
+export const DEBRIEF_CONTRACT_VERSION = "wepac-session-debrief-v3" as const;
 export const MAX_TRANSCRIPT_CHARS = 300_000;
-
-// ===== ENGINE INPUT =====
+export const MAX_DISCUSSION_POINTS_CHARS = 8_000;
+export const MAX_ACTION_SUGGESTIONS = 8;
 
 export interface DebriefAttendeeContext {
-  userId: string;
-  name: string;
-  packSlug?: string;
-  // Most recent composite score per area, when available — grounds the
-  // engine's observations in the person's actual trajectory instead of
-  // reading the transcript in a vacuum.
-  recentAreaScores?: Partial<Record<AreaKey, number>>;
-  activeGoals?: string[];
+  // SessionAttendee.id is an opaque, Session-scoped correlation reference. The
+  // Hub contract never receives a User ID, name, email or Membership identity.
+  attendeeRef: string;
 }
 
-export interface DebriefPackContext {
-  packSlug: string;
-  packName: string;
-  // Free-text description of the pack's own practice (music, sport,
-  // etc). NOT a 7th scored area.
+export interface DebriefDisciplineContext {
+  disciplineKey: string;
   practiceLabel: string;
 }
 
 export interface DebriefInput {
-  sessionId: string;
-  // Plain text/markdown, up to MAX_TRANSCRIPT_CHARS.
+  contractVersion: typeof DEBRIEF_CONTRACT_VERSION;
+  sessionRef: string;
+  transcriptRevision: number;
   transcript: string;
   sessionKind: SessionKind;
   discussionPoints: string | null;
-  attendees: DebriefAttendeeContext[];
-  // null for cohort-less / cross-pack personal sessions.
-  packContext: DebriefPackContext | null;
+  attendees: [DebriefAttendeeContext];
+  disciplineContext: DebriefDisciplineContext | null;
+  releaseMode: "draft_only";
 }
 
-// ===== ENGINE OUTPUT =====
-
-export interface AttendeeTaskSuggestion {
+export interface AttendeeActionSuggestion {
   title: string;
-  description?: string;
-  // ISO yyyy-mm-dd, or "" — mirrors createTaskFromSession's
-  // optional-deadline convention.
-  deadline?: string;
+  description: string | null;
+  // ISO YYYY-MM-DD when proposed, otherwise null.
+  dueDate: string | null;
 }
 
 export interface PerAttendeeDebrief {
-  userId: string;
-  // Suggestion for SessionAttendee.outcome.
+  attendeeRef: string;
   outcomeSuggestion: string;
-  // Suggestion for SessionAttendee.sharedNote.
   sharedNoteSuggestion: string;
-  // Transcript-coverage signal for this person — how much the
-  // transcript actually talked about them specifically.
   confidence: "high" | "medium" | "low";
-  tasks: AttendeeTaskSuggestion[];
+  // Proposals only. Hub and Debrief generation never persist an Action.
+  actions: AttendeeActionSuggestion[];
 }
 
-export type AreaSignal = "strength" | "watch" | "concern" | "not_discussed";
+export type PillarSignal = "strength" | "watch" | "concern" | "not_discussed";
 
-export interface AreaObservation {
-  area: AreaKey;
-  signal: AreaSignal;
-  // Must be traceable to the transcript — faithful extraction, not
-  // invention.
+export interface PillarObservation {
+  signal: PillarSignal;
   evidence: string;
 }
 
-export interface InternalEvaluation {
+export interface InternalSynthesis {
   sessionSummary: string;
-  // Exactly the 6 universal areas — never a 7th scored entry.
-  areaObservations: Record<AreaKey, AreaObservation>;
-  // Pack-specific practice notes, unscored.
-  practiceObservations: string | null;
+  pillarObservations: Record<PillarKey, PillarObservation>;
+  disciplineObservations: string | null;
   risks: string[];
   recommendedFollowUps: string[];
-  // Suggestion for the NEXT session's kind.
-  suggestedSessionKind?: SessionKind;
+  suggestedSessionKind: SessionKind | null;
 }
 
 export interface DebriefResult {
-  perAttendee: PerAttendeeDebrief[];
-  internalEvaluation: InternalEvaluation;
-  // Personal result document in the WEPACKER mountain imaginary. Only
-  // generated for individual (single-attendee) sessions in v1 — null for
-  // group sessions. The review UI must render a no-document state and
-  // never call preview/download when this is null.
-  resultDocumentHtml: string | null;
+  contractVersion: typeof DEBRIEF_CONTRACT_VERSION;
+  perAttendee: [PerAttendeeDebrief];
+  internalSynthesis: InternalSynthesis;
+  // WEPAC renders any member-facing document deterministically. Model-authored
+  // HTML is outside the contract.
+  resultDocumentHtml: null;
 }
 
 export class DebriefEngineError extends Error {}
+
+type JsonRecord = Record<string, unknown>;
+
+function isRecord(value: unknown): value is JsonRecord {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function boundedString(
+  value: unknown,
+  maxChars: number,
+  allowEmpty = true,
+): string | null {
+  if (typeof value !== "string" || value.length > maxChars) return null;
+  if (!allowEmpty && value.trim().length === 0) return null;
+  return value;
+}
+
+function nullableBoundedString(
+  value: unknown,
+  maxChars: number,
+): string | null | undefined {
+  if (value === null) return null;
+  return boundedString(value, maxChars) ?? undefined;
+}
+
+function stringList(value: unknown, maxItems: number): string[] | null {
+  if (!Array.isArray(value) || value.length > maxItems) return null;
+  const result: string[] = [];
+  for (const item of value) {
+    const parsed = boundedString(item, 5_000);
+    if (parsed === null) return null;
+    result.push(parsed);
+  }
+  return result;
+}
+
+function parsePerAttendee(
+  value: unknown,
+  expectedAttendeeRef?: string,
+): [PerAttendeeDebrief] | null {
+  if (!Array.isArray(value) || value.length !== 1 || !isRecord(value[0])) {
+    return null;
+  }
+
+  const row = value[0];
+  const attendeeRef = boundedString(row.attendeeRef, 200, false);
+  const outcomeSuggestion = boundedString(row.outcomeSuggestion, 20_000);
+  const sharedNoteSuggestion = boundedString(row.sharedNoteSuggestion, 20_000);
+  if (
+    attendeeRef === null ||
+    (expectedAttendeeRef !== undefined && attendeeRef !== expectedAttendeeRef) ||
+    outcomeSuggestion === null ||
+    sharedNoteSuggestion === null ||
+    !["high", "medium", "low"].includes(String(row.confidence)) ||
+    !Array.isArray(row.actions) ||
+    row.actions.length > MAX_ACTION_SUGGESTIONS
+  ) {
+    return null;
+  }
+
+  const actions: AttendeeActionSuggestion[] = [];
+  for (const value of row.actions) {
+    if (!isRecord(value)) return null;
+    const title = boundedString(value.title, 300, false);
+    const description = nullableBoundedString(value.description, 5_000);
+    const dueDate = nullableBoundedString(value.dueDate, 10);
+    if (
+      title === null ||
+      description === undefined ||
+      dueDate === undefined ||
+      (dueDate !== null && !/^\d{4}-\d{2}-\d{2}$/.test(dueDate))
+    ) {
+      return null;
+    }
+    actions.push({ title, description, dueDate });
+  }
+
+  return [
+    {
+      attendeeRef,
+      outcomeSuggestion,
+      sharedNoteSuggestion,
+      confidence: row.confidence as PerAttendeeDebrief["confidence"],
+      actions,
+    },
+  ];
+}
+
+function parseInternalSynthesis(value: unknown): InternalSynthesis | null {
+  if (!isRecord(value) || !isRecord(value.pillarObservations)) return null;
+
+  const sessionSummary = boundedString(value.sessionSummary, 20_000);
+  const disciplineObservations = nullableBoundedString(
+    value.disciplineObservations,
+    20_000,
+  );
+  const risks = stringList(value.risks, 20);
+  const recommendedFollowUps = stringList(value.recommendedFollowUps, 20);
+  if (
+    sessionSummary === null ||
+    disciplineObservations === undefined ||
+    risks === null ||
+    recommendedFollowUps === null
+  ) {
+    return null;
+  }
+
+  const pillarObservations = {} as Record<PillarKey, PillarObservation>;
+  for (const pillar of PILLAR_KEYS) {
+    const rawObservation = value.pillarObservations[pillar];
+    if (!isRecord(rawObservation)) return null;
+    const evidence = boundedString(rawObservation.evidence, 10_000);
+    if (
+      evidence === null ||
+      !["strength", "watch", "concern", "not_discussed"].includes(
+        String(rawObservation.signal),
+      )
+    ) {
+      return null;
+    }
+    pillarObservations[pillar] = {
+      signal: rawObservation.signal as PillarSignal,
+      evidence,
+    };
+  }
+
+  const suggestedSessionKind = value.suggestedSessionKind;
+  if (
+    suggestedSessionKind !== null &&
+    !SESSION_KIND_KEYS.includes(suggestedSessionKind as SessionKind)
+  ) {
+    return null;
+  }
+
+  return {
+    sessionSummary,
+    pillarObservations,
+    disciplineObservations,
+    risks,
+    recommendedFollowUps,
+    suggestedSessionKind: suggestedSessionKind as SessionKind | null,
+  };
+}
+
+// Treat Hub output and JSON read from the database as untrusted. Returning a
+// freshly constructed value prevents old W01 rows or malformed provider output
+// from being cast across the server/client boundary.
+export function parseDebriefResult(
+  value: unknown,
+  expectedAttendeeRef?: string,
+): DebriefResult | null {
+  if (
+    !isRecord(value) ||
+    value.contractVersion !== DEBRIEF_CONTRACT_VERSION ||
+    value.resultDocumentHtml !== null
+  ) {
+    return null;
+  }
+  const perAttendee = parsePerAttendee(value.perAttendee, expectedAttendeeRef);
+  const internalSynthesis = parseInternalSynthesis(value.internalSynthesis);
+  if (!perAttendee || !internalSynthesis) return null;
+  return {
+    contractVersion: DEBRIEF_CONTRACT_VERSION,
+    perAttendee,
+    internalSynthesis,
+    resultDocumentHtml: null,
+  };
+}
