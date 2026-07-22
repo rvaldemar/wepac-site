@@ -8,6 +8,20 @@ already committed under `public/images/arte-a-capela/`.
 This document is the build brief. Where it is silent, follow `src/app/wessex/page.tsx`, which is the
 existing precedent for a sub-brand landing page in this repo.
 
+## How much authority this design has
+
+**The Figma was produced by a designer who does not know this platform or product.** That makes it
+authoritative on identity, narrative and layout — what a designer is actually deciding — and merely
+illustrative wherever it depicts product behaviour. The tell shows in three places: it offers MB Way,
+which our Stripe integration does not support; it draws a checkout form, while this repo already
+ships a ticketing product with tiers, capacity and QR check-in; and it shows one price, while a real
+Arte à Capela event carries several tiers, including a patron one.
+
+So: match the design faithfully on typography, colour, imagery, copy and section rhythm. Where it
+depicts a mechanism we already own, defer to the product and its data — and never reproduce a payment
+method or a price that does not exist. A review board ruled on the ticketing block on 2026-07-22;
+section 9 records the outcome.
+
 ## Positioning
 
 `/arte-a-capela` is a **top-level route**, a sibling of `/wessex` — not inside the `(site)` route
