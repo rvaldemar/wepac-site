@@ -602,8 +602,7 @@ RETIRED_TABLES=(
 : > "${EVIDENCE_DIR}/post-migration-target-table-counts.tsv"
 for table_name in "${TARGET_TABLES[@]}"; do
   test "$(psql "${DATABASE_URL}" -X -At --set=ON_ERROR_STOP=on \
-    -v table_name="${table_name}" -c \
-    "SELECT count(*) FROM pg_tables WHERE schemaname = 'public' AND tablename = :'table_name'")" = 1
+    -c "SELECT count(*) FROM pg_tables WHERE schemaname = 'public' AND tablename = '${table_name}'")" = 1
   target_row_count="$(psql "${DATABASE_URL}" -X -At \
     --set=ON_ERROR_STOP=on \
     -c "SELECT count(*) FROM public.\"${table_name}\"")"
@@ -612,8 +611,7 @@ for table_name in "${TARGET_TABLES[@]}"; do
 done
 for table_name in "${RETIRED_TABLES[@]}"; do
   test "$(psql "${DATABASE_URL}" -X -At --set=ON_ERROR_STOP=on \
-    -v table_name="${table_name}" -c \
-    "SELECT count(*) FROM pg_tables WHERE schemaname = 'public' AND tablename = :'table_name'")" = 1
+    -c "SELECT count(*) FROM pg_tables WHERE schemaname = 'public' AND tablename = '${table_name}'")" = 1
 done
 
 snapshot_named_table_counts \
