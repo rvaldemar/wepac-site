@@ -11,7 +11,7 @@ const navigation = [
   { name: "Arte à Capela", href: "/arte-a-capela" },
   { name: "Artistas", href: "/artist" },
   { name: "Agenda", href: "/programacao" },
-  { name: "WEPACKER Society", href: "/society" },
+  { name: "Society", href: "/society" },
   { name: "Contacto", href: "/contacto" },
 ];
 
