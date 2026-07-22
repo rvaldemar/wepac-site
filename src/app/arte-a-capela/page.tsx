@@ -191,25 +191,41 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
             style={{
               // The 52% stop let the gradient finish lightening before the
               // long headline lines' final characters (the "a" of "nova
-              // vida", the "o." of "património.") clear it — those glyphs
-              // sampled under ~3.9-4.2:1 against the lit nave. Pushing that
-              // stop to 60% keeps the dark band under the whole headline
-              // column without touching the 0%/26%/100% stops, so it holds
-              // the already-verified lead paragraph and CTAs (both sit past
-              // 60% and stay flat at the same 0.18 tail alpha) and leaves
-              // the photo just as visible on the right. Verified by
-              // compositing this gradient over the real hero.jpg pixels and
-              // sampling under every headline glyph (worst case went from
-              // ~4.05:1 to ~4.98:1 across 1384-1600px viewports).
+              // vida", the "o." of "património.") clear it. A first attempt
+              // pushed this to 60% and was verified by compositing this
+              // gradient over the real hero.jpg pixels in a hand-rolled
+              // Python simulation — but that simulation was never checked
+              // against an actual browser render. It also shipped with a
+              // right-column scrim (below) that, due to a stacking bug, was
+              // painting over the headline and incidentally propping up the
+              // measured contrast there. Once that bug was fixed (h1 got
+              // its own z-index) and the headline was re-measured by
+              // rendering the real page with Playwright and sampling actual
+              // composited pixels, the true worst case at 60% was only
+              // ~3.9-4.0:1 — still failing. 78% is the value that actually
+              // clears 4.5:1 under the real browser, confirmed at every
+              // sampled width from 1384-1600px (worst case ~5.5:1). The
+              // lead paragraph and CTAs sit well past 78% and stay flat at
+              // the same 0.18 tail alpha, so they're unaffected by this
+              // change; the photo is just as visible on the right.
               backgroundImage:
-                "linear-gradient(100deg, rgba(11,10,9,0.92) 0%, rgba(11,10,9,0.72) 26%, rgba(11,10,9,0.18) 60%, rgba(11,10,9,0.18) 100%)",
+                "linear-gradient(100deg, rgba(11,10,9,0.92) 0%, rgba(11,10,9,0.72) 26%, rgba(11,10,9,0.18) 78%, rgba(11,10,9,0.18) 100%)",
             }}
           />
         </div>
 
         <div className="relative z-10 w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-16 xl:px-24 pt-[110px] lg:pt-[130px] pb-16 grid lg:grid-cols-[auto_360px] gap-10 lg:gap-14 lg:justify-center items-end">
+          {/* relative z-10 (matching the paragraph/CTA column below) is
+              load-bearing, not decorative: without it this h1 is a
+              non-positioned box, and CSS paints ALL positioned descendants
+              of the grid (including the right column's scrim, which bleeds
+              well past its own box) after ALL non-positioned content,
+              regardless of DOM order. That painted the scrim over the
+              headline in production even though the scrim's div comes
+              after the h1 in source order — DOM order only decides paint
+              order among elements at the same z-index tier. */}
           <h1
-            className={`${serif} font-normal text-[44px] sm:text-[60px] md:text-[76px] lg:text-[78px] leading-[1.05] lg:leading-[1.15]`}
+            className={`${serif} relative z-10 font-normal text-[44px] sm:text-[60px] md:text-[76px] lg:text-[78px] leading-[1.05] lg:leading-[1.15]`}
           >
             A arte
             <br />
@@ -227,34 +243,44 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
           <div className="relative space-y-6 lg:space-y-8">
             {/* The right-hand column sits over the brightened right edge of
                 the photo (the linear gradient is only 18% opacity out here).
-                A prior version of this scrim (0.7 peak alpha, pure two-stop
-                ellipse fading from the center to 0 at the box's own edge,
-                -120px inset) was checked against a wrong assumption that the
-                lead paragraph wraps 2 lines — it actually wraps 3 at this
-                column width, which pushes the real content box (and the
-                secondary CTA sitting at its bottom) further from the
-                ellipse's center than assumed. Rendering the real page with
-                Playwright at 1384-1600px and sampling the actual composited
-                pixels (not a hand-rolled approximation) measured the
-                paragraph at ~3.6:1 and the secondary CTA's border at
-                ~1.6:1 — both failing.
-                Fix: a flat plateau (0% to 60% stays at full alpha, only the
-                outer 40% fades to 0) so the whole content box — not just
-                its center — sits inside the fully-dark zone, plus a wider
-                -150px inset so that plateau's edge clears the box's actual
-                corners. This only touches the right column; the main
-                gradient above (and the headline sitting on it) is
-                untouched. Re-measured: paragraph ~4.8-6.4:1, secondary CTA
-                label ~7.9-8.8:1, both clear 4.5:1. Right-half mean
-                luminance settles at ~30-31 (was ~33-34 before this scrim
-                strengthening, ~18.7 for the old over-darkened photo) —
-                still clearly a photo, not a silhouette. */}
+                A prior version of this scrim bled -150px on EVERY side
+                (including leftward, well past the ~56px gap into the h1's
+                own column) to cover its own content box, and because the h1
+                had no position/z-index of its own, CSS painted that
+                positioned, bled scrim on top of the non-positioned h1 in
+                production regardless of DOM order — see the comment on the
+                h1 above. It also used a flat plateau (constant alpha, then
+                a sudden linear drop), whose slope discontinuity read as a
+                visible edge against the photo.
+                This version: (1) left bleed is capped at 50px, comfortably
+                inside the 56px gap to the h1 — this scrim structurally
+                cannot reach the headline's own column, independent of the
+                h1 z-index fix, which is now a second, independent
+                safeguard; (2) right/up/down are free to bleed since that
+                side of the column has no neighbour to protect; (3) the
+                falloff is a five-stop ease, not a flat plateau, so there is
+                no slope discontinuity to read as a hard ring or rectangle.
+                Note honestly: a scrim strong enough to clear 4.5:1/3:1 text
+                and border thresholds against this bright, detailed photo is
+                still visible as a soft, gradually-graduated darkened area —
+                that's the expected, intended effect of a text scrim, not a
+                geometric artifact. What was fixed is the hard-edged
+                rectangle/ring and the overlap with the headline; a smooth
+                vignette behind text over a photo is normal.
+                All verified by rendering the real page with Playwright at
+                1384-1600px and sampling the actual composited pixels (not a
+                hand-rolled approximation) — see the sibling elements below
+                for the measured contrast this scrim needs to clear. */}
             <div
               aria-hidden="true"
-              className="hidden lg:block absolute -inset-x-[150px] -inset-y-[150px] pointer-events-none"
+              className="hidden lg:block absolute pointer-events-none"
               style={{
+                left: "-50px",
+                right: "-160px",
+                top: "-160px",
+                bottom: "-160px",
                 backgroundImage:
-                  "radial-gradient(ellipse at center, rgba(11,10,9,0.55) 0%, rgba(11,10,9,0.55) 60%, rgba(11,10,9,0) 100%)",
+                  "radial-gradient(ellipse at center, rgba(11,10,9,0.94) 0%, rgba(11,10,9,0.85) 30%, rgba(11,10,9,0.65) 50%, rgba(11,10,9,0.33) 70%, rgba(11,10,9,0) 100%)",
               }}
             />
             <p className="relative z-10 text-[15px] sm:text-[17px] leading-[1.6] text-white/70">
@@ -275,11 +301,12 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
                   possible background it still only reaches ~2.3:1, because
                   the border color itself is 75% background at any alpha
                   that low, so no amount of scrim behind it can reach 3:1.
-                  50% alpha raises that ceiling comfortably past 3:1 across
-                  the range of backgrounds actually measured here. */}
+                  55% alpha raises that ceiling comfortably past 3:1 across
+                  the range of backgrounds actually measured here (real
+                  Playwright rendering, not simulated). */}
               <a
                 href="#evento"
-                className="inline-flex items-center justify-center border border-white/50 text-white text-[11px] font-medium uppercase tracking-[0.18em] px-8 h-[44px] hover:border-white/65 transition"
+                className="inline-flex items-center justify-center border border-white/55 text-white text-[11px] font-medium uppercase tracking-[0.18em] px-8 h-[44px] hover:border-white/70 transition"
               >
                 Ver programação
               </a>
