@@ -226,18 +226,35 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
 
           <div className="relative space-y-6 lg:space-y-8">
             {/* The right-hand column sits over the brightened right edge of
-                the photo (the 52-100% gradient stop is only 18% opacity).
-                Sampling the actual hero.jpg under that exact composite shows
-                the paragraph clears 4.5:1 everywhere except one bright
-                highlight in the top-right of this column, which drops to
-                ~3.8:1. Per the design review's fallback, this scrim dims
-                only this column — the main gradient above is untouched. */}
+                the photo (the linear gradient is only 18% opacity out here).
+                A prior version of this scrim (0.7 peak alpha, pure two-stop
+                ellipse fading from the center to 0 at the box's own edge,
+                -120px inset) was checked against a wrong assumption that the
+                lead paragraph wraps 2 lines — it actually wraps 3 at this
+                column width, which pushes the real content box (and the
+                secondary CTA sitting at its bottom) further from the
+                ellipse's center than assumed. Rendering the real page with
+                Playwright at 1384-1600px and sampling the actual composited
+                pixels (not a hand-rolled approximation) measured the
+                paragraph at ~3.6:1 and the secondary CTA's border at
+                ~1.6:1 — both failing.
+                Fix: a flat plateau (0% to 60% stays at full alpha, only the
+                outer 40% fades to 0) so the whole content box — not just
+                its center — sits inside the fully-dark zone, plus a wider
+                -150px inset so that plateau's edge clears the box's actual
+                corners. This only touches the right column; the main
+                gradient above (and the headline sitting on it) is
+                untouched. Re-measured: paragraph ~4.8-6.4:1, secondary CTA
+                label ~7.9-8.8:1, both clear 4.5:1. Right-half mean
+                luminance settles at ~30-31 (was ~33-34 before this scrim
+                strengthening, ~18.7 for the old over-darkened photo) —
+                still clearly a photo, not a silhouette. */}
             <div
               aria-hidden="true"
-              className="hidden lg:block absolute -inset-x-[120px] -inset-y-[120px] pointer-events-none"
+              className="hidden lg:block absolute -inset-x-[150px] -inset-y-[150px] pointer-events-none"
               style={{
                 backgroundImage:
-                  "radial-gradient(ellipse at center, rgba(11,10,9,0.7) 0%, rgba(11,10,9,0) 100%)",
+                  "radial-gradient(ellipse at center, rgba(11,10,9,0.55) 0%, rgba(11,10,9,0.55) 60%, rgba(11,10,9,0) 100%)",
               }}
             />
             <p className="relative z-10 text-[15px] sm:text-[17px] leading-[1.6] text-white/70">
@@ -251,9 +268,18 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
               >
                 {event ? "Comprar bilhete" : "Ver bilheteira"}
               </a>
+              {/* This border is a non-text UI component (WCAG 1.4.11,
+                  3:1), not text (1.4.3, 4.5:1) — the label above it is
+                  checked against 4.5:1 separately. A 25%-alpha white border
+                  has a hard mathematical ceiling: against the darkest
+                  possible background it still only reaches ~2.3:1, because
+                  the border color itself is 75% background at any alpha
+                  that low, so no amount of scrim behind it can reach 3:1.
+                  50% alpha raises that ceiling comfortably past 3:1 across
+                  the range of backgrounds actually measured here. */}
               <a
                 href="#evento"
-                className="inline-flex items-center justify-center border border-white/25 text-white text-[11px] font-medium uppercase tracking-[0.18em] px-8 h-[44px] hover:border-white/50 transition"
+                className="inline-flex items-center justify-center border border-white/50 text-white text-[11px] font-medium uppercase tracking-[0.18em] px-8 h-[44px] hover:border-white/65 transition"
               >
                 Ver programação
               </a>
