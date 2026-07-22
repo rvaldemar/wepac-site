@@ -58,7 +58,7 @@ const WHAT_IT_IS_NOT = [
   "Não é um curso: não há aulas, módulos nem certificado.",
   "Não é uma aplicação de hábitos: não há streaks nem notificações a pedir-te para voltares.",
   "Não é uma rede social: não há feed, não conheces os outros membros e não há mensagens para desconhecidos.",
-  "Não é acompanhamento clínico: não substitui psicologia nem psicoterapia.",
+  "Não é apoio especializado de saúde: não substitui acompanhamento psicológico ou médico.",
   "E não é para toda a gente ao mesmo tempo: cada pessoa aceite ocupa um mentor a sério.",
 ];
 
@@ -71,8 +71,8 @@ const DOORS = [
     href: null,
   },
   {
-    name: "Clínica WEPAC",
-    body: "Modelo clínico-pedagógico dos 0 aos 24 anos. Abre em Lisboa em setembro de 2026.",
+    name: "Care",
+    body: "Acompanhamento próximo a pessoas e famílias, nos momentos que pedem mais apoio.",
     href: null,
   },
   {
