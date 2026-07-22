@@ -29,6 +29,10 @@
   --color-wessex-gray: #EFEFF0;
   --color-wessex-dark: #2c2d2e;
   --color-wessex-light: #FCFCFC;
+  --font-cormorant: "Cormorant Garamond", serif;
+  --color-capela-bg: #0B0A09;
+  --color-capela-cream: #F0EDE6;
+  --color-capela-red: #C2301F;
 }
 
 body {
