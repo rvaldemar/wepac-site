@@ -303,17 +303,20 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
         </div>
       </section>
 
-      {/* IMAGE DUO */}
-      <section className="grid grid-cols-1 lg:grid-cols-2">
-        <div className="flex justify-center bg-capela-bg lg:py-10">
-          <div className="relative w-full max-w-[560px] aspect-square">
-            <img
-              src="/images/arte-a-capela/azulejos.jpg"
-              alt="Painel de azulejos portugueses"
-              className="absolute inset-0 w-full h-full object-cover object-center"
-              loading="lazy"
-            />
-          </div>
+      {/* IMAGE DUO — azulejos.jpg is 450x450, the one low-res asset in this
+          set. A centred square box in a half-width column left empty bars
+          either side; giving it its own narrower, squarer column instead
+          lets it fill the box its resolution can actually cover, while
+          Lisboa (much higher-res) takes the wider remaining column. Both
+          panes stay full-bleed with no gap, same as the gallery band above. */}
+      <section className="grid grid-cols-1 lg:grid-cols-[2fr_3fr]">
+        <div className="relative aspect-square">
+          <img
+            src="/images/arte-a-capela/azulejos.jpg"
+            alt="Painel de azulejos portugueses"
+            className="absolute inset-0 w-full h-full object-cover object-center"
+            loading="lazy"
+          />
         </div>
         <div className="relative h-[280px] sm:h-[380px] lg:h-auto">
           <img
