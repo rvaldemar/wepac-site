@@ -29,6 +29,11 @@ export const stats: { title: string; caption: string }[] = [
 export const noUpcomingEvent = {
   heading: "Ainda não há concerto marcado.",
   body: "Estamos a preparar a próxima experiência da Arte à Capela. Assim que a data for confirmada, os bilhetes ficam disponíveis na bilheteira.",
+  // Deliberately distinct from `heading` above — the event section (#evento)
+  // and the ticketing block both render a "no concert yet" message in
+  // display serif on the same page, and a design review ruled that the two
+  // must never repeat the identical sentence in that voice.
+  ticketingHeading: "Ainda não há bilhetes à venda.",
 };
 
 export const footerTagline =

@@ -95,8 +95,9 @@ Below it, small sans body at ~13px, white/45%:
 
 ### 4. Gallery — three images, one row
 
-`claustro.jpg` (wide, ~2fr) · `talha.jpg` (~1.2fr) · `vitral.jpg` (~1fr), equal height, no gaps.
-Stacks vertically on mobile.
+`claustro.jpg` (wide) · `talha.jpg` · `vitral.jpg`, equal height, no gaps. Column split measured off
+the board at 41.3% / 29.1% / 29.6% (`lg:grid-cols-[1.41fr_1fr_1.01fr]`) — see the measurement note at
+the end of this document. Stacks vertically on mobile.
 
 ### 5. Quote + stats band
 
@@ -142,7 +143,8 @@ at `/bilheteira`.
 
 ### 8. Full-width image band
 
-`tumulo-vitral.jpg`, cropped to a wide letterbox (~21:9 desktop, taller on mobile).
+`tumulo-vitral.jpg`, cropped to a wide letterbox (4.18:1 desktop — see the measurement note at the
+end of this document — taller on mobile), with a ~25-30% dimming layer.
 
 ### 9. Ticketing (`#bilheteira`) — cream block
 
@@ -202,3 +204,14 @@ Hairline, then `© 2026 Arte à Capela` left and `Portugal · Cultura · Patrim�
 - Accessibility: every image needs a meaningful `alt` (decorative bands may use `alt=""`), the form
   needs real labels (visually hidden if the design shows none), and text over imagery must clear
   4.5:1 against the darkened backdrop.
+
+## Measurement note (2026-07-22)
+
+The gallery split (section 4) and the full-width image band aspect ratio (section 8) were originally
+transcribed "by eye" from the board and were wrong: the gallery split was recorded as 2fr/1.2fr/1fr
+with the middle and last weights swapped, and the letterbox band was recorded as "~21:9" instead of
+its actual 4.18:1. A four-lens design-board review on 2026-07-22 remeasured both directly off the
+board — scale calibrated from the full-bleed bands against the stated 1533.6px frame width — and this
+document now reflects those measured figures (41.3% / 29.1% / 29.6% and 4.18:1) rather than the
+earlier eyeballed ones. Treat any dimension in this file that is not sourced from an explicit
+measurement pass with the same skepticism.

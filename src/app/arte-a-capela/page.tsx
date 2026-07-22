@@ -179,7 +179,7 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
       </header>
 
       {/* HERO */}
-      <section className="relative w-full min-h-[640px] sm:min-h-[760px] lg:min-h-screen overflow-hidden flex items-center">
+      <section className="relative w-full min-h-[640px] sm:min-h-[760px] lg:min-h-[640px] lg:h-[46vw] lg:max-h-[880px] overflow-hidden flex items-center">
         <div className="absolute inset-0">
           <img
             src="/images/arte-a-capela/hero.jpg"
@@ -190,15 +190,14 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
             className="absolute inset-0"
             style={{
               backgroundImage:
-                "linear-gradient(100deg, rgba(11,10,9,0.94) 20%, rgba(11,10,9,0.55) 62%, rgba(11,10,9,0.75) 100%)",
+                "linear-gradient(100deg, rgba(11,10,9,0.92) 0%, rgba(11,10,9,0.72) 26%, rgba(11,10,9,0.18) 52%, rgba(11,10,9,0.18) 100%)",
             }}
           />
-          <div className="absolute inset-0 bg-black/25" />
         </div>
 
-        <div className="relative z-10 w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-16 xl:px-24 pt-[110px] lg:pt-[130px] pb-16 grid lg:grid-cols-[1fr_420px] gap-10 lg:gap-16 items-end lg:items-center">
+        <div className="relative z-10 w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-16 xl:px-24 pt-[110px] lg:pt-[130px] pb-16 grid lg:grid-cols-[auto_360px] gap-10 lg:gap-14 lg:justify-center items-end">
           <h1
-            className={`${serif} font-normal text-[44px] sm:text-[60px] md:text-[76px] lg:text-[92px] leading-[1.05] lg:leading-[1.1]`}
+            className={`${serif} font-normal text-[44px] sm:text-[60px] md:text-[76px] lg:text-[78px] leading-[1.05] lg:leading-[1.15]`}
           >
             A arte
             <br />
@@ -213,21 +212,36 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
             </em>
           </h1>
 
-          <div className="space-y-6 lg:space-y-8">
-            <p className="text-[15px] sm:text-[17px] leading-[1.6] text-white/70">
+          <div className="relative space-y-6 lg:space-y-8">
+            {/* The right-hand column sits over the brightened right edge of
+                the photo (the 52-100% gradient stop is only 18% opacity).
+                Sampling the actual hero.jpg under that exact composite shows
+                the paragraph clears 4.5:1 everywhere except one bright
+                highlight in the top-right of this column, which drops to
+                ~3.8:1. Per the design review's fallback, this scrim dims
+                only this column — the main gradient above is untouched. */}
+            <div
+              aria-hidden="true"
+              className="hidden lg:block absolute -inset-x-[120px] -inset-y-[120px] pointer-events-none"
+              style={{
+                backgroundImage:
+                  "radial-gradient(ellipse at center, rgba(11,10,9,0.7) 0%, rgba(11,10,9,0) 100%)",
+              }}
+            />
+            <p className="relative z-10 text-[15px] sm:text-[17px] leading-[1.6] text-white/70">
               Concertos intimistas e experiências imersivas em capelas,
               igrejas e espaços históricos de Portugal.
             </p>
-            <div className="flex flex-col sm:flex-row lg:flex-col gap-3 sm:gap-4">
+            <div className="relative z-10 flex flex-col sm:flex-row lg:flex-col items-start gap-3 sm:gap-4">
               <a
-                href="#bilheteira"
-                className="inline-flex items-center justify-center bg-capela-red text-white text-[11px] font-medium uppercase tracking-[0.18em] px-8 h-[52px] hover:bg-capela-red/85 transition"
+                href={event ? "#bilheteira" : "/bilheteira"}
+                className="inline-flex items-center justify-center bg-capela-red text-white text-[11px] font-medium uppercase tracking-[0.18em] px-8 h-[44px] hover:bg-capela-red/85 transition"
               >
-                Comprar bilhete
+                {event ? "Comprar bilhete" : "Ver bilheteira"}
               </a>
               <a
                 href="#evento"
-                className="inline-flex items-center justify-center border border-white/25 text-white text-[11px] font-medium uppercase tracking-[0.18em] px-8 h-[52px] hover:border-white/50 transition"
+                className="inline-flex items-center justify-center border border-white/25 text-white text-[11px] font-medium uppercase tracking-[0.18em] px-8 h-[44px] hover:border-white/50 transition"
               >
                 Ver programação
               </a>
@@ -251,7 +265,7 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
       </section>
 
       {/* GALLERY */}
-      <section className="grid grid-cols-1 lg:grid-cols-[2fr_1.2fr_1fr]">
+      <section className="grid grid-cols-1 lg:grid-cols-[1.41fr_1fr_1.01fr]">
         {[
           { src: "claustro.jpg", alt: "Claustro de um edifício patrimonial" },
           { src: "talha.jpg", alt: "Detalhe de talha dourada" },
@@ -269,20 +283,20 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
       </section>
 
       {/* QUOTE + STATS */}
-      <section className="py-20 lg:py-28">
+      <section className="py-10 lg:py-14">
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 lg:px-16 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <p
             className={`${serif} italic text-[19px] sm:text-[22px] leading-[1.5] text-white/70 max-w-[520px]`}
           >
             &ldquo;{pullQuote}&rdquo;
           </p>
-          <div className="space-y-8 lg:justify-self-end">
+          <div className="grid grid-cols-3 gap-10 lg:justify-self-end">
             {stats.map((stat) => (
               <div key={stat.title}>
-                <p className={`${serif} text-[30px] sm:text-[36px] leading-[1.1]`}>
+                <p className={`${serif} text-[17px] sm:text-[19px] leading-[1.1]`}>
                   {stat.title}
                 </p>
-                <p className="text-[11px] uppercase tracking-[0.18em] text-white/40 mt-1">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-white/55 mt-1">
                   {stat.caption}
                 </p>
               </div>
@@ -292,13 +306,13 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
       </section>
 
       {/* IMAGE DUO — azulejos.jpg is 450x450, the one low-res asset in this
-          set. A centred square box in a half-width column left empty bars
-          either side; giving it its own narrower, squarer column instead
-          lets it fill the box its resolution can actually cover, while
-          Lisboa (much higher-res) takes the wider remaining column. Both
-          panes stay full-bleed with no gap, same as the gallery band above. */}
-      <section className="grid grid-cols-1 lg:grid-cols-[2fr_3fr]">
-        <div className="relative aspect-square">
+          set. The Figma pane is landscape (~1.53:1), not square — a square
+          box would upscale that source 3.06x at DPR2, whereas the landscape
+          box keeps it to about 1.36x. Lisboa (much higher-res) takes the
+          wider remaining column. Both panes stay full-bleed with no gap,
+          same as the gallery band above. */}
+      <section className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] lg:h-[400px]">
+        <div className="relative h-[280px] sm:h-[380px] lg:h-full">
           <img
             src="/images/arte-a-capela/azulejos.jpg"
             alt="Painel de azulejos portugueses"
@@ -319,7 +333,7 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
       {/* NEXT EVENT */}
       <section id="evento" className="py-20 lg:py-28">
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 lg:px-16">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-capela-red mb-4">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-capela-red-on-dark mb-4">
             Próximo evento
           </p>
 
@@ -327,20 +341,20 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
             <>
               <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 lg:gap-10">
                 <h2
-                  className={`${serif} text-[40px] sm:text-[48px] lg:text-[56px] leading-[1.15] max-w-[720px]`}
+                  className={`${serif} text-[40px] sm:text-[48px] lg:text-[60px] leading-[1.15] max-w-[720px]`}
                 >
                   {event.title}
                 </h2>
 
                 <div className="flex flex-wrap lg:flex-nowrap items-center gap-6 lg:gap-10 lg:text-right">
                   <div>
-                    <p className="text-[11px] uppercase tracking-[0.18em] text-white/40">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-white/55">
                       Data
                     </p>
                     <p className="mt-1 text-[15px]">{event.dateShort}</p>
                   </div>
                   <div>
-                    <p className="text-[11px] uppercase tracking-[0.18em] text-white/40">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-white/55">
                       Entrada
                     </p>
                     <p className="mt-1 text-[15px]">{event.priceLabel}</p>
@@ -358,7 +372,7 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
                   (see src/data/arte-a-capela.ts) — there is no real programme
                   data to render here, for this or any other event. */}
               <div className="border-t border-white/10 mt-12 lg:mt-16 pt-12 lg:pt-16">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-white/40 mb-3">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-white/55 mb-3">
                   Artista
                 </p>
                 <p className={`${serif} text-[26px] sm:text-[28px]`}>{event.artist}</p>
@@ -368,7 +382,7 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
           ) : (
             <div className="max-w-[640px]">
               <h2
-                className={`${serif} text-[40px] sm:text-[48px] lg:text-[56px] leading-[1.15]`}
+                className={`${serif} text-[40px] sm:text-[48px] lg:text-[60px] leading-[1.15]`}
               >
                 {noUpcomingEvent.heading}
               </h2>
@@ -387,13 +401,14 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
       </section>
 
       {/* IMAGE BAND */}
-      <section className="relative w-full aspect-[4/5] sm:aspect-[16/9] lg:aspect-[21/9]">
+      <section className="relative w-full aspect-[3/2] sm:aspect-[16/9] lg:aspect-[4/1]">
         <img
           src="/images/arte-a-capela/tumulo-vitral.jpg"
           alt="Túmulo sob um vitral histórico"
           className="absolute inset-0 w-full h-full object-cover object-center"
           loading="lazy"
         />
+        <div className="absolute inset-0 bg-black/25" />
       </section>
 
       {/* TICKETING */}
@@ -408,7 +423,7 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
 
             {event ? (
               <>
-                <h2 className={`${serif} text-[32px] sm:text-[40px] leading-[1.15] mb-8`}>
+                <h2 className={`${serif} text-[32px] sm:text-[54px] leading-[1.15] mb-8`}>
                   {event.title}
                 </h2>
 
@@ -452,8 +467,8 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
               </>
             ) : (
               <>
-                <h2 className={`${serif} text-[32px] sm:text-[40px] leading-[1.15] mb-4`}>
-                  {noUpcomingEvent.heading}
+                <h2 className={`${serif} text-[32px] sm:text-[54px] leading-[1.15] mb-4`}>
+                  {noUpcomingEvent.ticketingHeading}
                 </h2>
                 <p className="text-[14px] text-black/58 leading-[1.7] max-w-[420px]">
                   {noUpcomingEvent.body}
@@ -471,18 +486,8 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
 
           {/* Right column — every tier, in order, each its own way in.
               This replaces an inline checkout that duplicated the real
-              ticketing product; the tier itself deep-links there. When
-              there is nothing to list, the block is centred against the
-              left column's height instead of trailing off — the ternary
-              below only ever changes what fills this space, never the
-              live-tier layout itself. */}
-          <div
-            className={`lg:pl-16 pt-14 lg:pt-0${
-              event && tiers.length > 0
-                ? ""
-                : " lg:flex lg:flex-col lg:justify-center"
-            }`}
-          >
+              ticketing product; the tier itself deep-links there. */}
+          <div className="lg:pl-16 pt-14 lg:pt-0">
             {cancelled && (
               <p className="mb-6 text-[13px] text-black/70 border border-black/20 bg-black/5 px-4 py-3">
                 Pagamento cancelado. Se foi engano, podes tentar novamente.
@@ -534,13 +539,11 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
                 </p>
               </div>
             ) : (
-              <div className="max-w-[420px] border-t border-black/10 pt-10 space-y-8">
+              <div className="max-w-[420px] space-y-8">
                 <p className="text-[11px] uppercase tracking-[0.18em] text-black/60">
                   Disponibilidade
                 </p>
-                <h3
-                  className={`${serif} text-[30px] sm:text-[36px] leading-[1.2]`}
-                >
+                <h3 className="text-[15px] font-medium">
                   Ainda não há bilhetes publicados para este evento.
                 </h3>
                 <p className="text-[14px] text-black/58 leading-[1.7]">
@@ -578,7 +581,7 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
             </div>
 
             <div>
-              <p className="text-[11px] uppercase tracking-[0.18em] text-white/40 mb-4">
+              <p className="text-[11px] uppercase tracking-[0.18em] text-white/55 mb-4">
                 Redes sociais
               </p>
               <ul className="space-y-2">
@@ -598,7 +601,7 @@ export default async function ArteACapelaPage({ searchParams }: Props) {
             </div>
 
             <div>
-              <p className="text-[11px] uppercase tracking-[0.18em] text-white/40 mb-4">
+              <p className="text-[11px] uppercase tracking-[0.18em] text-white/55 mb-4">
                 Informações
               </p>
               <ul className="space-y-2">
