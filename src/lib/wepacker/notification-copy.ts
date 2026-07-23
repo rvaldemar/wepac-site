@@ -48,6 +48,10 @@ export const NOTIFICATION_COPY: Record<NotificationType, NotificationCopy> = {
     title: "Session follow-up updated",
     body: "Your Session organizer updated attendee-visible follow-up.",
   },
+  session_result_published: {
+    title: "Documento da sessão disponível",
+    body: "O mentor publicou um novo documento revisto da tua sessão.",
+  },
   new_message: {
     title: "New Message",
     body: "You received a new Message.",

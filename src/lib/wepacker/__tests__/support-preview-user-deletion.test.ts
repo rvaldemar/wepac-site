@@ -6,6 +6,7 @@ const txUserFindUnique = vi.fn();
 const txUserCount = vi.fn();
 const userDelete = vi.fn();
 const anonymizeSupportPreviewForUser = vi.fn();
+const anonymizeSessionMediaForUser = vi.fn();
 const tx = {
   $queryRaw: (...args: unknown[]) => txQueryRaw(...args),
   user: {
@@ -34,6 +35,11 @@ vi.mock("@/lib/wepacker/support-preview-retention", () => ({
     anonymizeSupportPreviewForUser(...args),
 }));
 
+vi.mock("@/lib/wepacker/session-media/retention", () => ({
+  anonymizeSessionMediaForUser: (...args: unknown[]) =>
+    anonymizeSessionMediaForUser(...args),
+}));
+
 vi.mock("@/lib/email", () => ({ sendInviteEmail: vi.fn() }));
 
 import { deleteUser } from "@/lib/wepacker/actions/admin";
@@ -53,6 +59,7 @@ describe("Admin Person deletion with Support Preview history", () => {
       anonymizedEvents: 2,
       removedGrants: 1,
     });
+    anonymizeSessionMediaForUser.mockResolvedValue(undefined);
   });
 
   it("anonymizes support references in the deletion transaction", async () => {
@@ -60,9 +67,13 @@ describe("Admin Person deletion with Support Preview history", () => {
     expect(transaction).toHaveBeenCalledTimes(1);
     expect(txQueryRaw).toHaveBeenCalledOnce();
     expect(anonymizeSupportPreviewForUser).toHaveBeenCalledWith(tx, "person-1");
+    expect(anonymizeSessionMediaForUser).toHaveBeenCalledWith(tx, "person-1");
     expect(userDelete).toHaveBeenCalledWith({ where: { id: "person-1" } });
     expect(
       anonymizeSupportPreviewForUser.mock.invocationCallOrder[0],
+    ).toBeLessThan(userDelete.mock.invocationCallOrder[0]);
+    expect(
+      anonymizeSessionMediaForUser.mock.invocationCallOrder[0],
     ).toBeLessThan(userDelete.mock.invocationCallOrder[0]);
   });
 
