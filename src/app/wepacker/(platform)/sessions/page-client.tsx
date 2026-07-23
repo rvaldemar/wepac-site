@@ -87,14 +87,18 @@ export function SessionCard({
         </span>
         {session.status === "scheduled" && session.meetingUrl && (
           <a
-            href={session.meetingUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+            href={`/wepacker/sessions/${session.id}/call`}
             className="text-xs text-wepac-white hover:underline"
           >
             Entrar na chamada →
           </a>
         )}
+        <a
+          href={`/wepacker/sessions/${session.id}`}
+          className="text-xs text-wepac-text-secondary hover:underline"
+        >
+          Ver detalhe
+        </a>
       </div>
       {(session.outcome || session.sharedNote) && (
         <div className="mt-4 border-t border-wepac-border pt-4">

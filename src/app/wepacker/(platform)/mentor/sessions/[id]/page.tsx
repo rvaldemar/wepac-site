@@ -4,6 +4,8 @@ import { getMentoredSessionDetail } from "@/lib/wepacker/actions/session";
 import { getSessionDebrief } from "@/lib/wepacker/actions/debrief";
 import { DEBRIEF_CONTRACT_VERSION } from "@/lib/wepacker/debrief/types";
 import { SessionDebriefClient } from "./page-client";
+import { SessionMediaPanel } from "@/components/wepacker/SessionMediaPanel";
+import { getSessionMediaWorkspace } from "@/lib/wepacker/actions/session-media";
 
 // Dates coming out of Prisma need to cross the server/client boundary as
 // plain JSON — this round-trip turns every Date into an ISO string.
@@ -33,6 +35,7 @@ export default async function MentorSessionDebriefPage({
   // Session detail deliberately omits its physical Debrief relation. Only the
   // sanitized, contract-versioned view crosses the server/client boundary.
   const debrief = await getSessionDebrief(id);
+  const mediaWorkspace = await getSessionMediaWorkspace(id);
   const transcriptWritesEnabled =
     process.env.SESSION_TRANSCRIPT_WRITES_ENABLED === "true";
   const debriefGenerationEnabled =
@@ -44,11 +47,14 @@ export default async function MentorSessionDebriefPage({
       DEBRIEF_CONTRACT_VERSION;
 
   return (
-    <SessionDebriefClient
-      session={serialize(session)}
-      debrief={debrief ? serialize(debrief) : null}
-      transcriptWritesEnabled={transcriptWritesEnabled}
-      debriefGenerationEnabled={debriefGenerationEnabled}
-    />
+    <>
+      <SessionDebriefClient
+        session={serialize(session)}
+        debrief={debrief ? serialize(debrief) : null}
+        transcriptWritesEnabled={transcriptWritesEnabled}
+        debriefGenerationEnabled={debriefGenerationEnabled}
+      />
+      <SessionMediaPanel sessionId={id} workspace={serialize(mediaWorkspace)} />
+    </>
   );
 }

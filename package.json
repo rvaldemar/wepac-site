@@ -13,6 +13,8 @@
     "test:e2e:build": "E2E_ALLOW_DB_RESET=1 SESSION_TRANSCRIPT_WRITES_ENABLED=true E2E_SERVER=build playwright test",
     "test:e2e:report": "playwright show-report",
     "support-preview:retention": "tsx scripts/support-preview-retention.ts",
+    "session-media:retention": "tsx scripts/session-media-retention.ts",
+    "session-media:reinvite": "tsx scripts/reissue-session-call-invites.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

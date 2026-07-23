@@ -63,6 +63,11 @@ See `.env.example`.
 - `SUPPORT_PREVIEW_RETENTION_WORKER_ENABLED` and interval; disabled by default,
   enable only on the single long-lived Node runtime after the migration and
   smoke gate in `docs/architecture/support-preview-audit-plan.md`
+- Session media/Jitsi JWT flags are dark by default. Raw recording,
+  transcription and private Debrief access is exact-organizer-only; an exact
+  attendee sees only an explicitly published Result Document. Follow
+  `docs/operations/session-media-private-recording.md` for migration, callback,
+  retention, reinvite and staged-enablement gates.
 
 W01 uses Claude Subscription inside Agents Hub. WEPACKER must never use an
 `ANTHROPIC_API_KEY` for Session Debrief. After Hub certification, its dedicated

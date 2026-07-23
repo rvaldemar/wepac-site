@@ -8,10 +8,16 @@ const transaction = vi.fn();
 const lockedTranscript = vi.fn();
 const txUpsert = vi.fn();
 const generateDebrief = vi.fn();
+const assertSessionPurposesGrantedForAll = vi.fn();
 
 vi.mock("@/lib/wepacker/actions/session", () => ({
   assertSessionOrganizer: (...args: unknown[]) =>
     assertSessionOrganizer(...args),
+}));
+
+vi.mock("@/lib/wepacker/actions/session-media", () => ({
+  assertSessionPurposesGrantedForAll: (...args: unknown[]) =>
+    assertSessionPurposesGrantedForAll(...args),
 }));
 
 vi.mock("@/lib/wepacker/debrief/engine", () => ({
@@ -80,6 +86,8 @@ const readyRow = {
 describe("debrief transcript revision fence", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubEnv("SESSION_TRANSCRIPT_RETENTION_DAYS", "30");
+    assertSessionPurposesGrantedForAll.mockResolvedValue(undefined);
     assertSessionOrganizer.mockResolvedValue({
       actorId: "mentor-1",
     });

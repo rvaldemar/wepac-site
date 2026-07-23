@@ -500,7 +500,8 @@ describe("Notification email authorization", () => {
         to: "recipient@example.test",
         recipientName: "Recipient One",
         kindLabel: "Checkpoint",
-        meetingUrl: "https://meet.example.test/session",
+        meetingUrl:
+          "https://wepac.pt/wepacker/sessions/resource-1/call",
         ics: expect.stringContaining("METHOD:REQUEST"),
       }),
     );

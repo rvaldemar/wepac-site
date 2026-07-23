@@ -69,43 +69,37 @@ export function recordingStorageRoot(): string {
   return required("SESSION_RECORDING_STORAGE_ROOT");
 }
 
-export function recordingControlConfig(): {
-  url: string;
-  token: string;
-} {
-  return {
-    url: required("SESSION_RECORDING_CONTROL_URL"),
-    token: required("SESSION_RECORDING_CONTROL_TOKEN"),
-  };
-}
-
 export function hubTranscriptionConfig(): {
   url: string;
   apiKey: string;
-  workflowId: string;
   contractVersion: string;
 } {
   return {
     url: required("HUB_TRANSCRIPTION_API_URL"),
     apiKey: required("HUB_TRANSCRIPTION_API_KEY"),
-    workflowId: required("HUB_TRANSCRIPTION_WORKFLOW_ID"),
     contractVersion: required("HUB_TRANSCRIPTION_CONTRACT_VERSION"),
   };
 }
 
 export function jitsiJwtConfig(): {
-  appId: string;
+  subject: string;
   secret: string;
   issuer: string;
   audience: string;
   baseUrl: string;
 } {
+  const baseUrl = required("MEETING_BASE_URL");
+  try {
+    new URL(baseUrl);
+  } catch {
+    throw new Error("MEETING_BASE_URL is invalid.");
+  }
   return {
-    appId: required("JITSI_JWT_APP_ID"),
+    subject: required("JITSI_JWT_SUB"),
     secret: required("JITSI_JWT_SECRET"),
     issuer: process.env.JITSI_JWT_ISSUER?.trim() || "wepac",
     audience: process.env.JITSI_JWT_AUDIENCE?.trim() || "jitsi",
-    baseUrl: required("MEETING_BASE_URL"),
+    baseUrl,
   };
 }
 
@@ -125,4 +119,21 @@ export function callbackMaxSkewSeconds(): number {
     throw new Error("SESSION_MEDIA_CALLBACK_MAX_SKEW_SECONDS is invalid.");
   }
   return Math.min(Number(raw), 900);
+}
+
+export function sessionMediaPresenceMaxAgeSeconds(): number {
+  const raw =
+    process.env.SESSION_MEDIA_PRESENCE_MAX_AGE_SECONDS?.trim() || "45";
+  if (!POSITIVE_INTEGER.test(raw)) {
+    throw new Error("SESSION_MEDIA_PRESENCE_MAX_AGE_SECONDS is invalid.");
+  }
+  return Math.min(Number(raw), 120);
+}
+
+export function sessionRecordingMaxMinutes(): number {
+  const raw = process.env.SESSION_RECORDING_MAX_MINUTES?.trim() || "90";
+  if (!POSITIVE_INTEGER.test(raw)) {
+    throw new Error("SESSION_RECORDING_MAX_MINUTES is invalid.");
+  }
+  return Math.min(Number(raw), 90);
 }

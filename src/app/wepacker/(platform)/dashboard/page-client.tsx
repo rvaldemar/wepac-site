@@ -62,9 +62,7 @@ export default function DashboardPageClient({
         <>
           {" · "}
           <a
-            href={nextSession.meetingUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+            href={`/wepacker/sessions/${nextSession.id}/call`}
             className="text-wepac-white hover:underline"
           >
             Join call →

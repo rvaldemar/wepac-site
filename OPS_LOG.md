@@ -4,6 +4,22 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-23 — Private Session media staged, not deployed
+
+The additive WEPACKER migration, authenticated Jitsi join, private recording,
+Hub transcription, consent/withdrawal, exact-organizer raw access and
+exact-attendee Result Document sharing are implemented on the feature branch.
+Every new runtime flag remains false by default. No production migration,
+secret, flag, Jitsi cutover, invite reissue or retention worker has been
+applied by this change.
+
+Before deployment, follow
+`docs/operations/session-media-private-recording.md`; validate the actual
+`/opt/rvs-meet/jitsi-cfg/recordings` mount, provision secrets without printing
+them, keep WEPAC raw retention at 7 days and Meet hard deletion at 8 days, then
+enable recording and transcription together only after the signed-callback and
+exact-person smoke gates pass.
+
 ## 2026-07-23 — Release A reconciliada com a linha Society (local-only)
 
 A branch isolada `feat/session-media-private-share`, baseada em `origin/main`

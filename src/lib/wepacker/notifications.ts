@@ -357,6 +357,28 @@ export async function persistNewMessageEvent(
   ];
 }
 
+export async function persistSessionResultEvent(
+  tx: Prisma.TransactionClient,
+  input: {
+    documentId: string;
+    sessionId: string;
+    recipientId: string;
+    actorId: string;
+    version: number;
+    type: "session_result_published" | "session_result_revoked";
+  },
+): Promise<PersistedNotificationEvent> {
+  return persistNotificationEvent(tx, {
+    recipientId: input.recipientId,
+    actorId: input.actorId,
+    type: input.type,
+    resourceId: input.documentId,
+    resourceVersion: input.version,
+    href: `/wepacker/sessions/${input.sessionId}`,
+    dedupeScope: `${input.type}:${input.version}`,
+  });
+}
+
 export function dispatchPersistedNotificationEvents(
   events: readonly PersistedNotificationEvent[],
 ): void {
@@ -572,12 +594,14 @@ async function dispatchSessionEmail(row: OutboxDispatchRow) {
     /^.*<|>.*$/g,
     "",
   );
+  const appUrl = (process.env.APP_URL || "https://wepac.pt").replace(/\/+$/, "");
+  const authenticatedJoinUrl = `${appUrl}/wepacker/sessions/${session.id}/call`;
   const icsInput = {
     sessionId: session.id,
     kind: session.kind,
     scheduledAt: session.scheduledAt,
     durationMinutes: session.durationMinutes,
-    meetingUrl: session.meetingUrl,
+    meetingUrl: authenticatedJoinUrl,
     organizer: { name: "WEPAC", email: organizerEmail },
     attendees: [{ name: row.recipient.name, email: row.recipient.email }],
     sequence: row.notification.resourceVersion,
@@ -590,7 +614,7 @@ async function dispatchSessionEmail(row: OutboxDispatchRow) {
       recipientName: row.recipient.name,
       kindLabel,
       scheduledAt: session.scheduledAt,
-      meetingUrl: session.meetingUrl,
+      meetingUrl: authenticatedJoinUrl,
       ics: buildSessionCancelIcs(icsInput),
     });
     return;
@@ -600,7 +624,7 @@ async function dispatchSessionEmail(row: OutboxDispatchRow) {
     recipientName: row.recipient.name,
     kindLabel,
     scheduledAt: session.scheduledAt,
-    meetingUrl: session.meetingUrl,
+    meetingUrl: authenticatedJoinUrl,
     ics: buildSessionInviteIcs(icsInput),
   });
 }
@@ -632,6 +656,42 @@ async function dispatchSessionFollowupEmail(row: OutboxDispatchRow) {
   await email.sendSessionFollowupUpdatedEmail({
     to: row.recipient.email,
     recipientName: row.recipient.name,
+  });
+}
+
+async function dispatchSessionResultEmail(row: OutboxDispatchRow) {
+  const document = await prisma.sessionResultDocument.findUnique({
+    where: { id: row.notification.resourceId },
+    select: {
+      version: true,
+      revokedAt: true,
+      erasedAt: true,
+      attendee: { select: { userId: true } },
+      session: { select: { organizerId: true } },
+    },
+  });
+  const actor = row.notification.actor;
+  if (
+    !document ||
+    !actor ||
+    actor.id !== document.session.organizerId ||
+    row.recipientId !== document.attendee.userId ||
+    row.notification.resourceVersion !== document.version
+  ) {
+    throw new SupersededNotificationError();
+  }
+  const revoked = row.notification.type === "session_result_revoked";
+  if (
+    document.erasedAt ||
+    (revoked ? !document.revokedAt : Boolean(document.revokedAt))
+  ) {
+    throw new SupersededNotificationError();
+  }
+  const email = await import("@/lib/email");
+  await email.sendSessionResultDocumentEmail({
+    to: row.recipient.email,
+    recipientName: row.recipient.name,
+    revoked,
   });
 }
 
@@ -683,6 +743,9 @@ async function sendOutboxEmail(row: OutboxDispatchRow) {
       return dispatchSessionEmail(row);
     case "session_followup_updated":
       return dispatchSessionFollowupEmail(row);
+    case "session_result_published":
+    case "session_result_revoked":
+      return dispatchSessionResultEmail(row);
     case "new_message":
       return dispatchMessageEmail(row);
     default:

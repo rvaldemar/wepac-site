@@ -350,15 +350,17 @@ export function SessionDebriefClient({
           {session.meetingUrl && (
             <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
               <a
-                href={session.meetingUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={`/wepacker/sessions/${session.id}/call`}
                 className="text-wepac-white hover:underline"
               >
-                Entrar na chamada →
+                Entrar na chamada autenticada →
               </a>
               <button
-                onClick={() => handleCopyMeetingUrl(session.meetingUrl!)}
+                onClick={() =>
+                  handleCopyMeetingUrl(
+                    `${window.location.origin}/wepacker/sessions/${session.id}/call`,
+                  )
+                }
                 className="text-wepac-text-secondary hover:underline"
               >
                 {copiedMeetingLink ? "Link copiado!" : "Copiar link"}

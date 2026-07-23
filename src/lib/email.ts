@@ -489,6 +489,48 @@ export async function sendSessionFollowupUpdatedEmail({
   });
 }
 
+export async function sendSessionResultDocumentEmail({
+  to,
+  recipientName,
+  revoked,
+}: {
+  to: string;
+  recipientName: string;
+  revoked: boolean;
+}) {
+  const sessionsUrl = `${APP_URL}/wepacker/sessions`;
+  const safeRecipientName = escapeHtml(recipientName);
+  const bodyHtml = `
+    ${heading(revoked ? "Documento da Session retirado." : "Documento da Session disponível.")}
+    <p style="margin:0 0 16px;">Olá ${safeRecipientName},</p>
+    <p style="margin:0 0 16px;">
+      ${
+        revoked
+          ? "O mentor retirou um documento anteriormente partilhado contigo."
+          : "O mentor reviu e partilhou contigo um documento desta Session."
+      }
+    </p>
+    ${ctaButton(sessionsUrl, "Ver Sessions")}
+  `;
+  await transporter.sendMail({
+    from: FROM,
+    to,
+    subject: revoked
+      ? "Documento da Session retirado — WEPACKER"
+      : "Documento da Session disponível — WEPACKER",
+    html: emailShell({
+      preheader: revoked
+        ? `${recipientName}, um documento da tua Session foi retirado.`
+        : `${recipientName}, tens um novo documento da tua Session.`,
+      logoSrc: WEPACKER_LOCKUP,
+      logoAlt: "WEPACKER",
+      logoWidth: 220,
+      bodyHtml,
+      footerHtml: WEPACKER_FOOTER,
+    }),
+  });
+}
+
 export async function sendNewMessageEmail({
   to,
   recipientName,
