@@ -159,3 +159,78 @@ describe("happy path", () => {
     });
   });
 });
+
+describe("eventSlug cannot shape the redirect before the DB lookup", () => {
+  it("falls back to the event list, not the raw slug, when a pre-lookup validation fails", async () => {
+    // Missing buyerEmail trips validation before prisma.event.findUnique is
+    // ever called — a hostile eventSlug must not reach redirect() here.
+    const err = await reserveAction(
+      formData({
+        eventSlug: "https://evil.example.com/phish",
+        buyerEmail: "",
+      })
+    ).catch((e) => e);
+
+    expect(eventFindUnique).not.toHaveBeenCalled();
+    expect(err).toBeInstanceOf(RedirectSignal);
+    expect((err as RedirectSignal).url).toMatch(/^\/bilheteira\?error=/);
+  });
+
+  it("uses the DB event.slug, not the raw input, for later redirects and the Stripe cancel_url", async () => {
+    // The DB row's slug differs from the raw, attacker-shaped input the
+    // lookup was keyed on (e.g. a traversal/encoded variant that still
+    // resolves to a row) — the redirect must reflect the trusted value.
+    eventFindUnique.mockResolvedValue({
+      ...baseEvent,
+      slug: "concerto",
+    });
+    sessionsCreate.mockResolvedValue({ id: "cs_3", url: "https://checkout.stripe.com/cs_3" });
+
+    await expect(
+      reserveAction(formData({ eventSlug: "concerto/../../admin" }))
+    ).rejects.toBeInstanceOf(RedirectSignal);
+
+    expect(sessionsCreate).toHaveBeenCalledTimes(1);
+    const call = sessionsCreate.mock.calls[0][0];
+    expect(call.cancel_url).toBe(
+      "https://wepac.pt/bilheteira/concerto?cancelled=1"
+    );
+  });
+
+  it("falls back to the event list when the event is not found", async () => {
+    eventFindUnique.mockResolvedValue(null);
+
+    const err = await reserveAction(formData()).catch((e) => e);
+
+    expect(err).toBeInstanceOf(RedirectSignal);
+    expect((err as RedirectSignal).url).toMatch(/^\/bilheteira\?error=/);
+  });
+});
+
+describe("seats validation rejects instead of silently clamping", () => {
+  it("rejects an out-of-range seat count instead of silently capping it", async () => {
+    const err = await reserveAction(formData({ seats: "50" })).catch((e) => e);
+
+    expect(err).toBeInstanceOf(RedirectSignal);
+    expect((err as RedirectSignal).url).toMatch(/^\/bilheteira\/concerto\?error=/);
+    expect(paymentCreate).not.toHaveBeenCalled();
+  });
+
+  it("rejects a non-numeric seat count instead of silently defaulting it", async () => {
+    const err = await reserveAction(formData({ seats: "abc" })).catch((e) => e);
+
+    expect(err).toBeInstanceOf(RedirectSignal);
+    expect((err as RedirectSignal).url).toMatch(/^\/bilheteira\/concerto\?error=/);
+    expect(paymentCreate).not.toHaveBeenCalled();
+  });
+
+  it("accepts a seat count within the 1-10 range advertised by the form", async () => {
+    sessionsCreate.mockResolvedValue({ id: "cs_4", url: "https://checkout.stripe.com/cs_4" });
+
+    await expect(
+      reserveAction(formData({ seats: "10" }))
+    ).rejects.toBeInstanceOf(RedirectSignal);
+
+    expect(paymentCreate).toHaveBeenCalledTimes(1);
+  });
+});

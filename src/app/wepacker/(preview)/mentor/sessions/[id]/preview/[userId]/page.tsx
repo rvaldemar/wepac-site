@@ -163,9 +163,7 @@ export default async function SessionAttendeePreviewPage({
                 preview.session.status === "scheduled" &&
                 preview.session.meetingUrl && (
                   <a
-                    href={preview.session.meetingUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={`/wepacker/sessions/${preview.session.id}/call`}
                     className="text-xs text-wepac-white hover:underline"
                   >
                     Join call →

@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { assertSessionOrganizer } from "@/lib/wepacker/actions/session";
+import { assertSessionPurposesGrantedForAll } from "@/lib/wepacker/actions/session-media";
 import { getDebriefEngine } from "@/lib/wepacker/debrief/engine";
 import {
   DEBRIEF_CONTRACT_VERSION,
@@ -16,6 +17,7 @@ import {
   type InternalSynthesis,
   type PerAttendeeDebrief,
 } from "@/lib/wepacker/debrief/types";
+import { retentionDeadline } from "@/lib/wepacker/session-media/config";
 
 // Typed, client-friendly view of a SessionDebrief row — the review UI
 // reads exactly these fields. Dates are ISO strings, matching this
@@ -194,6 +196,7 @@ export async function generateSessionDebrief(
   opts?: { force?: boolean },
 ): Promise<SessionDebriefView> {
   const { actorId } = await assertSessionOrganizer(sessionId);
+  await assertSessionPurposesGrantedForAll(sessionId, ["ai_debrief"]);
 
   if (!opts?.force) {
     const existing = await prisma.sessionDebrief.findFirst({
@@ -258,6 +261,7 @@ export async function generateSessionDebrief(
             internalSynthesis: internalSynthesisJson,
             requestedById: actorId,
             generatedAt: new Date(),
+            retainUntil: retentionDeadline("transcript"),
           },
           update: {
             contractVersion: DEBRIEF_CONTRACT_VERSION,
@@ -270,6 +274,7 @@ export async function generateSessionDebrief(
             requestedById: actorId,
             requestedAt: new Date(),
             generatedAt: new Date(),
+            retainUntil: retentionDeadline("transcript"),
           },
         }),
     );
@@ -308,6 +313,7 @@ export async function generateSessionDebrief(
               status: "failed",
               error: message,
               requestedById: actorId,
+              retainUntil: retentionDeadline("transcript"),
             },
             update: {
               contractVersion: DEBRIEF_CONTRACT_VERSION,
@@ -319,6 +325,7 @@ export async function generateSessionDebrief(
               error: message,
               requestedById: actorId,
               requestedAt: new Date(),
+              retainUntil: retentionDeadline("transcript"),
               generatedAt: null,
             },
           }),

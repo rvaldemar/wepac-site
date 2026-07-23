@@ -8,6 +8,17 @@ export async function generateStaticParams() {
   return projects.map((project) => ({ slug: project.slug }));
 }
 
+// Sub-brands that also have their own top-level landing route. That page is
+// the canonical surface (richer, sub-brand-specific content) — this entry
+// on /projetos/[slug] covers largely the same ground, so without a
+// canonical pointer search engines would see it as a duplicate. Slugs with
+// no top-level equivalent (easy-peasy) are intentionally absent here and
+// stay self-canonical.
+const topLevelRouteBySlug: Record<string, string> = {
+  "arte-a-capela": "/arte-a-capela",
+  wessex: "/wessex",
+};
+
 export async function generateMetadata({
   params,
 }: {
@@ -16,9 +27,11 @@ export async function generateMetadata({
   const { slug } = await params;
   const project = projects.find((p) => p.slug === slug);
   if (!project) return {};
+  const canonicalRoute = topLevelRouteBySlug[slug];
   return {
     title: project.name,
     description: project.description,
+    ...(canonicalRoute ? { alternates: { canonical: canonicalRoute } } : {}),
   };
 }
 

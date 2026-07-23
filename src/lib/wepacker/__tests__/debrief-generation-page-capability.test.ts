@@ -4,6 +4,7 @@ import type { ReactElement } from "react";
 const requirePageUser = vi.fn();
 const getMentoredSessionDetail = vi.fn();
 const getSessionDebrief = vi.fn();
+const getSessionMediaWorkspace = vi.fn();
 
 vi.mock("@/lib/wepacker/page-guards", () => ({
   requirePageUser: (...args: unknown[]) => requirePageUser(...args),
@@ -16,6 +17,11 @@ vi.mock("@/lib/wepacker/actions/session", () => ({
 
 vi.mock("@/lib/wepacker/actions/debrief", () => ({
   getSessionDebrief: (...args: unknown[]) => getSessionDebrief(...args),
+}));
+
+vi.mock("@/lib/wepacker/actions/session-media", () => ({
+  getSessionMediaWorkspace: (...args: unknown[]) =>
+    getSessionMediaWorkspace(...args),
 }));
 
 import MentorSessionDebriefPage from "@/app/wepacker/(platform)/mentor/sessions/[id]/page";
@@ -36,15 +42,24 @@ describe("Session Debrief page capability", () => {
       organizer: { id: "organizer-1", name: "Rui" },
     });
     getSessionDebrief.mockResolvedValue(null);
+    getSessionMediaWorkspace.mockResolvedValue({
+      attendees: [],
+      recordings: [],
+      transcriptArtifacts: [],
+      resultDocuments: [],
+      consentEvents: [],
+      consentCapacityAssurances: [],
+    });
     vi.stubEnv("SESSION_TRANSCRIPT_WRITES_ENABLED", "false");
   });
 
   afterEach(() => vi.unstubAllEnvs());
 
   async function renderPage(): Promise<ReactElement<PageProps>> {
-    return (await MentorSessionDebriefPage({
+    const fragment = (await MentorSessionDebriefPage({
       params: Promise.resolve({ id: "session-1" }),
-    })) as ReactElement<PageProps>;
+    })) as ReactElement<{ children: ReactElement<PageProps>[] }>;
+    return fragment.props.children[0];
   }
 
   it("keeps generation unavailable while the engine is disabled", async () => {

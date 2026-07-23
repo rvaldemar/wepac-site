@@ -80,6 +80,11 @@ const adminNavGroups: NavGroup[] = [
         href: "/wepacker/admin/support-preview",
         icon: "◇",
       },
+      {
+        label: "Session Capacity",
+        href: "/wepacker/admin/session-capacity",
+        icon: "◷",
+      },
       { label: "Notifications", href: "/wepacker/notifications", icon: "●" },
     ],
   },

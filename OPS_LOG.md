@@ -4,6 +4,34 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-23 — Private Session media staged, not deployed
+
+The additive WEPACKER migration, authenticated Jitsi join, private recording,
+Hub transcription, consent/withdrawal, exact-organizer raw access and
+exact-attendee Result Document sharing are implemented on the feature branch.
+Every new runtime flag remains false by default. No production migration,
+secret, flag, Jitsi cutover, invite reissue or retention worker has been
+applied by this change.
+
+Before deployment, follow
+`docs/operations/session-media-private-recording.md`; validate the actual
+`/opt/rvs-meet/jitsi-cfg/recordings` mount, provision secrets without printing
+them, keep WEPAC raw retention at 7 days and Meet hard deletion at 8 days, then
+enable recording and transcription together only after the signed-callback and
+exact-person smoke gates pass.
+
+## 2026-07-23 — Release A reconciliada com a linha Society (local-only)
+
+A branch isolada `feat/session-media-private-share`, baseada em `origin/main`
+`1da82ed`, incorporou a ancestry de `feat/arte-a-capela-base` `46a88e9`.
+Foram mantidas as páginas Society/Arte à Capela, os testes públicos e o
+hardening de bilheteira; schema, seed, intake genérico, auth e actions de domínio
+continuam sob o contrato Release A. A migration Pack-specific de candidaturas e
+a rota legacy `/wepacker/[pack]/intake` foram deliberadamente excluídas. O mapa
+de conflitos está em
+`docs/coordination/session-media-release-reconciliation.md`. Mudança local,
+sem deploy; Release B continua separada e vetada.
+
 ## 2026-07-23 — Docker/containerd migrados para o segundo disco
 
 Executada a Fase 2 do antigo plano de unificação de discos no servidor

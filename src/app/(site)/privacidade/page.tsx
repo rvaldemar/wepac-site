@@ -127,17 +127,18 @@ export default function PrivacidadePage() {
 
           <div>
             <h2 className="font-barlow text-lg font-bold text-wepac-white">
-              5. Transcript, menores e estado atual
+              5. Gravação, Transcript e partilha
             </h2>
             <p className="mt-3">
-              Novos Session Transcript attachments e replacements estão
-              desativados. Só serão ativados quando existirem um pedido de
-              consentimento específico e informado, prova de quem consentiu,
-              verificação de idade e Parent/Guardian quando aplicável, uma regra de
-              conservação concreta e um mecanismo simples de retirada. Apenas o
-              organizer da Session pode remover uma Transcript já existente; essa
-              remoção apaga também o Debrief derivado. O Session Debrief por AI permanece
-              igualmente desativado até certificação técnica e de privacidade.
+              Quando estas funções estiverem ativas, a gravação, a transcrição e
+              o Debrief por AI exigem consentimentos explícitos e separados de
+              ambos os participantes, depois de verificação de capacidade adulta.
+              Recusar não impede a chamada. Guardian consent permanece bloqueado
+              até existir uma relação verificável própria. A gravação, a
+              Transcript e o draft de Debrief são acessíveis apenas ao mentor
+              organizador exato; Admin e Support não têm acesso ao conteúdo. O
+              mentorando só recebe um documento imutável depois de o mentor o
+              rever e publicar explicitamente, podendo a partilha ser revogada.
             </p>
           </div>
 
@@ -151,9 +152,10 @@ export default function PrivacidadePage() {
               contacto. Dados de conta, My Journey, relações e Sessions permanecem
               enquanto a conta ou relação correspondente estiver ativa e pelo
               período adicional necessário para resolver pedidos, segurança ou
-              obrigações legais. Atualmente não existe um prazo automático separado
-              para Transcripts existentes; por isso novos attachments estão
-              bloqueados até esse prazo ser definido e aplicado. Um pedido de
+              obrigações legais. Gravações, Transcripts, drafts privados e
+              documentos publicados têm prazos próprios configurados e são
+              apagados automaticamente no fim desses prazos, podendo a retirada
+              do consentimento aplicável antecipar a eliminação. Um pedido de
               apagamento é avaliado sem demora indevida, ressalvadas obrigações de
               conservação e direitos de terceiros.
             </p>

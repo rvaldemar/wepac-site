@@ -105,6 +105,8 @@ function ownAttendeeSessionSelect(userId: string) {
 }
 
 type OwnAttendeeSession = {
+  id: string;
+  meetingUrl: string | null;
   attendees: Array<{
     id: string;
     attended: boolean;
@@ -117,9 +119,12 @@ type OwnAttendeeSession = {
 };
 
 function toAttendeeSessionView<T extends OwnAttendeeSession>(session: T) {
-  const { _count, ...safeSession } = session;
+  const { _count, meetingUrl, ...safeSession } = session;
   return {
     ...safeSession,
+    meetingUrl: meetingUrl
+      ? `/wepacker/sessions/${session.id}/call`
+      : null,
     attendeeCount: _count.attendees,
     format: deriveSessionFormat(_count.attendees),
     attendees: session.attendees.map((attendee) =>
@@ -222,7 +227,9 @@ export async function getSessionAttendeePreview(
       organizerName: session.organizer.name,
       outcome: attendee.outcome,
       sharedNote: attendee.sharedNotePublished ? attendee.sharedNote : null,
-      meetingUrl: session.meetingUrl,
+      meetingUrl: session.meetingUrl
+        ? `/wepacker/sessions/${session.id}/call`
+        : null,
     },
   };
 }

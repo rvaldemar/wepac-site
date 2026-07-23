@@ -17,4 +17,10 @@ export async function register() {
       await import("@/lib/wepacker/support-preview-retention-worker");
     startSupportPreviewRetentionWorker();
   }
+
+  if (process.env.SESSION_MEDIA_RETENTION_WORKER_ENABLED === "true") {
+    const { startSessionMediaRetentionWorker } =
+      await import("@/lib/wepacker/session-media/retention-worker");
+    startSessionMediaRetentionWorker();
+  }
 }

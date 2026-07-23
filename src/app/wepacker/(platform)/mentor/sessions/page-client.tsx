@@ -437,16 +437,17 @@ export function MentorSessionsClient({
               {session.meetingUrl && (
                 <>
                   <a
-                    href={session.meetingUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={`/wepacker/sessions/${session.id}/call`}
                     className="text-wepac-white hover:underline"
                   >
                     Join call →
                   </a>
                   <button
                     onClick={() =>
-                      handleCopyMeetingUrl(session.id, session.meetingUrl!)
+                      handleCopyMeetingUrl(
+                        session.id,
+                        `${window.location.origin}/wepacker/sessions/${session.id}/call`,
+                      )
                     }
                     className="text-wepac-text-secondary hover:underline"
                   >

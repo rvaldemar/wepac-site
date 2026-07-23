@@ -7,6 +7,7 @@ import { sendInviteEmail } from "@/lib/email";
 import { requireAdmin } from "@/lib/wepacker/guards";
 import { logSafeError } from "@/lib/wepacker/log-safe-error";
 import { anonymizeSupportPreviewForUser } from "@/lib/wepacker/support-preview-retention";
+import { anonymizeSessionMediaForUser } from "@/lib/wepacker/session-media/retention";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_ID_LENGTH = 191;
@@ -86,6 +87,7 @@ export async function deleteUser(userIdValue: unknown) {
       // content-free audit links are detached under the reviewed maintenance
       // flag before the Person deletion is attempted in the same transaction.
       await anonymizeSupportPreviewForUser(tx, userId);
+      await anonymizeSessionMediaForUser(tx, userId);
       await tx.user.delete({ where: { id: userId } });
     });
   } catch (error) {

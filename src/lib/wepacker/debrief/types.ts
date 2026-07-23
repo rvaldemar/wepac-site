@@ -6,7 +6,7 @@ import {
 } from "@/lib/wepacker/types";
 
 export const DEBRIEF_CONTRACT_VERSION = "wepac-session-debrief-v3" as const;
-export const MAX_TRANSCRIPT_CHARS = 300_000;
+export const MAX_TRANSCRIPT_CHARS = 500_000;
 export const MAX_DISCUSSION_POINTS_CHARS = 8_000;
 export const MAX_ACTION_SUGGESTIONS = 8;
 

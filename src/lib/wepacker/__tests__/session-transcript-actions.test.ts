@@ -5,6 +5,7 @@ const sessionUpdate = vi.fn();
 const debriefDeleteMany = vi.fn();
 const transaction = vi.fn();
 const assertSessionOrganizer = vi.fn();
+const assertSessionPurposesGrantedForAll = vi.fn();
 
 vi.mock("@/lib/db", () => ({
   prisma: {
@@ -19,6 +20,11 @@ vi.mock("@/lib/db", () => ({
 vi.mock("@/lib/wepacker/actions/session", () => ({
   assertSessionOrganizer: (...args: unknown[]) =>
     assertSessionOrganizer(...args),
+}));
+
+vi.mock("@/lib/wepacker/actions/session-media", () => ({
+  assertSessionPurposesGrantedForAll: (...args: unknown[]) =>
+    assertSessionPurposesGrantedForAll(...args),
 }));
 
 import {
@@ -36,6 +42,7 @@ describe("Session transcript actions", () => {
       cycleId: null,
       mentorshipId: "mentorship-1",
     });
+    assertSessionPurposesGrantedForAll.mockResolvedValue(undefined);
     sessionUpdate.mockResolvedValue({ id: "session-1" });
     debriefDeleteMany.mockResolvedValue({ count: 1 });
     transaction.mockImplementation(async (operations: Promise<unknown>[]) =>

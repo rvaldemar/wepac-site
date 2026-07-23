@@ -185,6 +185,81 @@ enum DebriefStatus {
   failed
 }
 
+enum SessionConsentPurpose {
+  recording
+  transcription
+  ai_debrief
+}
+
+enum SessionConsentDecision {
+  granted
+  denied
+  withdrawn
+}
+
+enum ConsentCapacityStatus {
+  unknown
+  adult_verified
+  guardian_verified
+}
+
+enum SessionRecordingStatus {
+  requested
+  recording
+  finalizing
+  ready
+  failed
+  deleted
+}
+
+enum RecordingAssetStatus {
+  pending
+  ready
+  failed
+  deleted
+}
+
+enum TranscriptArtifactSource {
+  manual
+  recording
+}
+
+enum TranscriptArtifactStatus {
+  pending
+  processing
+  ready
+  failed
+  deleted
+}
+
+enum SessionMediaCallbackSource {
+  jibri
+  hub_transcription
+}
+
+enum SessionArtifactAuditType {
+  consent_recorded
+  recording_requested
+  recording_started
+  recording_stopped
+  recording_ready
+  recording_failed
+  recording_downloaded
+  transcript_requested
+  transcript_ready
+  transcript_failed
+  transcript_viewed
+  transcript_downloaded
+  debrief_generated
+  document_previewed
+  document_published
+  document_viewed
+  document_downloaded
+  document_revoked
+  artifact_erased
+  callback_rejected
+}
+
 enum NotificationType {
   pack_invited
   pack_accepted
@@ -196,6 +271,8 @@ enum NotificationType {
   session_updated
   session_cancelled
   session_followup_updated
+  session_result_published
+  session_result_revoked
   new_message
 }
 
@@ -242,42 +319,52 @@ model User {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  agreements                   Agreement[]
-  lifeMap                      LifeMap?
-  lifeMapVersions              LifeMapVersion[]
-  strategicPlans               StrategicPlan[]
-  trails                       Trail[]
-  actionsAssigned              Action[]                   @relation("ActionAssignee")
-  actionsCreated               Action[]                   @relation("ActionCreator")
-  sessionsOrganized            Session[]                  @relation("SessionOrganizer")
-  sessionAttendances           SessionAttendee[]
-  sessionTranscriptsUploaded   Session[]                  @relation("SessionTranscriptUploader")
-  sessionDebriefsGenerated     SessionDebrief[]
-  conversationLinks            ConversationParticipant[]
-  messages                     Message[]
-  passwordResetTokens          PasswordResetToken[]
-  connectionsAsFirst           PersonConnection[]         @relation("PersonConnectionFirstUser")
-  connectionsAsSecond          PersonConnection[]         @relation("PersonConnectionSecondUser")
-  connectionsRequested         PersonConnection[]         @relation("PersonConnectionRequestedBy")
-  mentorshipsAsMentor          Mentorship[]               @relation("MentorshipMentor")
-  mentorshipsAsMentee          Mentorship[]               @relation("MentorshipMentee")
-  mentorshipInvitationsSent    Mentorship[]               @relation("MentorshipInvitedBy")
-  packsCreated                 Pack[]                     @relation("PackCreator")
-  personalPack                 Pack?                      @relation("PackPersonalOwner")
-  packMemberships              PackMembership[]
-  packInvitationsSent          PackMembership[]           @relation("PackMembershipInvitedBy")
-  cyclesCreated                Cycle[]                    @relation("CycleCreator")
-  cycleEnrollments             CycleEnrollment[]
-  cycleFacilitations           CycleFacilitator[]
-  stagePlacements              StagePlacement[]           @relation("StagePlacementSubject")
-  stagePlacementsMade          StagePlacement[]           @relation("StagePlacementPlacedBy")
-  notificationsReceived        Notification[]             @relation("NotificationRecipient")
-  notificationsTriggered       Notification[]             @relation("NotificationActor")
-  emailOutboxItems             EmailOutbox[]              @relation("EmailOutboxRecipient")
-  supportPreviewGrantsCreated  SupportPreviewGrant[]      @relation("SupportPreviewGrantActor")
-  supportPreviewGrantsTargeted SupportPreviewGrant[]      @relation("SupportPreviewGrantTarget")
-  supportPreviewAuditAsActor   SupportPreviewAuditEvent[] @relation("SupportPreviewAuditActor")
-  supportPreviewAuditAsTarget  SupportPreviewAuditEvent[] @relation("SupportPreviewAuditTarget")
+  agreements                    Agreement[]
+  lifeMap                       LifeMap?
+  lifeMapVersions               LifeMapVersion[]
+  strategicPlans                StrategicPlan[]
+  trails                        Trail[]
+  actionsAssigned               Action[]                          @relation("ActionAssignee")
+  actionsCreated                Action[]                          @relation("ActionCreator")
+  sessionsOrganized             Session[]                         @relation("SessionOrganizer")
+  sessionAttendances            SessionAttendee[]
+  sessionTranscriptsUploaded    Session[]                         @relation("SessionTranscriptUploader")
+  sessionDebriefsGenerated      SessionDebrief[]
+  sessionConsentAsSubject       SessionConsentEvent[]             @relation("SessionConsentSubject")
+  sessionConsentAsActor         SessionConsentEvent[]             @relation("SessionConsentActor")
+  sessionCapacityAsSubject      SessionConsentCapacityAssurance[] @relation("SessionCapacitySubject")
+  sessionCapacityVerified       SessionConsentCapacityAssurance[] @relation("SessionCapacityVerifier")
+  sessionRecordingsRequested    SessionRecording[]                @relation("SessionRecordingRequester")
+  transcriptArtifactsCreated    TranscriptArtifact[]              @relation("TranscriptArtifactCreator")
+  sessionDocumentsPublished     SessionResultDocument[]           @relation("SessionResultDocumentPublisher")
+  sessionCallPresence           SessionCallPresence[]
+  sessionArtifactAuditAsActor   SessionArtifactAuditEvent[]       @relation("SessionArtifactAuditActor")
+  sessionArtifactAuditAsSubject SessionArtifactAuditEvent[]       @relation("SessionArtifactAuditSubject")
+  conversationLinks             ConversationParticipant[]
+  messages                      Message[]
+  passwordResetTokens           PasswordResetToken[]
+  connectionsAsFirst            PersonConnection[]                @relation("PersonConnectionFirstUser")
+  connectionsAsSecond           PersonConnection[]                @relation("PersonConnectionSecondUser")
+  connectionsRequested          PersonConnection[]                @relation("PersonConnectionRequestedBy")
+  mentorshipsAsMentor           Mentorship[]                      @relation("MentorshipMentor")
+  mentorshipsAsMentee           Mentorship[]                      @relation("MentorshipMentee")
+  mentorshipInvitationsSent     Mentorship[]                      @relation("MentorshipInvitedBy")
+  packsCreated                  Pack[]                            @relation("PackCreator")
+  personalPack                  Pack?                             @relation("PackPersonalOwner")
+  packMemberships               PackMembership[]
+  packInvitationsSent           PackMembership[]                  @relation("PackMembershipInvitedBy")
+  cyclesCreated                 Cycle[]                           @relation("CycleCreator")
+  cycleEnrollments              CycleEnrollment[]
+  cycleFacilitations            CycleFacilitator[]
+  stagePlacements               StagePlacement[]                  @relation("StagePlacementSubject")
+  stagePlacementsMade           StagePlacement[]                  @relation("StagePlacementPlacedBy")
+  notificationsReceived         Notification[]                    @relation("NotificationRecipient")
+  notificationsTriggered        Notification[]                    @relation("NotificationActor")
+  emailOutboxItems              EmailOutbox[]                     @relation("EmailOutboxRecipient")
+  supportPreviewGrantsCreated   SupportPreviewGrant[]             @relation("SupportPreviewGrantActor")
+  supportPreviewGrantsTargeted  SupportPreviewGrant[]             @relation("SupportPreviewGrantTarget")
+  supportPreviewAuditAsActor    SupportPreviewAuditEvent[]        @relation("SupportPreviewAuditActor")
+  supportPreviewAuditAsTarget   SupportPreviewAuditEvent[]        @relation("SupportPreviewAuditTarget")
 
   @@map("users")
 }
@@ -713,16 +800,24 @@ model Session {
   transcriptUploadedAt   DateTime?
   transcriptUploadedById String?
 
-  cycle                   Cycle?                     @relation(fields: [cycleId], references: [id], onDelete: SetNull)
-  mentorship              Mentorship?                @relation(fields: [mentorshipId], references: [id], onDelete: SetNull)
-  organizer               User                       @relation("SessionOrganizer", fields: [organizerId], references: [id], onDelete: Restrict)
-  transcriptUploadedBy    User?                      @relation("SessionTranscriptUploader", fields: [transcriptUploadedById], references: [id], onDelete: SetNull)
-  attendees               SessionAttendee[]
-  calcomBookingReferences CalcomBookingReference[]
-  sourcedActions          Action[]
-  debrief                 SessionDebrief?
-  supportPreviewGrants    SupportPreviewGrant[]
-  supportPreviewAudit     SupportPreviewAuditEvent[]
+  cycle                     Cycle?                            @relation(fields: [cycleId], references: [id], onDelete: SetNull)
+  mentorship                Mentorship?                       @relation(fields: [mentorshipId], references: [id], onDelete: SetNull)
+  organizer                 User                              @relation("SessionOrganizer", fields: [organizerId], references: [id], onDelete: Restrict)
+  transcriptUploadedBy      User?                             @relation("SessionTranscriptUploader", fields: [transcriptUploadedById], references: [id], onDelete: SetNull)
+  attendees                 SessionAttendee[]
+  calcomBookingReferences   CalcomBookingReference[]
+  sourcedActions            Action[]
+  debrief                   SessionDebrief?
+  consentEvents             SessionConsentEvent[]
+  consentCapacityAssurances SessionConsentCapacityAssurance[]
+  recordings                SessionRecording[]
+  transcriptArtifacts       TranscriptArtifact[]
+  resultDocuments           SessionResultDocument[]
+  resultDocumentPreviews    SessionResultDocumentPreview[]
+  artifactAuditEvents       SessionArtifactAuditEvent[]
+  callPresence              SessionCallPresence[]
+  supportPreviewGrants      SupportPreviewGrant[]
+  supportPreviewAudit       SupportPreviewAuditEvent[]
 
   @@index([cycleId])
   @@index([mentorshipId])
@@ -769,9 +864,13 @@ model SessionDebrief {
   requestedById          String
   requestedAt            DateTime      @default(now())
   generatedAt            DateTime?
+  retainUntil            DateTime?
+  privateErasedAt        DateTime?
 
-  session     Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  requestedBy User    @relation(fields: [requestedById], references: [id], onDelete: Cascade)
+  session         Session                 @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  requestedBy     User                    @relation(fields: [requestedById], references: [id], onDelete: Cascade)
+  resultDocuments SessionResultDocument[]
+  resultDocumentPreviews SessionResultDocumentPreview[]
 
   @@map("session_debriefs")
 }
@@ -793,11 +892,279 @@ model SessionAttendee {
   // What was agreed/gained in the session, for this person specifically.
   outcome             String?
 
-  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Restrict)
+  session         Session                 @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user            User                    @relation(fields: [userId], references: [id], onDelete: Restrict)
+  resultDocuments SessionResultDocument[]
+  resultDocumentPreviews SessionResultDocumentPreview[]
 
   @@unique([sessionId, userId])
   @@map("session_attendees")
+}
+
+// Append-only, content-free capacity evidence. `evidenceRef` points to an
+// externally controlled verification record and never contains a document,
+// date of birth or identity data.
+model SessionConsentCapacityAssurance {
+  id               String                @id @default(cuid())
+  sessionId        String
+  subjectUserId    String?
+  status           ConsentCapacityStatus
+  evidenceRef      String?
+  policyVersion    String
+  verifiedAt       DateTime
+  verifiedByUserId String?
+  idempotencyKey   String                @unique
+  createdAt        DateTime              @default(now())
+
+  session       Session               @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  subject       User?                 @relation("SessionCapacitySubject", fields: [subjectUserId], references: [id], onDelete: SetNull)
+  verifiedBy    User?                 @relation("SessionCapacityVerifier", fields: [verifiedByUserId], references: [id], onDelete: SetNull)
+  consentEvents SessionConsentEvent[]
+
+  @@index([sessionId, subjectUserId, verifiedAt])
+  @@map("session_consent_capacity_assurances")
+}
+
+// Append-only evidence. The database migration rejects UPDATE/DELETE, and the
+// initial action permits a Person to decide only for themselves as either
+// organizer or an explicit attendee. A future guardian actor needs a verified
+// relationship grant before actorUserId may differ from subjectUserId.
+model SessionConsentEvent {
+  id                  String                 @id @default(cuid())
+  sessionId           String
+  subjectUserId       String?
+  actorUserId         String?
+  purpose             SessionConsentPurpose
+  decision            SessionConsentDecision
+  policyVersion       String
+  capacityAssuranceId String
+  idempotencyKey      String                 @unique
+  occurredAt          DateTime
+  createdAt           DateTime               @default(now())
+
+  session           Session                         @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  subject           User?                           @relation("SessionConsentSubject", fields: [subjectUserId], references: [id], onDelete: SetNull)
+  actor             User?                           @relation("SessionConsentActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  capacityAssurance SessionConsentCapacityAssurance @relation(fields: [capacityAssuranceId], references: [id], onDelete: Restrict)
+  recordings        RecordingConsentEvidence[]
+
+  @@index([sessionId, subjectUserId, purpose, occurredAt])
+  @@map("session_consent_events")
+}
+
+// One provider capture lifecycle. It contains no public URL or filesystem path.
+// Exact media objects are represented by RecordingAsset below.
+model SessionRecording {
+  id                    String                 @id @default(cuid())
+  sessionId             String
+  recordingId           String                 @unique
+  providerRecordingId   String?                @unique
+  canonicalRoom         String
+  status                SessionRecordingStatus @default(requested)
+  requestedById         String?
+  requestIdempotencyKey String                 @unique
+  requestedAt           DateTime               @default(now())
+  startedAt             DateTime?
+  stoppedAt             DateTime?
+  readyAt               DateTime?
+  failedAt              DateTime?
+  failureCode           String?
+  lastEventAt           DateTime?
+  lastSequence          Int                    @default(0)
+  retainUntil           DateTime
+  deletedAt             DateTime?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  session         Session                    @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  requestedBy     User?                      @relation("SessionRecordingRequester", fields: [requestedById], references: [id], onDelete: SetNull)
+  assets          RecordingAsset[]
+  consentEvidence RecordingConsentEvidence[]
+
+  @@index([sessionId, status, createdAt])
+  @@map("session_recordings")
+}
+
+// Ephemeral authenticated presence for the exact Session participant. It is
+// content-free and never substitutes for a relationship or artifact grant.
+model SessionCallPresence {
+  id         String   @id @default(cuid())
+  sessionId  String
+  userId     String
+  joinedAt   DateTime
+  lastSeenAt DateTime
+  leftAt     DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, userId])
+  @@index([sessionId, lastSeenAt])
+  @@map("session_call_presence")
+}
+
+model RecordingConsentEvidence {
+  id             String @id @default(cuid())
+  recordingId    String
+  consentEventId String
+
+  recording    SessionRecording    @relation(fields: [recordingId], references: [id], onDelete: Restrict)
+  consentEvent SessionConsentEvent @relation(fields: [consentEventId], references: [id], onDelete: Restrict)
+
+  @@unique([recordingId, consentEventId])
+  @@map("recording_consent_evidence")
+}
+
+model RecordingAsset {
+  id              String               @id @default(cuid())
+  recordingId     String
+  status          RecordingAssetStatus @default(pending)
+  objectKey       String?              @unique
+  sha256          String?
+  bytes           BigInt?
+  durationSeconds Int?
+  mimeType        String?
+  readyAt         DateTime?
+  retainUntil     DateTime
+  deletedAt       DateTime?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  recording           SessionRecording     @relation(fields: [recordingId], references: [id], onDelete: Restrict)
+  transcriptArtifacts TranscriptArtifact[]
+
+  @@index([recordingId, status])
+  @@map("recording_assets")
+}
+
+// Raw text remains organizer-only. The legacy Session.transcript scalars are
+// dual-written during Release A compatibility and can be contracted later.
+model TranscriptArtifact {
+  id                   String                   @id @default(cuid())
+  sessionId            String
+  recordingAssetId     String?
+  providerTranscriptId String?                  @unique
+  source               TranscriptArtifactSource
+  status               TranscriptArtifactStatus @default(pending)
+  revision             Int
+  text                 String?
+  language             String?
+  createdById          String?
+  idempotencyKey       String                   @unique
+  requestedAt          DateTime                 @default(now())
+  readyAt              DateTime?
+  failedAt             DateTime?
+  failureCode          String?
+  sourceSha256         String?
+  providerErasedAt     DateTime?
+  lastEventAt          DateTime?
+  lastSequence         Int                      @default(0)
+  retainUntil          DateTime
+  deletedAt            DateTime?
+  createdAt            DateTime                 @default(now())
+  updatedAt            DateTime                 @updatedAt
+
+  session        Session         @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  recordingAsset RecordingAsset? @relation(fields: [recordingAssetId], references: [id], onDelete: Restrict)
+  createdBy      User?           @relation("TranscriptArtifactCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@unique([sessionId, revision])
+  @@index([sessionId, status, createdAt])
+  @@map("transcript_artifacts")
+}
+
+// A row is inserted only on an explicit organizer publication. Content is
+// WEPAC-rendered and immutable; later review produces a new version. Revocation
+// and erasure tombstoning are the only permitted metadata transitions.
+model SessionResultDocument {
+  id              String    @id @default(cuid())
+  sessionId       String
+  attendeeId      String
+  sourceDebriefId String
+  version         Int
+  rendererVersion String
+  contentHtml     String?
+  contentSha256   String
+  publishedById   String?
+  publishedAt     DateTime  @default(now())
+  revokedAt       DateTime?
+  erasedAt        DateTime?
+  retainUntil     DateTime
+  createdAt       DateTime  @default(now())
+
+  session       Session         @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  attendee      SessionAttendee @relation(fields: [attendeeId], references: [id], onDelete: Restrict)
+  sourceDebrief SessionDebrief  @relation(fields: [sourceDebriefId], references: [id], onDelete: Restrict)
+  publishedBy   User?           @relation("SessionResultDocumentPublisher", fields: [publishedById], references: [id], onDelete: SetNull)
+
+  @@unique([sessionId, attendeeId, version])
+  @@unique([sessionId, attendeeId, contentSha256])
+  @@index([attendeeId, publishedAt])
+  @@map("session_result_documents")
+}
+
+// Short-lived organizer-only publication capability. The plaintext token is
+// returned once; only its SHA-256 digest is retained.
+model SessionResultDocumentPreview {
+  id              String   @id @default(cuid())
+  sessionId       String
+  attendeeId      String
+  sourceDebriefId String
+  tokenSha256     String   @unique
+  contentSha256   String
+  expiresAt       DateTime
+  consumedAt      DateTime?
+  createdById     String
+  createdAt       DateTime @default(now())
+
+  session       Session         @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  attendee      SessionAttendee @relation(fields: [attendeeId], references: [id], onDelete: Cascade)
+  sourceDebrief SessionDebrief  @relation(fields: [sourceDebriefId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, attendeeId, expiresAt])
+  @@map("session_result_document_previews")
+}
+
+// Content-free idempotency ledger for service callbacks. Raw bodies and
+// provider output never enter this table.
+model SessionMediaCallbackEvent {
+  id             String                     @id @default(cuid())
+  source         SessionMediaCallbackSource
+  eventId        String
+  idempotencyKey String                     @unique
+  bodySha256     String
+  occurredAt     DateTime
+  processedAt    DateTime                   @default(now())
+  createdAt      DateTime                   @default(now())
+
+  @@unique([source, eventId])
+  @@index([source, occurredAt])
+  @@map("session_media_callback_events")
+}
+
+// Append-only and content-free. resourceId is an opaque local identifier; no
+// transcript, note, filename, object key, URL, name or email is stored here.
+model SessionArtifactAuditEvent {
+  id              String                   @id @default(cuid())
+  sessionId       String
+  actorUserId     String?
+  subjectUserId   String?
+  type            SessionArtifactAuditType
+  resourceId      String
+  resourceVersion Int?
+  reasonCode      String?
+  occurredAt      DateTime                 @default(now())
+  createdAt       DateTime                 @default(now())
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  actor   User?   @relation("SessionArtifactAuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  subject User?   @relation("SessionArtifactAuditSubject", fields: [subjectUserId], references: [id], onDelete: SetNull)
+
+  @@index([sessionId, occurredAt])
+  @@index([actorUserId, occurredAt])
+  @@map("session_artifact_audit_events")
 }
 
 model Conversation {
