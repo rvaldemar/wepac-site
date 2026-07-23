@@ -135,6 +135,10 @@ touching auth, onboarding, Sessions, Debrief or public intake requires the full
 build E2E gate. Preserve unrelated Ticketing, Leads, Users, consent and target
 domain data.
 
+`/var/www` remains on the root disk in production. Docker and containerd use
+the attached volume at `/mnt/HC_Volume_104391672`; before any container
+operation, follow `docs/operations/plano-unificacao-discos.md`.
+
 ## Conventions
 
 - Canonical product/domain terms are English; supporting UI prose may be PT-PT.
