@@ -272,6 +272,7 @@ enum NotificationType {
   session_cancelled
   session_followup_updated
   session_result_published
+  session_result_revoked
   new_message
 }
 
@@ -336,6 +337,7 @@ model User {
   sessionRecordingsRequested    SessionRecording[]                @relation("SessionRecordingRequester")
   transcriptArtifactsCreated    TranscriptArtifact[]              @relation("TranscriptArtifactCreator")
   sessionDocumentsPublished     SessionResultDocument[]           @relation("SessionResultDocumentPublisher")
+  sessionCallPresence           SessionCallPresence[]
   sessionArtifactAuditAsActor   SessionArtifactAuditEvent[]       @relation("SessionArtifactAuditActor")
   sessionArtifactAuditAsSubject SessionArtifactAuditEvent[]       @relation("SessionArtifactAuditSubject")
   conversationLinks             ConversationParticipant[]
@@ -811,7 +813,9 @@ model Session {
   recordings                SessionRecording[]
   transcriptArtifacts       TranscriptArtifact[]
   resultDocuments           SessionResultDocument[]
+  resultDocumentPreviews    SessionResultDocumentPreview[]
   artifactAuditEvents       SessionArtifactAuditEvent[]
+  callPresence              SessionCallPresence[]
   supportPreviewGrants      SupportPreviewGrant[]
   supportPreviewAudit       SupportPreviewAuditEvent[]
 
@@ -860,10 +864,13 @@ model SessionDebrief {
   requestedById          String
   requestedAt            DateTime      @default(now())
   generatedAt            DateTime?
+  retainUntil            DateTime?
+  privateErasedAt        DateTime?
 
   session         Session                 @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   requestedBy     User                    @relation(fields: [requestedById], references: [id], onDelete: Cascade)
   resultDocuments SessionResultDocument[]
+  resultDocumentPreviews SessionResultDocumentPreview[]
 
   @@map("session_debriefs")
 }
@@ -888,6 +895,7 @@ model SessionAttendee {
   session         Session                 @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   user            User                    @relation(fields: [userId], references: [id], onDelete: Restrict)
   resultDocuments SessionResultDocument[]
+  resultDocumentPreviews SessionResultDocumentPreview[]
 
   @@unique([sessionId, userId])
   @@map("session_attendees")
@@ -950,6 +958,7 @@ model SessionRecording {
   id                    String                 @id @default(cuid())
   sessionId             String
   recordingId           String                 @unique
+  providerRecordingId   String?                @unique
   canonicalRoom         String
   status                SessionRecordingStatus @default(requested)
   requestedById         String?
@@ -974,6 +983,26 @@ model SessionRecording {
 
   @@index([sessionId, status, createdAt])
   @@map("session_recordings")
+}
+
+// Ephemeral authenticated presence for the exact Session participant. It is
+// content-free and never substitutes for a relationship or artifact grant.
+model SessionCallPresence {
+  id         String   @id @default(cuid())
+  sessionId  String
+  userId     String
+  joinedAt   DateTime
+  lastSeenAt DateTime
+  leftAt     DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, userId])
+  @@index([sessionId, lastSeenAt])
+  @@map("session_call_presence")
 }
 
 model RecordingConsentEvidence {
@@ -1029,6 +1058,7 @@ model TranscriptArtifact {
   failedAt             DateTime?
   failureCode          String?
   sourceSha256         String?
+  providerErasedAt     DateTime?
   lastEventAt          DateTime?
   lastSequence         Int                      @default(0)
   retainUntil          DateTime
@@ -1073,6 +1103,28 @@ model SessionResultDocument {
   @@unique([sessionId, attendeeId, contentSha256])
   @@index([attendeeId, publishedAt])
   @@map("session_result_documents")
+}
+
+// Short-lived organizer-only publication capability. The plaintext token is
+// returned once; only its SHA-256 digest is retained.
+model SessionResultDocumentPreview {
+  id              String   @id @default(cuid())
+  sessionId       String
+  attendeeId      String
+  sourceDebriefId String
+  tokenSha256     String   @unique
+  contentSha256   String
+  expiresAt       DateTime
+  consumedAt      DateTime?
+  createdById     String
+  createdAt       DateTime @default(now())
+
+  session       Session         @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  attendee      SessionAttendee @relation(fields: [attendeeId], references: [id], onDelete: Cascade)
+  sourceDebrief SessionDebrief  @relation(fields: [sourceDebriefId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, attendeeId, expiresAt])
+  @@map("session_result_document_previews")
 }
 
 // Content-free idempotency ledger for service callbacks. Raw bodies and

@@ -74,6 +74,11 @@ CREATE TYPE "SessionArtifactAuditType" AS ENUM (
 );
 
 ALTER TYPE "NotificationType" ADD VALUE 'session_result_published';
+ALTER TYPE "NotificationType" ADD VALUE 'session_result_revoked';
+
+ALTER TABLE "session_debriefs"
+  ADD COLUMN "retainUntil" TIMESTAMP(3),
+  ADD COLUMN "privateErasedAt" TIMESTAMP(3);
 
 CREATE TABLE "session_consent_capacity_assurances" (
   "id" TEXT NOT NULL,
@@ -137,6 +142,7 @@ CREATE TABLE "session_recordings" (
   "id" TEXT NOT NULL,
   "sessionId" TEXT NOT NULL,
   "recordingId" TEXT NOT NULL,
+  "providerRecordingId" TEXT,
   "canonicalRoom" TEXT NOT NULL,
   "status" "SessionRecordingStatus" NOT NULL DEFAULT 'requested',
   "requestedById" TEXT,
@@ -156,6 +162,10 @@ CREATE TABLE "session_recordings" (
   CONSTRAINT "session_recordings_pkey" PRIMARY KEY ("id"),
   CONSTRAINT "session_recording_identity_check" CHECK (
     "recordingId" ~ '^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$'
+    AND (
+      "providerRecordingId" IS NULL
+      OR "providerRecordingId" ~ '^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$'
+    )
     AND "canonicalRoom" ~ '^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$'
     AND length("requestIdempotencyKey") BETWEEN 1 AND 200
     AND "requestIdempotencyKey" ~ '^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$'
@@ -166,10 +176,31 @@ CREATE TABLE "session_recordings" (
 
 CREATE UNIQUE INDEX "session_recordings_recordingId_key"
   ON "session_recordings"("recordingId");
+CREATE UNIQUE INDEX "session_recordings_providerRecordingId_key"
+  ON "session_recordings"("providerRecordingId");
 CREATE UNIQUE INDEX "session_recordings_requestIdempotencyKey_key"
   ON "session_recordings"("requestIdempotencyKey");
 CREATE INDEX "session_recordings_session_status_created_idx"
   ON "session_recordings"("sessionId", "status", "createdAt");
+CREATE UNIQUE INDEX "session_recordings_one_active_per_session"
+  ON "session_recordings"("sessionId")
+  WHERE "status" IN ('requested', 'recording', 'finalizing');
+
+CREATE TABLE "session_call_presence" (
+  "id" TEXT NOT NULL,
+  "sessionId" TEXT NOT NULL,
+  "userId" TEXT NOT NULL,
+  "joinedAt" TIMESTAMP(3) NOT NULL,
+  "lastSeenAt" TIMESTAMP(3) NOT NULL,
+  "leftAt" TIMESTAMP(3),
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL,
+  CONSTRAINT "session_call_presence_pkey" PRIMARY KEY ("id")
+);
+CREATE UNIQUE INDEX "session_call_presence_session_user_key"
+  ON "session_call_presence"("sessionId", "userId");
+CREATE INDEX "session_call_presence_session_last_seen_idx"
+  ON "session_call_presence"("sessionId", "lastSeenAt");
 
 CREATE TABLE "recording_consent_evidence" (
   "id" TEXT NOT NULL,
@@ -243,6 +274,7 @@ CREATE TABLE "transcript_artifacts" (
   "failedAt" TIMESTAMP(3),
   "failureCode" TEXT,
   "sourceSha256" TEXT,
+  "providerErasedAt" TIMESTAMP(3),
   "lastEventAt" TIMESTAMP(3),
   "lastSequence" INTEGER NOT NULL DEFAULT 0,
   "retainUntil" TIMESTAMP(3) NOT NULL,
@@ -317,6 +349,29 @@ CREATE UNIQUE INDEX "session_result_documents_session_attendee_hash_key"
   ON "session_result_documents"("sessionId", "attendeeId", "contentSha256");
 CREATE INDEX "session_result_documents_attendee_published_idx"
   ON "session_result_documents"("attendeeId", "publishedAt");
+
+CREATE TABLE "session_result_document_previews" (
+  "id" TEXT NOT NULL,
+  "sessionId" TEXT NOT NULL,
+  "attendeeId" TEXT NOT NULL,
+  "sourceDebriefId" TEXT NOT NULL,
+  "tokenSha256" TEXT NOT NULL,
+  "contentSha256" TEXT NOT NULL,
+  "expiresAt" TIMESTAMP(3) NOT NULL,
+  "consumedAt" TIMESTAMP(3),
+  "createdById" TEXT NOT NULL,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT "session_result_document_previews_pkey" PRIMARY KEY ("id"),
+  CONSTRAINT "session_result_document_preview_digest_check" CHECK (
+    "tokenSha256" ~ '^[0-9a-f]{64}$'
+    AND "contentSha256" ~ '^[0-9a-f]{64}$'
+    AND ("consumedAt" IS NULL OR "consumedAt" >= "createdAt")
+  )
+);
+CREATE UNIQUE INDEX "session_result_document_previews_tokenSha256_key"
+  ON "session_result_document_previews"("tokenSha256");
+CREATE INDEX "session_result_document_previews_session_attendee_expires_idx"
+  ON "session_result_document_previews"("sessionId", "attendeeId", "expiresAt");
 
 CREATE TABLE "session_media_callback_events" (
   "id" TEXT NOT NULL,
@@ -399,6 +454,12 @@ ALTER TABLE "session_recordings"
   ADD CONSTRAINT "session_recording_requester_fkey"
   FOREIGN KEY ("requestedById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
+ALTER TABLE "session_call_presence"
+  ADD CONSTRAINT "session_call_presence_session_fkey"
+  FOREIGN KEY ("sessionId") REFERENCES "sessions"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT "session_call_presence_user_fkey"
+  FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
 ALTER TABLE "recording_consent_evidence"
   ADD CONSTRAINT "recording_consent_recording_fkey"
   FOREIGN KEY ("recordingId") REFERENCES "session_recordings"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -426,6 +487,14 @@ ALTER TABLE "session_result_documents"
   FOREIGN KEY ("sourceDebriefId") REFERENCES "session_debriefs"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
   ADD CONSTRAINT "session_result_document_publisher_fkey"
   FOREIGN KEY ("publishedById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+ALTER TABLE "session_result_document_previews"
+  ADD CONSTRAINT "session_result_document_preview_session_fkey"
+  FOREIGN KEY ("sessionId") REFERENCES "sessions"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT "session_result_document_preview_attendee_fkey"
+  FOREIGN KEY ("attendeeId") REFERENCES "session_attendees"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT "session_result_document_preview_debrief_fkey"
+  FOREIGN KEY ("sourceDebriefId") REFERENCES "session_debriefs"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE "session_artifact_audit_events"
   ADD CONSTRAINT "session_artifact_audit_session_fkey"

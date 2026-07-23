@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { assertSessionOrganizer } from "@/lib/wepacker/actions/session";
+import { assertSessionPurposesGrantedForAll } from "@/lib/wepacker/actions/session-media";
 import { MAX_TRANSCRIPT_CHARS } from "@/lib/wepacker/debrief/types";
 import { MAX_TRANSCRIPT_FILE_BYTES } from "@/lib/wepacker/transcript-file";
 
@@ -14,6 +15,7 @@ export async function attachSessionTranscript(
   transcript: string,
 ) {
   const { actorId } = await assertSessionOrganizer(sessionId);
+  await assertSessionPurposesGrantedForAll(sessionId, ["transcription"]);
   const trimmed = transcript.trim();
   if (!trimmed) throw new Error("Transcrição vazia.");
   if (trimmed.includes("\0")) {

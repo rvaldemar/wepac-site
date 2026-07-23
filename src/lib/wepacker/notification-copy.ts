@@ -52,6 +52,10 @@ export const NOTIFICATION_COPY: Record<NotificationType, NotificationCopy> = {
     title: "Documento da sessão disponível",
     body: "O mentor publicou um novo documento revisto da tua sessão.",
   },
+  session_result_revoked: {
+    title: "Documento da sessão retirado",
+    body: "O mentor retirou um documento anteriormente partilhado contigo.",
+  },
   new_message: {
     title: "New Message",
     body: "You received a new Message.",

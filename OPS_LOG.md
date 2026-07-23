@@ -4,6 +4,78 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-23 — Private Session media staged, not deployed
+
+The additive WEPACKER migration, authenticated Jitsi join, private recording,
+Hub transcription, consent/withdrawal, exact-organizer raw access and
+exact-attendee Result Document sharing are implemented on the feature branch.
+Every new runtime flag remains false by default. No production migration,
+secret, flag, Jitsi cutover, invite reissue or retention worker has been
+applied by this change.
+
+Before deployment, follow
+`docs/operations/session-media-private-recording.md`; validate the actual
+`/opt/rvs-meet/jitsi-cfg/recordings` mount, provision secrets without printing
+them, keep WEPAC raw retention at 7 days and Meet hard deletion at 8 days, then
+enable recording and transcription together only after the signed-callback and
+exact-person smoke gates pass.
+
+## 2026-07-23 — Release A reconciliada com a linha Society (local-only)
+
+A branch isolada `feat/session-media-private-share`, baseada em `origin/main`
+`1da82ed`, incorporou a ancestry de `feat/arte-a-capela-base` `46a88e9`.
+Foram mantidas as páginas Society/Arte à Capela, os testes públicos e o
+hardening de bilheteira; schema, seed, intake genérico, auth e actions de domínio
+continuam sob o contrato Release A. A migration Pack-specific de candidaturas e
+a rota legacy `/wepacker/[pack]/intake` foram deliberadamente excluídas. O mapa
+de conflitos está em
+`docs/coordination/session-media-release-reconciliation.md`. Mudança local,
+sem deploy; Release B continua separada e vetada.
+
+---
+
+## 2026-07-22 — Release A target-runtime candidate: local-only, gates em fecho
+
+O corte do runtime para o Domain Graph Person-centred está preparado na worktree
+isolada `wepac-site-legacy-cleanup`, branch
+`refactor/remove-legacy-delivery`. **Ainda não foi mergeado nem deployado.** A
+worktree original com trabalho do utilizador permanece preservada.
+
+- **Contrato alvo:** `Person -> My Journey -> Stage/Life Map/Trails/Goals/Actions`,
+  `Person -> Connection -> Person`, Mentorship dirigida entre pessoas, Pack como
+  comunidade e Cycle como agregado temporal. Session usa organizer e attendees
+  explícitos; não depende de Cohort/Membership legacy. Account roles ficam
+  limitadas a `member|admin`.
+- **Release A:** runtime legacy removido; migrações permanecem compatíveis com o
+  runtime anterior e marcam apenas as contas cujo role global `mentor` precisa de
+  rollback. W01/Hub, Mentorship writes, Transcript writes e Cal.com ingest ficam
+  explicitamente desligados. Notification outbox e Support Preview retention
+  worker são obrigatórios no arranque.
+- **Evidência local atual:** full Vitest 71 ficheiros / 410 testes green;
+  TypeScript green; lint sem erros (25 warnings herdados); production build
+  e production-build E2E 4/4 green; 37 migrações reproduzidas de vazio e sobre
+  o schema atualmente publicado em PostgreSQL 16; seed idempotente executado
+  duas vezes; `bash -n` + ShellCheck green; Release B positive/negative em base
+  descartável green; Security/Data gate `ship` com 182/182 testes focados e
+  os gates Technical/Test, Product/UX e Release/Ops sem blockers pré-cutover.
+  Browser QA desktop/mobile confirmou ausência de overflow/erros e o drawer
+  mobile foi tornado verticalmente scrollable até `Manage Sessions` e `Sair`.
+- **Produção preparada, sem restart:** as sete flags Release A foram escritas uma
+  única vez e validadas, com backup timestamped do env; o serviço e backup timer
+  permaneceram ativos. `SPOT_CHECK_TABLES` continua deliberadamente no contrato
+  legacy de quatro tabelas até as migrações Release A existirem.
+- **Gates ainda abertos:** congelar e mergear o SHA exato, executar o deploy
+  atendido e concluir authenticated read-only smokes. Release A ainda não está
+  deployada e continua incompleta enquanto estas provas não existirem.
+- **Release B:** `veto` explícito. A contração física das nove tabelas legacy não
+  pode ser executada com Release A. Exige Release A estável em produção,
+  authenticated read-only smokes, ausência de queries legacy e pelo menos um
+  backup agendado cujo restore drill valide paridade nas 41 tabelas preservadas.
+  Só depois existe uma maintenance window separada, atendida e novamente
+  aprovada.
+
+---
+
 ## 2026-07-22 — Domain Graph v2 foundation: additive/default-off em produção
 
 21º deploy. A PR #4 foi retirada de draft, mergeada em `main` no commit `4e3e3d5d8f0a19a4d10767853350327897e82c4f` e lançada como `/var/www/wepac/releases/20260722003145` (BUILD_ID `UaQZKYbF4UarHWDtsImXK`). Esta é uma foundation de expansão, não o cutover completo do domínio: os novos writes continuam desligados e os modelos legacy permanecem operacionais.
