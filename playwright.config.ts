@@ -35,5 +35,15 @@ export default defineConfig({
     // different checkout or environment that happens to own the same port.
     reuseExistingServer: false,
     timeout: useBuild ? 180_000 : 60_000,
+    // Playwright's `env`, when set, REPLACES the child's environment
+    // instead of extending `process.env` (it's only a default, not a
+    // merge) — so this must spread the parent env explicitly or the
+    // server loses DATABASE_URL/NEXTAUTH_SECRET/PATH/etc. entirely.
+    // E2E_TRUST_HOST itself is scoped to this one child process only —
+    // never exported to the shell, never in .env*, never read by
+    // deploy/deploy.sh. See the long comment on `trustHost` in
+    // src/lib/auth.ts for the full threat-model justification of why
+    // this exists and why it can't affect a real deploy.
+    env: { ...process.env, E2E_TRUST_HOST: "1" } as Record<string, string>,
   },
 });

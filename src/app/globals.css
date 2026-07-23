@@ -29,6 +29,17 @@
   --color-wessex-gray: #EFEFF0;
   --color-wessex-dark: #2c2d2e;
   --color-wessex-light: #FCFCFC;
+  --font-cormorant: "Cormorant Garamond", serif;
+  --color-capela-bg: #0B0A09;
+  --color-capela-cream: #F0EDE6;
+  --color-capela-red: #C2301F;
+  /* #C2301F only clears 4.5:1 as text on the cream block (4.81:1) — on the
+     near-black --color-capela-bg it measures 3.52:1, which fails for text
+     below the 18px/14px-bold "large text" threshold. This lighter tint
+     (4.78:1 on --color-capela-bg) is for text set directly on the dark
+     background only; button fills, borders and cream-background text keep
+     the base --color-capela-red. */
+  --color-capela-red-on-dark: #DC4A32;
 }
 
 body {

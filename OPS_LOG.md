@@ -4,6 +4,20 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-23 — Release A reconciliada com a linha Society (local-only)
+
+A branch isolada `feat/session-media-private-share`, baseada em `origin/main`
+`1da82ed`, incorporou a ancestry de `feat/arte-a-capela-base` `46a88e9`.
+Foram mantidas as páginas Society/Arte à Capela, os testes públicos e o
+hardening de bilheteira; schema, seed, intake genérico, auth e actions de domínio
+continuam sob o contrato Release A. A migration Pack-specific de candidaturas e
+a rota legacy `/wepacker/[pack]/intake` foram deliberadamente excluídas. O mapa
+de conflitos está em
+`docs/coordination/session-media-release-reconciliation.md`. Mudança local,
+sem deploy; Release B continua separada e vetada.
+
+---
+
 ## 2026-07-22 — Release A target-runtime candidate: local-only, gates em fecho
 
 O corte do runtime para o Domain Graph Person-centred está preparado na worktree

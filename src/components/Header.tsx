@@ -8,9 +8,10 @@ const navigation = [
   { name: "A WEPAC", href: "/sobre" },
   { name: "Wessex", href: "/wessex" },
   { name: "Easy Peasy", href: "/projetos/easy-peasy" },
-  { name: "Arte à Capela", href: "/projetos/arte-a-capela" },
+  { name: "Arte à Capela", href: "/arte-a-capela" },
   { name: "Artistas", href: "/artist" },
   { name: "Agenda", href: "/programacao" },
+  { name: "Society", href: "/society" },
   { name: "Contacto", href: "/contacto" },
 ];
 

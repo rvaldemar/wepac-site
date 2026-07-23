@@ -4,8 +4,14 @@ import authConfig from "@/auth.config";
 import { prisma } from "@/lib/db";
 import { authorizeWepackerCredentials } from "@/lib/wepacker/credentials-auth";
 
+// `next start` uses production Auth.js defaults, so the production-build E2E
+// server needs one test-runner-scoped signal. This variable is set only by
+// playwright.config.ts and is intentionally distinct from AUTH_TRUST_HOST.
+const trustHost = process.env.E2E_TRUST_HOST === "1" ? true : undefined;
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
+  trustHost,
   providers: [
     Credentials({
       credentials: {
