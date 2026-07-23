@@ -4,6 +4,26 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-23 — P1 resolvido: gate E2E cego em 3/4 fluxos (UntrustedHost)
+
+Branch `feat/e2e-auth-gate`, a partir de `feat/arte-a-capela-base`. Segue o follow-up P1 registado em "2026-07-22 (2)".
+
+**Causa real, confirmada empiricamente:** o `npm run test:e2e` (modo dev, `next dev`) nunca teve o problema — `NODE_ENV !== "production"` já faz o `@auth/core` assumir `trustHost: true` por omissão. O gate que estava mesmo cego é `npm run test:e2e:build` — o único que corre `next build && next start`, e `next start` força `NODE_ENV=production` independentemente do que estiver no shell pai, o que faz o `trustHost` cair para `false` por omissão (a postura correta de produção). Um `AUTH_TRUST_HOST=true` solto no shell não resolve isto de forma alguma enquanto for definido depois do arranque do processo — o `NextAuth({...})` deste projeto usa a forma objeto (não a forma função lazy), pelo que `setEnvDefaults` só lê `process.env` **uma vez**, na primeira importação do módulo.
+
+**Fix, com scope estrito a teste:** `src/lib/auth.ts` passa a definir `trustHost` explicitamente a partir de `E2E_TRUST_HOST === "1"` (senão `undefined`, preservando o default do `@auth/core` inalterado). Esta env var é definida **apenas** dentro de `playwright.config.ts` → `webServer.env` — nunca no shell, nunca em `.env*`, nunca em `deploy/deploy.sh` ou no `.env.production` do servidor. Nome deliberadamente distinto de `AUTH_TRUST_HOST` (o nome genérico do Auth.js): foi exatamente esse nome, por soar a configuração legítima, que acabou sem scope nenhum no `.env.production` em 2026-03-24. `NODE_ENV` não podia servir de discriminador aqui — `next start` força-o a `"production"` tanto num deploy real como num `test:e2e:build` local, portanto só um sinal próprio do projeto resolve a ambiguidade.
+
+**Falsificação:** removido temporariamente o `E2E_TRUST_HOST` do `webServer.env` → os 3 specs autenticados voltam a falhar com o `UntrustedHost` exato reportado; restaurado, voltam a passar. **Produção confirmada não afetada:** o mesmo artefacto de build (`.next/`), arrancado com `npm run start` sem `E2E_TRUST_HOST` no ambiente (nem sequer via Playwright), devolve o mesmo `UntrustedHost` em `/api/auth/session` — prova direta de que o build compilado não tem a postura relaxada embutida, ela depende só do sinal em runtime.
+
+**Fricção adicional resolvida, não relacionada com auth:** `next build`/`next dev` falhava sempre nesta árvore com `Module not found` em `src/instrumentation.ts` — a causa é o worktree do agente estar aninhado dentro da árvore principal, o que faz o Turbopack detetar dois `package-lock.json` e inferir a raiz errada (a árvore principal, com um `instrumentation.ts` mais recente que importa módulos inexistentes nesta branch). `turbopack.root: __dirname` em `next.config.ts` resolve para qualquer ambiente, worktree ou não, e é um no-op num deploy normal (raiz e cwd já coincidem).
+
+**Base de dados descartável:** o guard de `e2e/global-setup.ts` recusa corretamente correr contra `wepac_production`. Criada `wepac_e2e_agenta7a71c` (owner `wepac`, mesmo role local), migrada com `prisma migrate deploy`, usada para os runs de validação, depois eliminada — nunca tocado o `wepac_production` do developer.
+
+**Gate:** `npx tsc --noEmit` limpo; `npx eslint` nos ficheiros tocados limpo; `npx vitest run` 237/238 (falha pré-existente em `hub-debrief-engine.test.ts`, já catalogada); `npx playwright test` (dev e build) **20/20**, incluindo os 4 specs do lote anterior (member-dashboard, mentor-session-debrief, onboarding-gate, public-candidatura) e os 16 do lote de páginas públicas.
+
+**Follow-up não corrigido aqui, fora de scope (sem deploy):** `.env.production` do servidor mantém `AUTH_TRUST_HOST=true` incondicional desde 2026-03-24. O `deploy/nginx.conf` só faz `server_name wepac.pt` e não normaliza `X-Forwarded-Host`, portanto o vetor descrito no ADR desta mudança (callback/redirect forjado por Host) não está descartado em produção — só mitigado pela topologia atual (Node só ouve em `127.0.0.1:3003`, não exposto). Vale um ticket dedicado para trocar por um `trustHost` condicionado de verdade (ex. lista de hosts confiáveis) em vez de `true` incondicional.
+
+---
+
 ## 2026-07-22 (4) — WEPAC Society: entrada em `/society` e Universidade de Verão
 
 27º deploy. Release em produção a partir de `feat/arte-a-capela-base`. Sem migrations aplicadas em prod nesta release (a nova migration de candidaturas segue no código e aplica-se no próximo `migrate deploy`; ver abaixo).
