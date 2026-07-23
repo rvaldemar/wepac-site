@@ -4,6 +4,39 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-23 (2) — Docker/containerd migrados para o segundo disco
+
+Executada a Fase 2 do antigo plano de unificação de discos no servidor
+`77.42.82.10`. Os discos não foram fundidos: `/dev/sda1` continua a servir `/`,
+`/var/www`, PostgreSQL, `/home/deploy` e `/opt/rvs-meet`; `/dev/sdb`, montado em
+`/mnt/HC_Volume_104391672`, passou a guardar os data roots nativos de Docker e
+containerd. A topologia as-built e o procedimento de recuperação estão em
+`docs/operations/plano-unificacao-discos.md`; a fonte transversal do host está
+no repositório Agents Hub, `docs/operations/shared-host-storage.md`.
+
+**Gate pós-migração:** Docker reportou
+`/mnt/HC_Volume_104391672/docker`, containerd reportou
+`/mnt/HC_Volume_104391672/containerd`, e os três serviços ficaram `active`.
+Voltaram os 28 containers do baseline, sem `unhealthy` nem restarts inesperados.
+O webmail em `mail.missionfederation.com` respondeu 200 com o login real e uma
+sala Jitsi foi aberta pelo host autenticado e recebida por um guest; o gate foi
+repetido depois da limpeza.
+
+Os diretórios antigos só foram removidos depois desses smokes e ficaram como
+placeholders vazios. O `df` final ficou em 28/75 GB (40%) no disco raiz e
+15/59 GB (27%) no volume: foram libertados cerca de 15 GB reais, não os 29 GB
+inflacionados por vistas overlay no `du`. O arranque fica fail-closed através
+de `RequiresMountsFor=/mnt/HC_Volume_104391672` nos serviços Docker e
+containerd.
+
+**Risco residual:** não ficou confirmado neste trabalho um backup integral
+off-host do runtime Mailcow/Jitsi. Como os data roots antigos já foram
+apagados, restaurar apenas os ficheiros de configuração não é rollback; seria
+necessário copiar primeiro os dados atuais do volume de volta para
+`/var/lib/docker` e `/var/lib/containerd`.
+
+---
+
 ## 2026-07-23 — P1 resolvido: gate E2E cego em 3/4 fluxos (UntrustedHost)
 
 Branch `feat/e2e-auth-gate`, a partir de `feat/arte-a-capela-base`. Segue o follow-up P1 registado em "2026-07-22 (2)".

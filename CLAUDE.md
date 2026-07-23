@@ -56,6 +56,9 @@ Ver `.env.example`. Variáveis obrigatórias:
 
 - Script: `deploy/deploy.sh` (build local + rsync para servidor)
 - Servidor: `deploy@77.42.82.10`, app em `/var/www/wepac/current`
+- Storage: `/var/www` permanece no disco raiz; Docker/containerd usam o volume
+  `/mnt/HC_Volume_104391672`. Antes de operações sobre containers, consultar
+  `docs/operations/plano-unificacao-discos.md`.
 - Serviço: `sudo systemctl restart wepac`
 - Logs: `journalctl -u wepac --no-pager -q`
 - Após deploy: correr `npx prisma@6.19.2 generate` no servidor (o build local gera engines para macOS, o servidor precisa de Linux)

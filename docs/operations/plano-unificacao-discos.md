@@ -1,157 +1,201 @@
-# Plano — usar a máquina como um todo (77.42.82.10)
+# Topologia de armazenamento do servidor (as-built)
 
-Estado em 2026-07-23. Servidor Hetzner, Ubuntu 24.04, 8 vCPU, 30 GB RAM.
-Quatro produtos em produção: WEPAC, Wedding Magic, mgaccounting, CI/Ops — mais Mailcow (o email da
-casa) e Jitsi (as salas de vídeo das sessões WEPACKER).
+> Estado confirmado em 2026-07-23 no servidor `77.42.82.10`. Este documento
+> substitui o plano pré-migração: a Fase 2 foi executada; `/var/www` e
+> `/home/deploy` não foram movidos.
 
-## 1. O ponto de partida
+## Resposta direta
 
-| Disco | Tamanho | Uso | Papel hoje |
-|---|---|---|---|
-| `/dev/sda1` | 76 GB | 49 GB · **68%** | tudo: sistema, aplicações, containers |
-| `/dev/sdb` | 60 GB | ~2 MB · **1%** | volume Hetzner, vazio desde janeiro |
+Estamos a usar os dois discos, mas não estão fundidos num sistema de ficheiros
+único. Cada disco tem uma função:
 
-**Onde estão os 49 GB:**
+| Disco | Mount | Uso verificado | Função |
+|---|---|---:|---|
+| `/dev/sda1` | `/` | 28 GB / 75 GB (40%) | Ubuntu, aplicações, bases de dados e configuração |
+| `/dev/sdb` | `/mnt/HC_Volume_104391672` | 15 GB / 59 GB (27%) | armazenamento persistente de Docker e containerd |
 
+O ext4 do disco raiz não agrega dispositivos. Usar LVM, btrfs, ZFS ou mergerfs
+para apresentar um total único acrescentaria uma migração e um modo de falha
+sem benefício operacional. A separação por função utiliza a capacidade dos
+dois discos sem alterar o filesystem de arranque.
+
+## O que vive em cada disco
+
+Continuam em `/dev/sda1`:
+
+- `/var/www`, incluindo as releases WEPAC;
+- `/var/lib/postgresql`;
+- `/home/deploy`;
+- `/opt/rvs-meet`, incluindo o Compose, segredos e configuração Jitsi montada
+  por bind mount;
+- sistema operativo, nginx e unidades systemd.
+
+Passaram para `/dev/sdb`:
+
+- Docker data root:
+  `/mnt/HC_Volume_104391672/docker`;
+- containerd root:
+  `/mnt/HC_Volume_104391672/containerd`.
+
+Isto inclui imagens, writable layers, build cache e conteúdo persistente gerido
+pelos runtimes. O `state` transitório de containerd permanece em
+`/run/containerd`. Não implica que todos os ficheiros das aplicações em
+containers tenham sido movidos: bind mounts explícitos continuam no caminho
+declarado por cada aplicação.
+
+## Migração executada
+
+Em 2026-07-23:
+
+1. Docker, `docker.socket` e containerd foram parados;
+2. os dois data roots foram copiados para o volume preservando ownership, IDs,
+   ACLs e atributos estendidos;
+3. `/etc/docker/daemon.json` foi configurado com o novo `data-root`;
+4. `/etc/containerd/config.toml` foi configurado com o novo `root`;
+5. foram instalados drop-ins systemd com
+   `RequiresMountsFor=/mnt/HC_Volume_104391672` para Docker e containerd;
+6. containerd e Docker foram arrancados e validados;
+7. os data roots antigos só foram eliminados depois dos smokes; ficaram
+   placeholders vazios em `/var/lib/docker` e `/var/lib/containerd`.
+
+As cópias pré-cutover da configuração permanecem em:
+
+- `/etc/docker/daemon.json.pre-data-root-20260723T123732Z`;
+- `/etc/containerd/config.toml.pre-data-root-20260723T123732Z`.
+
+## Evidência pós-migração
+
+O gate final confirmou:
+
+- `/dev/sdb` montado em `/mnt/HC_Volume_104391672`;
+- Docker a usar `/mnt/HC_Volume_104391672/docker`;
+- containerd a usar `/mnt/HC_Volume_104391672/containerd`;
+- containerd, `docker.socket` e Docker em estado `active`;
+- os 28 containers do baseline a correr, sem `unhealthy` nem restarts
+  inesperados;
+- webmail real em `https://mail.missionfederation.com/` a responder 200 e a
+  renderizar o login;
+- sala real em `https://meet.rvs.solutions/` aberta pelo host autenticado e
+  recebida por um guest;
+- o gate repetido depois de remover os dados antigos.
+
+O Docker conservava ainda um registo parado e obsoleto `docker-proxy-1`;
+por isso `docker ps -a` tinha 29 registos, embora o baseline ativo fosse 28. Em
+recuperações futuras, comparar nomes e health states, não apenas uma contagem.
+
+## Espaço libertado
+
+O disco raiz passou de cerca de 49 GB usados para 28 GB usados. A libertação
+real atribuível à limpeza foi aproximadamente 15 GB de blocos, não os 29 GB
+estimados inicialmente por `du`: as vistas overlay contavam conteúdo de forma
+inflacionada. O volume ficou com 15 GB usados e 41 GB livres.
+
+As fases antigas de mover `/var/www` e `/home/deploy` não foram executadas nem
+são necessárias com a capacidade atual. PostgreSQL também permanece no disco
+raiz. Qualquer futura redistribuição deve ser tratada como trabalho separado,
+com backup, rollback e smoke próprios.
+
+## Preflight obrigatório
+
+Antes de reiniciar Docker/containerd, fazer manutenção Jitsi/OpenClaude ou
+recuperar o servidor após reboot, provar primeiro o mount, as configurações e
+os drop-ins sem chamar a API Docker:
+
+```bash
+ssh deploy@77.42.82.10 '
+  set -eu
+  mount_line="$(findmnt -rn -o SOURCE,TARGET,FSTYPE --target /mnt/HC_Volume_104391672)"
+  test "$mount_line" = "/dev/sdb /mnt/HC_Volume_104391672 ext4"
+  docker_root="$(sudo python3 -c "import json; print(json.load(open(\"/etc/docker/daemon.json\"))[\"data-root\"])")"
+  test "$docker_root" = "/mnt/HC_Volume_104391672/docker"
+  containerd_root="$(sudo python3 -c "import tomllib; print(tomllib.load(open(\"/etc/containerd/config.toml\", \"rb\"))[\"root\"])")"
+  test "$containerd_root" = "/mnt/HC_Volume_104391672/containerd"
+  for unit in docker containerd; do
+    dropin="/etc/systemd/system/${unit}.service.d/data-root-mount.conf"
+    sudo grep -Fxq "[Unit]" "$dropin"
+    sudo grep -Fxq "RequiresMountsFor=/mnt/HC_Volume_104391672" "$dropin"
+    systemctl show -p DropInPaths --value "${unit}.service" | grep -Fq "$dropin"
+  done
+  printf "mount=%s\n" "$mount_line"
+  printf "DockerConfigRoot=%s\n" "$docker_root"
+  printf "containerdConfigRoot=%s\n" "$containerd_root"
+  printf "mount-guards=ok\n"
+'
 ```
-/var        37 G
-  /var/lib    28 G
-    containerd  17 G   ← maior consumidor isolado
-    docker      12 G
-    postgresql 209 M
-  /var/www     8,4 G   ← as 4 aplicações
-  /var/log     544 M
-/usr         9,6 G     ← sistema, fica onde está
-/home        6,5 G
+
+Esperado:
+
+```text
+mount=/dev/sdb /mnt/HC_Volume_104391672 ext4
+DockerConfigRoot=/mnt/HC_Volume_104391672/docker
+containerdConfigRoot=/mnt/HC_Volume_104391672/containerd
+mount-guards=ok
 ```
 
-**60% do disco são containers.** Não são as aplicações, não são os dados, não são os logs.
+Só depois deste bloco passar se pode arrancar containerd e Docker numa
+recuperação. Quando os serviços já devem estar ativos, provar o runtime:
 
-## 2. Porque não se juntam os dois discos num só
-
-A pergunta natural é "porque não faço dos dois um espaço único de 136 GB". A resposta é que o
-`/dev/sda1` está formatado em **ext4**, e o ext4 não suporta múltiplos dispositivos — é uma
-propriedade do formato, não uma opção por configurar.
-
-Um espaço verdadeiramente único exigiria LVM, btrfs ou ZFS **por baixo** do sistema de ficheiros. E
-nenhum desses se instala num disco já formatado e a servir o sistema: implicaria arrancar em modo
-rescue com backup completo, ou reinstalar a máquina. Com quatro produtos em produção, o email da
-casa incluído, isso é risco desproporcionado para o benefício de ver um número maior no `df`.
-
-Há ainda o `mergerfs`, que apresenta dois diretórios como se fossem um. Funciona, mas acrescenta uma
-camada entre quatro produtos e o disco para resolver um problema estético.
-
-## 3. A arquitetura correta — e é outra
-
-Em servidores com volume anexado, a prática correta não é fundir discos. É **separar por função**:
-
-- **Disco de sistema** (`sda`): sistema operativo, binários, configuração. Estável, previsível, ~20 GB.
-- **Volume** (`sdb`): o que cresce — containers, aplicações, dados, backups.
-
-Ou seja: a máquina passa a ser usada como um todo não por ter um sistema de ficheiros único, mas por
-**nenhum dos dois discos estar parado enquanto o outro sufoca**. É o que o `/dev/sdb` está a fazer há
-seis meses.
-
-**Estado final previsto:**
-
-| | Antes | Depois |
-|---|---|---|
-| `sda` (76 GB) | 49 GB · 68% | **~17 GB · 23%** |
-| `sdb` (60 GB) | 2 MB · 1% | **~35 GB · 60%** |
-
-## 4. O plano, por fases
-
-Cada fase é independente, verificável e reversível. **Nenhuma fase avança sem a anterior estar
-verificada e estável.** Ordem escolhida por risco crescente, não por ganho.
-
-### Fase 0 — Rede de segurança (sem downtime)
-
-Antes de mover um byte:
-
-1. Confirmar que o backup mais recente da base de dados está íntegro e **fora** deste disco. Os
-   backups do WEPAC já estão no volume desde hoje; confirmar o mesmo para os outros produtos.
-2. Snapshot do servidor no painel Hetzner. É o único rollback verdadeiro se algo correr muito mal, e
-   custa minutos.
-3. Registar o estado atual: `df -h`, `lsblk`, `systemctl list-units --state=running`, e a lista de
-   containers a correr. Sem isto não há como provar que o "depois" está igual ao "antes".
-
-### Fase 1 — `/var/www` (8,4 GB) · downtime por aplicação, ~1-2 min cada
-
-A menos arriscada, e serve de ensaio para o método. Faz-se **uma aplicação de cada vez**, começando
-pela menos crítica (`ci_ops`, 277 MB) e deixando o WEPAC para o fim.
-
-Por aplicação:
+```bash
+ssh deploy@77.42.82.10 '
+  set -eu
+  for unit in containerd docker.socket docker; do
+    test "$(systemctl is-active "$unit")" = "active"
+    printf "%s=active\n" "$unit"
+  done
+  docker_runtime="$(sudo docker info --format "{{.DockerRootDir}}")"
+  test "$docker_runtime" = "/mnt/HC_Volume_104391672/docker"
+  printf "DockerRuntimeRoot=%s\n" "$docker_runtime"
+'
 ```
-sudo systemctl stop <serviço>
-sudo rsync -aHAX --numeric-ids /var/www/<app>/ /mnt/HC_Volume_104391672/www/<app>/
-sudo mv /var/www/<app> /var/www/<app>.old
-sudo ln -s /mnt/HC_Volume_104391672/www/<app> /var/www/<app>
-sudo systemctl start <serviço>
+
+Esperado:
+
+```text
+containerd=active
+docker.socket=active
+docker=active
+DockerRuntimeRoot=/mnt/HC_Volume_104391672/docker
 ```
-Verificar: serviço `active`, a página responde 200, sem erros no journal. Só então a seguinte.
 
-O `.old` **fica** até todas as aplicações estarem estáveis por 24h. É o rollback: parar, apagar o
-symlink, repor o diretório, arrancar.
+Se o mount, um dos roots ou um serviço diferir, parar. Não arrancar Docker
+contra os diretórios vazios do disco raiz e não remover os
+`RequiresMountsFor`: isso criaria um segundo runtime vazio em vez de recuperar
+produção.
 
-> Nota: symlink funciona aqui, mas um *bind mount* declarado no `fstab` é mais robusto — sobrevive a
-> ferramentas que resolvem symlinks de forma inesperada. Preferir bind mount se o deploy de alguma
-> app for sensível a isso (o `deploy.sh` do WEPAC faz `rsync` para uma release nova e troca um
-> symlink; testar em `ci_ops` primeiro dirá se há problema).
+## Rollback real
 
-### Fase 2 — containers (29 GB) · **downtime real: email e vídeo offline**
+O rollback original, que consistia apenas em reverter duas configurações, já
+não é válido porque os dados antigos foram apagados. Recuar agora exige nova
+migração:
 
-O maior ganho e o maior cuidado. `containerd` e `docker` são o mesmo stack e movem-se juntos.
+1. abrir uma janela de manutenção e capturar o baseline de containers;
+2. provar que `/dev/sda1` tem espaço para os dados atuais;
+3. parar Docker, o socket e containerd;
+4. provar que os destinos em `/var/lib` estão vazios, ou isolar quaisquer
+   conteúdos parciais; nunca misturar dois stores;
+5. copiar os data roots atuais do volume para os destinos vazios, preservando
+   metadados;
+6. restaurar ou reescrever deliberadamente e validar as configurações;
+7. só depois remover os dois drop-ins `RequiresMountsFor` específicos do
+   volume, correr `systemctl daemon-reload`, arrancar containerd antes de
+   Docker e repetir todos os smokes de containers, webmail, Jitsi, OpenClaude e
+   consumidores.
 
-**Isto tira o Mailcow e o Jitsi do ar durante a cópia.** Para 29 GB entre discos locais, contar
-**10 a 20 minutos**. Escolher janela: fora de horas, e avisar quem depende do email.
+Nunca restaurar só os ficheiros `.pre-data-root-*` enquanto os diretórios em
+`/var/lib` estiverem vazios. Se a ativação no disco raiz falhar, os serviços
+ficam parados até o store ser reparado ou até serem repostos a configuração e
+os guards conhecidos do volume.
 
-```
-sudo systemctl stop docker docker.socket containerd
-sudo rsync -aHAX --numeric-ids /var/lib/docker/ /mnt/HC_Volume_104391672/docker/
-sudo rsync -aHAX --numeric-ids /var/lib/containerd/ /mnt/HC_Volume_104391672/containerd/
-```
-Depois apontar cada um por configuração, **não por symlink** — ambos suportam nativamente:
-- `/etc/docker/daemon.json` → `{"data-root": "/mnt/HC_Volume_104391672/docker"}`
-- `/etc/containerd/config.toml` → `root = "/mnt/HC_Volume_104391672/containerd"`
+## Riscos residuais
 
-Arrancar por ordem: `containerd` → `docker`. Verificar: os 28 containers voltam, o webmail responde,
-uma sala Jitsi abre. Os diretórios antigos ficam intactos até validação; só depois se apagam, e é
-isso que liberta os 29 GB.
+- Não ficou confirmado durante esta migração um backup integral off-host do
+  runtime Mailcow/Jitsi. Esse backup e um restore drill são um trabalho
+  separado.
+- O número de containers e o uso de disco são fotografias de 2026-07-23;
+  verificar sempre o estado live.
+- Uma falha Certbot independente em `abolitionistmisson.org` já existia e não
+  pertence a esta migração. Os certificados de Mailcow e Jitsi estavam válidos
+  no gate final.
 
-**Rollback:** parar, reverter as duas configurações, arrancar. Os dados originais nunca foram tocados.
-
-### Fase 3 — `/home/deploy` (5 GB) · sem downtime
-
-Bundles, caches e artefactos de deploy. Mesmo método da Fase 1, sem serviço a parar.
-
-### Fase 4 — higiene contínua
-
-O que evita voltar ao mesmo ponto daqui a seis meses:
-
-- `journalctl --vacuum-time=7d` mensal, ou `SystemMaxUse=500M` em `/etc/systemd/journald.conf`.
-- `docker builder prune -f` após deploys pesados — hoje libertou 7,6 GB de cache regenerável.
-- Reduzir releases guardadas de 5 para 3 nos deploys.
-- Alerta de disco a 75%, antes de apertar.
-
-## 5. O que este plano deliberadamente NÃO faz
-
-- **Não mexe no firewall.** O `ufw` está inativo e há portas expostas (ver o registo de segurança
-  separado), mas mexer em regras de firewall por SSH é a forma clássica de perder o acesso ao
-  servidor. Faz-se por consola do fornecedor, noutra sessão, com o plano dedicado.
-- **Não converte para LVM.** Ver secção 2.
-- **Não move o Postgres.** São 209 MB e é a base de dados de produção — mover dados de uma base viva
-  para um dispositivo diferente, com o perfil de I/O do volume por caracterizar, é risco sem ganho.
-- **Não apaga imagens Docker.** Há 17 GB em imagens sem container associado; apagá-las liberta muito,
-  mas se alguma for precisa para recriar um container tem de ser descarregada outra vez. Decisão
-  separada, e depois de as movermos deixa de haver urgência.
-
-## 6. Ordem recomendada
-
-1. **Fase 0** hoje — snapshot e verificação de backups. Sem risco.
-2. **Fase 1** a seguir, começando por `ci_ops`. Se o método correr bem numa app pequena, corre nas
-   outras.
-3. **Fase 2** em janela combinada, fora de horas. É a que liberta 29 GB.
-4. **Fase 3 e 4** quando convier.
-
-Só a Fase 2 tem downtime de serviços que outras pessoas notam. Tudo o resto é incremental e
-reversível.
+A fonte canónica transversal ao host está no repositório Agents Hub:
+`docs/operations/shared-host-storage.md`.
