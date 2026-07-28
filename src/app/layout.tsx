@@ -26,6 +26,7 @@ const ptSerif = PT_Serif({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://wepac.pt"),
   title: {
     default: "WEPAC",
     template: "%s | WEPAC",
