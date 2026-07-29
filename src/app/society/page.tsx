@@ -450,7 +450,7 @@ export default function SocietyPage() {
                 index: "03",
                 state: "Por candidatura",
                 name: "Upgraded Backpack",
-                line: "PPV anual, acompanhamento e materiais WEPAC quando houver capacidade e enquadramento para os cumprir a sério.",
+                line: "Life Plan anual, acompanhamento e materiais WEPAC quando houver capacidade e enquadramento para os cumprir a sério.",
                 href: "/wepacker/intake",
                 cta: "Manifestar interesse",
               },
@@ -490,8 +490,9 @@ export default function SocietyPage() {
               Não é pacote.
             </h2>
             <p className="mt-8 max-w-lg leading-relaxed text-white/60">
-              Cada nome representa uma comunidade em construção, não uma subscrição disponível hoje.
-              Um pack só existe quando há pessoas, responsáveis, calendário e obra comum.
+              Cada nome representa uma comunidade em construção, não uma subscrição. As subscrições
+              estão disponíveis, mas a porta de entrada é sempre o Life Plan — o Projeto de Plano de
+              Vida. Um pack só existe quando há pessoas, responsáveis, calendário e obra comum.
             </p>
           </FadeIn>
 
