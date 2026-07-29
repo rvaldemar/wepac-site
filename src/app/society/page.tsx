@@ -490,7 +490,7 @@ export default function SocietyPage() {
               Não é pacote.
             </h2>
             <p className="mt-8 max-w-lg leading-relaxed text-white/60">
-              Estes nomes desenham comunidades a construir — não subscrições disponíveis hoje.
+              Cada nome representa uma comunidade em construção, não uma subscrição disponível hoje.
               Um pack só existe quando há pessoas, responsáveis, calendário e obra comum.
             </p>
           </FadeIn>
