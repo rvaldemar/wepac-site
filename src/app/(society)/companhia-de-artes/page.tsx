@@ -83,11 +83,11 @@ export default function CompanhiaDeArtesPage() {
               className="group relative min-h-[720px] overflow-hidden bg-black"
             >
               <Image
-                src="/images/society/wessex.jpg"
-                alt="Wessex — quando as portas se abrem"
+                src="/images/wessex/cta.jpg"
+                alt="Violinista Wessex em atuação"
                 fill
                 sizes="(max-width: 1023px) 100vw, 50vw"
-                className="object-cover transition duration-700 group-hover:scale-[1.025]"
+                className="object-cover object-[50%_42%] transition duration-700 group-hover:scale-[1.025]"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-7 sm:p-10">
@@ -111,11 +111,11 @@ export default function CompanhiaDeArtesPage() {
               className="group relative min-h-[720px] overflow-hidden bg-black"
             >
               <Image
-                src="/images/society/arte-a-capela.jpg"
-                alt="Arte à Capela — patrimónios ganham vida com a arte"
+                src="/images/arte-a-capela/hero.jpg"
+                alt="Interior de uma igreja histórica — Arte à Capela"
                 fill
                 sizes="(max-width: 1023px) 100vw, 50vw"
-                className="object-cover transition duration-700 group-hover:scale-[1.025]"
+                className="object-cover object-center transition duration-700 group-hover:scale-[1.025]"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-7 sm:p-10">

@@ -98,12 +98,12 @@ export default function SocietyPage() {
         <div className="absolute inset-0 -z-20 bg-black" />
         <div className="absolute inset-y-0 right-0 -z-10 hidden w-[47%] lg:block">
           <Image
-            src="/images/society/violin.jpg"
+            src="/images/wessex/features.jpg"
             alt=""
             fill
             priority
             sizes="47vw"
-            className="object-cover object-center opacity-80"
+            className="object-cover object-[50%_44%] opacity-80"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-black/5" />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/30" />
@@ -114,7 +114,7 @@ export default function SocietyPage() {
             <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/50">
               WEPAC Society · Carcavelos
             </p>
-            <h1 className="mt-8 max-w-5xl text-balance font-barlow text-[clamp(3.6rem,8.2vw,8.6rem)] font-black uppercase leading-[0.82] tracking-[-0.055em] text-white">
+            <h1 className="mt-8 max-w-5xl text-balance font-barlow text-[clamp(3.6rem,8.2vw,8.6rem)] font-black uppercase leading-[0.82] tracking-[-0.035em] text-white">
               Uma vida inteira em caminho.
             </h1>
             <p className="mt-10 max-w-2xl text-balance text-lg leading-relaxed text-white/65 sm:text-xl">
@@ -139,12 +139,12 @@ export default function SocietyPage() {
 
           <div className="relative aspect-[4/5] overflow-hidden border border-white/10 lg:hidden">
             <Image
-              src="/images/society/violin.jpg"
-              alt="Violino e a frase Não é só arte. Existe método."
+              src="/images/wessex/features.jpg"
+              alt="Violoncelista em atuação"
               fill
               priority
               sizes="(max-width: 1023px) 100vw, 1px"
-              className="object-cover"
+              className="object-cover object-[50%_44%]"
             />
           </div>
         </div>
@@ -227,13 +227,15 @@ export default function SocietyPage() {
 
           <div className="mt-16 grid gap-px bg-white/15 lg:grid-cols-2">
             <Link href="/academy" className="group relative min-h-[620px] overflow-hidden bg-black">
-              <Image
-                src="/images/society/easy-peasy.jpg"
-                alt="Easy Peasy — grandes apresentações começam com pequenas aulas"
-                fill
-                sizes="(max-width: 1023px) 100vw, 50vw"
-                className="object-cover transition duration-700 group-hover:scale-[1.025]"
-              />
+              <div className="absolute inset-x-0 top-[-28%] h-[225%] origin-top transition duration-700 group-hover:scale-[1.025]">
+                <Image
+                  src="/images/society/easy-peasy.jpg"
+                  alt="Criança a tocar violino numa aula Easy Peasy"
+                  fill
+                  sizes="(max-width: 1023px) 100vw, 50vw"
+                  className="object-cover object-top"
+                />
+              </div>
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-7 sm:p-10">
                 <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/60">
@@ -256,11 +258,11 @@ export default function SocietyPage() {
               className="group relative min-h-[620px] overflow-hidden bg-black"
             >
               <Image
-                src="/images/society/arte-a-capela.jpg"
-                alt="Arte à Capela — patrimónios ganham vida com a arte"
+                src="/images/arte-a-capela/hero.jpg"
+                alt="Interior de uma igreja histórica"
                 fill
                 sizes="(max-width: 1023px) 100vw, 50vw"
-                className="object-cover transition duration-700 group-hover:scale-[1.025]"
+                className="object-cover object-center transition duration-700 group-hover:scale-[1.025]"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/25 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-7 sm:p-10">
@@ -510,13 +512,15 @@ export default function SocietyPage() {
       <section className="border-b border-white/10 px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
         <div className="mx-auto grid max-w-[1440px] gap-16 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
           <FadeIn className="relative aspect-square overflow-hidden">
-            <Image
-              src="/images/society/alex-florindo.jpg"
-              alt="Atleta WEPACker com medalhas"
-              fill
-              sizes="(max-width: 1023px) 100vw, 45vw"
-              className="object-cover"
-            />
+            <div className="absolute left-1/2 top-[-69%] h-[206%] w-[206%] -translate-x-1/2">
+              <Image
+                src="/images/society/alex-florindo.jpg"
+                alt="Atleta WEPACker com medalhas"
+                fill
+                sizes="(max-width: 1023px) 206vw, 92vw"
+                className="object-cover"
+              />
+            </div>
           </FadeIn>
           <FadeIn delay={0.1}>
             <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">
@@ -582,11 +586,11 @@ export default function SocietyPage() {
       <section className="relative isolate overflow-hidden px-5 py-28 sm:px-8 lg:px-12 lg:py-44">
         <div className="absolute inset-0 -z-20">
           <Image
-            src="/images/society/wessex.jpg"
+            src="/images/wessex/detail.jpg"
             alt=""
             fill
             sizes="100vw"
-            className="object-cover object-center opacity-25"
+            className="object-cover object-[35%_center] opacity-25 sm:object-center"
           />
         </div>
         <div className="absolute inset-0 -z-10 bg-black/65" />
