@@ -79,7 +79,7 @@ function transcriptChangedError(): Error {
 
 function toView(row: {
   id: string;
-  contractVersion: string;
+  contractVersion: string | null;
   status: string;
   engineImpl: string | null;
   model: string | null;

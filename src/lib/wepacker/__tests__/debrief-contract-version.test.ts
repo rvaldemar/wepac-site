@@ -92,4 +92,13 @@ describe("Session Debrief contract boundary", () => {
 
     await expect(getSessionDebrief("session-1")).resolves.toBeNull();
   });
+
+  it("fails closed if a legacy nullable discriminator reaches the view boundary", async () => {
+    debriefFindFirst.mockResolvedValue({
+      ...validRow,
+      contractVersion: null,
+    });
+
+    await expect(getSessionDebrief("session-1")).resolves.toBeNull();
+  });
 });

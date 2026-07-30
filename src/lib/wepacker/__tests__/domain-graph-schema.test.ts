@@ -207,6 +207,7 @@ describe("Domain Graph target schema", () => {
     const debrief = model("SessionDebrief");
 
     expect(debrief).toContain("contractVersion");
+    expect(debrief).toMatch(/^\s+contractVersion\s+String\?/m);
     expect(debrief).toMatch(/^\s+internalSynthesis\s+Json\?/m);
     expect(debrief).not.toMatch(/^\s+internalEvaluation\s/m);
     expect(debrief).not.toMatch(/^\s+resultDocumentHtml\s/m);
@@ -214,6 +215,19 @@ describe("Domain Graph target schema", () => {
     expect(migration).toContain('ADD COLUMN "internalSynthesis" JSONB');
     expect(debrief).not.toContain("anthropic-direct");
     expect(debrief).not.toContain("v1");
+  });
+
+  it("keeps the Release A client compatible with nullable legacy debrief rows", () => {
+    const debrief = model("SessionDebrief");
+
+    expect(debrief).toMatch(/^\s+contractVersion\s+String\?/m);
+    expect(migration).toContain('ADD COLUMN "contractVersion" TEXT');
+    expect(migration).not.toContain(
+      'ALTER COLUMN "contractVersion" SET NOT NULL',
+    );
+    expect(releaseBContraction).toContain(
+      'ALTER COLUMN "contractVersion" SET NOT NULL',
+    );
   });
 
   it("keeps Release A migration compatible with old physical tables", () => {

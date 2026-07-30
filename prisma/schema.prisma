@@ -753,7 +753,11 @@ model CalcomBookingReference {
 model SessionDebrief {
   id                     String        @id @default(cuid())
   sessionId              String        @unique
-  contractVersion        String
+  // Release A deliberately leaves legacy rows in place and adds this column
+  // as nullable so the previous runtime can still be restored. Keep the
+  // Prisma field nullable until Release B deletes non-v3 rows and applies the
+  // physical NOT NULL constraint.
+  contractVersion        String?
   status                 DebriefStatus
   engineImpl             String? // "hub"
   model                  String?

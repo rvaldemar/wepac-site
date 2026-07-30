@@ -43,7 +43,7 @@ interface SessionRow {
   attendees: AttendeeRow[];
   organizer: { id: string; name: string };
   transcriptUploadedAt: string | null;
-  debrief: { id: string; contractVersion: string } | null;
+  debrief: { id: string; contractVersion: string | null } | null;
 }
 
 interface MentoredMemberRow {
