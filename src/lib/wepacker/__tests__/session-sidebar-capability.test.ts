@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { createElement } from "react";
+import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -10,6 +10,28 @@ const sidebarState = vi.hoisted(() => ({
 
 vi.mock("next/navigation", () => ({
   usePathname: () => sidebarState.pathname,
+  useSearchParams: () => new URLSearchParams(),
+}));
+
+vi.mock("next-intl", () => ({
+  useLocale: () => "pt-PT",
+  useTranslations: () => (key: string) =>
+    key === "signOut" ? "Sair" : key,
+}));
+
+vi.mock("@/i18n/navigation", () => ({
+  Link: ({
+    href,
+    children,
+    ...props
+  }: {
+    href: string;
+    children?: ReactNode;
+    [key: string]: unknown;
+  }) => createElement("a", { ...props, href }, children),
+  getPathname: ({ href }: { href: string }) => href,
+  usePathname: () => sidebarState.pathname,
+  useRouter: () => ({ replace: vi.fn() }),
 }));
 
 vi.mock("next-auth/react", () => ({
@@ -37,7 +59,7 @@ describe("Session organizer navigation capability", () => {
       createElement(PlatformSidebar, { canAccessMentorWorkspace: true }),
     );
 
-    expect(html).toContain("Manage Sessions");
+    expect(html).toContain("Gerir Sessions");
     expect(html).toContain('href="/wepacker/mentor/sessions"');
   });
 
@@ -67,7 +89,7 @@ describe("Session organizer navigation capability", () => {
     );
 
     expect(html).toContain(">Sessions<");
-    expect(html).toContain("Organizer Workspace");
+    expect(html).toContain("Espaço do organizador");
   });
 
   it("keeps Mentorships in the normal My Journey context for a Mentee", () => {

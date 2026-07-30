@@ -11,11 +11,11 @@ vi.mock("@/lib/wepacker/actions/mentorship", () => ({
   getMyMentorships: (...args: unknown[]) => getMyMentorships(...args),
 }));
 
-vi.mock("@/app/wepacker/(platform)/mentorships/page-client", () => ({
+vi.mock("@/app/[locale]/wepacker/(platform)/mentorships/page-client", () => ({
   default: vi.fn(() => null),
 }));
 
-import MentorshipsPage from "@/app/wepacker/(platform)/mentorships/page";
+import MentorshipsPage from "@/app/[locale]/wepacker/(platform)/mentorships/page";
 
 describe("Mentorship invitation page capability", () => {
   beforeEach(() => {

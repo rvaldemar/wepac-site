@@ -6,5 +6,7 @@ test("member login renders My Journey with Actions and Session timeline", async 
   await expect(page.getByRole("heading", { name: "My Journey" })).toBeVisible();
   await expect(page.getByText(/Olá, Ana Martins/)).toBeVisible();
   await expect(page.getByRole("heading", { name: "Actions" })).toBeVisible();
-  await expect(page.getByRole("img", { name: /Session Timeline/ })).toBeVisible();
+  await expect(
+    page.getByRole("img", { name: /Cronologia de Sessions/ }),
+  ).toBeVisible();
 });

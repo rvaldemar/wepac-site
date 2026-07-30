@@ -1,0 +1,135 @@
+"use client";
+
+import { useState } from "react";
+import { useLocale } from "next-intl";
+import { wp } from "@/i18n/copy/wepacker";
+import { updateMyProfile } from "@/lib/wepacker/actions/user";
+import { STAGE_LABELS, type StageKey } from "@/lib/wepacker/types";
+
+interface Props {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    bio: string | null;
+    phone: string | null;
+  };
+  stage: StageKey | null;
+}
+
+export default function ProfilePageClient({ user, stage }: Props) {
+  const locale = useLocale();
+  const [name, setName] = useState(user.name);
+  const [bio, setBio] = useState(user.bio ?? "");
+  const [phone, setPhone] = useState(user.phone ?? "");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setSaved(false);
+    try {
+      await updateMyProfile({ name, bio, phone });
+      setSaved(true);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="p-6 lg:p-8">
+      <h1 className="font-barlow text-2xl font-bold text-wepac-white">Profile</h1>
+      <p className="mt-1 text-sm text-wepac-text-tertiary">
+        {wp(
+          locale,
+          "Os teus dados pessoais e de desenvolvimento.",
+          "Your personal and development details.",
+        )}
+      </p>
+
+      <div className="mt-8 max-w-lg space-y-6">
+        {/* Avatar placeholder */}
+        <div className="flex items-center gap-4">
+          <div className="flex h-16 w-16 items-center justify-center bg-wepac-white/10">
+            <span className="font-barlow text-xl font-bold text-wepac-white">
+              {user.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")}
+            </span>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-wepac-white">{user.name}</p>
+            <p className="text-xs text-wepac-text-tertiary">{user.email}</p>
+            <div className="mt-1 flex gap-2">
+              <span className="bg-wepac-white/10 px-2 py-0.5 text-xs text-wepac-white">
+                {wp(locale, "Etapa", "Stage")}:{" "}
+                {stage ? STAGE_LABELS[stage] : wp(locale, "Por definir", "Not set")}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Form */}
+        <div>
+          <label className="block text-sm text-wepac-text-secondary">
+            {wp(locale, "Nome", "Name")}
+          </label>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="mt-1 w-full bg-wepac-input px-4 py-3 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm text-wepac-text-secondary">Bio</label>
+          <textarea
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            rows={4}
+            className="mt-1 w-full bg-wepac-input px-4 py-3 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm text-wepac-text-secondary">
+            {wp(locale, "Telefone", "Phone")}
+          </label>
+          <input
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className="mt-1 w-full bg-wepac-input px-4 py-3 text-sm text-wepac-white outline-none focus:ring-1 focus:ring-wepac-white/50"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm text-wepac-text-secondary">Email</label>
+          <input
+            value={user.email}
+            disabled
+            className="mt-1 w-full bg-wepac-input/50 px-4 py-3 text-sm text-wepac-text-tertiary"
+          />
+        </div>
+
+        <div className="flex items-center gap-4">
+          <button
+            onClick={handleSave}
+            disabled={saving || !name.trim()}
+            className="bg-wepac-white px-6 py-3 text-sm font-bold text-wepac-black transition-colors hover:bg-wepac-accent-muted disabled:opacity-50"
+          >
+            {saving
+              ? wp(locale, "A guardar...", "Saving...")
+              : wp(locale, "Guardar alterações", "Save changes")}
+          </button>
+          {saved && (
+            <span className="text-xs text-wepac-success">
+              {wp(locale, "Guardado.", "Saved.")}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

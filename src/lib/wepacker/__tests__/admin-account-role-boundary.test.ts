@@ -87,7 +87,7 @@ describe("Admin account access boundary", () => {
 
   it("contains no global Mentor option, statistic, filter, or label", () => {
     const source = readFileSync(
-      "src/app/wepacker/(platform)/admin/users/page-client.tsx",
+      "src/app/[locale]/wepacker/(platform)/admin/users/page-client.tsx",
       "utf8",
     );
 
@@ -130,7 +130,7 @@ describe("Admin account access boundary", () => {
     expect(query.select).not.toHaveProperty("passwordHash");
 
     const clientSource = readFileSync(
-      "src/app/wepacker/(platform)/admin/users/page-client.tsx",
+      "src/app/[locale]/wepacker/(platform)/admin/users/page-client.tsx",
       "utf8",
     );
     expect(clientSource).not.toContain("user.inviteToken");

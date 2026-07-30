@@ -4,6 +4,29 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-07-30 — Manage Sessions: Prisma P2032 em registos legacy
+
+**Sintoma:** `/wepacker/mentor/sessions` devolvia uma exceção server-side com o
+digest `234465592`.
+
+**Causa:** o cliente Prisma publicado declarava `Session.contractVersion` como
+obrigatório, mas a base de dados Release A preserva legitimamente `NULL` em
+sessões legacy. A leitura falhava com `P2032` antes de a aplicação poder aplicar
+o seu filtro fail-closed.
+
+**Correção:** `Session.contractVersion` passou a nullable no schema Prisma
+(`String?`), alinhando o cliente com a base de dados. Não houve mutação nem
+backfill dos registos legacy; sessões sem versão continuam excluídas das
+capacidades contratuais atuais.
+
+**Release:** commit `870f2f0d61c4f037dc4f8b19777e4501f96ead7a`,
+release `/var/www/wepac/releases/20260730T160622Z-870f2f0d61c4`, build
+`ULPAxvXDBk77WG2tIQ2Yk`. Foram validados TypeScript, build, 418 testes unitários,
+10 testes E2E, migrações e leitura direta pelo runtime Prisma. Após o restart,
+os logs não registaram novos `P2032` nem o digest reportado.
+
+---
+
 ## 2026-07-23 — Docker/containerd migrados para o segundo disco
 
 Executada a Fase 2 do antigo plano de unificação de discos no servidor

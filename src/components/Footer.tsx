@@ -1,6 +1,9 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 
-export function Footer() {
+export async function Footer() {
+  const t = await getTranslations("SiteFooter");
+
   return (
     <footer className="bg-wepac-black border-t border-white/10">
       <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
@@ -10,16 +13,16 @@ export function Footer() {
             <Link href="/" className="font-barlow text-2xl font-bold text-wepac-white">
               wepac
             </Link>
-            <p className="mt-2 text-sm text-wepac-white/50">Cultura que transforma</p>
+            <p className="mt-2 text-sm text-wepac-white/50">{t("tagline")}</p>
             <p className="mt-4 text-sm text-wepac-white/50 leading-relaxed">
-              Arte, educação e impacto social.
+              {t("description")}
             </p>
           </div>
 
           {/* Áreas WEPAC */}
           <div>
             <h3 className="font-barlow text-sm font-bold uppercase tracking-wider text-wepac-white/60">
-              Áreas WEPAC
+              {t("areas")}
             </h3>
             <ul className="mt-4 space-y-3">
               {[
@@ -43,14 +46,14 @@ export function Footer() {
           {/* Institucional */}
           <div>
             <h3 className="font-barlow text-sm font-bold uppercase tracking-wider text-wepac-white/60">
-              Institucional
+              {t("institutional")}
             </h3>
             <ul className="mt-4 space-y-3">
               {[
-                { name: "A WEPAC", href: "/sobre" },
-                { name: "Agenda", href: "/programacao" },
-                { name: "Parcerias", href: "/parcerias" },
-                { name: "Contacto", href: "/contacto" },
+                { name: t("about"), href: "/sobre" },
+                { name: t("agenda"), href: "/programacao" },
+                { name: t("partnerships"), href: "/parcerias" },
+                { name: t("contact"), href: "/contacto" },
               ].map((item) => (
                 <li key={item.name}>
                   <Link
@@ -83,7 +86,7 @@ export function Footer() {
           {/* Contact */}
           <div>
             <h3 className="font-barlow text-sm font-bold uppercase tracking-wider text-wepac-white/60">
-              Contacto
+              {t("contact")}
             </h3>
             <ul className="mt-4 space-y-3 text-sm text-wepac-white/50">
               <li>
@@ -101,10 +104,10 @@ export function Footer() {
             href="/privacidade"
             className="text-xs text-wepac-white/50 transition-colors hover:text-wepac-white/60"
           >
-            Política de Privacidade
+            {t("privacy")}
           </Link>
           <p className="text-xs text-wepac-white/50">
-            &copy; {new Date().getFullYear()} WEPAC. Todos os direitos reservados.
+            &copy; {new Date().getFullYear()} WEPAC. {t("rights")}
           </p>
         </div>
       </div>

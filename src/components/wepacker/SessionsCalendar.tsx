@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useLocale } from "next-intl";
+import { wp } from "@/i18n/copy/wepacker";
 import {
   SESSION_KIND_COLOR,
   SESSION_KIND_GLYPH,
@@ -25,8 +27,6 @@ interface SessionsCalendarProps {
   onSelect: (id: string) => void;
 }
 
-const WEEKDAY_LABELS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
-
 function startOfMonth(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), 1);
 }
@@ -50,11 +50,17 @@ function mondayFirstDay(d: Date): number {
 }
 
 export function SessionsCalendar({ sessions, selectedId, onSelect }: SessionsCalendarProps) {
+  const locale = useLocale();
   const today = new Date();
   const [cursor, setCursor] = useState(() => startOfMonth(today));
+  const weekdayLabels = wp(
+    locale,
+    ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
+    ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  );
 
   const monthLabel = capitalize(
-    cursor.toLocaleDateString("pt-PT", { month: "long", year: "numeric" })
+    cursor.toLocaleDateString(locale, { month: "long", year: "numeric" })
   );
 
   const cells = useMemo(() => {
@@ -96,7 +102,7 @@ export function SessionsCalendar({ sessions, selectedId, onSelect }: SessionsCal
         <button
           onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))}
           className="px-3 py-1.5 text-sm text-wepac-text-secondary hover:text-wepac-white"
-          aria-label="Mês anterior"
+          aria-label={wp(locale, "Mês anterior", "Previous month")}
         >
           ‹
         </button>
@@ -106,20 +112,20 @@ export function SessionsCalendar({ sessions, selectedId, onSelect }: SessionsCal
             onClick={() => setCursor(startOfMonth(today))}
             className="border border-wepac-border px-2 py-1 text-xs text-wepac-text-tertiary hover:text-wepac-white"
           >
-            Hoje
+            {wp(locale, "Hoje", "Today")}
           </button>
         </div>
         <button
           onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))}
           className="px-3 py-1.5 text-sm text-wepac-text-secondary hover:text-wepac-white"
-          aria-label="Mês seguinte"
+          aria-label={wp(locale, "Mês seguinte", "Next month")}
         >
           ›
         </button>
       </div>
 
       <div className="mt-4 grid grid-cols-7 gap-px bg-wepac-border text-center text-[10px] uppercase tracking-wide text-wepac-text-tertiary">
-        {WEEKDAY_LABELS.map((w) => (
+        {weekdayLabels.map((w) => (
           <div key={w} className="bg-wepac-black py-1">
             {w}
           </div>
@@ -148,7 +154,7 @@ export function SessionsCalendar({ sessions, selectedId, onSelect }: SessionsCal
               </p>
               <div className="mt-1 space-y-0.5">
                 {daySessions.map((s) => {
-                  const time = new Date(s.scheduledAt).toLocaleTimeString("pt-PT", {
+                  const time = new Date(s.scheduledAt).toLocaleTimeString(locale, {
                     hour: "2-digit",
                     minute: "2-digit",
                   });

@@ -1,21 +1,25 @@
 "use client";
 
-import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { LocaleSwitcher } from "@/components/LocaleSwitcher";
+import { Link } from "@/i18n/navigation";
 import { useMobileDrawer } from "@/lib/useMobileDrawer";
 
 const navigation = [
-  { name: "A WEPAC", href: "/sobre" },
-  { name: "Wessex", href: "/wessex" },
-  { name: "Easy Peasy", href: "/projetos/easy-peasy" },
-  { name: "Arte à Capela", href: "/arte-a-capela" },
-  { name: "Artistas", href: "/artist" },
-  { name: "Agenda", href: "/programacao" },
-  { name: "Society", href: "/society" },
-  { name: "Contacto", href: "/contacto" },
-];
+  { key: "about", href: "/sobre" },
+  { key: "wessex", href: "/wessex" },
+  { key: "easyPeasy", href: "/projetos/easy-peasy" },
+  { key: "arteACapela", href: "/arte-a-capela" },
+  { key: "artists", href: "/artist" },
+  { key: "agenda", href: "/programacao" },
+  { key: "society", href: "/society" },
+  { key: "contact", href: "/contacto" },
+] as const;
 
 export function Header() {
+  const t = useTranslations("Navigation.site");
+  const common = useTranslations("Common");
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
   const { toggleRef, drawerRef } = useMobileDrawer<HTMLButtonElement, HTMLDivElement>(
@@ -31,26 +35,27 @@ export function Header() {
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden lg:flex lg:items-center lg:gap-8">
+        <div className="hidden xl:flex xl:items-center xl:gap-7">
           {navigation.map((item) => (
             <Link
-              key={item.name}
+              key={item.key}
               href={item.href}
               className="font-inter text-sm text-wepac-white/70 transition-colors hover:text-wepac-white"
             >
-              {item.name}
+              {t(item.key)}
             </Link>
           ))}
+          <LocaleSwitcher />
         </div>
 
         {/* Mobile menu button */}
         <button
           ref={toggleRef}
-          className="lg:hidden text-wepac-white"
+          className="text-wepac-white xl:hidden"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-expanded={menuOpen}
           aria-controls="mobile-nav-menu"
-          aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
+          aria-label={menuOpen ? common("closeMenu") : common("openMenu")}
         >
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             {menuOpen ? (
@@ -69,21 +74,22 @@ export function Header() {
           ref={drawerRef}
           role="dialog"
           aria-modal="true"
-          aria-label="Menu de navegação"
+          aria-label={common("navigation")}
           tabIndex={-1}
-          className="lg:hidden bg-wepac-black border-t border-white/10"
+          className="border-t border-white/10 bg-wepac-black xl:hidden"
         >
           <div className="flex flex-col px-6 py-4 space-y-4">
             {navigation.map((item) => (
               <Link
-                key={item.name}
+                key={item.key}
                 href={item.href}
                 className="font-inter text-base text-wepac-white/70 transition-colors hover:text-wepac-white"
                 onClick={closeMenu}
               >
-                {item.name}
+                {t(item.key)}
               </Link>
             ))}
+            <LocaleSwitcher className="pt-2" />
           </div>
         </div>
       )}

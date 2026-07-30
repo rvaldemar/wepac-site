@@ -1,0 +1,98 @@
+{
+  "Common": {
+    "skipToContent": "Saltar para o conteúdo",
+    "language": "Idioma",
+    "languages": {
+      "pt-PT": "Português (Portugal)",
+      "en-US": "English (United States)"
+    },
+    "openMenu": "Abrir menu",
+    "closeMenu": "Fechar menu",
+    "navigation": "Menu de navegação",
+    "cookieConsent": {
+      "message": "Utilizamos cookies essenciais para o funcionamento do site.",
+      "privacy": "Política de Privacidade",
+      "reject": "Recusar",
+      "accept": "Aceitar"
+    }
+  },
+  "Navigation": {
+    "site": {
+      "about": "A WEPAC",
+      "wessex": "Wessex",
+      "easyPeasy": "Easy Peasy",
+      "arteACapela": "Arte à Capela",
+      "artists": "Artistas",
+      "agenda": "Agenda",
+      "society": "Society",
+      "contact": "Contacto"
+    },
+    "society": {
+      "lifePlan": "Life Plan",
+      "families": "Famílias",
+      "academy": "Academy",
+      "artsCompany": "Companhia de Artes",
+      "organizations": "Organizações",
+      "openBackpack": "Abrir Backpack",
+      "startLifePlan": "Começar Life Plan"
+    },
+    "wepacker": {
+      "myJourney": "My Journey",
+      "basecamp": "Basecamp",
+      "lifeMap": "Life Map",
+      "goals": "Goals",
+      "trails": "Trails",
+      "actions": "Actions",
+      "sessions": "Sessions",
+      "relationships": "Relationships",
+      "mentorships": "Mentorships",
+      "connections": "Connections",
+      "communities": "Communities",
+      "packs": "Packs",
+      "academy": "Academy",
+      "myAcademy": "My Academy",
+      "activity": "Activity",
+      "notifications": "Notifications",
+      "messages": "Messages",
+      "profile": "Profile",
+      "organizerWorkspace": "Organizer Workspace",
+      "manageSessions": "Manage Sessions",
+      "people": "People",
+      "leads": "Leads",
+      "supportPreview": "Support Preview",
+      "admin": "Admin",
+      "signOut": "Sair"
+    }
+  },
+  "Metadata": {
+    "title": "WEPAC",
+    "description": "Educação para uma vida inteira. A WEPAC ajuda pessoas e famílias a transformar contexto em direção, compromissos e próximos passos através do Life Plan.",
+    "openGraphTitle": "WEPAC — educação para uma vida inteira",
+    "openGraphDescription": "From packers to WEPACkers. Tudo começa no Life Plan."
+  },
+  "SocietyFooter": {
+    "description": "Educação para uma vida inteira. Começa no Life Plan. A pessoa antes da performance, o carácter antes da habilidade e a família como primeiro lugar do caminho.",
+    "home": "A casa",
+    "paths": "Caminhos",
+    "follow": "Seguir",
+    "families": "Famílias",
+    "artsCompany": "Companhia de Artes",
+    "startLifePlan": "Começar Life Plan",
+    "openBackpack": "Abrir Backpack",
+    "ticketing": "Bilheteira",
+    "contact": "Contacto",
+    "privacy": "Privacidade"
+  },
+  "SiteFooter": {
+    "tagline": "Cultura que transforma",
+    "description": "Arte, educação e impacto social.",
+    "areas": "Áreas WEPAC",
+    "institutional": "Institucional",
+    "about": "A WEPAC",
+    "agenda": "Agenda",
+    "partnerships": "Parcerias",
+    "contact": "Contacto",
+    "privacy": "Política de Privacidade",
+    "rights": "Todos os direitos reservados."
+  }
+}

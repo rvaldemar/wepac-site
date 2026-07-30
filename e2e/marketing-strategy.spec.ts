@@ -16,7 +16,7 @@ test("the public narrative keeps Life Plan at the centre", async ({ page }) => {
     },
     {
       path: "/academy",
-      heading: "Do 0 ao infinito — e mais além.",
+      heading: "Do zero ao infinito — e mais além.",
       cta: "Começar o meu Life Plan",
       href: "/wepacker/intake?source=academy",
     },
@@ -101,4 +101,22 @@ test("source context follows the visitor into the generic intake", async ({ page
   await expect(
     page.getByLabel("O que quero trabalhar ou construir?", { exact: false })
   ).toHaveValue("continuity");
+
+  await page.goto("/wepacker/intake?source=organizations");
+  await expect(page.getByText("Life Plan · Organizações e RH")).toBeVisible();
+  await expect(page.getByLabel("Entro como", { exact: false })).toHaveValue(
+    "organization",
+  );
+  await expect(
+    page.getByLabel("O que quero trabalhar ou construir?", { exact: false }),
+  ).toHaveValue("organization-community");
+
+  await page.goto("/en/wepacker/intake?source=organizations");
+  await expect(page.getByText("Life Plan · Organizations and HR")).toBeVisible();
+  await expect(page.getByLabel("I am starting as", { exact: false })).toHaveValue(
+    "organization",
+  );
+  await expect(
+    page.getByLabel("What do I want to work on or build?", { exact: false }),
+  ).toHaveValue("organization-community");
 });

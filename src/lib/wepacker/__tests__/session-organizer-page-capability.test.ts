@@ -15,11 +15,11 @@ vi.mock("@/lib/wepacker/actions/session", () => ({
   getFacilitatedCycles: (...args: unknown[]) => getFacilitatedCycles(...args),
 }));
 
-vi.mock("@/app/wepacker/(platform)/mentor/sessions/page-client", () => ({
+vi.mock("@/app/[locale]/wepacker/(platform)/mentor/sessions/page-client", () => ({
   MentorSessionsClient: vi.fn(() => null),
 }));
 
-import MentorSessionsPage from "@/app/wepacker/(platform)/mentor/sessions/page";
+import MentorSessionsPage from "@/app/[locale]/wepacker/(platform)/mentor/sessions/page";
 
 describe("Session organizer page capability", () => {
   it("loads for a member account and delegates authority to exact graph queries", async () => {

@@ -1,10 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
+import { LocaleSwitcher } from "@/components/LocaleSwitcher";
+import { wp } from "@/i18n/copy/wepacker";
+import { getPathname, Link, usePathname } from "@/i18n/navigation";
+import type { AppLocale } from "@/i18n/routing";
 import { useMobileDrawer } from "@/lib/useMobileDrawer";
 
 interface NavItem {
@@ -100,6 +103,9 @@ export function PlatformSidebar({
   unreadNotifications = 0,
   canAccessMentorWorkspace = false,
 }: SidebarProps) {
+  const locale = useLocale() as AppLocale;
+  const common = useTranslations("Common");
+  const navigation = useTranslations("Navigation.wepacker");
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const closeMobileMenu = () => setMobileOpen(false);
@@ -143,12 +149,28 @@ export function PlatformSidebar({
     return 0;
   }
 
+  function localizedLabel(label: string): string {
+    const portuguese: Record<string, string> = {
+      Relationships: "Relações",
+      Communities: "Comunidades",
+      Activity: "Atividade",
+      Notifications: "Notificações",
+      Messages: "Mensagens",
+      Profile: "Perfil",
+      "Organizer Workspace": "Espaço do organizador",
+      "Manage Sessions": "Gerir Sessions",
+      People: "Pessoas",
+      "Support Preview": "Pré-visualização de suporte",
+    };
+    return wp(locale, portuguese[label] ?? label, label);
+  }
+
   const navLinks = (onNavigate?: () => void) =>
     navGroups.map((group, groupIndex) => (
       <div key={group.header ?? `group-${groupIndex}`}>
         {group.header && (
           <div className="px-3 pb-1 pt-4 text-[10px] font-bold uppercase tracking-wider text-wepac-text-tertiary">
-            {group.header}
+            {localizedLabel(group.header)}
           </div>
         )}
         {group.items.map((item) => (
@@ -165,7 +187,7 @@ export function PlatformSidebar({
             }`}
           >
             <span className="text-xs opacity-60">{item.icon}</span>
-            {item.label}
+            {localizedLabel(item.label)}
             {getBadgeCount(item.label) > 0 && (
               <span className="ml-auto bg-wepac-white px-1.5 py-0.5 text-[10px] font-bold text-wepac-black">
                 {getBadgeCount(item.label)}
@@ -184,7 +206,7 @@ export function PlatformSidebar({
           onClick={onNavigate}
           className="block px-3 py-2 text-xs text-wepac-text-tertiary transition-colors hover:text-wepac-text-secondary"
         >
-          Organizer Workspace →
+          {localizedLabel("Organizer Workspace")} →
         </Link>
       )}
       {!isMentor && !isAdmin && canAccessMentorWorkspace && (
@@ -193,7 +215,7 @@ export function PlatformSidebar({
           onClick={onNavigate}
           className="block px-3 py-2 text-xs text-wepac-text-tertiary transition-colors hover:text-wepac-text-secondary"
         >
-          Manage Sessions →
+          {localizedLabel("Manage Sessions")} →
         </Link>
       )}
       {!isMentor && !isAdmin && canAdmin && (
@@ -215,10 +237,17 @@ export function PlatformSidebar({
         </Link>
       )}
       <button
-        onClick={() => signOut({ callbackUrl: "/wepacker/login" })}
+        onClick={() =>
+          signOut({
+            callbackUrl: getPathname({
+              locale,
+              href: "/wepacker/login",
+            }),
+          })
+        }
         className="block w-full px-3 py-2 text-left text-xs text-wepac-text-tertiary transition-colors hover:text-wepac-text-secondary"
       >
-        Sair
+        {navigation("signOut")}
       </button>
     </>
   );
@@ -237,36 +266,39 @@ export function PlatformSidebar({
             priority
           />
         </Link>
-        <button
-          ref={toggleRef}
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="text-wepac-white"
-          aria-expanded={mobileOpen}
-          aria-controls="mobile-sidebar-menu"
-          aria-label={mobileOpen ? "Fechar menu" : "Abrir menu"}
-        >
-          <svg
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
+        <div className="flex items-center gap-3">
+          <LocaleSwitcher className="[&_select]:w-32" />
+          <button
+            ref={toggleRef}
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="text-wepac-white"
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-sidebar-menu"
+            aria-label={mobileOpen ? common("closeMenu") : common("openMenu")}
           >
-            {mobileOpen ? (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            ) : (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-              />
-            )}
-          </svg>
-        </button>
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+            >
+              {mobileOpen ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+                />
+              )}
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Mobile nav overlay */}
@@ -276,7 +308,7 @@ export function PlatformSidebar({
           ref={drawerRef}
           role="dialog"
           aria-modal="true"
-          aria-label="Menu de navegação"
+          aria-label={common("navigation")}
           tabIndex={-1}
           className="fixed inset-0 z-40 overflow-y-auto overscroll-contain bg-wepac-black/95 pt-14 lg:hidden"
         >
@@ -306,7 +338,10 @@ export function PlatformSidebar({
           {navLinks()}
         </nav>
 
-        <div className="border-t border-wepac-border p-3">{contextLinks()}</div>
+        <div className="border-t border-wepac-border p-3">
+          <LocaleSwitcher className="mb-2 px-3" />
+          {contextLinks()}
+        </div>
       </aside>
     </>
   );

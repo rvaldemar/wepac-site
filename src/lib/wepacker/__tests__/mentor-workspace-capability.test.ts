@@ -22,11 +22,11 @@ vi.mock("@/lib/wepacker/actions/session", () => ({
   getFacilitatedCycles: (...args: unknown[]) => getFacilitatedCycles(...args),
 }));
 
-vi.mock("@/app/wepacker/(platform)/mentor/page-client", () => ({
+vi.mock("@/app/[locale]/wepacker/(platform)/mentor/page-client", () => ({
   MentorDashboardClient: vi.fn(() => null),
 }));
 
-import MentorDashboardPage from "@/app/wepacker/(platform)/mentor/page";
+import MentorDashboardPage from "@/app/[locale]/wepacker/(platform)/mentor/page";
 
 describe("Organizer workspace graph capability", () => {
   beforeEach(() => {

@@ -1,11 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Link, usePathname } from "@/i18n/navigation";
 import { getSocietyIntakeHref } from "@/lib/society/intake-source";
 
 export function SocietyFooter() {
+  const t = useTranslations("SocietyFooter");
   const intakeHref = getSocietyIntakeHref(usePathname());
 
   return (
@@ -23,22 +24,21 @@ export function SocietyFooter() {
               />
             </Link>
             <p className="mt-6 max-w-sm font-barlow text-xl font-bold leading-relaxed text-white/70">
-              Educação para uma vida inteira. A pessoa antes da performance, o carácter antes da
-              habilidade e a família como primeiro lugar do caminho.
+              {t("description")}
             </p>
           </div>
 
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/40">
-              A casa
+              {t("home")}
             </p>
             <div className="mt-5 flex flex-col gap-3 text-sm text-white/65">
               <Link href="/society" className="hover:text-white">Society</Link>
               <Link href="/society/life-plan" className="hover:text-white">Life Plan</Link>
-              <Link href="/society/familias" className="hover:text-white">Famílias</Link>
+              <Link href="/society/familias" className="hover:text-white">{t("families")}</Link>
               <Link href="/academy" className="hover:text-white">WEPAC Academy</Link>
               <Link href="/companhia-de-artes" className="hover:text-white">
-                Companhia de Artes
+                {t("artsCompany")}
               </Link>
               <Link href="/society#mission" className="hover:text-white">WEPAC Mission</Link>
             </div>
@@ -46,23 +46,23 @@ export function SocietyFooter() {
 
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/40">
-              Caminhos
+              {t("paths")}
             </p>
             <div className="mt-5 flex flex-col gap-3 text-sm text-white/65">
               <Link href={intakeHref} className="hover:text-white">
-                Começar Life Plan
+                {t("startLifePlan")}
               </Link>
-              <Link href="/wepacker/login" className="hover:text-white">Abrir Backpack</Link>
-              <Link href="/bilheteira" className="hover:text-white">Bilheteira</Link>
+              <Link href="/wepacker/login" className="hover:text-white">{t("openBackpack")}</Link>
+              <Link href="/bilheteira" className="hover:text-white">{t("ticketing")}</Link>
               <Link href="/wessex" className="hover:text-white">Wessex</Link>
               <Link href="/arte-a-capela" className="hover:text-white">Arte à Capela</Link>
-              <Link href="/contacto" className="hover:text-white">Contacto</Link>
+              <Link href="/contacto" className="hover:text-white">{t("contact")}</Link>
             </div>
           </div>
 
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/40">
-              Seguir
+              {t("follow")}
             </p>
             <div className="mt-5 flex flex-col gap-3 text-sm text-white/65">
               <a
@@ -83,7 +83,7 @@ export function SocietyFooter() {
         <div className="mt-14 flex flex-col gap-4 border-t border-white/10 pt-7 text-xs text-white/35 sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} WEPAC · Carcavelos, Portugal</p>
           <div className="flex gap-5">
-            <Link href="/privacidade" className="hover:text-white">Privacidade</Link>
+            <Link href="/privacidade" className="hover:text-white">{t("privacy")}</Link>
             <span>From packers to WEPACkers.</span>
           </div>
         </div>

@@ -11,11 +11,11 @@ vi.mock("@/lib/wepacker/actions/session", () => ({
   getMySessions: (...args: unknown[]) => getMySessions(...args),
 }));
 
-vi.mock("@/app/wepacker/(platform)/sessions/page-client", () => ({
+vi.mock("@/app/[locale]/wepacker/(platform)/sessions/page-client", () => ({
   default: vi.fn(() => null),
 }));
 
-import SessionsPage from "@/app/wepacker/(platform)/sessions/page";
+import SessionsPage from "@/app/[locale]/wepacker/(platform)/sessions/page";
 
 describe("member Sessions page — Person-owned access", () => {
   it("loads Sessions directly for the signed-in Person", async () => {

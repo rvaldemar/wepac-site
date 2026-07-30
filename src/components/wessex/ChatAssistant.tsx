@@ -1,22 +1,22 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import ReactMarkdown from "react-markdown";
+import { useLocale } from "next-intl";
+import { getWessexCopy } from "@/i18n/copy/institutional-wessex";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
 
-const WELCOME_MESSAGE: Message = {
-  role: "assistant",
-  content:
-    "Olá! Sou o assistente da WEPAC. Posso ajudar-te com informações sobre os nossos projetos (Easy Peasy, Arte à Capela, Wessex), orçamentos de serviços musicais, sugestões de repertório, ou qualquer questão sobre a WEPAC. Como posso ajudar?",
-};
-
 export function ChatAssistant() {
-  const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
+  const locale = useLocale();
+  const copy = getWessexCopy(locale).chat;
+  const [messages, setMessages] = useState<Message[]>([
+    { role: "assistant", content: copy.welcome },
+  ]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [consentGiven, setConsentGiven] = useState(false);
@@ -77,8 +77,7 @@ export function ChatAssistant() {
         ...prev,
         {
           role: "assistant",
-          content:
-            "Desculpa, ocorreu um erro. Por favor tenta novamente ou contacta-nos em info@wepac.pt.",
+          content: copy.error,
         },
       ]);
     } finally {
@@ -92,20 +91,19 @@ export function ChatAssistant() {
       {!consentGiven && (
         <div className="flex-shrink-0 border-b border-wepac-white/10 p-4 bg-wepac-card">
           <p className="text-xs text-wepac-white/60 leading-relaxed">
-            Ao utilizar este chat, consentes o tratamento dos dados pessoais
-            partilhados para fins de contacto comercial.{" "}
+            {copy.consent}{" "}
             <Link
               href="/privacidade"
               className="underline text-wepac-gray hover:text-wepac-white"
             >
-              Política de Privacidade
+              {copy.privacy}
             </Link>
           </p>
           <button
             onClick={() => setConsentGiven(true)}
             className="mt-2 bg-wepac-white px-4 py-1.5 font-barlow text-xs font-bold uppercase tracking-wider text-wepac-black transition-opacity hover:opacity-90"
           >
-            Concordo e quero continuar
+            {copy.accept}
           </button>
         </div>
       )}
@@ -151,8 +149,8 @@ export function ChatAssistant() {
           onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
           placeholder={
             consentGiven
-              ? "Escreve aqui a tua questão..."
-              : "Aceita os termos acima para continuar"
+              ? copy.placeholder
+              : copy.blockedPlaceholder
           }
           disabled={isStreaming || !consentGiven}
           className="flex-1 border-b border-wepac-white/20 bg-transparent py-2 text-sm text-wepac-white outline-none transition-colors focus:border-wepac-white placeholder:text-wepac-white/30 disabled:opacity-50"
@@ -162,7 +160,7 @@ export function ChatAssistant() {
           disabled={isStreaming || !input.trim() || !consentGiven}
           className="bg-wepac-white px-6 py-2 font-barlow text-sm font-bold uppercase tracking-wider text-wepac-black transition-opacity hover:opacity-90 disabled:opacity-30"
         >
-          Enviar
+          {copy.send}
         </button>
       </div>
     </div>

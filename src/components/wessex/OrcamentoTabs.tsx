@@ -3,10 +3,13 @@
 import { useState, useRef, useEffect } from "react";
 import { PricingCalculator } from "./PricingCalculator";
 import { ChatAssistant } from "./ChatAssistant";
+import { useLocale } from "next-intl";
+import { getWessexCopy } from "@/i18n/copy/institutional-wessex";
 
 type Tab = "simulador" | "assistente";
 
 export function OrcamentoTabs() {
+  const copy = getWessexCopy(useLocale()).chat;
   const [activeTab, setActiveTab] = useState<Tab>("simulador");
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -24,7 +27,7 @@ export function OrcamentoTabs() {
               : "text-wepac-white/40 hover:text-wepac-white/70"
           }`}
         >
-          Simulador
+          {copy.calculatorTab}
         </button>
         <button
           onClick={() => setActiveTab("assistente")}
@@ -34,7 +37,7 @@ export function OrcamentoTabs() {
               : "text-wepac-white/40 hover:text-wepac-white/70"
           }`}
         >
-          Assistente IA
+          {copy.assistantTab}
         </button>
       </div>
 

@@ -10,6 +10,14 @@ const getMySessions = vi.fn();
 const getMyConversations = vi.fn();
 const getTrails = vi.fn();
 
+vi.mock("next-intl/server", () => ({
+  getLocale: vi.fn(async () => "pt-PT"),
+}));
+
+vi.mock("@/i18n/navigation", () => ({
+  Link: vi.fn(() => null),
+}));
+
 vi.mock("@/lib/wepacker/page-guards", () => ({
   requirePageUser: (...args: unknown[]) => requirePageUser(...args),
 }));
@@ -40,12 +48,12 @@ vi.mock("@/lib/wepacker/actions/trail", () => ({
   getTrails: (...args: unknown[]) => getTrails(...args),
 }));
 
-vi.mock("@/app/wepacker/(platform)/dashboard/page-client", () => ({
+vi.mock("@/app/[locale]/wepacker/(platform)/dashboard/page-client", () => ({
   default: vi.fn(() => null),
 }));
 
-import BasecampPage from "@/app/wepacker/(platform)/basecamp/page";
-import DashboardPage from "@/app/wepacker/(platform)/dashboard/page";
+import BasecampPage from "@/app/[locale]/wepacker/(platform)/basecamp/page";
+import DashboardPage from "@/app/[locale]/wepacker/(platform)/dashboard/page";
 
 describe("My Journey and Basecamp belong directly to the Person", () => {
   beforeEach(() => {

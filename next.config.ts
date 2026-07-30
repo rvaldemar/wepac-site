@@ -1,4 +1,7 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
+
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -20,6 +23,21 @@ const nextConfig: NextConfig = {
         destination: "/arte-a-capela",
         permanent: true,
       },
+      {
+        source: "/:locale(en|en-US|pt|pt-PT)/academia",
+        destination: "/:locale/academy",
+        permanent: true,
+      },
+      {
+        source: "/:locale(en|en-US|pt|pt-PT)/projetos/wessex",
+        destination: "/:locale/wessex",
+        permanent: true,
+      },
+      {
+        source: "/:locale(en|en-US|pt|pt-PT)/projetos/arte-a-capela",
+        destination: "/:locale/arte-a-capela",
+        permanent: true,
+      },
     ];
   },
   experimental: {
@@ -30,4 +48,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

@@ -114,7 +114,7 @@ describe("Admin Support Preview discovery", () => {
     const source = readFileSync(
       join(
         process.cwd(),
-        "src/app/wepacker/(platform)/admin/support-preview/page.tsx",
+        "src/app/[locale]/wepacker/(platform)/admin/support-preview/page.tsx",
       ),
       "utf8",
     );

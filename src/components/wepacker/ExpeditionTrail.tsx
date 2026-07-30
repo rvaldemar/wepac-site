@@ -1,5 +1,7 @@
 "use client";
 
+import { useLocale } from "next-intl";
+import { wp } from "@/i18n/copy/wepacker";
 import { SESSION_KIND_LABELS, type SessionKind } from "@/lib/wepacker/types";
 
 // "Trilho da Expedição" — a horizontal mountain-profile trail that plots a
@@ -85,14 +87,15 @@ const PAD_LEFT = 36;
 const STEP = 96;
 const HEIGHT = 176;
 
-function formatDateLabel(iso: string) {
-  return new Date(iso).toLocaleDateString("pt-PT", {
+function formatDateLabel(iso: string, locale: string) {
+  return new Date(iso).toLocaleDateString(locale, {
     day: "numeric",
     month: "short",
   });
 }
 
 export function ExpeditionTrail({ sessions, className = "" }: ExpeditionTrailProps) {
+  const locale = useLocale();
   const sorted = [...sessions].sort(
     (a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
   );
@@ -145,7 +148,7 @@ export function ExpeditionTrail({ sessions, className = "" }: ExpeditionTrailPro
     <div className={`border border-wepac-border bg-wepac-card p-6 ${className}`}>
       <div className="flex items-center justify-between">
         <h2 className="font-barlow text-lg font-bold text-wepac-white">
-          Session Timeline
+          {wp(locale, "Cronologia de Sessions", "Session Timeline")}
         </h2>
       </div>
       <div className="mt-4 overflow-x-auto bg-wepac-black">
@@ -156,7 +159,11 @@ export function ExpeditionTrail({ sessions, className = "" }: ExpeditionTrailPro
           className="block"
           style={{ minWidth: width }}
           role="img"
-          aria-label="Session Timeline: sessões passadas, posição atual e próxima sessão"
+          aria-label={wp(
+            locale,
+            "Cronologia de Sessions: sessões passadas, posição atual e próxima sessão",
+            "Session timeline: past sessions, current position, and next session",
+          )}
         >
           {/* The trail line itself — thin, irregular, rising. */}
           <polyline
@@ -178,7 +185,22 @@ export function ExpeditionTrail({ sessions, className = "" }: ExpeditionTrailPro
 
           {waypoints.map((w, i) => {
             const kindLabel = w.session ? SESSION_KIND_LABELS[w.session.kind] : null;
-            const kindTitle = kindLabel ? `${kindLabel.label} — ${kindLabel.description}` : null;
+            const kindDescription = w.session
+              ? wp(
+                  locale,
+                  kindLabel?.description ?? "",
+                  {
+                    checkpoint: "Regular guidance along the trail",
+                    recon: "Map the terrain",
+                    basecamp: "Plan the next stage",
+                    rescue: "Support through a difficult moment",
+                    summit: "Close and celebrate a stage",
+                  }[w.session.kind],
+                )
+              : null;
+            const kindTitle = kindLabel
+              ? `${kindLabel.label} — ${kindDescription}`
+              : null;
             if (w.kind === "completed") {
               return (
                 <circle key={i} cx={w.x} cy={w.y} r={4.5} fill="#FFFFFF">
@@ -279,7 +301,7 @@ export function ExpeditionTrail({ sessions, className = "" }: ExpeditionTrailPro
                     fontFamily="Barlow, sans-serif"
                     fontWeight={700}
                   >
-                    Estás aqui
+                    {wp(locale, "Estás aqui", "You are here")}
                   </text>
                 </g>
               );
@@ -298,7 +320,9 @@ export function ExpeditionTrail({ sessions, className = "" }: ExpeditionTrailPro
                     fontFamily="Barlow, sans-serif"
                     fontWeight={700}
                   >
-                    {w.session ? formatDateLabel(w.session.scheduledAt) : ""}
+                    {w.session
+                      ? formatDateLabel(w.session.scheduledAt, locale)
+                      : ""}
                   </text>
                 </g>
               );
@@ -316,7 +340,7 @@ export function ExpeditionTrail({ sessions, className = "" }: ExpeditionTrailPro
                     fontFamily="Barlow, sans-serif"
                     fontWeight={700}
                   >
-                    Início
+                    {wp(locale, "Início", "Start")}
                   </text>
                 </g>
               );
@@ -327,7 +351,11 @@ export function ExpeditionTrail({ sessions, className = "" }: ExpeditionTrailPro
       </div>
       {isEmpty && (
         <p className="mt-3 text-xs text-wepac-text-tertiary">
-          A tua expedição começa em breve.
+          {wp(
+            locale,
+            "A tua expedição começa em breve.",
+            "Your expedition starts soon.",
+          )}
         </p>
       )}
       {presentSpecialKinds.length > 0 && (

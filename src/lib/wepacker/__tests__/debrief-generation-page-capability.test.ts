@@ -18,7 +18,14 @@ vi.mock("@/lib/wepacker/actions/debrief", () => ({
   getSessionDebrief: (...args: unknown[]) => getSessionDebrief(...args),
 }));
 
-import MentorSessionDebriefPage from "@/app/wepacker/(platform)/mentor/sessions/[id]/page";
+vi.mock(
+  "@/app/[locale]/wepacker/(platform)/mentor/sessions/[id]/page-client",
+  () => ({
+    SessionDebriefClient: vi.fn(() => null),
+  }),
+);
+
+import MentorSessionDebriefPage from "@/app/[locale]/wepacker/(platform)/mentor/sessions/[id]/page";
 
 type PageProps = {
   debriefGenerationEnabled: boolean;

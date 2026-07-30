@@ -19,7 +19,7 @@ test("unonboarded person is forced through welcome -> agreement", async ({
   await expect(page).toHaveURL(/\/wepacker\/agreement/);
   await page.getByLabel(/Li e aceito as condições/).check();
   await page
-    .getByRole("button", { name: "Accept and open My Journey" })
+    .getByRole("button", { name: "Aceitar e abrir My Journey" })
     .click();
   await expect(page).toHaveURL(/\/wepacker\/dashboard/);
 });

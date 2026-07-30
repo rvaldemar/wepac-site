@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useLocale } from "next-intl";
+import { getWessexCopy } from "@/i18n/copy/institutional-wessex";
 import {
   ensembles,
-  SERVICE_TYPE_LABELS,
   type ServiceType,
   type Ensemble,
 } from "@/data/wessex-pricing";
@@ -14,6 +15,8 @@ const bandEnsembles = ensembles.filter((e) => e.category === "band");
 const customEnsembles = ensembles.filter((e) => e.category === "custom");
 
 export function PricingCalculator() {
+  const locale = useLocale();
+  const copy = getWessexCopy(locale).calculator;
   const [ensembleId, setEnsembleId] = useState("");
   const [serviceType, setServiceType] = useState<ServiceType | "">("");
   const [addSom, setAddSom] = useState(false);
@@ -34,13 +37,26 @@ export function PricingCalculator() {
   const somPrice = addSom && selected?.id !== "som" ? 200 : 0;
   const totalPrice = basePrice + somPrice;
   const showPrice = selected && effectiveService && basePrice > 0;
+  const ensembleName = (ensemble: Ensemble) =>
+    copy.ensembleNames[ensemble.id] ?? ensemble.name;
+  const ensembleDescription = (ensemble: Ensemble) =>
+    copy.ensembleDescriptions[ensemble.id] ?? ensemble.description;
+  const serviceLabel = (service: ServiceType) =>
+    selected?.category === "band" && service === "cocktails"
+      ? copy.bandCocktail
+      : copy.serviceLabels[service];
+  const formattedTotal = new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: "EUR",
+    maximumFractionDigits: 0,
+  }).format(totalPrice);
 
   return (
     <div className="space-y-8">
       {/* Ensemble select */}
       <div>
         <label className="block text-sm font-bold uppercase tracking-wider text-wepac-white/50">
-          Ensemble
+          {copy.ensemble}
         </label>
         <select
           value={ensembleId}
@@ -52,28 +68,28 @@ export function PricingCalculator() {
           className="mt-2 w-full border-b border-wepac-white/20 bg-transparent py-3 text-wepac-white outline-none transition-colors focus:border-wepac-white"
         >
           <option value="" className="bg-wepac-black">
-            Seleciona o ensemble
+            {copy.selectEnsemble}
           </option>
-          <optgroup label="Ensembles Clássicos">
+          <optgroup label={copy.classical}>
             {classicalEnsembles.map((e) => (
               <option key={e.id} value={e.id} className="bg-wepac-black">
-                {e.name}
-                {e.musicians ? ` (${e.musicians} Músicos)` : ""}
+                {ensembleName(e)}
+                {e.musicians ? ` (${copy.musicians(e.musicians)})` : ""}
               </option>
             ))}
           </optgroup>
-          <optgroup label="Bandas">
+          <optgroup label={copy.bands}>
             {bandEnsembles.map((e) => (
               <option key={e.id} value={e.id} className="bg-wepac-black">
-                {e.name}
-                {e.musicians ? ` (${e.musicians} Músicos)` : ""}
+                {ensembleName(e)}
+                {e.musicians ? ` (${copy.musicians(e.musicians)})` : ""}
               </option>
             ))}
           </optgroup>
-          <optgroup label="Sob Consulta">
+          <optgroup label={copy.onRequest}>
             {customEnsembles.map((e) => (
               <option key={e.id} value={e.id} className="bg-wepac-black">
-                {e.name}
+                {ensembleName(e)}
               </option>
             ))}
           </optgroup>
@@ -84,7 +100,7 @@ export function PricingCalculator() {
       {selected && !selected.quoteOnly && (
         <div>
           <label className="block text-sm font-bold uppercase tracking-wider text-wepac-white/50">
-            Tipo de Serviço
+            {copy.serviceType}
           </label>
           <select
             value={effectiveService}
@@ -92,24 +108,19 @@ export function PricingCalculator() {
             className="mt-2 w-full border-b border-wepac-white/20 bg-transparent py-3 text-wepac-white outline-none transition-colors focus:border-wepac-white"
           >
             <option value="" className="bg-wepac-black">
-              Seleciona o tipo de serviço
+              {copy.selectService}
             </option>
             {availableServices.map((st) => {
-              const label =
-                selected.category === "band" && st === "cocktails"
-                  ? "Cocktails / Copo d'Água (2h)"
-                  : SERVICE_TYPE_LABELS[st];
               return (
                 <option key={st} value={st} className="bg-wepac-black">
-                  {label}
+                  {serviceLabel(st)}
                 </option>
               );
             })}
           </select>
           {selected.category === "band" && (
             <p className="mt-2 text-sm text-wepac-white/50">
-              As bandas atuam apenas em formato Cocktails / Copo d&apos;Água (2
-              horas).
+              {copy.bandNote}
             </p>
           )}
         </div>
@@ -125,7 +136,7 @@ export function PricingCalculator() {
             className="h-4 w-4 accent-wepac-white"
           />
           <span className="text-sm text-wepac-white/60">
-            Adicionar Equipa de Som (+200€)
+            {copy.addSound}
           </span>
         </label>
       )}
@@ -134,18 +145,18 @@ export function PricingCalculator() {
       {selected?.quoteOnly && (
         <div className="border border-wepac-white/10 p-5 md:p-8 text-center">
           <p className="text-sm font-bold uppercase tracking-wider text-wepac-white/50">
-            Orçamento sob consulta
+            {copy.quoteOnRequest}
           </p>
           <p className="mt-4 text-wepac-white/60 leading-relaxed">
-            {selected.description}
+            {ensembleDescription(selected)}
           </p>
           <Link
             href={`/contacto?subject=servicos&message=${encodeURIComponent(
-              `Pedido Wessex: ${selected.name} — gostaria de receber um orçamento personalizado.`
+              copy.customRequest(ensembleName(selected))
             )}`}
             className="mt-6 inline-block bg-wepac-white px-8 py-3 font-barlow text-sm font-bold uppercase tracking-wider text-wepac-black transition-opacity hover:opacity-90"
           >
-            Pedir orçamento
+            {copy.requestQuote}
           </Link>
         </div>
       )}
@@ -154,43 +165,46 @@ export function PricingCalculator() {
       {showPrice && (
         <div className="border border-wepac-white/10 p-5 md:p-8 text-center">
           <p className="text-sm font-bold uppercase tracking-wider text-wepac-white/50">
-            Valor estimado
+            {copy.estimated}
           </p>
           <p className="mt-3 font-barlow text-4xl md:text-5xl font-bold text-wepac-white">
-            {totalPrice}€
+            {formattedTotal}
           </p>
           {selected.duration && (
             <p className="mt-2 text-sm text-wepac-white/50">
-              Preço para {selected.duration} de performance
+              {copy.performancePrice(
+                selected.duration === "2 horas"
+                  ? copy.durationTwoHours
+                  : selected.duration,
+              )}
             </p>
           )}
           {addSom && (
             <p className="mt-1 text-sm text-wepac-white/50">
-              Inclui Equipa de Som (200€)
+              {copy.includesSound}
             </p>
           )}
           <p className="mt-4 text-xs text-wepac-white/50">
-            Eventos fora de Lisboa: taxa de deslocação calculada via{" "}
-            <a
-              href="https://www.viamichelin.pt/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:text-wepac-white/60"
-            >
-              viamichelin.pt
-            </a>
-            {" "}(combustível + portagens + estadia se aplicável).
+            {copy.travel}
           </p>
 
           <Link
             href={`/contacto?subject=servicos&ensemble=${encodeURIComponent(
-              `${selected.name}${selected.musicians ? ` (${selected.musicians} músicos)` : ""}`
-            )}&service=${encodeURIComponent(SERVICE_TYPE_LABELS[effectiveService])}&som=${addSom ? "1" : "0"}&total=${totalPrice}&message=${encodeURIComponent(
-              `Encomenda Wessex:\n• Ensemble: ${selected.name}${selected.musicians ? ` (${selected.musicians} músicos)` : ""}\n• Serviço: ${SERVICE_TYPE_LABELS[effectiveService]}${addSom ? "\n• + Equipa de Som (200€)" : ""}\n• Total estimado: ${totalPrice}€\n\n`
+              `${ensembleName(selected)}${selected.musicians ? ` (${copy.musicians(selected.musicians)})` : ""}`
+            )}&service=${encodeURIComponent(serviceLabel(effectiveService))}&som=${addSom ? "1" : "0"}&total=${totalPrice}&message=${encodeURIComponent(
+              copy.orderMessage(
+                ensembleName(selected),
+                selected.musicians
+                  ? ` (${copy.musicians(selected.musicians)})`
+                  : "",
+                serviceLabel(effectiveService),
+                addSom,
+                totalPrice,
+              )
             )}`}
             className="mt-6 inline-block bg-wepac-white px-8 py-3 font-barlow text-sm font-bold uppercase tracking-wider text-wepac-black transition-opacity hover:opacity-90"
           >
-            Encomendar
+            {copy.order}
           </Link>
         </div>
       )}

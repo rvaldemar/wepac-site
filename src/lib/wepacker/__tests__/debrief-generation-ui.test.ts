@@ -6,6 +6,15 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: vi.fn() }),
 }));
 
+vi.mock("next-intl", () => ({
+  useLocale: () => "en-US",
+}));
+
+vi.mock("@/i18n/navigation", () => ({
+  Link: "a",
+  useRouter: () => ({ refresh: vi.fn() }),
+}));
+
 vi.mock("@/lib/wepacker/actions/session", () => ({
   updateSessionAttendee: vi.fn(),
 }));
@@ -19,7 +28,7 @@ vi.mock("@/lib/wepacker/actions/debrief", () => ({
   generateSessionDebrief: vi.fn(),
 }));
 
-import { SessionDebriefClient } from "@/app/wepacker/(platform)/mentor/sessions/[id]/page-client";
+import { SessionDebriefClient } from "@/app/[locale]/wepacker/(platform)/mentor/sessions/[id]/page-client";
 
 const session = {
   id: "session-1",

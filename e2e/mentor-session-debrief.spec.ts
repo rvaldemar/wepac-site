@@ -5,6 +5,8 @@ test("mentor creates a Checkpoint session, attaches transcript, sees the W01 cer
   page,
 }) => {
   await loginAs(page, "rui@wepac.pt");
+  await page.getByRole("combobox", { name: "Idioma" }).selectOption("en-US");
+  await expect(page).toHaveURL(/\/en\/wepacker\/dashboard/);
   await page.goto("/wepacker/mentor/sessions");
   await page.getByRole("button", { name: "+ New Session" }).click();
 

@@ -1,7 +1,8 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useSyncExternalStore } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 const COOKIE_CONSENT_KEY = "cookie_consent";
 
@@ -29,6 +30,7 @@ function setConsent(value: "accepted" | "rejected") {
 }
 
 export function CookieConsent() {
+  const t = useTranslations("Common.cookieConsent");
   const consent = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const visible = consent === null;
 
@@ -46,12 +48,12 @@ export function CookieConsent() {
     <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-wepac-white/10 bg-wepac-black/95 backdrop-blur-md px-6 py-4">
       <div className="mx-auto flex max-w-4xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-wepac-white/60 leading-relaxed">
-          Utilizamos cookies essenciais para o funcionamento do site.{" "}
+          {t("message")}{" "}
           <Link
             href="/privacidade"
             className="text-wepac-gray underline hover:text-wepac-white"
           >
-            Política de Privacidade
+            {t("privacy")}
           </Link>
         </p>
         <div className="flex gap-2 flex-shrink-0">
@@ -59,13 +61,13 @@ export function CookieConsent() {
             onClick={handleReject}
             className="border border-wepac-white/20 px-4 py-1.5 text-xs text-wepac-white/50 transition-colors hover:text-wepac-white"
           >
-            Recusar
+            {t("reject")}
           </button>
           <button
             onClick={handleAccept}
             className="bg-wepac-white px-4 py-1.5 text-xs font-bold text-wepac-black transition-opacity hover:opacity-90"
           >
-            Aceitar
+            {t("accept")}
           </button>
         </div>
       </div>

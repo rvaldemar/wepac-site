@@ -36,10 +36,32 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://wepac.pt";
   const lastModified = new Date();
 
-  return entries.map((entry) => ({
-    url: `${baseUrl}${entry.path}`,
-    lastModified,
-    changeFrequency: entry.changeFrequency,
-    priority: entry.priority,
-  }));
+  return entries.flatMap((entry) => {
+    const portugueseUrl = `${baseUrl}${entry.path || "/"}`;
+    const englishUrl = `${baseUrl}/en${entry.path || ""}`;
+    const alternates = {
+      languages: {
+        "pt-PT": portugueseUrl,
+        "en-US": englishUrl,
+        "x-default": portugueseUrl,
+      },
+    };
+
+    return [
+      {
+        url: portugueseUrl,
+        lastModified,
+        changeFrequency: entry.changeFrequency,
+        priority: entry.priority,
+        alternates,
+      },
+      {
+        url: englishUrl,
+        lastModified,
+        changeFrequency: entry.changeFrequency,
+        priority: Math.max(entry.priority - 0.05, 0.1),
+        alternates,
+      },
+    ];
+  });
 }

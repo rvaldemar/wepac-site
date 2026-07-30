@@ -4,11 +4,11 @@ import { join } from "node:path";
 
 const ROUTE = join(
   process.cwd(),
-  "src/app/wepacker/(preview)/mentor/sessions/[id]/preview/[userId]/page.tsx",
+  "src/app/[locale]/wepacker/(preview)/mentor/sessions/[id]/preview/[userId]/page.tsx",
 );
 const ADMIN_GATE = join(
   process.cwd(),
-  "src/app/wepacker/(preview)/mentor/sessions/[id]/preview/[userId]/admin-preview-gate.tsx",
+  "src/app/[locale]/wepacker/(preview)/mentor/sessions/[id]/preview/[userId]/admin-preview-gate.tsx",
 );
 
 describe("Session attendee preview route containment", () => {
@@ -41,7 +41,7 @@ describe("Session attendee preview route containment", () => {
   it("revokes Admin grants on exit and leaves organizer exit as navigation", () => {
     expect(source).toContain("revokeAdminSessionAttendeePreviewGrant");
     expect(source).toContain("<form action={revokeGrant}>");
-    expect(source).toContain("Exit &amp; revoke access");
+    expect(source).toContain("Exit & revoke access");
     expect(source).toContain("/wepacker/mentor/sessions/${id}");
   });
 

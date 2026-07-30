@@ -125,3 +125,63 @@ test("Society navigation remains usable on mobile", async ({ page }) => {
     await page.screenshot({ path: process.env.QA_SCREENSHOT_MOBILE_PLATFORM });
   }
 });
+
+test("the visitor can choose English and keep the same Society journey", async ({
+  page,
+  request,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/society?source=qa");
+
+  const language = page.getByRole("combobox", { name: "Idioma" });
+  await expect(language).toHaveValue("pt-PT");
+  await language.selectOption("en-US");
+
+  await expect(page).toHaveURL(/\/en\/society\?source=qa$/);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "From packers to WEPACkers." }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Education for a lifetime. It starts with the Life Plan.", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "Belonging means building together.",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", {
+      name: "Discuss Life Plan for our organization",
+      exact: true,
+    }),
+  ).toHaveAttribute("href", "/en/wepacker/intake?source=organizations");
+
+  await expect
+    .poll(async () => {
+      const cookie = (await page.context().cookies()).find(
+        (item) => item.name === "NEXT_LOCALE",
+      );
+      return cookie?.value;
+    })
+    .toBe("en-US");
+
+  await page.reload();
+  await expect(page.getByRole("combobox", { name: "Language" })).toHaveValue(
+    "en-US",
+  );
+
+  for (const path of [
+    "/en/society",
+    "/en/society/life-plan",
+    "/en/society/familias",
+    "/en/academy",
+    "/en/companhia-de-artes",
+    "/en/wepacker/intake",
+  ]) {
+    const response = await request.get(path);
+    expect(response.ok(), `${path} should stay reachable`).toBe(true);
+  }
+});
