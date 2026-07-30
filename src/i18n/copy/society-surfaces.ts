@@ -806,7 +806,7 @@ export const familySurfaceCopy = {
         name: "YUP",
         mode: "Transform",
         state: "Em construção",
-        line: "Vida adulta, relações, carreira, cuidado entre gerações e mudanças que continuam a pedir direção.",
+        line: "Your Unlocked Potential: vida adulta, relações, carreira, cuidado entre gerações e mudanças que continuam a pedir direção.",
       },
     ],
     process: [
@@ -969,7 +969,7 @@ export const familySurfaceCopy = {
         name: "YUP",
         mode: "Transform",
         state: "Being built",
-        line: "Adult life, relationships, career, intergenerational care, and changes that continue to require direction.",
+        line: "Your Unlocked Potential: adult life, relationships, career, intergenerational care, and changes that continue to require direction.",
       },
     ],
     process: [
