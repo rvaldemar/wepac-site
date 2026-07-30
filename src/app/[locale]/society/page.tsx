@@ -80,21 +80,6 @@ function LifePlanSignal({
           <span>01 — 07</span>
         </div>
 
-        <div className="my-8 flex flex-1 -translate-y-32 items-center justify-center xl:-translate-y-40">
-          <div className="relative grid aspect-square w-[min(72%,290px)] place-items-center rounded-full border border-white/25">
-            <div className="absolute inset-[13%] rounded-full border border-white/15" />
-            <div className="absolute inset-[27%] rounded-full border border-white/20" />
-            <div className="relative text-center">
-              <p className="text-[9px] font-bold uppercase tracking-[0.24em] text-white/40">
-                {copy.signal.direction}
-              </p>
-              <p className="mt-2 font-barlow text-3xl font-black uppercase tracking-[-0.03em]">
-                Life Plan
-              </p>
-            </div>
-          </div>
-        </div>
-
         <div>
           <div className="grid grid-cols-3 gap-px bg-white/15">
             {copy.pillars.map((pillar, index) => (
