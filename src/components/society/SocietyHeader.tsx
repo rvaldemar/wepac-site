@@ -2,17 +2,21 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useMobileDrawer } from "@/lib/useMobileDrawer";
+import { getSocietyIntakeHref } from "@/lib/society/intake-source";
 
 const navigation = [
-  { name: "Society", href: "/society" },
+  { name: "Life Plan", href: "/society/life-plan" },
+  { name: "Famílias", href: "/society/familias" },
   { name: "Academy", href: "/academy" },
   { name: "Companhia de Artes", href: "/companhia-de-artes" },
-  { name: "Plataformas", href: "/society#plataformas" },
 ];
 
 export function SocietyHeader() {
+  const pathname = usePathname();
+  const intakeHref = getSocietyIntakeHref(pathname);
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
   const { toggleRef, drawerRef } = useMobileDrawer<HTMLButtonElement, HTMLDivElement>(
@@ -40,7 +44,7 @@ export function SocietyHeader() {
           </span>
         </Link>
 
-        <div className="hidden items-center gap-7 lg:flex">
+        <div className="hidden items-center gap-6 lg:flex">
           {navigation.map((item) => (
             <Link
               key={item.name}
@@ -52,9 +56,15 @@ export function SocietyHeader() {
           ))}
           <Link
             href="/wepacker/login"
-            className="border border-white/25 px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.16em] text-white transition-colors hover:border-white hover:bg-white hover:text-black"
+            className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/60 transition-colors hover:text-white"
           >
             Abrir Backpack
+          </Link>
+          <Link
+            href={intakeHref}
+            className="border border-white bg-white px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.16em] text-black transition-colors hover:bg-wepac-gray"
+          >
+            Começar Life Plan
           </Link>
         </div>
 
@@ -108,9 +118,16 @@ export function SocietyHeader() {
             <Link
               href="/wepacker/login"
               onClick={closeMenu}
-              className="mt-6 bg-white px-5 py-4 text-center text-xs font-bold uppercase tracking-[0.16em] text-black"
+              className="mt-6 border border-white/25 px-5 py-4 text-center text-xs font-bold uppercase tracking-[0.16em] text-white"
             >
               Abrir Backpack
+            </Link>
+            <Link
+              href={intakeHref}
+              onClick={closeMenu}
+              className="mt-3 bg-white px-5 py-4 text-center text-xs font-bold uppercase tracking-[0.16em] text-black"
+            >
+              Começar Life Plan
             </Link>
           </div>
         </div>

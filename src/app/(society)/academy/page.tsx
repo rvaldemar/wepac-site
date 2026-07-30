@@ -4,10 +4,26 @@ import Link from "next/link";
 import { FadeIn } from "@/components/FadeIn";
 
 export const metadata: Metadata = {
-  title: { absolute: "WEPAC Academy — dos 0 ao infinito" },
+  title: { absolute: "WEPAC Academy — do 0 ao infinito e mais além" },
   description:
-    "A via educativa da WEPAC Society: Easy Peasy, Step Up e YUP, com a pessoa inteira e seis pilares sempre à vista.",
+    "Educação para uma vida inteira: Easy Peasy, Step Up e YUP, com a família por perto e a pessoa inteira sempre à vista.",
   alternates: { canonical: "/academy" },
+  openGraph: {
+    title: "WEPAC Academy — do 0 ao infinito e mais além",
+    description:
+      "Educação que cresce com cada pessoa e cada família, da descoberta ao legado.",
+    url: "/academy",
+    type: "website",
+    locale: "pt_PT",
+    images: [
+      {
+        url: "/logo/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "WEPAC",
+      },
+    ],
+  },
 };
 
 const stages = [
@@ -54,7 +70,7 @@ export default function AcademyPage() {
             fill
             priority
             sizes="100vw"
-            className="object-cover object-center opacity-55"
+            className="origin-top -translate-y-[12%] scale-[2] object-cover object-top opacity-55 lg:translate-y-0 lg:scale-100 lg:object-[50%_31%]"
           />
         </div>
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black via-black/85 to-black/35" />
@@ -66,12 +82,27 @@ export default function AcademyPage() {
               WEPAC Society · Via educativa
             </p>
             <h1 className="mt-8 text-balance font-barlow text-[clamp(3.5rem,8vw,8rem)] font-black uppercase leading-[0.84] tracking-[-0.05em]">
-              A Academy não prepara para a vida. É vida em prática.
+              Do 0 ao infinito — e mais além.
             </h1>
             <p className="mt-9 max-w-2xl text-lg leading-relaxed text-white/70 sm:text-xl">
-              Dos primeiros trilhos ao legado: a pessoa inteira, uma prática real e comunidade
-              suficiente para o caminho ganhar chão.
+              Educação que cresce com cada pessoa e cada família. Easy Peasy, Step Up e YUP
+              acompanham o caminho da descoberta ao legado, com prática real e a pessoa inteira
+              sempre à vista.
             </p>
+            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/wepacker/intake?source=academy"
+                className="inline-flex min-h-14 items-center justify-center bg-white px-7 text-xs font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-wepac-gray"
+              >
+                Começar o meu Life Plan
+              </Link>
+              <Link
+                href="#stages"
+                className="inline-flex min-h-14 items-center justify-center border border-white/30 px-7 text-xs font-bold uppercase tracking-[0.18em] text-white transition-colors hover:border-white hover:bg-white hover:text-black"
+              >
+                Conhecer os stages
+              </Link>
+            </div>
           </div>
         </FadeIn>
       </section>
@@ -104,7 +135,10 @@ export default function AcademyPage() {
         </div>
       </section>
 
-      <section className="border-b border-white/10 px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
+      <section
+        id="stages"
+        className="scroll-mt-20 border-b border-white/10 px-5 py-24 sm:px-8 lg:px-12 lg:py-32"
+      >
         <div className="mx-auto max-w-[1440px]">
           <FadeIn>
             <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">
@@ -176,7 +210,7 @@ export default function AcademyPage() {
               alt="Criança a tocar violino numa peça Easy Peasy"
               fill
               sizes="(max-width: 1023px) 100vw, 50vw"
-              className="object-cover"
+              className="origin-top scale-[2] object-cover object-top"
             />
           </FadeIn>
           <FadeIn delay={0.1}>
@@ -211,24 +245,25 @@ export default function AcademyPage() {
             O primeiro passo
           </p>
           <h2 className="mt-7 text-balance font-barlow text-5xl font-black uppercase leading-[0.9] tracking-[-0.04em] sm:text-7xl">
-            Começa em casa. Ganha caminho em comunidade.
+            Começa em casa. O Life Plan dá direção.
           </h2>
           <p className="mx-auto mt-8 max-w-2xl leading-relaxed text-black/60">
-            Nem todas as portas estão abertas na mesma fase. A candidatura permite-nos responder
-            com verdade sobre o que já existe e o que ainda está a ganhar capacidade.
+            O Life Plan ajuda-nos a compreender a pessoa, a família e o momento de vida antes de
+            escolher um percurso. Nem todas as portas estão abertas na mesma fase: respondemos com
+            verdade sobre o que já existe e o que ainda está a ganhar capacidade.
           </p>
           <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
-              href="/wepacker/intake"
+              href="/wepacker/intake?source=academy"
               className="inline-flex min-h-14 items-center justify-center bg-black px-7 text-xs font-bold uppercase tracking-[0.18em] text-white hover:bg-black/80"
             >
-              Encontrar o ponto de partida
+              Começar o meu Life Plan
             </Link>
             <Link
-              href="/wepacker/login"
+              href="/society/familias"
               className="inline-flex min-h-14 items-center justify-center border border-black/25 px-7 text-xs font-bold uppercase tracking-[0.18em] hover:border-black hover:bg-black hover:text-white"
             >
-              Abrir Backpack
+              Conhecer o caminho das famílias
             </Link>
           </div>
         </FadeIn>

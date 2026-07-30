@@ -3,8 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Story: fix the public application funnel (src/lib/wepacker/actions/application.ts).
 //   Bug 1 — a re-application from a rejected/contacted candidate must return
 //           to the pending queue instead of silently keeping its old status.
-//   Bug 2 — a specific packSlug must survive a later resubmission through
-//           the generic "wepacker" intake sentinel.
+//   Bug 2 — the generic Life Plan intake must remain a distinct offer from
+//           specific Discipline applications held by the same person.
 //   Bug 3 — the unauthenticated public write must be rate limited.
 //   Bug 4 — BetaSignup.email was a GLOBAL unique constraint, so the same
 //           person could only ever hold one application across every WEPAC
@@ -15,7 +15,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const packFindUnique = vi.fn();
 const betaSignupFindUnique = vi.fn();
-const betaSignupFindFirst = vi.fn();
 const betaSignupUpsert = vi.fn();
 
 vi.mock("@/lib/db", () => ({
@@ -25,14 +24,17 @@ vi.mock("@/lib/db", () => ({
     },
     betaSignup: {
       findUnique: (...args: unknown[]) => betaSignupFindUnique(...args),
-      findFirst: (...args: unknown[]) => betaSignupFindFirst(...args),
       upsert: (...args: unknown[]) => betaSignupUpsert(...args),
     },
   },
 }));
 
-const sendBetaSignupConfirmationEmail = vi.fn(async (..._args: unknown[]) => undefined);
-const sendBetaSignupNotificationEmail = vi.fn(async (..._args: unknown[]) => undefined);
+const sendBetaSignupConfirmationEmail = vi.fn(async (...args: unknown[]) => {
+  void args;
+});
+const sendBetaSignupNotificationEmail = vi.fn(async (...args: unknown[]) => {
+  void args;
+});
 
 vi.mock("@/lib/email", () => ({
   sendBetaSignupConfirmationEmail: (...args: unknown[]) =>
@@ -73,7 +75,6 @@ describe("submitApplication — reapplication returns to the pending queue", () 
   beforeEach(() => {
     vi.clearAllMocks();
     visitorIp = freshVisitorIp();
-    betaSignupFindFirst.mockResolvedValue(null);
     betaSignupUpsert.mockResolvedValue({ id: "signup-1" });
   });
 
@@ -146,7 +147,6 @@ describe("submitApplication — one application per (person, offer)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     visitorIp = freshVisitorIp();
-    betaSignupFindFirst.mockResolvedValue(null);
     betaSignupUpsert.mockResolvedValue({ id: "signup-multi" });
   });
 
@@ -224,41 +224,35 @@ describe("submitApplication — one application per (person, offer)", () => {
   });
 });
 
-describe("submitApplication — specific packSlug survives a generic resubmission", () => {
+describe("submitApplication — Life Plan intake stays distinct", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     visitorIp = freshVisitorIp();
     betaSignupUpsert.mockResolvedValue({ id: "signup-2" });
   });
 
-  it("keeps the existing specific packSlug when the new submission is the generic sentinel", async () => {
-    // No standing application under the generic sentinel itself...
+  it("creates a Life Plan row independently from any specific application", async () => {
     betaSignupFindUnique.mockResolvedValueOnce(null);
-    // ...but one exists under a specific offer already on file.
-    betaSignupFindFirst.mockResolvedValueOnce({
-      status: "pending",
-      packSlug: "artist",
-      notes: null,
-    });
 
     await submitApplication({
-      packSlug: "wepacker", // generic intake — no pack chosen this time
+      packSlug: "wepacker",
       name: "Rita Alves",
       email: "rita@example.com",
     });
 
     expect(packFindUnique).not.toHaveBeenCalled();
-    expect(betaSignupFindFirst).toHaveBeenCalledWith({
-      where: { email: "rita@example.com", packSlug: { not: "wepacker" } },
+    expect(betaSignupFindUnique).toHaveBeenCalledWith({
+      where: {
+        email_packSlug: { email: "rita@example.com", packSlug: "wepacker" },
+      },
       select: { status: true, packSlug: true, notes: true },
-      orderBy: { createdAt: "desc" },
     });
     const call = betaSignupUpsert.mock.calls[0][0];
     expect(call.where).toEqual({
-      email_packSlug: { email: "rita@example.com", packSlug: "artist" },
+      email_packSlug: { email: "rita@example.com", packSlug: "wepacker" },
     });
-    expect(call.update.packSlug).toBeUndefined(); // never rewritten to "wepacker"
-    expect(call.update.status).toBe("pending");
+    expect(call.create.packSlug).toBe("wepacker");
+    expect(call.update.status).toBeUndefined();
   });
 
   it("still updates packSlug when the new submission targets a different specific pack", async () => {
@@ -279,12 +273,29 @@ describe("submitApplication — specific packSlug survives a generic resubmissio
     expect(call.where).toEqual({
       email_packSlug: { email: "rita@example.com", packSlug: "easy-peasy" },
     });
-    expect(betaSignupFindFirst).not.toHaveBeenCalled();
   });
 
-  it("uses the generic sentinel for a genuinely first-time generic application", async () => {
+  it("clears stale artistic fields on a non-artistic Life Plan resubmission", async () => {
+    betaSignupFindUnique.mockResolvedValueOnce({
+      status: "contacted",
+      packSlug: "wepacker",
+      notes: null,
+    });
+
+    await submitApplication({
+      packSlug: "wepacker",
+      name: "Nuno Pinto",
+      email: "nuno@example.com",
+      motivation: "Entro como família.",
+    });
+
+    const call = betaSignupUpsert.mock.calls[0][0];
+    expect(call.update.artisticArea).toBeNull();
+    expect(call.update.socialLinks).toBeNull();
+  });
+
+  it("uses Life Plan semantics in both transactional emails", async () => {
     betaSignupFindUnique.mockResolvedValueOnce(null);
-    betaSignupFindFirst.mockResolvedValueOnce(null);
 
     await submitApplication({
       packSlug: "wepacker",
@@ -292,8 +303,17 @@ describe("submitApplication — specific packSlug survives a generic resubmissio
       email: "nuno@example.com",
     });
 
-    const call = betaSignupUpsert.mock.calls[0][0];
-    expect(call.create.packSlug).toBe("wepacker");
+    expect(sendBetaSignupConfirmationEmail).toHaveBeenCalledWith(
+      "Nuno Pinto",
+      "nuno@example.com",
+      "life-plan"
+    );
+    expect(sendBetaSignupNotificationEmail).toHaveBeenCalledWith(
+      "Nuno Pinto",
+      "nuno@example.com",
+      undefined,
+      "life-plan"
+    );
   });
 });
 
@@ -302,7 +322,6 @@ describe("submitApplication — rate limiting", () => {
     vi.clearAllMocks();
     visitorIp = freshVisitorIp();
     betaSignupFindUnique.mockResolvedValue(null);
-    betaSignupFindFirst.mockResolvedValue(null);
     betaSignupUpsert.mockResolvedValue({ id: "signup-3" });
   });
 

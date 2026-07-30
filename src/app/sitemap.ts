@@ -9,6 +9,8 @@ type SitemapEntry = {
 const entries: SitemapEntry[] = [
   { path: "", changeFrequency: "weekly", priority: 1 },
   { path: "/society", changeFrequency: "weekly", priority: 1 },
+  { path: "/society/life-plan", changeFrequency: "weekly", priority: 1 },
+  { path: "/society/familias", changeFrequency: "weekly", priority: 0.9 },
   { path: "/academy", changeFrequency: "monthly", priority: 0.9 },
   { path: "/companhia-de-artes", changeFrequency: "monthly", priority: 0.9 },
   { path: "/wessex", changeFrequency: "monthly", priority: 0.9 },

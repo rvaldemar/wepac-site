@@ -1,7 +1,13 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { getSocietyIntakeHref } from "@/lib/society/intake-source";
 
 export function SocietyFooter() {
+  const intakeHref = getSocietyIntakeHref(usePathname());
+
   return (
     <footer className="border-t border-white/10 bg-black text-white">
       <div className="mx-auto max-w-[1440px] px-5 py-14 sm:px-8 lg:px-12 lg:py-20">
@@ -17,8 +23,8 @@ export function SocietyFooter() {
               />
             </Link>
             <p className="mt-6 max-w-sm font-barlow text-xl font-bold leading-relaxed text-white/70">
-              Uma vida inteira em caminho. A pessoa antes da performance, o carácter antes da
-              habilidade.
+              Educação para uma vida inteira. A pessoa antes da performance, o carácter antes da
+              habilidade e a família como primeiro lugar do caminho.
             </p>
           </div>
 
@@ -28,6 +34,8 @@ export function SocietyFooter() {
             </p>
             <div className="mt-5 flex flex-col gap-3 text-sm text-white/65">
               <Link href="/society" className="hover:text-white">Society</Link>
+              <Link href="/society/life-plan" className="hover:text-white">Life Plan</Link>
+              <Link href="/society/familias" className="hover:text-white">Famílias</Link>
               <Link href="/academy" className="hover:text-white">WEPAC Academy</Link>
               <Link href="/companhia-de-artes" className="hover:text-white">
                 Companhia de Artes
@@ -41,7 +49,9 @@ export function SocietyFooter() {
               Caminhos
             </p>
             <div className="mt-5 flex flex-col gap-3 text-sm text-white/65">
-              <Link href="/wepacker/intake" className="hover:text-white">Ponto de Partida</Link>
+              <Link href={intakeHref} className="hover:text-white">
+                Começar Life Plan
+              </Link>
               <Link href="/wepacker/login" className="hover:text-white">Abrir Backpack</Link>
               <Link href="/bilheteira" className="hover:text-white">Bilheteira</Link>
               <Link href="/wessex" className="hover:text-white">Wessex</Link>

@@ -6,17 +6,56 @@ import { SocietyFooter } from "@/components/society/SocietyFooter";
 import { SocietyHeader } from "@/components/society/SocietyHeader";
 
 export const metadata: Metadata = {
-  title: { absolute: "WEPAC Society — uma vida inteira em caminho" },
+  title: { absolute: "WEPAC Society — educação para uma vida inteira" },
   description:
-    "A casa comum da WEPAC: Academy, Companhia de Artes, Backpack e comunidade para uma vida inteira em caminho.",
+    "A WEPAC ajuda pessoas e famílias a encontrarem direção e a transformá-la em próximos passos. Tudo começa no Life Plan.",
   alternates: { canonical: "/society" },
   openGraph: {
-    title: "WEPAC Society — uma vida inteira em caminho",
+    title: "WEPAC Society — educação para uma vida inteira",
     description:
-      "Uma cosmovisão. Três stages. Um caminho. From packers to WEPACkers.",
-    images: [{ url: "/images/society/violin.jpg", width: 1228, height: 1792 }],
+      "From packers to WEPACkers. Tudo começa no Life Plan.",
+    type: "website",
+    locale: "pt_PT",
+    images: [
+      {
+        url: "/logo/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "WEPAC",
+      },
+    ],
   },
 };
+
+const intakeHref = "/wepacker/intake?source=society";
+
+const lifePlanSteps = [
+  {
+    index: "01",
+    name: "Life Map",
+    line: "Tornar visível quem és, onde estás e o que já faz parte da tua vida.",
+  },
+  {
+    index: "02",
+    name: "Prioridades",
+    line: "Escolher o que merece atenção agora, sem tentar resolver tudo ao mesmo tempo.",
+  },
+  {
+    index: "03",
+    name: "Objetivos",
+    line: "Transformar direção em compromissos concretos e reconhecíveis.",
+  },
+  {
+    index: "04",
+    name: "Próximo ciclo",
+    line: "Dar um horizonte ao trabalho e criar espaço para rever o caminho.",
+  },
+  {
+    index: "05",
+    name: "Próximo passo",
+    line: "Sair com uma ação clara: o que acontece, quem assume e quando começa.",
+  },
+];
 
 const stages = [
   {
@@ -89,541 +128,705 @@ function Arrow() {
   return <span aria-hidden="true">↗</span>;
 }
 
+function LifePlanSignal({ className = "" }: { className?: string }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`relative isolate overflow-hidden border border-white/10 bg-[#080808] ${className}`}
+    >
+      <div
+        className="absolute inset-0 opacity-20"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,.16) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.16) 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+        }}
+      />
+      <div className="absolute -right-28 top-[14%] h-80 w-80 rounded-full border border-white/10" />
+      <div className="absolute -right-10 top-[22%] h-56 w-56 rounded-full border border-white/15" />
+      <div className="relative flex h-full flex-col justify-between p-7 sm:p-10 lg:p-12">
+        <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-[0.22em] text-white/40">
+          <span>Life Map</span>
+          <span>01 — 05</span>
+        </div>
+
+        <div className="my-8 flex flex-1 items-center justify-center">
+          <div className="relative grid aspect-square w-[min(72%,290px)] place-items-center rounded-full border border-white/25">
+            <div className="absolute inset-[13%] rounded-full border border-white/15" />
+            <div className="absolute inset-[27%] rounded-full border border-white/20" />
+            <div className="relative text-center">
+              <p className="text-[9px] font-bold uppercase tracking-[0.24em] text-white/40">
+                Direção
+              </p>
+              <p className="mt-2 font-barlow text-3xl font-black uppercase tracking-[-0.03em]">
+                Life Plan
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div className="grid grid-cols-3 gap-px bg-white/15">
+            {pillars.map((pillar, index) => (
+              <div key={pillar} className="bg-black/90 px-3 py-4">
+                <p className="text-[8px] font-bold uppercase tracking-[0.16em] text-white/30">
+                  0{index + 1}
+                </p>
+                <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.1em] text-white/70">
+                  {pillar}
+                </p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 flex items-center justify-between border-t border-white/20 pt-5">
+            <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-white/45">
+              Próximo passo
+            </span>
+            <span className="text-2xl text-white/70">→</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SocietyPage() {
   return (
     <div className="min-h-screen bg-black text-white selection:bg-wepac-gray selection:text-black">
       <SocietyHeader />
       <main>
-      <section className="relative isolate min-h-[860px] overflow-hidden border-b border-white/10 px-5 pb-20 pt-32 sm:px-8 lg:min-h-screen lg:px-12 lg:pb-24 lg:pt-40">
-        <div className="absolute inset-0 -z-20 bg-black" />
-        <div className="absolute inset-y-0 right-0 -z-10 hidden w-[47%] lg:block">
-          <Image
-            src="/images/wessex/features.jpg"
-            alt=""
-            fill
-            priority
-            sizes="47vw"
-            className="object-cover object-[50%_44%] opacity-80"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-black/5" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/30" />
-        </div>
-
-        <div className="mx-auto grid min-h-[680px] max-w-[1440px] items-end gap-16 lg:grid-cols-[1.2fr_0.8fr]">
-          <FadeIn>
-            <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/50">
-              WEPAC Society · Carcavelos
-            </p>
-            <h1 className="mt-8 max-w-5xl text-balance font-barlow text-[clamp(3.6rem,8.2vw,8.6rem)] font-black uppercase leading-[0.82] tracking-[-0.035em] text-white">
-              Uma vida inteira em caminho.
-            </h1>
-            <p className="mt-10 max-w-2xl text-balance text-lg leading-relaxed text-white/65 sm:text-xl">
-              A casa comum de pessoas, famílias e organizações que escolhem carregar o que lhes
-              cabe — e entregar valor aos outros.
-            </p>
-            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/wepacker/intake"
-                className="inline-flex min-h-14 items-center justify-center bg-white px-7 text-xs font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-wepac-gray"
-              >
-                Encontrar o ponto de partida
-              </Link>
-              <Link
-                href="/wepacker/login"
-                className="inline-flex min-h-14 items-center justify-center border border-white/30 px-7 text-xs font-bold uppercase tracking-[0.18em] text-white transition-colors hover:border-white hover:bg-white hover:text-black"
-              >
-                Abrir Backpack
-              </Link>
-            </div>
-          </FadeIn>
-
-          <div className="relative aspect-[4/5] overflow-hidden border border-white/10 lg:hidden">
-            <Image
-              src="/images/wessex/features.jpg"
-              alt="Violoncelista em atuação"
-              fill
-              priority
-              sizes="(max-width: 1023px) 100vw, 1px"
-              className="object-cover object-[50%_44%]"
-            />
+        <section className="relative isolate min-h-[860px] overflow-hidden border-b border-white/10 px-5 pb-20 pt-32 sm:px-8 lg:min-h-screen lg:px-12 lg:pb-24 lg:pt-40">
+          <div className="absolute inset-0 -z-20 bg-black" />
+          <div className="absolute inset-y-0 right-0 -z-10 hidden w-[47%] lg:block">
+            <LifePlanSignal className="h-full border-y-0 border-r-0" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-black/5" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/30" />
           </div>
-        </div>
-      </section>
 
-      <section className="border-b border-white/10 bg-wepac-gray px-5 py-20 text-black sm:px-8 lg:px-12 lg:py-28">
-        <div className="mx-auto max-w-[1440px]">
-          <FadeIn className="grid gap-12 lg:grid-cols-[0.7fr_1.3fr] lg:items-end">
-            <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-black/50">
-              A ideia inteira
-            </p>
-            <p className="text-balance font-barlow text-4xl font-black uppercase leading-[0.95] tracking-[-0.035em] sm:text-6xl lg:text-7xl">
-              Uma cosmovisão.
-              <br />
-              Três stages.
-              <br />
-              Um caminho.
-            </p>
-          </FadeIn>
-          <div className="mt-16 grid border-y border-black/15 sm:grid-cols-3">
-            {[
-              ["01", "Pessoa inteira", "Não somos departamentos: somos uma vida vista de seis ângulos."],
-              ["03", "Stages", "A mesma metodologia, calibrada do nascimento ao legado."],
-              ["06", "Pilares", "Físico, emocional, carácter, espiritual, intelectual e social."],
-            ].map(([number, title, line]) => (
-              <div key={number} className="border-b border-black/15 py-8 sm:border-b-0 sm:border-r sm:px-8 sm:first:pl-0 sm:last:border-r-0">
-                <p className="font-barlow text-5xl font-black tracking-[-0.04em]">{number}</p>
-                <h2 className="mt-5 font-barlow text-xl font-bold uppercase">{title}</h2>
-                <p className="mt-3 max-w-sm text-sm leading-relaxed text-black/65">{line}</p>
+          <div className="mx-auto grid min-h-[680px] max-w-[1440px] items-end gap-16 lg:grid-cols-[1.2fr_0.8fr]">
+            <FadeIn>
+              <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/50">
+                WEPAC Society · Carcavelos
+              </p>
+              <h1 className="mt-8 max-w-5xl text-balance font-barlow text-[clamp(3.6rem,8.2vw,8.6rem)] font-black uppercase leading-[0.82] tracking-[-0.035em] text-white">
+                From packers to WEPACkers.
+              </h1>
+              <p className="mt-10 max-w-2xl text-balance font-barlow text-2xl font-bold uppercase leading-tight text-white sm:text-3xl">
+                Educação para uma vida inteira.
+              </p>
+              <p className="mt-5 max-w-2xl text-balance text-lg leading-relaxed text-white/65 sm:text-xl">
+                Ajudamos pessoas e famílias a perceber onde estão, escolher para onde querem ir
+                e transformar essa direção em próximos passos. Tudo começa no Life Plan.
+              </p>
+              <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <Link
+                  href={intakeHref}
+                  className="inline-flex min-h-14 items-center justify-center bg-white px-7 text-xs font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-wepac-gray"
+                >
+                  Começar o meu Life Plan
+                </Link>
+                <Link
+                  href="#life-plan"
+                  className="inline-flex min-h-14 items-center justify-center border border-white/30 px-7 text-xs font-bold uppercase tracking-[0.18em] text-white transition-colors hover:border-white hover:bg-white hover:text-black"
+                >
+                  Ver como funciona
+                </Link>
+                <Link
+                  href="/wepacker/login"
+                  className="inline-flex min-h-14 items-center justify-center px-4 text-xs font-bold uppercase tracking-[0.18em] text-white/65 transition-colors hover:text-white"
+                >
+                  Abrir Backpack <span className="ml-2" aria-hidden="true">→</span>
+                </Link>
               </div>
-            ))}
+            </FadeIn>
+
+            <LifePlanSignal className="aspect-[4/5] lg:hidden" />
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section id="society" className="scroll-mt-20 border-b border-white/10 px-5 py-24 sm:px-8 lg:px-12 lg:py-36">
-        <div className="mx-auto grid max-w-[1440px] gap-16 lg:grid-cols-[0.9fr_1.1fr] lg:gap-24">
-          <FadeIn>
-            <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">
-              O WE faz a diferença
-            </p>
-            <h2 className="mt-7 text-balance font-barlow text-5xl font-black uppercase leading-[0.9] tracking-[-0.04em] sm:text-7xl">
-              From packers
-              <br />
-              to WEPACkers.
-            </h2>
-          </FadeIn>
-          <FadeIn delay={0.1} className="lg:pt-16">
-            <p className="text-balance text-2xl leading-snug text-white sm:text-3xl">
-              Sozinho, és um packer: carregas o teu próprio peso. Quando acrescentas o WE —
-              a comunidade — tornas-te WEPACker.
-            </p>
-            <div className="mt-10 space-y-5 text-base leading-relaxed text-white/60">
-              <p>
-                A Society é o pack alargado. Não uma membership, um catálogo de atividades ou
-                uma promessa de acesso: uma casa onde pertença se prova em proximidade, exigência
-                e verdade.
+        <section className="border-b border-black/15 bg-wepac-gray px-5 py-20 text-black sm:px-8 lg:px-12 lg:py-28">
+          <div className="mx-auto max-w-[1440px]">
+            <FadeIn className="grid gap-12 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
+              <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-black/50">
+                A proposta
               </p>
-              <p>
-                Cada pessoa mantém responsabilidade própria. Ninguém é deixado a caminhar sem
-                base, linguagem ou companhia.
-              </p>
+              <div>
+                <h2 className="text-balance font-barlow text-4xl font-black uppercase leading-[0.95] tracking-[-0.035em] sm:text-6xl lg:text-7xl">
+                  Uma vida não se constrói por departamentos.
+                </h2>
+                <p className="mt-8 max-w-3xl text-lg leading-relaxed text-black/65">
+                  A vida acontece ao mesmo tempo no corpo, nas relações, no carácter, no
+                  sentido, na aprendizagem e na comunidade. A WEPAC junta essas dimensões num
+                  caminho educativo adaptado a cada pessoa e a cada fase da vida.
+                </p>
+              </div>
+            </FadeIn>
+
+            <div className="mt-16 grid grid-cols-2 gap-px bg-black/15 sm:grid-cols-3 lg:grid-cols-6">
+              {pillars.map((pillar, index) => (
+                <FadeIn
+                  key={pillar}
+                  delay={index * 0.04}
+                  className="bg-wepac-gray px-5 py-7"
+                >
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/35">
+                    0{index + 1}
+                  </p>
+                  <p className="mt-5 font-barlow text-lg font-bold uppercase">{pillar}</p>
+                </FadeIn>
+              ))}
             </div>
-          </FadeIn>
-        </div>
-      </section>
+          </div>
+        </section>
 
-      <section className="border-b border-white/10 bg-[#080808] px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
-        <div className="mx-auto max-w-[1440px]">
-          <FadeIn className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <div>
+        <section
+          id="life-plan"
+          className="scroll-mt-20 border-b border-white/10 px-5 py-24 sm:px-8 lg:px-12 lg:py-36"
+        >
+          <div className="mx-auto max-w-[1440px]">
+            <FadeIn className="grid gap-12 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">
+                  A porta de entrada
+                </p>
+                <h2 className="mt-6 font-barlow text-5xl font-black uppercase leading-[0.9] tracking-[-0.04em] sm:text-7xl">
+                  Tudo começa
+                  <br />
+                  no Life Plan.
+                </h2>
+              </div>
+              <div>
+                <p className="max-w-3xl text-balance text-2xl leading-snug text-white sm:text-3xl">
+                  Onde estás. Para onde vais. O que fazes a seguir.
+                </p>
+                <p className="mt-7 max-w-2xl leading-relaxed text-white/60">
+                  O Life Plan — Projeto de Plano de Vida — transforma reflexão em direção,
+                  compromissos e ação. Não é um teste nem uma resposta feita por outra pessoa:
+                  é um caminho construído a partir da tua vida.
+                </p>
+              </div>
+            </FadeIn>
+
+            <div className="mt-16 grid gap-px bg-white/15 md:grid-cols-5">
+              {lifePlanSteps.map((step, index) => (
+                <FadeIn
+                  key={step.name}
+                  delay={index * 0.05}
+                  className="flex min-h-[310px] flex-col bg-black p-7"
+                >
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/35">
+                    {step.index}
+                  </p>
+                  <h3 className="mt-12 font-barlow text-2xl font-black uppercase tracking-[-0.025em]">
+                    {step.name}
+                  </h3>
+                  <p className="mt-5 flex-1 text-sm leading-relaxed text-white/60">{step.line}</p>
+                  {index < lifePlanSteps.length - 1 && (
+                    <p className="mt-8 text-xl text-white/25" aria-hidden="true">→</p>
+                  )}
+                </FadeIn>
+              ))}
+            </div>
+
+            <FadeIn className="mt-12 flex flex-col gap-5 border-t border-white/15 pt-10 sm:flex-row sm:items-center sm:justify-between">
+              <p className="max-w-2xl text-sm leading-relaxed text-white/55">
+                O ponto de partida é uma conversa com contexto. Explicamos o processo e o passo
+                seguinte antes de qualquer compromisso.
+              </p>
+              <Link
+                href={intakeHref}
+                className="inline-flex min-h-14 shrink-0 items-center justify-center bg-white px-7 text-xs font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-wepac-gray"
+              >
+                Começar o meu Life Plan
+              </Link>
+            </FadeIn>
+          </div>
+        </section>
+
+        <section className="border-b border-white/10 bg-[#080808] px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
+          <div className="mx-auto grid max-w-[1440px] gap-16 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+            <FadeIn>
+              <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">
+                Famílias
+              </p>
+              <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[0.9] tracking-[-0.045em] sm:text-7xl">
+                O caminho começa em casa.
+              </h2>
+              <p className="mt-8 max-w-xl text-lg leading-relaxed text-white/65">
+                Cada pessoa tem o seu caminho. Uma família pode criar linguagem comum,
+                prioridades e compromissos sem apagar a individualidade de pais e filhos.
+              </p>
+              <p className="mt-6 max-w-xl leading-relaxed text-white/55">
+                O Life Plan pode ajudar em momentos de escolha, adolescência, autonomia,
+                reorganização familiar ou mudança profissional — quando é preciso voltar a
+                perceber onde estamos e o que fazemos a seguir.
+              </p>
+              <Link
+                href="/society/familias"
+                className="mt-9 inline-flex items-center gap-2 border-b border-white pb-2 text-xs font-bold uppercase tracking-[0.18em]"
+              >
+                Conhecer o Life Plan para famílias <Arrow />
+              </Link>
+            </FadeIn>
+
+            <FadeIn delay={0.1} className="relative min-h-[560px] overflow-hidden">
+              <Image
+                src="/images/society/easy-peasy.jpg"
+                alt="Criança a tocar violino com acompanhamento próximo"
+                fill
+                sizes="(max-width: 1023px) 100vw, 54vw"
+                className="origin-top scale-[2] object-cover object-top lg:scale-[1.2]"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />
+              <p className="absolute inset-x-0 bottom-0 p-7 font-barlow text-2xl font-black uppercase sm:p-10 sm:text-3xl">
+                A primeira equipa de uma pessoa pode ser a família.
+              </p>
+            </FadeIn>
+          </div>
+        </section>
+
+        <section
+          id="caminho"
+          className="scroll-mt-20 border-b border-white/10 px-5 py-24 sm:px-8 lg:px-12 lg:py-32"
+        >
+          <div className="mx-auto max-w-[1440px]">
+            <FadeIn className="grid gap-10 lg:grid-cols-[0.78fr_1.22fr]">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">
+                  WEPAC Academy
+                </p>
+                <h2 className="mt-6 font-barlow text-5xl font-black uppercase leading-[0.9] tracking-[-0.04em] sm:text-7xl">
+                  Do 0 ao infinito — e mais além.
+                </h2>
+              </div>
+              <div className="self-end">
+                <p className="max-w-2xl text-xl leading-relaxed text-white/75">
+                  Um caminho educativo que cresce contigo.
+                </p>
+                <p className="mt-5 max-w-2xl leading-relaxed text-white/55">
+                  A mesma visão integral atravessa as idades. Mudam a linguagem, as experiências
+                  e a responsabilidade; a pessoa inteira continua sempre à vista.
+                </p>
+              </div>
+            </FadeIn>
+
+            <div className="mt-16 border-t border-white/15">
+              {stages.map((stage, index) => (
+                <FadeIn
+                  key={stage.name}
+                  delay={index * 0.06}
+                  className="grid gap-6 border-b border-white/15 py-9 sm:grid-cols-[0.35fr_0.8fr_0.8fr_1.4fr]"
+                >
+                  <p className="font-barlow text-4xl font-black tracking-[-0.04em] text-white/35">
+                    {stage.range}
+                  </p>
+                  <div>
+                    <p className="font-barlow text-2xl font-bold uppercase">{stage.name}</p>
+                    <p className="mt-1 text-xs uppercase tracking-[0.2em] text-white/45">
+                      {stage.state}
+                    </p>
+                  </div>
+                  <p className="font-barlow text-2xl font-black uppercase text-wepac-gray">
+                    {stage.movement}
+                  </p>
+                  <p className="max-w-xl leading-relaxed text-white/60">{stage.line}</p>
+                </FadeIn>
+              ))}
+            </div>
+
+            <FadeIn className="mt-10">
+              <Link
+                href="/academy"
+                className="inline-flex items-center gap-2 border-b border-white pb-2 text-xs font-bold uppercase tracking-[0.18em]"
+              >
+                Conhecer a Academy <Arrow />
+              </Link>
+            </FadeIn>
+          </div>
+        </section>
+
+        <section className="border-b border-white/10 bg-[#080808] px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
+          <div className="mx-auto max-w-[1440px]">
+            <FadeIn>
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">
                 Duas casas. A mesma obra.
               </p>
               <h2 className="mt-6 max-w-4xl text-balance font-barlow text-4xl font-black uppercase leading-[0.95] tracking-[-0.035em] sm:text-6xl">
                 Educação que dá caminho. Cultura que o põe à prova.
               </h2>
-            </div>
-          </FadeIn>
+            </FadeIn>
 
-          <div className="mt-16 grid gap-px bg-white/15 lg:grid-cols-2">
-            <Link href="/academy" className="group relative min-h-[620px] overflow-hidden bg-black">
-              <div className="absolute inset-x-0 top-[-28%] h-[225%] origin-top transition duration-700 group-hover:scale-[1.025]">
+            <div className="mt-16 grid gap-px bg-white/15 lg:grid-cols-2">
+              <Link href="/academy" className="group relative min-h-[620px] overflow-hidden bg-black">
+                <div className="absolute inset-x-0 top-0 h-[185%] origin-top transition duration-700 group-hover:scale-[1.025]">
+                  <Image
+                    src="/images/society/easy-peasy.jpg"
+                    alt="Criança a tocar violino numa aula Easy Peasy"
+                    fill
+                    sizes="(max-width: 1023px) 100vw, 50vw"
+                    className="object-cover object-top"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-7 sm:p-10">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/60">
+                    Discovery · Build · Transform
+                  </p>
+                  <h3 className="mt-4 font-barlow text-4xl font-black uppercase tracking-[-0.03em] sm:text-5xl">
+                    WEPAC Academy
+                  </h3>
+                  <p className="mt-4 max-w-lg leading-relaxed text-white/70">
+                    Easy Peasy, Step Up e YUP: educação para uma vida inteira.
+                  </p>
+                  <span className="mt-7 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em]">
+                    Conhecer a Academy <Arrow />
+                  </span>
+                </div>
+              </Link>
+
+              <div className="group relative min-h-[620px] overflow-hidden bg-black">
                 <Image
-                  src="/images/society/easy-peasy.jpg"
-                  alt="Criança a tocar violino numa aula Easy Peasy"
+                  src="/images/arte-a-capela/hero.jpg"
+                  alt="Interior de uma igreja histórica"
                   fill
                   sizes="(max-width: 1023px) 100vw, 50vw"
-                  className="object-cover object-top"
+                  className="object-cover object-center transition duration-700 group-hover:scale-[1.025]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/25 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-7 sm:p-10">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/60">
+                    Criação · Produção · Programação
+                  </p>
+                  <h3 className="mt-4 font-barlow text-4xl font-black uppercase tracking-[-0.03em] sm:text-5xl">
+                    Companhia de Artes
+                  </h3>
+                  <p className="mt-4 max-w-lg leading-relaxed text-white/70">
+                    Wessex e Arte à Capela: duas marcas com porta própria e uma régua comum.
+                  </p>
+                  <div className="mt-7 flex flex-wrap gap-x-7 gap-y-3">
+                    <Link
+                      href="/wessex"
+                      className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em]"
+                    >
+                      Entrar na Wessex <Arrow />
+                    </Link>
+                    <Link
+                      href="/arte-a-capela"
+                      className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em]"
+                    >
+                      Ver Arte à Capela <Arrow />
+                    </Link>
+                    <Link
+                      href="/companhia-de-artes"
+                      className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-white/65"
+                    >
+                      Conhecer a Companhia <Arrow />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="plataformas"
+          className="scroll-mt-20 border-b border-black/15 bg-white px-5 py-24 text-black sm:px-8 lg:px-12 lg:py-32"
+        >
+          <div className="mx-auto max-w-[1440px]">
+            <div className="grid gap-16 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+              <FadeIn>
+              <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-black/45">
+                Depois do Life Plan
+              </p>
+              <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[0.9] tracking-[-0.045em] sm:text-7xl">
+                A direção fica viva no Backpack.
+              </h2>
+              <p className="mt-8 max-w-xl text-lg leading-relaxed text-black/65">
+                WEPACKER é a plataforma pessoal. O Backpack é o espaço onde o Life Map, o
+                planeamento, os Trails, as Actions e as Sessions podem acompanhar o percurso da
+                mesma pessoa.
+              </p>
+              <p className="mt-6 max-w-xl leading-relaxed text-black/55">
+                O Life Plan dá direção. Depois dele, estão disponíveis modalidades de continuidade
+                por subscrição. O formato, as condições e o enquadramento são explicados antes de
+                qualquer adesão. Uma subscrição não é um Pack.
+              </p>
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/wepacker/login"
+                  className="inline-flex min-h-14 items-center justify-center bg-black px-7 text-xs font-bold uppercase tracking-[0.18em] text-white transition-colors hover:bg-black/80"
+                >
+                  Abrir Backpack
+                </Link>
+                <Link
+                  href={intakeHref}
+                  className="inline-flex min-h-14 items-center justify-center border border-black/25 px-7 text-xs font-bold uppercase tracking-[0.18em] transition-colors hover:border-black hover:bg-black hover:text-white"
+                >
+                  Começar pelo Life Plan
+                </Link>
+              </div>
+              </FadeIn>
+
+              <FadeIn delay={0.1}>
+                <div className="border border-black/15 bg-[#f4f4f1] p-4 shadow-[0_30px_90px_rgba(0,0,0,0.18)] sm:p-6">
+                  <div className="flex items-center justify-between border-b border-black/10 pb-5">
+                    <Image
+                      src="/logo/email/wepacker-lockup-black.png"
+                      alt="WEPACKER"
+                      width={180}
+                      height={90}
+                      className="h-9 w-auto"
+                    />
+                    <span className="rounded-full border border-black/15 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.16em]">
+                      My Journey
+                    </span>
+                  </div>
+                  <div className="mt-5 grid gap-4 sm:grid-cols-[1.3fr_0.7fr]">
+                    <div className="bg-black p-6 text-white">
+                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/45">
+                        Basecamp
+                      </p>
+                      <p className="mt-10 font-barlow text-3xl font-black uppercase">
+                        Para onde devo ir?
+                      </p>
+                      <div className="mt-8 h-1.5 overflow-hidden bg-white/15">
+                        <div className="h-full w-[62%] bg-wepac-gray" />
+                      </div>
+                      <p className="mt-3 text-xs text-white/50">Life Map · em movimento</p>
+                    </div>
+                    <div className="grid gap-4">
+                      {["Trails", "Actions", "Sessions"].map((label, index) => (
+                        <div key={label} className="border border-black/10 bg-white p-4">
+                          <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-black/40">
+                            0{index + 1}
+                          </p>
+                          <p className="mt-4 font-barlow text-lg font-bold uppercase">{label}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <Link
+                  href="/bilheteira"
+                  className="mt-6 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.17em] text-black/60 hover:text-black"
+                >
+                  A obra pública vive na Bilheteira <Arrow />
+                </Link>
+              </FadeIn>
+            </div>
+
+            <div className="mt-20 grid gap-px bg-black/15 lg:grid-cols-3">
+              {[
+                {
+                  index: "01",
+                  state: "Aberto",
+                  name: "Life Plan",
+                  line: "A porta de entrada para perceber onde estás, escolher direção e definir o próximo passo.",
+                  href: intakeHref,
+                  cta: "Começar o meu Life Plan",
+                },
+                {
+                  index: "02",
+                  state: "Para WEPACkers",
+                  name: "Backpack",
+                  line: "O espaço pessoal onde o caminho, os compromissos e a evidência ficam ligados à mesma pessoa.",
+                  href: "/wepacker/login",
+                  cta: "Abrir Backpack",
+                },
+                {
+                  index: "03",
+                  state: "Subscrição disponível",
+                  name: "Upgraded Backpack",
+                  line: "Continuidade por subscrição depois do Life Plan, com condições e enquadramento explicados antes da adesão.",
+                  href: "/wepacker/intake?source=upgraded-backpack",
+                  cta: "Começar pelo Life Plan",
+                },
+              ].map((item) => (
+                <FadeIn
+                  key={item.name}
+                  className="flex min-h-[360px] flex-col bg-white p-7 sm:p-9"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-barlow text-4xl font-black text-black/20">
+                      {item.index}
+                    </span>
+                    <span className="border border-black/15 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.18em] text-black/55">
+                      {item.state}
+                    </span>
+                  </div>
+                  <h3 className="mt-14 font-barlow text-3xl font-black uppercase tracking-[-0.025em]">
+                    {item.name}
+                  </h3>
+                  <p className="mt-5 flex-1 leading-relaxed text-black/60">{item.line}</p>
+                  <Link
+                    href={item.href}
+                    className="mt-8 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.17em] text-black"
+                  >
+                    {item.cta} <span aria-hidden="true">→</span>
+                  </Link>
+                </FadeIn>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="border-b border-white/10 px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
+          <div className="mx-auto grid max-w-[1440px] gap-16 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+            <FadeIn className="relative aspect-square overflow-hidden">
+              <div className="absolute left-1/2 top-[-69%] h-[206%] w-[206%] -translate-x-1/2">
+                <Image
+                  src="/images/society/alex-florindo.jpg"
+                  alt="Atleta WEPACker com medalhas"
+                  fill
+                  sizes="(max-width: 1023px) 206vw, 92vw"
+                  className="object-cover"
                 />
               </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-7 sm:p-10">
-                <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/60">
-                  Discovery · Build · Transform
-                </p>
-                <h3 className="mt-4 font-barlow text-4xl font-black uppercase tracking-[-0.03em] sm:text-5xl">
-                  WEPAC Academy
-                </h3>
-                <p className="mt-4 max-w-lg leading-relaxed text-white/70">
-                  Easy Peasy, Step Up e YUP: o caminho educativo dos 0 ao infinito.
-                </p>
-                <span className="mt-7 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em]">
-                  Conhecer a Academy <Arrow />
-                </span>
-              </div>
-            </Link>
-
-            <Link
-              href="/companhia-de-artes"
-              className="group relative min-h-[620px] overflow-hidden bg-black"
-            >
-              <Image
-                src="/images/arte-a-capela/hero.jpg"
-                alt="Interior de uma igreja histórica"
-                fill
-                sizes="(max-width: 1023px) 100vw, 50vw"
-                className="object-cover object-center transition duration-700 group-hover:scale-[1.025]"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/25 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-7 sm:p-10">
-                <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/60">
-                  Criação · Produção · Programação
-                </p>
-                <h3 className="mt-4 font-barlow text-4xl font-black uppercase tracking-[-0.03em] sm:text-5xl">
-                  Companhia de Artes
-                </h3>
-                <p className="mt-4 max-w-lg leading-relaxed text-white/70">
-                  Wessex e Arte à Capela: duas marcas com porta própria e uma régua comum.
-                </p>
-                <span className="mt-7 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em]">
-                  Entrar na Companhia <Arrow />
-                </span>
-              </div>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section id="caminho" className="scroll-mt-20 border-b border-white/10 px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
-        <div className="mx-auto max-w-[1440px]">
-          <FadeIn className="grid gap-10 lg:grid-cols-[0.75fr_1.25fr]">
-            <div>
+            </FadeIn>
+            <FadeIn delay={0.1}>
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">
-                Uma vida inteira
+                Prova com o tamanho certo
+              </p>
+              <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">
+                Medido, não anunciado.
+              </h2>
+              <p className="mt-8 text-xl leading-relaxed text-white/75">
+                Concertos, formação e famílias já são obra visitável. O método completo num
+                adulto tem hoje um primeiro caso real — um, não mil.
+              </p>
+              <p className="mt-6 leading-relaxed text-white/55">
+                O resto é hipótese honesta em teste. Visão dita como visão, piloto dito como
+                piloto, prova dita como prova. Não pedimos que acreditem em nós. Pedimos que nos
+                meçam.
+              </p>
+              <Link
+                href="/artist"
+                className="mt-9 inline-flex items-center gap-2 border-b border-white pb-2 text-xs font-bold uppercase tracking-[0.18em]"
+              >
+                Conhecer o primeiro caso <span aria-hidden="true">→</span>
+              </Link>
+            </FadeIn>
+          </div>
+        </section>
+
+        <section className="border-b border-white/10 bg-[#080808] px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
+          <div className="mx-auto grid max-w-[1440px] gap-16 lg:grid-cols-[0.7fr_1.3fr]">
+            <FadeIn>
+              <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">
+                Pack é comunidade
               </p>
               <h2 className="mt-6 font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">
-                O caminho muda.
+                Não é plano.
                 <br />
-                A pessoa não acaba.
+                Não é pacote.
               </h2>
-            </div>
-            <p className="max-w-2xl self-end text-lg leading-relaxed text-white/60">
-              A mesma metodologia atravessa as idades. O imaginário e a responsabilidade mudam;
-              as seis dimensões da pessoa continuam sempre à vista.
-            </p>
-          </FadeIn>
+              <p className="mt-8 max-w-lg leading-relaxed text-white/60">
+                Cada nome representa uma comunidade em construção, não uma subscrição. Um Pack
+                só existe quando há pessoas que reconhecem que pertencem, responsáveis,
+                calendário e obra comum.
+              </p>
+            </FadeIn>
 
-          <div className="mt-16 border-t border-white/15">
-            {stages.map((stage, index) => (
-              <FadeIn
-                key={stage.name}
-                delay={index * 0.06}
-                className="grid gap-6 border-b border-white/15 py-9 sm:grid-cols-[0.35fr_0.8fr_0.8fr_1.4fr]"
-              >
-                <p className="font-barlow text-4xl font-black tracking-[-0.04em] text-white/35">
-                  {stage.range}
-                </p>
-                <div>
-                  <p className="font-barlow text-2xl font-bold uppercase">{stage.name}</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.2em] text-white/45">
-                    {stage.state}
+            <div className="grid gap-px bg-white/15 sm:grid-cols-2">
+              {packs.map((pack, index) => (
+                <FadeIn
+                  key={pack.name}
+                  delay={index * 0.05}
+                  className="min-h-[260px] bg-black p-7 sm:p-9"
+                >
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/35">
+                    Comunidade em desenho · 0{index + 1}
                   </p>
+                  <h3 className="mt-10 font-barlow text-3xl font-black uppercase">
+                    Pack {pack.name}
+                  </h3>
+                  <p className="mt-5 max-w-md leading-relaxed text-white/60">{pack.line}</p>
+                </FadeIn>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="mission"
+          className="scroll-mt-20 border-b border-white/10 bg-wepac-gray px-5 py-24 text-black sm:px-8 lg:px-12 lg:py-32"
+        >
+          <div className="mx-auto max-w-[1440px]">
+            <FadeIn className="grid gap-14 lg:grid-cols-[0.75fr_1.25fr]">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-black/45">
+                  WEPAC Mission
+                </p>
+                <h2 className="mt-6 font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">
+                  A porta não pode ter o tamanho da carteira.
+                </h2>
+              </div>
+              <div className="space-y-8 lg:pt-16">
+                <p className="text-2xl leading-snug text-black/80 sm:text-3xl">
+                  A Mission é a vertente cívica da WEPAC: dádiva com destino, responsável e
+                  contas à vista.
+                </p>
+                <p className="leading-relaxed text-black/60">
+                  O primeiro concerto solidário foi um gesto real, não uma prova de escala.
+                  Bolsas, serviço e novos acessos abrem à medida da capacidade — uma porta
+                  verdadeira vale mais do que dez anunciadas.
+                </p>
+              </div>
+            </FadeIn>
+
+            <div className="mt-16 grid gap-px bg-black/15 lg:grid-cols-3">
+              {doors.map((door, index) => (
+                <div key={door.name} className="bg-wepac-gray p-7 sm:p-9">
+                  <p className="font-barlow text-4xl font-black text-black/20">0{index + 1}</p>
+                  <h3 className="mt-8 font-barlow text-2xl font-black uppercase">{door.name}</h3>
+                  <p className="mt-4 leading-relaxed text-black/60">{door.line}</p>
                 </div>
-                <p className="font-barlow text-2xl font-black uppercase text-wepac-gray">
-                  {stage.movement}
-                </p>
-                <p className="max-w-xl leading-relaxed text-white/60">{stage.line}</p>
-              </FadeIn>
-            ))}
+              ))}
+            </div>
           </div>
+        </section>
 
-          <div className="mt-12 grid grid-cols-2 gap-px bg-white/15 sm:grid-cols-3 lg:grid-cols-6">
-            {pillars.map((pillar, index) => (
-              <FadeIn
-                key={pillar}
-                delay={index * 0.04}
-                className="bg-black px-5 py-7"
-              >
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/35">
-                  0{index + 1}
-                </p>
-                <p className="mt-5 font-barlow text-lg font-bold uppercase">{pillar}</p>
-              </FadeIn>
-            ))}
+        <section className="relative isolate overflow-hidden px-5 py-28 sm:px-8 lg:px-12 lg:py-44">
+          <div className="absolute inset-0 -z-20">
+            <Image
+              src="/images/wessex/detail.jpg"
+              alt=""
+              fill
+              sizes="100vw"
+              className="object-cover object-[35%_center] opacity-25 sm:object-center"
+            />
           </div>
-        </div>
-      </section>
-
-      <section id="plataformas" className="scroll-mt-20 border-b border-black/15 bg-white px-5 py-24 text-black sm:px-8 lg:px-12 lg:py-32">
-        <div className="mx-auto grid max-w-[1440px] gap-16 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-          <FadeIn>
-            <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-black/45">
-              Plataformas
+          <div className="absolute inset-0 -z-10 bg-black/65" />
+          <FadeIn className="mx-auto max-w-5xl text-center">
+            <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/50">
+              From packers to WEPACkers
             </p>
-            <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[0.9] tracking-[-0.045em] sm:text-7xl">
-              O caminho cabe no teu Backpack.
+            <h2 className="mt-8 text-balance font-barlow text-5xl font-black uppercase leading-[0.88] tracking-[-0.045em] sm:text-7xl lg:text-8xl">
+              A mochila é tua.
+              <br />
+              O trilho faz-se em grupo.
             </h2>
-            <p className="mt-8 max-w-xl text-lg leading-relaxed text-black/65">
-              WEPACKER é a plataforma pessoal. O Backpack é o teu espaço: Life Map, Basecamp,
-              Trails, Actions, Sessions e relações de Mentorship. A Bilheteira põe a obra pública
-              em circulação — agenda, reserva e acesso no mesmo ecossistema.
+            <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-white/65">
+              O Life Plan dá-te um ponto de partida. O caminho continua à medida da tua vida,
+              com direção, responsabilidade e pessoas por perto.
             </p>
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
+              <Link
+                href={intakeHref}
+                className="inline-flex min-h-14 items-center justify-center bg-white px-7 text-xs font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-wepac-gray"
+              >
+                Começar o meu Life Plan
+              </Link>
               <Link
                 href="/wepacker/login"
-                className="inline-flex min-h-14 items-center justify-center bg-black px-7 text-xs font-bold uppercase tracking-[0.18em] text-white transition-colors hover:bg-black/80"
+                className="inline-flex min-h-14 items-center justify-center border border-white/30 px-7 text-xs font-bold uppercase tracking-[0.18em] transition-colors hover:border-white hover:bg-white hover:text-black"
               >
                 Abrir Backpack
               </Link>
-              <Link
-                href="/bilheteira"
-                className="inline-flex min-h-14 items-center justify-center border border-black/25 px-7 text-xs font-bold uppercase tracking-[0.18em] transition-colors hover:border-black hover:bg-black hover:text-white"
-              >
-                Abrir Bilheteira
-              </Link>
             </div>
           </FadeIn>
-
-          <FadeIn delay={0.1}>
-            <div className="border border-black/15 bg-[#f4f4f1] p-4 shadow-[0_30px_90px_rgba(0,0,0,0.18)] sm:p-6">
-              <div className="flex items-center justify-between border-b border-black/10 pb-5">
-                <Image
-                  src="/logo/email/wepacker-lockup-black.png"
-                  alt="WEPACKER"
-                  width={180}
-                  height={90}
-                  className="h-9 w-auto"
-                />
-                <span className="rounded-full border border-black/15 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.16em]">
-                  My Journey
-                </span>
-              </div>
-              <div className="mt-5 grid gap-4 sm:grid-cols-[1.3fr_0.7fr]">
-                <div className="bg-black p-6 text-white">
-                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/45">
-                    Basecamp
-                  </p>
-                  <p className="mt-10 font-barlow text-3xl font-black uppercase">
-                    Para onde devo ir?
-                  </p>
-                  <div className="mt-8 h-1.5 overflow-hidden bg-white/15">
-                    <div className="h-full w-[62%] bg-wepac-gray" />
-                  </div>
-                  <p className="mt-3 text-xs text-white/50">Life Map · em movimento</p>
-                </div>
-                <div className="grid gap-4">
-                  {["Trails", "Actions", "Sessions"].map((label, index) => (
-                    <div key={label} className="border border-black/10 bg-white p-4">
-                      <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-black/40">
-                        0{index + 1}
-                      </p>
-                      <p className="mt-4 font-barlow text-lg font-bold uppercase">{label}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </FadeIn>
-        </div>
-      </section>
-
-      <section className="border-b border-white/10 px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
-        <div className="mx-auto max-w-[1440px]">
-          <FadeIn>
-            <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">
-              Como se começa
-            </p>
-            <h2 className="mt-6 max-w-4xl text-balance font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">
-              Uma porta real. Sem promessas maiores do que a casa.
-            </h2>
-          </FadeIn>
-
-          <div className="mt-16 grid gap-px bg-white/15 lg:grid-cols-3">
-            {[
-              {
-                index: "01",
-                state: "Aberto",
-                name: "Ponto de Partida",
-                line: "Uma candidatura curta para percebermos quem és, onde estás e qual é o primeiro passo que conseguimos abrir.",
-                href: "/wepacker/intake",
-                cta: "Encontrar o meu ponto",
-              },
-              {
-                index: "02",
-                state: "Para WEPACkers",
-                name: "Backpack",
-                line: "O teu espaço pessoal dentro do WEPACKER. O caminho, os compromissos e a evidência ficam ligados à mesma pessoa.",
-                href: "/wepacker/login",
-                cta: "Abrir Backpack",
-              },
-              {
-                index: "03",
-                state: "Por candidatura",
-                name: "Upgraded Backpack",
-                line: "Life Plan anual, acompanhamento e materiais WEPAC quando houver capacidade e enquadramento para os cumprir a sério.",
-                href: "/wepacker/intake",
-                cta: "Manifestar interesse",
-              },
-            ].map((item) => (
-              <div key={item.name} className="flex min-h-[380px] flex-col bg-black p-7 sm:p-9">
-                <div className="flex items-center justify-between">
-                  <span className="font-barlow text-4xl font-black text-white/25">{item.index}</span>
-                  <span className="border border-white/15 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.18em] text-white/55">
-                    {item.state}
-                  </span>
-                </div>
-                <h3 className="mt-14 font-barlow text-3xl font-black uppercase tracking-[-0.025em]">
-                  {item.name}
-                </h3>
-                <p className="mt-5 flex-1 leading-relaxed text-white/60">{item.line}</p>
-                <Link
-                  href={item.href}
-                  className="mt-8 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.17em] text-white"
-                >
-                  {item.cta} <span aria-hidden="true">→</span>
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="border-b border-white/10 bg-[#080808] px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
-        <div className="mx-auto grid max-w-[1440px] gap-16 lg:grid-cols-[0.7fr_1.3fr]">
-          <FadeIn>
-            <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">
-              Pack é comunidade
-            </p>
-            <h2 className="mt-6 font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">
-              Não é plano.
-              <br />
-              Não é pacote.
-            </h2>
-            <p className="mt-8 max-w-lg leading-relaxed text-white/60">
-              Cada nome representa uma comunidade em construção, não uma subscrição. As subscrições
-              estão disponíveis, mas a porta de entrada é sempre o Life Plan — o Projeto de Plano de
-              Vida. Um pack só existe quando há pessoas, responsáveis, calendário e obra comum.
-            </p>
-          </FadeIn>
-
-          <div className="grid gap-px bg-white/15 sm:grid-cols-2">
-            {packs.map((pack, index) => (
-              <FadeIn key={pack.name} delay={index * 0.05} className="min-h-[260px] bg-black p-7 sm:p-9">
-                <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/35">
-                  Comunidade em desenho · 0{index + 1}
-                </p>
-                <h3 className="mt-10 font-barlow text-3xl font-black uppercase">Pack {pack.name}</h3>
-                <p className="mt-5 max-w-md leading-relaxed text-white/60">{pack.line}</p>
-              </FadeIn>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="border-b border-white/10 px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
-        <div className="mx-auto grid max-w-[1440px] gap-16 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-          <FadeIn className="relative aspect-square overflow-hidden">
-            <div className="absolute left-1/2 top-[-69%] h-[206%] w-[206%] -translate-x-1/2">
-              <Image
-                src="/images/society/alex-florindo.jpg"
-                alt="Atleta WEPACker com medalhas"
-                fill
-                sizes="(max-width: 1023px) 206vw, 92vw"
-                className="object-cover"
-              />
-            </div>
-          </FadeIn>
-          <FadeIn delay={0.1}>
-            <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">
-              Prova com o tamanho certo
-            </p>
-            <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">
-              Medido, não anunciado.
-            </h2>
-            <p className="mt-8 text-xl leading-relaxed text-white/75">
-              Concertos, formação e famílias já são obra visitável. O método completo num adulto
-              tem hoje um primeiro caso real — um, não mil.
-            </p>
-            <p className="mt-6 leading-relaxed text-white/55">
-              O resto é hipótese honesta em teste. Visão dita como visão, piloto dito como piloto,
-              prova dita como prova. Não pedimos que acreditem em nós. Pedimos que nos meçam.
-            </p>
-            <Link
-              href="/artist"
-              className="mt-9 inline-flex items-center gap-2 border-b border-white pb-2 text-xs font-bold uppercase tracking-[0.18em]"
-            >
-              Conhecer o primeiro caso <span aria-hidden="true">→</span>
-            </Link>
-          </FadeIn>
-        </div>
-      </section>
-
-      <section id="mission" className="scroll-mt-20 border-b border-white/10 bg-wepac-gray px-5 py-24 text-black sm:px-8 lg:px-12 lg:py-32">
-        <div className="mx-auto max-w-[1440px]">
-          <FadeIn className="grid gap-14 lg:grid-cols-[0.75fr_1.25fr]">
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-black/45">
-                WEPAC Mission
-              </p>
-              <h2 className="mt-6 font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">
-                A porta não pode ter o tamanho da carteira.
-              </h2>
-            </div>
-            <div className="space-y-8 lg:pt-16">
-              <p className="text-2xl leading-snug text-black/80 sm:text-3xl">
-                A Mission é a vertente cívica da WEPAC: dádiva com destino, responsável e contas
-                à vista.
-              </p>
-              <p className="leading-relaxed text-black/60">
-                O primeiro concerto solidário foi um gesto real, não uma prova de escala. Bolsas,
-                serviço e novos acessos abrem à medida da capacidade — uma porta verdadeira vale
-                mais do que dez anunciadas.
-              </p>
-            </div>
-          </FadeIn>
-
-          <div className="mt-16 grid gap-px bg-black/15 lg:grid-cols-3">
-            {doors.map((door, index) => (
-              <div key={door.name} className="bg-wepac-gray p-7 sm:p-9">
-                <p className="font-barlow text-4xl font-black text-black/20">0{index + 1}</p>
-                <h3 className="mt-8 font-barlow text-2xl font-black uppercase">{door.name}</h3>
-                <p className="mt-4 leading-relaxed text-black/60">{door.line}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="relative isolate overflow-hidden px-5 py-28 sm:px-8 lg:px-12 lg:py-44">
-        <div className="absolute inset-0 -z-20">
-          <Image
-            src="/images/wessex/detail.jpg"
-            alt=""
-            fill
-            sizes="100vw"
-            className="object-cover object-[35%_center] opacity-25 sm:object-center"
-          />
-        </div>
-        <div className="absolute inset-0 -z-10 bg-black/65" />
-        <FadeIn className="mx-auto max-w-5xl text-center">
-          <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/50">
-            Atelier → Casa → Aldeia
-          </p>
-          <h2 className="mt-8 text-balance font-barlow text-5xl font-black uppercase leading-[0.88] tracking-[-0.045em] sm:text-7xl lg:text-8xl">
-            A mochila é tua.
-            <br />
-            O trilho faz-se em grupo.
-          </h2>
-          <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-white/65">
-            Casa, Aldeia, cowork e coliving são horizonte — não infraestrutura anunciada. O
-            primeiro passo, esse, já pode ser teu.
-          </p>
-          <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link
-              href="/wepacker/intake"
-              className="inline-flex min-h-14 items-center justify-center bg-white px-7 text-xs font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-wepac-gray"
-            >
-              Encontrar o meu ponto de partida
-            </Link>
-            <Link
-              href="/wepacker/login"
-              className="inline-flex min-h-14 items-center justify-center border border-white/30 px-7 text-xs font-bold uppercase tracking-[0.18em] transition-colors hover:border-white hover:bg-white hover:text-black"
-            >
-              Abrir Backpack
-            </Link>
-          </div>
-        </FadeIn>
-      </section>
+        </section>
       </main>
       <SocietyFooter />
     </div>

@@ -280,24 +280,33 @@ export async function sendMentorshipAcceptedEmail({
 
 export async function sendBetaSignupConfirmationEmail(
   name: string,
-  email: string
+  email: string,
+  kind: "application" | "life-plan" = "application"
 ) {
+  const isLifePlan = kind === "life-plan";
   const bodyHtml = `
-    ${heading("Candidatura recebida.")}
+    ${heading(isLifePlan ? "Ponto de partida recebido." : "Candidatura recebida.")}
     <p style="margin:0 0 16px;">Olá ${name},</p>
     <p style="margin:0 0 16px;">
-      Recebemos a tua candidatura ao WEPACKER. A nossa equipa vai analisar
-      o teu perfil e entrar em contacto em breve.
+      ${
+        isLifePlan
+          ? "Recebemos o teu primeiro contacto para o Life Plan. A nossa equipa vai entrar em contacto para compreender contigo o ponto de partida e o próximo passo."
+          : "Recebemos a tua candidatura ao WEPACKER. A nossa equipa vai analisar o teu perfil e entrar em contacto em breve."
+      }
     </p>
-    <p style="margin:0;">Obrigado pelo interesse. Até breve.</p>
+    <p style="margin:0;">Obrigado. Até breve.</p>
   `;
 
   await transporter.sendMail({
     from: FROM,
     to: email,
-    subject: "Candidatura recebida — WEPACKER",
+    subject: isLifePlan
+      ? "Ponto de partida recebido — Life Plan"
+      : "Candidatura recebida — WEPACKER",
     html: emailShell({
-      preheader: `${name}, recebemos a tua candidatura ao WEPACKER.`,
+      preheader: isLifePlan
+        ? `${name}, recebemos o teu primeiro contacto para o Life Plan.`
+        : `${name}, recebemos a tua candidatura ao WEPACKER.`,
       logoSrc: WEPACKER_LOCKUP,
       logoAlt: "WEPACKER",
       logoWidth: 220,
@@ -310,10 +319,12 @@ export async function sendBetaSignupConfirmationEmail(
 export async function sendBetaSignupNotificationEmail(
   name: string,
   email: string,
-  artisticArea?: string | null
+  artisticArea?: string | null,
+  kind: "application" | "life-plan" = "application"
 ) {
+  const isLifePlan = kind === "life-plan";
   const bodyHtml = `
-    ${heading("Nova candidatura.")}
+    ${heading(isLifePlan ? "Novo ponto de partida Life Plan." : "Nova candidatura.")}
     <p style="margin:0 0 8px;"><strong style="color:#000000;">Nome:</strong> ${name}</p>
     <p style="margin:0 0 8px;"><strong style="color:#000000;">Email:</strong> ${email}</p>
     ${artisticArea ? `<p style="margin:0 0 8px;"><strong style="color:#000000;">Área:</strong> ${artisticArea}</p>` : ""}
@@ -323,9 +334,13 @@ export async function sendBetaSignupNotificationEmail(
   await transporter.sendMail({
     from: FROM,
     to: FROM,
-    subject: `Nova candidatura WEPACKER: ${name}`,
+    subject: isLifePlan
+      ? `Novo ponto de partida Life Plan: ${name}`
+      : `Nova candidatura WEPACKER: ${name}`,
     html: emailShell({
-      preheader: `Nova candidatura de ${name}.`,
+      preheader: isLifePlan
+        ? `Novo contacto Life Plan de ${name}.`
+        : `Nova candidatura de ${name}.`,
       logoSrc: WEPACKER_LOCKUP,
       logoAlt: "WEPACKER",
       logoWidth: 220,

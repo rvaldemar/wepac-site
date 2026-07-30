@@ -20,19 +20,29 @@ test("Society is the public entrance and keeps every existing door reachable", a
   await page.goto("/");
   await expect(page).toHaveURL(/\/society$/);
   await expect(
-    page.getByRole("heading", { level: 1, name: "Uma vida inteira em caminho." })
+    page.getByRole("heading", { level: 1, name: "From packers to WEPACkers." })
   ).toBeVisible();
+
+  const lifePlan = page
+    .getByRole("link", { name: "Começar o meu Life Plan", exact: true })
+    .first();
+  await expect(lifePlan).toHaveAttribute(
+    "href",
+    "/wepacker/intake?source=society"
+  );
 
   const backpack = page.getByRole("link", { name: "Abrir Backpack" }).first();
   await expect(backpack).toHaveAttribute("href", "/wepacker/login");
 
-  await page.getByRole("link", { name: "Plataformas", exact: true }).click();
-  await expect(page).toHaveURL(/\/society#plataformas$/);
-  const platformsTop = await page.locator("#plataformas").boundingBox();
-  expect(platformsTop?.y).toBeGreaterThanOrEqual(79);
+  await page.getByRole("link", { name: "Ver como funciona", exact: true }).click();
+  await expect(page).toHaveURL(/\/society#life-plan$/);
+  const lifePlanTop = await page.locator("#life-plan").boundingBox();
+  expect(lifePlanTop?.y).toBeGreaterThanOrEqual(79);
 
   for (const path of [
     "/society",
+    "/society/life-plan",
+    "/society/familias",
     "/academy",
     "/companhia-de-artes",
     "/wessex",
@@ -67,7 +77,7 @@ test("Society is the public entrance and keeps every existing door reachable", a
   }
 
   if (process.env.QA_SCREENSHOT_PLATFORM) {
-    await page.locator("#plataformas").scrollIntoViewIfNeeded();
+    await page.locator("#life-plan").scrollIntoViewIfNeeded();
     await page.waitForTimeout(750);
     await page.screenshot({ path: process.env.QA_SCREENSHOT_PLATFORM });
   }
@@ -80,6 +90,14 @@ test("Society navigation remains usable on mobile", async ({ page }) => {
   await page.getByRole("button", { name: "Abrir menu" }).click();
   const menu = page.getByRole("dialog", { name: "Menu de navegação" });
   await expect(menu).toBeVisible();
+  await expect(menu.getByRole("link", { name: "Life Plan", exact: true })).toHaveAttribute(
+    "href",
+    "/society/life-plan"
+  );
+  await expect(menu.getByRole("link", { name: "Famílias", exact: true })).toHaveAttribute(
+    "href",
+    "/society/familias"
+  );
   await expect(menu.getByRole("link", { name: "Academy", exact: true })).toHaveAttribute(
     "href",
     "/academy"
@@ -102,7 +120,7 @@ test("Society navigation remains usable on mobile", async ({ page }) => {
   }
 
   if (process.env.QA_SCREENSHOT_MOBILE_PLATFORM) {
-    await page.locator("#plataformas").scrollIntoViewIfNeeded();
+    await page.locator("#life-plan").scrollIntoViewIfNeeded();
     await page.waitForTimeout(750);
     await page.screenshot({ path: process.env.QA_SCREENSHOT_MOBILE_PLATFORM });
   }

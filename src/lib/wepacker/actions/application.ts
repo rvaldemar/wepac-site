@@ -10,7 +10,8 @@ import {
 import { requireAdmin } from "@/lib/wepacker/guards";
 import { VisitorRateLimiter, getVisitorIp } from "@/lib/wessex/rate-limit";
 
-// "wepacker" is the sentinel slug of the generic intake (no pack chosen).
+// "wepacker" identifies the generic Life Plan intake. It is intentionally
+// separate from every specific Discipline/offer application.
 const GENERIC_PACK_SLUG = "wepacker";
 
 // Dedicated instance: reuses the same tested VisitorRateLimiter
@@ -46,6 +47,8 @@ export async function submitApplication(data: {
   socialLinks?: string;
   motivation?: string;
 }) {
+  const isLifePlanIntake = data.packSlug === GENERIC_PACK_SLUG;
+
   // Unauthenticated public write that also fires two emails per call —
   // rate limit before doing any other work. See rate-limit.ts for the
   // windows/limits and their rationale.
@@ -53,7 +56,7 @@ export async function submitApplication(data: {
   const rateLimitResult = applicationRateLimiter.check(visitorIp);
   if (!rateLimitResult.allowed) {
     throw new Error(
-      "Já recebemos várias candidaturas tuas num curto espaço de tempo. Espera um pouco e tenta novamente."
+      "Já recebemos vários envios teus num curto espaço de tempo. Espera um pouco e tenta novamente."
     );
   }
 
@@ -80,61 +83,34 @@ export async function submitApplication(data: {
     select: { status: true, packSlug: true, notes: true },
   });
 
-  // The generic sentinel has no offer of its own to look up against, so an
-  // exact (email, "wepacker") match only ever fires for a genuine repeat
-  // generic submission. A *first* generic submission from someone who
-  // already has a specific-offer application on file is still the same
-  // repeat-application case the bug fix below targets — look for that
-  // specific row too, so the generic form doesn't quietly spin up a second,
-  // separate "wepacker" application next to it. Ties (more than one
-  // specific offer already on file) resolve to the most recent.
-  const existingSpecificForGeneric =
-    packSlug === GENERIC_PACK_SLUG && !existing
-      ? await prisma.betaSignup.findFirst({
-          where: { email, packSlug: { not: GENERIC_PACK_SLUG } },
-          select: { status: true, packSlug: true, notes: true },
-          orderBy: { createdAt: "desc" },
-        })
-      : null;
-
-  const matchedExisting = existing ?? existingSpecificForGeneric;
-
   // Bug fix: without this, a rejected/contacted candidate who applies
   // again to an offer they already applied to gets the confirmation email
   // and has their answers overwritten, yet the row keeps its old status
   // and never returns to the pending queue an admin actually looks at —
-  // the application is silently lost. Also preserve a specific pack: a
-  // later resubmission through the generic intake must not overwrite a
-  // more specific packSlug already on file.
-  let finalPackSlug = packSlug;
+  // the application is silently lost.
   let notesForUpdate: string | undefined;
   let statusForUpdate: BetaSignupStatus | undefined;
-  if (matchedExisting) {
-    if (
-      packSlug === GENERIC_PACK_SLUG &&
-      matchedExisting.packSlug !== GENERIC_PACK_SLUG
-    ) {
-      finalPackSlug = matchedExisting.packSlug;
-    }
-
+  if (existing) {
     // Not surfaced anywhere new: `notes` already renders as "Notas
     // internas" in the admin leads inbox (page-client.tsx), so this is
     // the simplest way to give an admin the reapplication history
     // without touching that screen.
-    const reapplicationNote = `[Reaplicação ${new Date().toISOString()}] Estado anterior: ${matchedExisting.status}.`;
-    notesForUpdate = matchedExisting.notes
-      ? `${matchedExisting.notes}\n${reapplicationNote}`
+    const reapplicationNote = `[Reaplicação ${new Date().toISOString()}] Estado anterior: ${existing.status}.`;
+    notesForUpdate = existing.notes
+      ? `${existing.notes}\n${reapplicationNote}`
       : reapplicationNote;
     statusForUpdate = "pending";
   }
 
   const signup = await prisma.betaSignup.upsert({
-    where: { email_packSlug: { email, packSlug: finalPackSlug } },
+    where: { email_packSlug: { email, packSlug } },
     update: {
       name,
       phone: data.phone || undefined,
-      artisticArea: data.area || undefined,
-      socialLinks: data.socialLinks || undefined,
+      artisticArea: isLifePlanIntake ? data.area?.trim() || null : data.area || undefined,
+      socialLinks: isLifePlanIntake
+        ? data.socialLinks?.trim() || null
+        : data.socialLinks || undefined,
       motivation: data.motivation || undefined,
       notes: notesForUpdate,
       status: statusForUpdate,
@@ -146,12 +122,15 @@ export async function submitApplication(data: {
       artisticArea: data.area || null,
       socialLinks: data.socialLinks || null,
       motivation: data.motivation || null,
-      packSlug: finalPackSlug,
+      packSlug,
     },
   });
 
-  sendBetaSignupConfirmationEmail(name, email).catch(console.error);
-  sendBetaSignupNotificationEmail(name, email, data.area).catch(console.error);
+  const emailKind = isLifePlanIntake ? "life-plan" : "application";
+  sendBetaSignupConfirmationEmail(name, email, emailKind).catch(console.error);
+  sendBetaSignupNotificationEmail(name, email, data.area, emailKind).catch(
+    console.error
+  );
 
   return { id: signup.id };
 }
