@@ -665,13 +665,37 @@ for _attempt in $(seq 1 30); do
 done
 sudo systemctl is-active --quiet "${SERVICE}"
 
+assert_public_response() {
+  local path_name="$1" response_code="$2" redirect_url="$3"
+  case "${path_name}" in
+    /)
+      test "${response_code}" = 308
+      case "${redirect_url}" in */society) ;; *) return 1 ;; esac
+      ;;
+    /wepacker)
+      test "${response_code}" = 307
+      case "${redirect_url}" in */wepacker/login) ;; *) return 1 ;; esac
+      ;;
+    /wepacker/intake|/api/auth/session)
+      test "${response_code}" = 200
+      test -z "${redirect_url}"
+      ;;
+    *)
+      echo "Unknown public smoke path: ${path_name}" >&2
+      return 1
+      ;;
+  esac
+}
+
 for path_name in / /wepacker /wepacker/intake /api/auth/session; do
-  response_code="$(curl -sS -o /dev/null -w '%{http_code}' \
-    -H "Host: ${DOMAIN}" -H 'X-Forwarded-Proto: https' \
-    "http://127.0.0.1:3003${path_name}")"
-  printf '%s\t%s\n' "${path_name}" "${response_code}" \
+  IFS=$'\t' read -r response_code redirect_url < <(
+    curl -sS -o /dev/null -w $'%{http_code}\t%{redirect_url}\n' \
+      -H "Host: ${DOMAIN}" -H 'X-Forwarded-Proto: https' \
+      "http://127.0.0.1:3003${path_name}"
+  )
+  printf '%s\t%s\t%s\n' "${path_name}" "${response_code}" "${redirect_url}" \
     >> "${EVIDENCE_DIR}/http-smoke.tsv"
-  test "${response_code}" = 200
+  assert_public_response "${path_name}" "${response_code}" "${redirect_url}"
 done
 
 protected_code="$(curl -sS -o /dev/null -w '%{http_code}' \
@@ -682,11 +706,14 @@ printf '/wepacker/dashboard (anonymous)\t%s\n' "${protected_code}" \
 case "${protected_code}" in 302|303|307|308) ;; *) false ;; esac
 
 for path_name in / /wepacker /wepacker/intake /api/auth/session; do
-  response_code="$(curl -sS -o /dev/null -w '%{http_code}' \
-    "https://${DOMAIN}${path_name}")"
-  printf 'external:%s\t%s\n' "${path_name}" "${response_code}" \
+  IFS=$'\t' read -r response_code redirect_url < <(
+    curl -sS -o /dev/null -w $'%{http_code}\t%{redirect_url}\n' \
+      "https://${DOMAIN}${path_name}"
+  )
+  printf 'external:%s\t%s\t%s\n' \
+    "${path_name}" "${response_code}" "${redirect_url}" \
     >> "${EVIDENCE_DIR}/http-smoke.tsv"
-  test "${response_code}" = 200
+  assert_public_response "${path_name}" "${response_code}" "${redirect_url}"
 done
 chmod 600 "${EVIDENCE_DIR}/http-smoke.tsv"
 

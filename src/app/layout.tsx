@@ -32,9 +32,20 @@ export const metadata: Metadata = {
     template: "%s | WEPAC",
   },
   description:
-    "Unimos arte, formação e impacto social para valorizar o património e transformar vidas. Sons que inspiram.",
+    "Educação para uma vida inteira. A WEPAC ajuda pessoas e famílias a transformar contexto em direção, compromissos e próximos passos através do Life Plan.",
   keywords: [
     "WEPAC",
+    "Life Plan",
+    "Projeto de Plano de Vida",
+    "plano de vida",
+    "educação ao longo da vida",
+    "educação familiar",
+    "desenvolvimento pessoal",
+    "desenvolvimento de carreira",
+    "relações",
+    "família",
+    "WEPAC Society",
+    "WEPAC Academy",
     "companhia de artes",
     "música",
     "educação artística",
@@ -75,8 +86,8 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.json",
   openGraph: {
-    title: "WEPAC",
-    description: "Sons que inspiram. Arte, formação e impacto social.",
+    title: "WEPAC — educação para uma vida inteira",
+    description: "From packers to WEPACkers. Tudo começa no Life Plan.",
     type: "website",
     locale: "pt_PT",
     images: [

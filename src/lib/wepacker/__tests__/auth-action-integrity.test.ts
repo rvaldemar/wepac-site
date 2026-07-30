@@ -3,8 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const requireAuthenticatedUser = vi.fn();
 const userFindUnique = vi.fn();
 const userUpdateMany = vi.fn();
-const betaSignupFindUnique = vi.fn();
-const betaSignupUpdate = vi.fn();
+const betaSignupUpdateMany = vi.fn();
 const passwordResetFindUnique = vi.fn();
 const txQueryRaw = vi.fn();
 const agreementUpsert = vi.fn();
@@ -43,8 +42,7 @@ vi.mock("@/lib/db", () => ({
       updateMany: (...args: unknown[]) => userUpdateMany(...args),
     },
     betaSignup: {
-      findUnique: (...args: unknown[]) => betaSignupFindUnique(...args),
-      update: (...args: unknown[]) => betaSignupUpdate(...args),
+      updateMany: (...args: unknown[]) => betaSignupUpdateMany(...args),
     },
     passwordResetToken: {
       findUnique: (...args: unknown[]) => passwordResetFindUnique(...args),
@@ -85,7 +83,7 @@ describe("invite, agreement and password reset integrity", () => {
     resetUpdateMany.mockResolvedValue({ count: 1 });
     resetCreate.mockResolvedValue({ token: RESET_TOKEN });
     sendPasswordResetEmail.mockResolvedValue(undefined);
-    betaSignupFindUnique.mockResolvedValue(null);
+    betaSignupUpdateMany.mockResolvedValue({ count: 0 });
   });
 
   it("conditionally consumes an invite token only once", async () => {
@@ -114,6 +112,13 @@ describe("invite, agreement and password reset integrity", () => {
         data: expect.objectContaining({ inviteToken: null }),
       }),
     );
+    expect(betaSignupUpdateMany).toHaveBeenCalledWith({
+      where: {
+        email: "person@example.test",
+        status: { not: "rejected" },
+      },
+      data: { status: "joined" },
+    });
   });
 
   it("upserts one immutable Agreement evidence row before onboarding", async () => {

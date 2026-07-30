@@ -97,20 +97,14 @@ export async function acceptInvite(tokenValue: unknown, passwordValue: unknown) 
   });
   if (consumed.count !== 1) throw new Error("Convite inválido ou expirado.");
 
-  // Best effort: close the loop candidatura -> convite -> conta criada.
-  // Matched by email (unique on BetaSignup) — a missing/already-rejected
-  // application never blocks account creation.
+  // Best effort: close the loop intake -> invite -> account. Legacy data may
+  // contain more than one lead row for the same email. A missing or rejected
+  // record never blocks account creation.
   try {
-    const application = await prisma.betaSignup.findUnique({
-      where: { email: user.email },
-      select: { status: true },
+    await prisma.betaSignup.updateMany({
+      where: { email: user.email, status: { not: "rejected" } },
+      data: { status: "joined" },
     });
-    if (application && application.status !== "rejected") {
-      await prisma.betaSignup.update({
-        where: { email: user.email },
-        data: { status: "joined" },
-      });
-    }
   } catch (error) {
     console.error(
       "[wepacker invite] application_status_update_failed",

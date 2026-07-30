@@ -128,7 +128,7 @@ export async function submitApplication(input: unknown) {
   try {
     await prisma.betaSignup.create({
       data: {
-      name,
+        name,
         email,
         phone,
         artisticArea,
@@ -144,17 +144,20 @@ export async function submitApplication(input: unknown) {
     throw error;
   }
 
-  void sendBetaSignupConfirmationEmail(name, email).catch((error) => {
+  void sendBetaSignupConfirmationEmail(name, email, "life-plan").catch((error) => {
     console.error("[wepacker intake] confirmation_failed", logSafeError(error));
   });
-  void sendBetaSignupNotificationEmail(name, email, artisticArea ?? undefined).catch(
-    (error) => {
-      console.error(
-        "[wepacker intake] staff_notification_failed",
-        logSafeError(error),
-      );
-    },
-  );
+  void sendBetaSignupNotificationEmail(
+    name,
+    email,
+    artisticArea ?? undefined,
+    "life-plan",
+  ).catch((error) => {
+    console.error(
+      "[wepacker intake] staff_notification_failed",
+      logSafeError(error),
+    );
+  });
 
   return { submitted: true } as const;
 }

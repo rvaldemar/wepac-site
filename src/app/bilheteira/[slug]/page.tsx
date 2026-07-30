@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 
 type Props = {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ error?: string; cancelled?: string }>;
+  searchParams: Promise<{ error?: string; cancelled?: string; tier?: string }>;
 };
 
 export async function generateMetadata({ params }: Props) {
@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function EventPublicPage({ params, searchParams }: Props) {
   const { slug } = await params;
-  const { error, cancelled } = await searchParams;
+  const { error, cancelled, tier: tierParam } = await searchParams;
 
   const event = await prisma.event.findUnique({
     where: { slug },
@@ -43,6 +43,12 @@ export default async function EventPublicPage({ params, searchParams }: Props) {
   if (event.status !== "published") notFound();
 
   const brandName = event.brand?.name || event.department.name;
+
+  // A tier id can arrive as a deep-link from the landing page. Absent,
+  // unknown or hostile input must never error the page — it just falls back
+  // to preselecting the first tier, same as visiting the page directly.
+  const preselectedTierId =
+    event.tiers.find((t) => t.id === tierParam)?.id ?? event.tiers[0]?.id;
 
   return (
     <Shell
@@ -144,7 +150,7 @@ export default async function EventPublicPage({ params, searchParams }: Props) {
 
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               <div style={styles.labelText}>Tier</div>
-              {event.tiers.map((t, i) => (
+              {event.tiers.map((t) => (
                 <label
                   key={t.id}
                   style={{
@@ -161,7 +167,7 @@ export default async function EventPublicPage({ params, searchParams }: Props) {
                     name="tierId"
                     value={t.id}
                     required
-                    defaultChecked={i === 0}
+                    defaultChecked={t.id === preselectedTierId}
                     style={{ marginTop: 3 }}
                   />
                   <div style={{ flex: 1 }}>
@@ -225,6 +231,16 @@ export default async function EventPublicPage({ params, searchParams }: Props) {
               Tiers pagas são liquidadas online (cartão ou Multibanco). Tiers
               gratuitas geram bilhete imediato. Preços isentos de IVA ao
               abrigo do art.º 9.º do CIVA.
+            </p>
+
+            <p style={{ fontSize: 12, color: "#666" }}>
+              A WEPAC — Companhia de Artes é responsável pelo tratamento
+              destes dados, usados exclusivamente para emitir o teu bilhete.
+              Consulta a{" "}
+              <Link href="/privacidade" style={styles.link}>
+                política de privacidade
+              </Link>
+              .
             </p>
 
             <button type="submit" style={styles.button}>
