@@ -126,6 +126,12 @@ cp deploy/nginx.conf "${DEPLOY_STAGE}/deploy/nginx.conf"
 
 test "$(tr -d '\r\n' < "${DEPLOY_STAGE}/.next/BUILD_ID")" = "${BUILD_ID}"
 
+# mktemp creates the staging root as 0700. Rsync preserves the source-root
+# mode even with a trailing slash, but Nginx serves immutable Next assets
+# directly through the final release directory. Make only that traversal
+# boundary public before upload; release contents keep their existing modes.
+chmod 755 "${DEPLOY_STAGE}"
+
 RELEASE_B_SQL_SHA256="$(shasum -a 256 prisma/release-b/drop_legacy_domain.sql | awk '{print $1}')"
 NGINX_CONFIG_SHA256="$(shasum -a 256 deploy/nginx.conf | awk '{print $1}')"
 cat > "${DEPLOY_STAGE}/RELEASE_MANIFEST" <<EOF
@@ -170,6 +176,7 @@ rsync -az --delete \
 # shellcheck disable=SC2029
 ssh "${SSH_OPTIONS[@]}" "${SERVER}" \
   "set -euo pipefail
+   test \"\$(stat -c '%a' '${REMOTE_STAGE_DIR}')\" = 755
    test \"\$(cat '${REMOTE_STAGE_DIR}/RELEASE_GIT_SHA')\" = '${GIT_SHA}'
    test \"\$(cat '${REMOTE_STAGE_DIR}/RELEASE_BUILD_ID')\" = '${BUILD_ID}'
    test \"\$(cat '${REMOTE_STAGE_DIR}/.next/BUILD_ID')\" = '${BUILD_ID}'
@@ -390,6 +397,7 @@ test -f "${RELEASE_DIR}/RELEASE_BUILD_ID"
 test -f "${RELEASE_DIR}/.next/BUILD_ID"
 test -f "${RELEASE_DIR}/prisma/release-b/drop_legacy_domain.sql"
 test -f "${RELEASE_DIR}/deploy/nginx.conf"
+test "$(stat -c '%a' "${RELEASE_DIR}")" = 755
 test "$(cat "${RELEASE_DIR}/RELEASE_GIT_SHA")" = "${EXPECTED_GIT_SHA}"
 test "$(cat "${RELEASE_DIR}/RELEASE_BUILD_ID")" = "${EXPECTED_BUILD_ID}"
 test "$(cat "${RELEASE_DIR}/.next/BUILD_ID")" = "${EXPECTED_BUILD_ID}"
@@ -736,6 +744,32 @@ for path_name in / /wepacker /wepacker/intake /api/auth/session; do
     "${path_name}" "${response_code}" "${redirect_url}" \
     >> "${EVIDENCE_DIR}/http-smoke.tsv"
   assert_public_response "${path_name}" "${response_code}" "${redirect_url}"
+done
+
+# Nginx serves these paths directly rather than proxying them to Next.js.
+# Fetch one JavaScript and one CSS artifact through both virtual-host paths so
+# a non-traversable release directory can never pass the HTML-only smoke.
+for asset_extension in js css; do
+  asset_file="$(find "${RELEASE_DIR}/.next/static" -type f \
+    -name "*.${asset_extension}" -print -quit)"
+  test -n "${asset_file}"
+  asset_relative="${asset_file#"${RELEASE_DIR}/.next/static/"}"
+  test "${asset_relative}" != "${asset_file}"
+  asset_path="/_next/static/${asset_relative}"
+  case "${asset_path}" in /_next/static/*."${asset_extension}") ;; *) false ;; esac
+
+  response_code="$(curl -sS -o /dev/null -w '%{http_code}' \
+    -H "Host: ${DOMAIN}" -H 'X-Forwarded-Proto: https' \
+    "http://127.0.0.1:3003${asset_path}")"
+  printf 'asset:%s\t%s\n' "${asset_path}" "${response_code}" \
+    >> "${EVIDENCE_DIR}/http-smoke.tsv"
+  test "${response_code}" = 200
+
+  response_code="$(curl -sS -o /dev/null -w '%{http_code}' \
+    "https://${DOMAIN}${asset_path}")"
+  printf 'external-asset:%s\t%s\n' "${asset_path}" "${response_code}" \
+    >> "${EVIDENCE_DIR}/http-smoke.tsv"
+  test "${response_code}" = 200
 done
 chmod 600 "${EVIDENCE_DIR}/http-smoke.tsv"
 
