@@ -16,7 +16,6 @@ interface StageCopy {
   years: string;
   name: string;
   mode: string;
-  state: string;
   line: string;
 }
 
@@ -76,21 +75,18 @@ export const academySurfaceCopy = {
         years: "0—11",
         name: "Easy Peasy",
         mode: "Discovery",
-        state: "Em atividade",
         line: "Primeiros trilhos: corpo, ritmo, curiosidade, arte e uma família que aprende a ser o primeiro ambiente.",
       },
       {
         years: "12—21",
         name: "Step Up",
         mode: "Build",
-        state: "Em desenvolvimento",
         line: "Projetos reais, comunidade exigente e liberdade que cresce com responsabilidade demonstrada.",
       },
       {
         years: "22—∞",
         name: "YUP",
         mode: "Transform",
-        state: "Em construção",
         line: "Your Unlocked Potential: autonomia adulta, obra, maestria, serviço e legado.",
       },
     ],
@@ -161,21 +157,18 @@ export const academySurfaceCopy = {
         years: "0—11",
         name: "Easy Peasy",
         mode: "Discovery",
-        state: "Active",
         line: "First trails through body, rhythm, curiosity, art, and a family learning to be the first environment.",
       },
       {
         years: "12—21",
         name: "Step Up",
         mode: "Build",
-        state: "In development",
         line: "Real projects, a demanding community, and freedom that grows with demonstrated responsibility.",
       },
       {
         years: "22—∞",
         name: "YUP",
         mode: "Transform",
-        state: "Being built",
         line: "Your Unlocked Potential: adult autonomy, work, mastery, service, and legacy.",
       },
     ],
@@ -791,21 +784,18 @@ export const familySurfaceCopy = {
         years: "0—11",
         name: "Easy Peasy",
         mode: "Discovery",
-        state: "Em atividade",
         line: "A família é o primeiro ambiente: presença, ritmo, curiosidade, limites e descoberta acompanhada.",
       },
       {
         years: "12—21",
         name: "Step Up",
         mode: "Build",
-        state: "Em desenvolvimento",
         line: "Identidade, escolhas educativas e autonomia crescente, com responsabilidade e conversas que não fogem ao essencial.",
       },
       {
         years: "22—∞",
         name: "YUP",
         mode: "Transform",
-        state: "Em construção",
         line: "Your Unlocked Potential: vida adulta, relações, carreira, cuidado entre gerações e mudanças que continuam a pedir direção.",
       },
     ],
@@ -954,21 +944,18 @@ export const familySurfaceCopy = {
         years: "0—11",
         name: "Easy Peasy",
         mode: "Discovery",
-        state: "Active",
         line: "The family is the first environment: presence, rhythm, curiosity, boundaries, and supported discovery.",
       },
       {
         years: "12—21",
         name: "Step Up",
         mode: "Build",
-        state: "In development",
         line: "Identity, educational choices, and growing autonomy, with responsibility and conversations that face what matters.",
       },
       {
         years: "22—∞",
         name: "YUP",
         mode: "Transform",
-        state: "Being built",
         line: "Your Unlocked Potential: adult life, relationships, career, intergenerational care, and changes that continue to require direction.",
       },
     ],

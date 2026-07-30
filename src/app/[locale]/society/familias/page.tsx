@@ -297,13 +297,10 @@ export default async function FamiliesPage() {
                   delay={index * 0.06}
                   className="flex min-h-[390px] flex-col bg-white p-8"
                 >
-                  <div className="flex items-start justify-between">
+                  <div>
                     <p className="font-barlow text-5xl font-black tracking-[-0.04em] text-black/20">
                       {stage.years}
                     </p>
-                    <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-black/40">
-                      {stage.state}
-                    </span>
                   </div>
                   <div className="mt-auto">
                     <p className="mb-3 text-[9px] font-bold uppercase tracking-[0.18em] text-black/40">

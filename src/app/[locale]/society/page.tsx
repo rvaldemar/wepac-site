@@ -392,9 +392,6 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
                   </p>
                   <div>
                     <p className="font-barlow text-2xl font-bold uppercase">{stage.name}</p>
-                    <p className="mt-1 text-xs uppercase tracking-[0.2em] text-white/45">
-                      {stage.state}
-                    </p>
                   </div>
                   <p className="font-barlow text-2xl font-black uppercase text-wepac-gray">
                     {stage.movement}

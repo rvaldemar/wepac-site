@@ -133,9 +133,6 @@ function AcademyContent({ copy }: { copy: AcademySurfaceCopy }) {
                   <p className="font-barlow text-5xl font-black tracking-[-0.04em] text-white/25">
                     {stage.years}
                   </p>
-                  <span className="border border-white/15 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.18em] text-white/50">
-                    {stage.state}
-                  </span>
                 </div>
                 <div className="mt-auto">
                   <p className="text-xs font-bold uppercase tracking-[0.22em] text-wepac-gray">
