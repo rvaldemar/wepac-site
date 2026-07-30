@@ -205,6 +205,7 @@ PRISMA_VERSION="$6"
 SERVICE="wepac.service"
 BACKUP_SERVICE="rvs-backup@wepac.service"
 BACKUP_TIMER="rvs-backup@wepac.timer"
+BACKUP_CONFIG="/etc/rvs-backups/wepac.env"
 APP_ENV_FILE="${APP_DIR}/shared/.env.production"
 RELEASE_NAME="$(basename "${RELEASE_DIR}")"
 EVIDENCE_DIR="/var/backups/wepac/release-a/${RELEASE_NAME}"
@@ -420,6 +421,27 @@ sudo systemctl is-active --quiet "${BACKUP_TIMER}"
 test "$(sudo systemctl is-active "${BACKUP_SERVICE}" 2>/dev/null || true)" != active
 test -r "${APP_ENV_FILE}"
 grep -q '^DATABASE_URL=' "${APP_ENV_FILE}"
+test -r "${BACKUP_CONFIG}"
+
+# The backup root is operational configuration and can move to attached
+# storage independently of the application release. Read only this path from
+# the same reviewed config consumed by rvs-backups; never assume the legacy
+# local-disk location and never print the rest of the config.
+BACKUP_ROOT="$(
+  bash -c '
+    set -euo pipefail
+    source "$1"
+    : "${BACKUP_ROOT:?BACKUP_ROOT is required}"
+    printf "%s" "${BACKUP_ROOT}"
+  ' _ "${BACKUP_CONFIG}"
+)"
+if [[ "${BACKUP_ROOT}" != /var/backups/wepac && \
+      ! "${BACKUP_ROOT}" =~ ^/mnt/[A-Za-z0-9][A-Za-z0-9._-]*/backups/wepac$ ]]; then
+  echo "Unexpected WEPAC backup root." >&2
+  false
+fi
+test "$(readlink -f -- "${BACKUP_ROOT}")" = "${BACKUP_ROOT}"
+test -d "${BACKUP_ROOT}/daily"
 
 install -d -m 700 "${EVIDENCE_DIR}"
 cat > "${EVIDENCE_DIR}/release.txt" <<EOF
@@ -552,7 +574,7 @@ grep -Fq '[backup:wepac] SUCCESS' "${EVIDENCE_DIR}/pre-backup-journal.txt"
 grep -Fq 'restore-drill OK:' "${EVIDENCE_DIR}/pre-backup-journal.txt"
 
 mapfile -d '' -t PRE_BACKUP_CANDIDATES < <(
-  find /var/backups/wepac/daily -maxdepth 1 -type f \
+  find "${BACKUP_ROOT}/daily" -maxdepth 1 -type f \
     -name 'wepac_production_*.dump*' \
     -newer "${EVIDENCE_DIR}/pre-backup.marker" -print0
 )
