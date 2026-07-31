@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { getSocietyCopy } from "@/i18n/copy/society";
 
@@ -79,5 +81,13 @@ describe("Society narrative", () => {
       "Step Up",
       "YUP",
     ]);
+  });
+
+  it("does not leave navigation pointing at removed Society sections", () => {
+    const header = readFileSync(resolve(process.cwd(), "src/components/society/SocietyHeader.tsx"), "utf8");
+    const footer = readFileSync(resolve(process.cwd(), "src/components/society/SocietyFooter.tsx"), "utf8");
+
+    expect(header).not.toContain("/society#organizations");
+    expect(footer).not.toContain("/society#mission");
   });
 });

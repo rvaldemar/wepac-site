@@ -40,7 +40,6 @@ export function SocietyFooter() {
               <Link href="/companhia-de-artes" className="hover:text-white">
                 {t("artsCompany")}
               </Link>
-              <Link href="/society#mission" className="hover:text-white">WEPAC Mission</Link>
             </div>
           </div>
 

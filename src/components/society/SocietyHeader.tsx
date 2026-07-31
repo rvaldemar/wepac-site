@@ -13,7 +13,6 @@ const navigation = [
   { key: "families", href: "/society/familias" },
   { key: "academy", href: "/academy" },
   { key: "artsCompany", href: "/companhia-de-artes" },
-  { key: "organizations", href: "/society#organizations" },
 ] as const;
 
 export function SocietyHeader() {

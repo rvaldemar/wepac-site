@@ -205,7 +205,7 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
 
             <div className="mt-14 grid gap-px bg-black/15 lg:grid-cols-3">
               <div className="flex min-h-[430px] flex-col bg-wepac-gray p-7 sm:p-9">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/40">Famílias</p>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/40">{copy.families.eyebrow}</p>
                 <h3 className="mt-10 font-barlow text-4xl font-black uppercase tracking-[-0.03em]">{copy.families.title}</h3>
                 <p className="mt-6 flex-1 leading-relaxed text-black/65">{copy.families.body}</p>
                 <Link href="/society/familias" className="mt-10 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em]">
