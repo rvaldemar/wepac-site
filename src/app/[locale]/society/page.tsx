@@ -95,10 +95,10 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
               fill
               sizes="48vw"
               priority
-              className="object-cover object-center opacity-80"
+              className="object-cover object-center opacity-90"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-black/15" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/25" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/35 to-black/0" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/10" />
           </div>
 
           <div className="mx-auto grid min-h-[650px] max-w-[1440px] items-end gap-12 lg:grid-cols-[1.15fr_0.85fr]">

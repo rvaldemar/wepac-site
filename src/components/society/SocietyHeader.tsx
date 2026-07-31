@@ -47,7 +47,7 @@ export function SocietyHeader() {
           </span>
         </Link>
 
-        <div className="hidden items-center gap-4 2xl:flex">
+        <div className="hidden items-center gap-4 xl:flex">
           {navigation.map((item) => (
             <Link
               key={item.key}
@@ -72,7 +72,7 @@ export function SocietyHeader() {
           <LocaleSwitcher />
         </div>
 
-        <div className="flex items-center gap-2 2xl:hidden">
+        <div className="flex items-center gap-2 xl:hidden">
           <LocaleSwitcher className="[&_select]:w-32 sm:[&_select]:w-48" />
           <button
             ref={toggleRef}
@@ -109,7 +109,7 @@ export function SocietyHeader() {
           aria-modal="true"
           aria-label={common("navigation")}
           tabIndex={-1}
-          className="border-t border-white/10 bg-black px-5 py-7 2xl:hidden"
+          className="border-t border-white/10 bg-black px-5 py-7 xl:hidden"
         >
           <div className="mx-auto flex max-w-[1440px] flex-col">
             {navigation.map((item) => (

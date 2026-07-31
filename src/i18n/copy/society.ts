@@ -9,7 +9,7 @@ const ptPT = {
     title: "From packers to WEPACkers.",
     subtitle: "Educação para uma vida inteira.",
     body:
-      "Ajudamos pessoas e famílias a perceber onde estão e escolher para onde querem ir. Num processo acompanhado, o Life Map torna-se visível, as prioridades ganham forma e o próximo passo fica datado. A porta de entrada é sempre o Life Plan.",
+      "Ajudamos pessoas e famílias a perceber onde estão e escolher para onde querem ir. Num processo acompanhado, o Life Map torna-se visível e o próximo passo fica datado.",
     primaryCta: "Começar o meu Life Plan",
     ctaNote: "Primeiro contacto. A equipa responde com o enquadramento.",
     secondaryCta: "Ver como funciona",
@@ -316,7 +316,7 @@ const enUS = {
     title: "From packers to WEPACkers.",
     subtitle: "Education for a lifetime.",
     body:
-      "We help people and families understand where they are and choose where they want to go. In a guided process, the Life Map becomes visible, priorities take shape, and the next step gets a date. The Life Plan is always the starting point.",
+      "We help people and families understand where they are and choose where they want to go. In a guided process, the Life Map becomes visible and the next step gets a date.",
     primaryCta: "Start my Life Plan",
     ctaNote: "First contact. The team replies with the right starting framework.",
     secondaryCta: "See how it works",
