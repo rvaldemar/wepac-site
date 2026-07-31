@@ -90,12 +90,12 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
           <div className="absolute inset-0 -z-20 bg-black" />
           <div className="absolute inset-y-0 right-0 -z-10 hidden w-[48%] lg:block">
             <Image
-              src="/images/society/alex-florindo.jpg"
+              src="/images/society/proof-alex-podium.jpg"
               alt=""
               fill
               sizes="48vw"
               priority
-              className="object-cover object-center opacity-65"
+              className="object-cover object-center opacity-80"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-black/15" />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/25" />
@@ -134,7 +134,7 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
 
             <FadeIn delay={0.1} className="relative overflow-hidden border border-white/15 lg:hidden">
               <Image
-                src="/images/society/alex-florindo.jpg"
+                src="/images/society/proof-alex-podium.jpg"
                 alt={copy.hero.portraitAlt}
                 width={1080}
                 height={1080}

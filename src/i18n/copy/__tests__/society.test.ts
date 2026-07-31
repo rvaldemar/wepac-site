@@ -26,10 +26,12 @@ describe("Society narrative", () => {
 
   it("puts the Life Plan at the center and keeps the public punchline", () => {
     expect(pt.hero.title).toBe("From packers to WEPACkers.");
-    expect(pt.hero.subtitle).toContain("Life Plan");
+    expect(pt.hero.subtitle).toBe("Educação para uma vida inteira.");
+    expect(pt.hero.primaryCta).toContain("Life Plan");
     expect(pt.lifePlan.title).toContain("Life Plan");
     expect(pt.lifePlan.lead).toContain("Life Map");
-    expect(en.hero.subtitle).toContain("Life Plan");
+    expect(en.hero.subtitle).toBe("Education for a lifetime.");
+    expect(en.hero.primaryCta).toContain("Life Plan");
     expect(pt.applications.items.map((item) => item.name)).toEqual([
       "Carreira",
       "Relações",

@@ -7,7 +7,7 @@ const ptPT = {
   hero: {
     eyebrow: "WEPAC Society · Carcavelos",
     title: "From packers to WEPACkers.",
-    subtitle: "Educação para uma vida inteira. Começa no Life Plan.",
+    subtitle: "Educação para uma vida inteira.",
     body:
       "Ajudamos pessoas e famílias a perceber onde estão e escolher para onde querem ir. Num processo acompanhado, o Life Map torna-se visível, as prioridades ganham forma e o próximo passo fica datado. A porta de entrada é sempre o Life Plan.",
     primaryCta: "Começar o meu Life Plan",
@@ -314,7 +314,7 @@ const enUS = {
   hero: {
     eyebrow: "WEPAC Society · Carcavelos",
     title: "From packers to WEPACkers.",
-    subtitle: "Education for a lifetime. It starts with the Life Plan.",
+    subtitle: "Education for a lifetime.",
     body:
       "We help people and families understand where they are and choose where they want to go. In a guided process, the Life Map becomes visible, priorities take shape, and the next step gets a date. The Life Plan is always the starting point.",
     primaryCta: "Start my Life Plan",
