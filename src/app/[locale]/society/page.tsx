@@ -217,7 +217,6 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
               </div>
 
               <div className="relative flex min-h-[430px] flex-col overflow-hidden bg-black p-7 text-white sm:p-9">
-                <Image src="/images/society/easy-peasy.jpg" alt="" fill sizes="(max-width: 1023px) 100vw, 33vw" className="object-cover object-center opacity-[0.18]" />
                 <div className="relative flex flex-1 flex-col">
                   <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">{copy.academy.eyebrow}</p>
                   <h3 className="mt-10 font-barlow text-4xl font-black uppercase tracking-[-0.03em]">{copy.academy.title}</h3>
@@ -300,9 +299,14 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
             <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/50">{copy.closing.eyebrow}</p>
             <h2 className="mt-8 text-balance font-barlow text-5xl font-black uppercase leading-[0.88] tracking-[-0.045em] sm:text-7xl lg:text-8xl">{copy.closing.title}</h2>
             <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-white/65">{copy.closing.body}</p>
-            <Link href={intakeHref} className="mt-10 inline-flex min-h-14 items-center justify-center bg-white px-7 text-xs font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-wepac-gray">
-              {copy.closing.lifePlanCta}
-            </Link>
+            <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
+              <Link href={intakeHref} className="inline-flex min-h-14 items-center justify-center bg-white px-7 text-xs font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-wepac-gray">
+                {copy.closing.lifePlanCta}
+              </Link>
+              <Link href="/wepacker/login" className="inline-flex min-h-14 items-center justify-center border border-white/30 px-7 text-xs font-bold uppercase tracking-[0.18em] transition-colors hover:border-white hover:bg-white hover:text-black">
+                {copy.closing.backpackCta}
+              </Link>
+            </div>
           </FadeIn>
         </section>
       </main>
