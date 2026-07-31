@@ -30,7 +30,7 @@ export function SocietyHeader() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-black/80 backdrop-blur-xl">
       <nav
-        className="mx-auto flex h-20 max-w-[1440px] items-center justify-between px-5 sm:px-8 lg:px-12"
+        className="mx-auto flex h-20 max-w-[1760px] items-center justify-between px-5 sm:px-8 lg:px-12"
         aria-label={common("navigation")}
       >
         <Link href="/society" className="flex items-center gap-4" aria-label="WEPAC Society">
@@ -111,7 +111,7 @@ export function SocietyHeader() {
           tabIndex={-1}
           className="border-t border-white/10 bg-black px-5 py-7 xl:hidden"
         >
-          <div className="mx-auto flex max-w-[1440px] flex-col">
+          <div className="mx-auto flex max-w-[1760px] flex-col">
             {navigation.map((item) => (
               <Link
                 key={item.key}

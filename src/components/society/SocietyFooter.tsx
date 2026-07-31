@@ -11,7 +11,7 @@ export function SocietyFooter() {
 
   return (
     <footer className="border-t border-white/10 bg-black text-white">
-      <div className="mx-auto max-w-[1440px] px-5 py-14 sm:px-8 lg:px-12 lg:py-20">
+      <div className="mx-auto max-w-[1760px] px-5 py-14 sm:px-8 lg:px-12 lg:py-20">
         <div className="grid gap-12 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div>
             <Link href="/society" aria-label="WEPAC Society">

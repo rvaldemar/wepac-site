@@ -88,32 +88,8 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
       <main>
         <section className="relative isolate overflow-hidden border-b border-white/10 px-5 pb-20 pt-32 sm:px-8 lg:min-h-screen lg:px-12 lg:pb-24 lg:pt-40">
           <div className="absolute inset-0 -z-20 bg-black" />
-          <div className="absolute inset-y-0 right-0 -z-10 hidden w-[62%] lg:block">
-            <Image
-              src="/images/society/alex-florindo-portrait.jpg"
-              alt=""
-              fill
-              sizes="62vw"
-              priority
-              className="origin-bottom-right scale-[0.88] object-contain object-right-bottom [filter:brightness(1.2)_saturate(1.08)]"
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(90deg, #000 0%, rgba(0,0,0,.92) 14%, rgba(0,0,0,.38) 34%, transparent 54%, transparent 100%)",
-              }}
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(180deg, rgba(0,0,0,.2) 0%, transparent 18%, transparent 70%, rgba(0,0,0,.78) 100%)",
-              }}
-            />
-          </div>
 
-          <div className="mx-auto grid min-h-[650px] max-w-[1440px] items-end gap-12 lg:grid-cols-[1.15fr_0.85fr]">
+          <div className="mx-auto grid min-h-[650px] max-w-[1760px] items-end gap-12 lg:grid-cols-[1.15fr_0.85fr]">
             <FadeIn>
               <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/70">
                 {copy.hero.eyebrow}
@@ -144,13 +120,14 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
               <p className="mt-4 text-xs leading-relaxed text-white/65">{copy.hero.ctaNote}</p>
             </FadeIn>
 
-            <FadeIn delay={0.1} className="relative overflow-hidden border border-white/15 lg:hidden">
+            <FadeIn delay={0.1} className="relative overflow-hidden border border-white/15 shadow-[0_30px_100px_rgba(0,0,0,0.55)] lg:w-full lg:max-w-[520px] lg:justify-self-end">
               <Image
                 src="/images/society/alex-florindo-portrait.jpg"
                 alt={copy.hero.portraitAlt}
                 width={1080}
                 height={1080}
-                sizes="100vw"
+                sizes="(max-width: 1023px) 100vw, 520px"
+                priority
                 className="aspect-square w-full object-cover"
               />
               <p className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/90">
@@ -161,7 +138,7 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
         </section>
 
         <section id="life-plan" className="scroll-mt-20 border-b border-white/10 px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
-          <div className="mx-auto max-w-[1440px]">
+          <div className="mx-auto max-w-[1760px]">
             <FadeIn className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
               <div>
                 <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/65">
@@ -204,7 +181,7 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
         </section>
 
         <section className="border-b border-black/15 bg-wepac-gray px-5 py-24 text-black sm:px-8 lg:px-12 lg:py-32">
-          <div className="mx-auto max-w-[1440px]">
+          <div className="mx-auto max-w-[1760px]">
             <FadeIn className="max-w-3xl">
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-black/65">{copy.landing.routesEyebrow}</p>
               <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[0.9] tracking-[-0.04em] sm:text-7xl">
@@ -263,7 +240,7 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
         </section>
 
         <section className="border-b border-white/10 px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
-          <div className="mx-auto grid max-w-[1440px] gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
+          <div className="mx-auto grid max-w-[1760px] gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
             <FadeIn>
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/65">{copy.platform.eyebrow}</p>
               <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[0.9] tracking-[-0.04em] sm:text-7xl">
@@ -281,7 +258,7 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
         </section>
 
         <section className="border-b border-white/10 bg-[#080808] px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
-          <div className="mx-auto max-w-[1440px]">
+          <div className="mx-auto max-w-[1760px]">
             <div className="grid gap-px bg-white/15 md:grid-cols-3">
               <ProofImage src="/images/society/proof-jiu-jitsu.jpg" alt={copy.proof.media[0].alt} label={copy.proof.media[0].label} />
               <ProofImage src="/images/society/proof-alex-podium.jpg" alt={copy.proof.media[2].alt} label={copy.proof.media[2].label} />
