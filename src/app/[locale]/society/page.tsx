@@ -152,8 +152,8 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
           <div className="mx-auto max-w-[1440px]">
             <FadeIn className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">
-                  {copy.lifePlan.eyebrow}
+                <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/45">
+                  {copy.proposal.eyebrow} · {copy.proposal.title}
                 </p>
                 <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[0.9] tracking-[-0.04em] sm:text-7xl">
                   {copy.lifePlan.title}
@@ -204,39 +204,48 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
             </FadeIn>
 
             <div className="mt-14 grid gap-px bg-black/15 lg:grid-cols-3">
-              <div className="flex min-h-[430px] flex-col bg-wepac-gray p-7 sm:p-9">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/40">{copy.families.eyebrow}</p>
-                <h3 className="mt-10 font-barlow text-4xl font-black uppercase tracking-[-0.03em]">{copy.families.title}</h3>
-                <p className="mt-6 flex-1 leading-relaxed text-black/65">{copy.families.body}</p>
-                <Link href="/society/familias" className="mt-10 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em]">
-                  {copy.families.cta} <Arrow />
-                </Link>
-              </div>
-
-              <div className="flex min-h-[430px] flex-col bg-black p-7 text-white sm:p-9">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">{copy.academy.eyebrow}</p>
-                <h3 className="mt-10 font-barlow text-4xl font-black uppercase tracking-[-0.03em]">{copy.academy.title}</h3>
-                <p className="mt-6 leading-relaxed text-white/65">{copy.academy.body}</p>
-                <div className="mt-8 grid grid-cols-3 gap-px bg-white/15">
-                  {copy.academy.stages.map((stage) => (
-                    <div key={stage.name} className="bg-black px-3 py-4">
-                      <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-white/45">{stage.range}</p>
-                      <p className="mt-3 font-barlow text-lg font-bold uppercase">{stage.name}</p>
-                    </div>
-                  ))}
+              <div className="relative flex min-h-[430px] flex-col overflow-hidden bg-wepac-gray p-7 sm:p-9">
+                <Image src="/images/society/easy-peasy.jpg" alt="" fill sizes="(max-width: 1023px) 100vw, 33vw" className="object-cover object-top opacity-[0.12]" />
+                <div className="relative flex flex-1 flex-col">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/50">{copy.families.eyebrow}</p>
+                  <h3 className="mt-10 font-barlow text-4xl font-black uppercase tracking-[-0.03em]">{copy.families.title}</h3>
+                  <p className="mt-6 flex-1 leading-relaxed text-black/70">{copy.families.body}</p>
+                  <Link href="/society/familias" className="mt-10 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em]">
+                    {copy.families.cta} <Arrow />
+                  </Link>
                 </div>
-                <Link href="/academy" className="mt-10 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em]">
-                  {copy.academy.cta} <Arrow />
-                </Link>
               </div>
 
-              <div className="flex min-h-[430px] flex-col bg-wepac-gray p-7 sm:p-9">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/40">{copy.houses.artsLabel}</p>
-                <h3 className="mt-10 font-barlow text-4xl font-black uppercase tracking-[-0.03em]">{copy.landing.artsTitle}</h3>
-                <p className="mt-6 flex-1 leading-relaxed text-black/65">{copy.houses.artsLine}</p>
-                <div className="mt-10 flex flex-wrap gap-x-7 gap-y-3 text-xs font-bold uppercase tracking-[0.18em]">
-                  <Link href="/wessex" className="inline-flex items-center gap-2">{copy.houses.wessexCta} <Arrow /></Link>
-                  <Link href="/arte-a-capela" className="inline-flex items-center gap-2">{copy.houses.arteCta} <Arrow /></Link>
+              <div className="relative flex min-h-[430px] flex-col overflow-hidden bg-black p-7 text-white sm:p-9">
+                <Image src="/images/society/easy-peasy.jpg" alt="" fill sizes="(max-width: 1023px) 100vw, 33vw" className="object-cover object-center opacity-[0.18]" />
+                <div className="relative flex flex-1 flex-col">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">{copy.academy.eyebrow}</p>
+                  <h3 className="mt-10 font-barlow text-4xl font-black uppercase tracking-[-0.03em]">{copy.academy.title}</h3>
+                  <p className="mt-6 leading-relaxed text-white/75">{copy.academy.body}</p>
+                  <div className="mt-8 grid grid-cols-3 gap-px bg-white/15">
+                    {copy.academy.stages.map((stage) => (
+                      <div key={stage.name} className="bg-black/80 px-3 py-4 backdrop-blur-sm">
+                        <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-white/50">{stage.range}</p>
+                        <p className="mt-3 font-barlow text-lg font-bold uppercase">{stage.name}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <Link href="/academy" className="mt-10 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em]">
+                    {copy.academy.cta} <Arrow />
+                  </Link>
+                </div>
+              </div>
+
+              <div className="relative flex min-h-[430px] flex-col overflow-hidden bg-wepac-gray p-7 sm:p-9">
+                <Image src="/images/arte-a-capela/hero.jpg" alt="" fill sizes="(max-width: 1023px) 100vw, 33vw" className="object-cover object-center opacity-[0.14]" />
+                <div className="relative flex flex-1 flex-col">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/55">{copy.houses.artsLabel}</p>
+                  <h3 className="mt-10 font-barlow text-4xl font-black uppercase tracking-[-0.03em]">{copy.landing.artsTitle}</h3>
+                  <p className="mt-6 flex-1 leading-relaxed text-black/70">{copy.houses.artsLine}</p>
+                  <div className="mt-10 flex flex-wrap gap-x-7 gap-y-3 text-xs font-bold uppercase tracking-[0.18em]">
+                    <Link href="/wessex" className="inline-flex items-center gap-2">{copy.houses.wessexCta} <Arrow /></Link>
+                    <Link href="/arte-a-capela" className="inline-flex items-center gap-2">{copy.houses.arteCta} <Arrow /></Link>
+                  </div>
                 </div>
               </div>
             </div>
