@@ -205,7 +205,6 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
 
             <div className="mt-14 grid gap-px bg-black/15 lg:grid-cols-3">
               <div className="relative flex min-h-[430px] flex-col overflow-hidden bg-wepac-gray p-7 sm:p-9">
-                <Image src="/images/society/easy-peasy.jpg" alt="" fill sizes="(max-width: 1023px) 100vw, 33vw" className="object-cover object-top opacity-[0.12]" />
                 <div className="relative flex flex-1 flex-col">
                   <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/50">{copy.families.eyebrow}</p>
                   <h3 className="mt-10 font-barlow text-4xl font-black uppercase tracking-[-0.03em]">{copy.families.title}</h3>
@@ -271,9 +270,8 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
 
         <section className="border-b border-white/10 bg-[#080808] px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
           <div className="mx-auto max-w-[1440px]">
-            <div className="grid gap-px bg-white/15 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-px bg-white/15 md:grid-cols-3">
               <ProofImage src="/images/society/proof-jiu-jitsu.jpg" alt={copy.proof.media[0].alt} label={copy.proof.media[0].label} />
-              <ProofImage src="/images/society/proof-alvaro-luis.jpg" alt={copy.proof.media[1].alt} label={copy.proof.media[1].label} className="object-top" />
               <ProofImage src="/images/society/proof-alex-podium.jpg" alt={copy.proof.media[2].alt} label={copy.proof.media[2].label} />
               <ProofImage src="/images/society/proof-jotta-pe.jpg" alt={copy.proof.media[3].alt} label={copy.proof.media[3].label} />
             </div>
