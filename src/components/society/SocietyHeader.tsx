@@ -42,7 +42,7 @@ export function SocietyHeader() {
             className="h-5 w-auto sm:h-6"
             priority
           />
-          <span className="hidden border-l border-white/25 pl-4 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/60 sm:block">
+          <span className="hidden border-l border-white/25 pl-4 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/75 sm:block">
             Society
           </span>
         </Link>
@@ -52,14 +52,14 @@ export function SocietyHeader() {
             <Link
               key={item.key}
               href={item.href}
-              className="text-[13px] font-medium text-white/65 transition-colors hover:text-white"
+              className="text-[13px] font-medium text-white/80 transition-colors hover:text-white"
             >
               {t(item.key)}
             </Link>
           ))}
           <Link
             href="/wepacker/login"
-            className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/60 transition-colors hover:text-white"
+            className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/75 transition-colors hover:text-white"
           >
             {t("openBackpack")}
           </Link>

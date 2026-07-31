@@ -66,7 +66,7 @@ function ProofImage({
         className={`object-cover transition duration-700 group-hover:scale-[1.02] ${className ?? ""}`}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent" />
-      <p className="absolute inset-x-0 bottom-0 p-5 text-[10px] font-bold uppercase tracking-[0.18em] text-white/75 sm:p-7">
+      <p className="absolute inset-x-0 bottom-0 p-5 text-[10px] font-bold uppercase tracking-[0.18em] text-white/90 sm:p-7">
         {label}
       </p>
     </div>
@@ -88,22 +88,34 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
       <main>
         <section className="relative isolate overflow-hidden border-b border-white/10 px-5 pb-20 pt-32 sm:px-8 lg:min-h-screen lg:px-12 lg:pb-24 lg:pt-40">
           <div className="absolute inset-0 -z-20 bg-black" />
-          <div className="absolute inset-y-0 right-0 -z-10 hidden w-[48%] lg:block">
+          <div className="absolute inset-y-0 right-0 -z-10 hidden w-[62%] lg:block">
             <Image
               src="/images/society/alex-florindo-portrait.jpg"
               alt=""
               fill
-              sizes="48vw"
+              sizes="62vw"
               priority
-              className="object-cover object-center opacity-90"
+              className="origin-bottom scale-[0.94] object-contain object-bottom [filter:brightness(1.2)_saturate(1.08)]"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/35 to-black/0" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/10" />
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(90deg, #000 0%, rgba(0,0,0,.92) 14%, rgba(0,0,0,.38) 34%, transparent 54%, transparent 80%, rgba(0,0,0,.45) 92%, #000 100%)",
+              }}
+            />
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(0,0,0,.2) 0%, transparent 18%, transparent 70%, rgba(0,0,0,.78) 100%)",
+              }}
+            />
           </div>
 
           <div className="mx-auto grid min-h-[650px] max-w-[1440px] items-end gap-12 lg:grid-cols-[1.15fr_0.85fr]">
             <FadeIn>
-              <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/50">
+              <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/70">
                 {copy.hero.eyebrow}
               </p>
               <h1 className="mt-8 max-w-5xl text-balance font-barlow text-[clamp(3.6rem,7.6vw,8.2rem)] font-black uppercase leading-[0.82] tracking-[-0.035em]">
@@ -112,7 +124,7 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
               <p className="mt-10 max-w-2xl text-balance font-barlow text-2xl font-bold uppercase leading-tight sm:text-3xl">
                 {copy.hero.subtitle}
               </p>
-              <p className="mt-5 max-w-2xl text-balance text-lg leading-relaxed text-white/65 sm:text-xl">
+              <p className="mt-5 max-w-2xl text-balance text-lg leading-relaxed text-white/80 sm:text-xl">
                 {copy.hero.body}
               </p>
               <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -129,7 +141,7 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
                   {copy.hero.secondaryCta}
                 </Link>
               </div>
-              <p className="mt-4 text-xs leading-relaxed text-white/45">{copy.hero.ctaNote}</p>
+              <p className="mt-4 text-xs leading-relaxed text-white/65">{copy.hero.ctaNote}</p>
             </FadeIn>
 
             <FadeIn delay={0.1} className="relative overflow-hidden border border-white/15 lg:hidden">
@@ -141,7 +153,7 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
                 sizes="100vw"
                 className="aspect-square w-full object-cover"
               />
-              <p className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/75">
+              <p className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/90">
                 {copy.hero.portraitLabel}
               </p>
             </FadeIn>
@@ -152,7 +164,7 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
           <div className="mx-auto max-w-[1440px]">
             <FadeIn className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/45">
+                <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/65">
                   {copy.proposal.eyebrow} · {copy.proposal.title}
                 </p>
                 <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[0.9] tracking-[-0.04em] sm:text-7xl">
@@ -163,24 +175,24 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
                 <p className="max-w-3xl text-balance text-2xl leading-snug text-white sm:text-3xl">
                   {copy.lifePlan.lead}
                 </p>
-                <p className="mt-6 max-w-2xl leading-relaxed text-white/60">{copy.proposal.body}</p>
+                <p className="mt-6 max-w-2xl leading-relaxed text-white/75">{copy.proposal.body}</p>
               </div>
             </FadeIn>
 
             <div className="mt-14 grid gap-px bg-white/15 md:grid-cols-3">
               {lifePlanSteps.map((step, index) => (
                 <FadeIn key={step.name} delay={index * 0.05} className="bg-[#080808] p-7 sm:p-9">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/35">{step.index}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/55">{step.index}</p>
                   <h3 className="mt-10 font-barlow text-3xl font-black uppercase tracking-[-0.025em]">
                     {step.name}
                   </h3>
-                  <p className="mt-5 max-w-md leading-relaxed text-white/60">{step.line}</p>
+                  <p className="mt-5 max-w-md leading-relaxed text-white/75">{step.line}</p>
                 </FadeIn>
               ))}
             </div>
 
             <FadeIn className="mt-10 flex flex-col gap-5 border-t border-white/15 pt-9 sm:flex-row sm:items-center sm:justify-between">
-              <p className="max-w-2xl text-sm leading-relaxed text-white/55">{copy.lifePlan.support}</p>
+              <p className="max-w-2xl text-sm leading-relaxed text-white/70">{copy.lifePlan.support}</p>
               <Link
                 href={intakeHref}
                 className="inline-flex min-h-14 shrink-0 items-center justify-center bg-white px-7 text-xs font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-wepac-gray"
@@ -194,11 +206,11 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
         <section className="border-b border-black/15 bg-wepac-gray px-5 py-24 text-black sm:px-8 lg:px-12 lg:py-32">
           <div className="mx-auto max-w-[1440px]">
             <FadeIn className="max-w-3xl">
-              <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-black/45">{copy.landing.routesEyebrow}</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-black/65">{copy.landing.routesEyebrow}</p>
               <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[0.9] tracking-[-0.04em] sm:text-7xl">
                 {copy.landing.routesTitle}
               </h2>
-              <p className="mt-7 text-lg leading-relaxed text-black/65">
+              <p className="mt-7 text-lg leading-relaxed text-black/80">
                 {copy.landing.routesBody}
               </p>
             </FadeIn>
@@ -206,9 +218,9 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
             <div className="mt-14 grid gap-px bg-black/15 lg:grid-cols-3">
               <div className="relative flex min-h-[430px] flex-col overflow-hidden bg-wepac-gray p-7 sm:p-9">
                 <div className="relative flex flex-1 flex-col">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/50">{copy.families.eyebrow}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/70">{copy.families.eyebrow}</p>
                   <h3 className="mt-10 font-barlow text-4xl font-black uppercase tracking-[-0.03em]">{copy.families.title}</h3>
-                  <p className="mt-6 flex-1 leading-relaxed text-black/70">{copy.families.body}</p>
+                  <p className="mt-6 flex-1 leading-relaxed text-black/80">{copy.families.body}</p>
                   <Link href="/society/familias" className="mt-10 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em]">
                     {copy.families.cta} <Arrow />
                   </Link>
@@ -217,13 +229,13 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
 
               <div className="relative flex min-h-[430px] flex-col overflow-hidden bg-black p-7 text-white sm:p-9">
                 <div className="relative flex flex-1 flex-col">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">{copy.academy.eyebrow}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/70">{copy.academy.eyebrow}</p>
                   <h3 className="mt-10 font-barlow text-4xl font-black uppercase tracking-[-0.03em]">{copy.academy.title}</h3>
-                  <p className="mt-6 leading-relaxed text-white/75">{copy.academy.body}</p>
+                  <p className="mt-6 leading-relaxed text-white/85">{copy.academy.body}</p>
                   <div className="mt-8 grid grid-cols-3 gap-px bg-white/15">
                     {copy.academy.stages.map((stage) => (
                       <div key={stage.name} className="bg-black/80 px-3 py-4 backdrop-blur-sm">
-                        <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-white/50">{stage.range}</p>
+                        <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-white/70">{stage.range}</p>
                         <p className="mt-3 font-barlow text-lg font-bold uppercase">{stage.name}</p>
                       </div>
                     ))}
@@ -237,9 +249,9 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
               <div className="relative flex min-h-[430px] flex-col overflow-hidden bg-wepac-gray p-7 sm:p-9">
                 <Image src="/images/arte-a-capela/hero.jpg" alt="" fill sizes="(max-width: 1023px) 100vw, 33vw" className="object-cover object-center opacity-[0.14]" />
                 <div className="relative flex flex-1 flex-col">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/55">{copy.houses.artsLabel}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/70">{copy.houses.artsLabel}</p>
                   <h3 className="mt-10 font-barlow text-4xl font-black uppercase tracking-[-0.03em]">{copy.landing.artsTitle}</h3>
-                  <p className="mt-6 flex-1 leading-relaxed text-black/70">{copy.houses.artsLine}</p>
+                  <p className="mt-6 flex-1 leading-relaxed text-black/80">{copy.houses.artsLine}</p>
                   <div className="mt-10 flex flex-wrap gap-x-7 gap-y-3 text-xs font-bold uppercase tracking-[0.18em]">
                     <Link href="/wessex" className="inline-flex items-center gap-2">{copy.houses.wessexCta} <Arrow /></Link>
                     <Link href="/arte-a-capela" className="inline-flex items-center gap-2">{copy.houses.arteCta} <Arrow /></Link>
@@ -253,14 +265,14 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
         <section className="border-b border-white/10 px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
           <div className="mx-auto grid max-w-[1440px] gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
             <FadeIn>
-              <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">{copy.platform.eyebrow}</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/65">{copy.platform.eyebrow}</p>
               <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[0.9] tracking-[-0.04em] sm:text-7xl">
                 {copy.platform.title}
               </h2>
             </FadeIn>
             <FadeIn delay={0.1}>
-              <p className="max-w-2xl text-lg leading-relaxed text-white/70">{copy.platform.body}</p>
-              <p className="mt-5 max-w-2xl leading-relaxed text-white/55">{copy.platform.support}</p>
+              <p className="max-w-2xl text-lg leading-relaxed text-white/85">{copy.platform.body}</p>
+              <p className="mt-5 max-w-2xl leading-relaxed text-white/75">{copy.platform.support}</p>
               <Link href="/wepacker/login" className="mt-9 inline-flex items-center gap-2 border-b border-white pb-2 text-xs font-bold uppercase tracking-[0.18em]">
                 {copy.platform.backpackCta} <Arrow />
               </Link>
@@ -277,12 +289,12 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
             </div>
             <FadeIn className="mt-14 grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">{copy.proof.eyebrow}</p>
+                <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/65">{copy.proof.eyebrow}</p>
                 <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">{copy.proof.title}</h2>
               </div>
               <div>
-                <p className="text-xl leading-relaxed text-white/75">{copy.proof.body}</p>
-                <p className="mt-6 leading-relaxed text-white/55">{copy.proof.support}</p>
+                <p className="text-xl leading-relaxed text-white/85">{copy.proof.body}</p>
+                <p className="mt-6 leading-relaxed text-white/75">{copy.proof.support}</p>
               </div>
             </FadeIn>
           </div>
@@ -294,9 +306,9 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
           </div>
           <div className="absolute inset-0 -z-10 bg-black/65" />
           <FadeIn className="mx-auto max-w-5xl text-center">
-            <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/50">{copy.closing.eyebrow}</p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/70">{copy.closing.eyebrow}</p>
             <h2 className="mt-8 text-balance font-barlow text-5xl font-black uppercase leading-[0.88] tracking-[-0.045em] sm:text-7xl lg:text-8xl">{copy.closing.title}</h2>
-            <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-white/65">{copy.closing.body}</p>
+            <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-white/80">{copy.closing.body}</p>
             <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
               <Link href={intakeHref} className="inline-flex min-h-14 items-center justify-center bg-white px-7 text-xs font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-wepac-gray">
                 {copy.closing.lifePlanCta}

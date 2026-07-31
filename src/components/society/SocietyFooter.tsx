@@ -23,16 +23,16 @@ export function SocietyFooter() {
                 className="h-14 w-auto"
               />
             </Link>
-            <p className="mt-6 max-w-sm font-barlow text-xl font-bold leading-relaxed text-white/70">
+            <p className="mt-6 max-w-sm font-barlow text-xl font-bold leading-relaxed text-white/80">
               {t("description")}
             </p>
           </div>
 
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/40">
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/60">
               {t("home")}
             </p>
-            <div className="mt-5 flex flex-col gap-3 text-sm text-white/65">
+            <div className="mt-5 flex flex-col gap-3 text-sm text-white/80">
               <Link href="/society" className="hover:text-white">Society</Link>
               <Link href="/society/life-plan" className="hover:text-white">Life Plan</Link>
               <Link href="/society/familias" className="hover:text-white">{t("families")}</Link>
@@ -44,10 +44,10 @@ export function SocietyFooter() {
           </div>
 
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/40">
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/60">
               {t("paths")}
             </p>
-            <div className="mt-5 flex flex-col gap-3 text-sm text-white/65">
+            <div className="mt-5 flex flex-col gap-3 text-sm text-white/80">
               <Link href={intakeHref} className="hover:text-white">
                 {t("startLifePlan")}
               </Link>
@@ -60,10 +60,10 @@ export function SocietyFooter() {
           </div>
 
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/40">
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/60">
               {t("follow")}
             </p>
-            <div className="mt-5 flex flex-col gap-3 text-sm text-white/65">
+            <div className="mt-5 flex flex-col gap-3 text-sm text-white/80">
               <a
                 href="https://www.instagram.com/wepac.oficial/"
                 target="_blank"
@@ -79,7 +79,7 @@ export function SocietyFooter() {
           </div>
         </div>
 
-        <div className="mt-14 flex flex-col gap-4 border-t border-white/10 pt-7 text-xs text-white/35 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-14 flex flex-col gap-4 border-t border-white/10 pt-7 text-xs text-white/60 sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} WEPAC · Carcavelos, Portugal</p>
           <div className="flex gap-5">
             <Link href="/privacidade" className="hover:text-white">{t("privacy")}</Link>
