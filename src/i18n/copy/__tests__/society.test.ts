@@ -57,11 +57,24 @@ describe("Society narrative", () => {
   });
 
   it("states the current proof without claiming ownership of people's results", () => {
-    expect(pt.proof.body).toContain("Dezenas");
+    expect(pt.proof.body).toContain("através de uma parceria");
     expect(pt.proof.body).toContain("três atletas medalhados");
     expect(pt.proof.body).toContain("Jotta Pê");
     expect(pt.proof.support).toContain("Os resultados pertencem às pessoas");
     expect(pt.proof.body).not.toMatch(/\bBGA\b/i);
+    expect(pt.proof.body).not.toContain("desenhados pela WEPAC");
+    expect(en.proof.body).toContain("through a partnership");
+  });
+
+  it("shows all four consented proof portraits without the text-bearing Álvaro source", () => {
+    const page = readFileSync(resolve(process.cwd(), "src/app/[locale]/society/page.tsx"), "utf8");
+
+    expect(pt.proof.media).toHaveLength(4);
+    expect(page).toContain("proof-jiu-jitsu.jpg");
+    expect(page).toContain("proof-alvaro-luis-clean.jpg");
+    expect(page).toContain("proof-alex-podium.jpg");
+    expect(page).toContain("proof-jotta-pe.jpg");
+    expect(page).not.toContain('src="/images/society/proof-alvaro-luis.jpg"');
   });
 
   it("spells zero out in the Academy line and includes the organizations offer", () => {

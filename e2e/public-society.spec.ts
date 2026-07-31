@@ -83,43 +83,68 @@ test("Society is the public entrance and keeps every existing door reachable", a
   }
 });
 
-test("Society navigation remains usable on mobile", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/society");
+test("Society remains usable across phone and tablet orientations", async ({ page }) => {
+  const viewports = [
+    { name: "phone portrait", width: 390, height: 844 },
+    { name: "phone landscape", width: 844, height: 390 },
+    { name: "tablet portrait", width: 768, height: 1024 },
+    { name: "tablet landscape", width: 1024, height: 768 },
+  ];
 
-  await page.getByRole("button", { name: "Abrir menu" }).click();
-  const menu = page.getByRole("dialog", { name: "Menu de navegação" });
-  await expect(menu).toBeVisible();
-  await expect(menu.getByRole("link", { name: "Life Plan", exact: true })).toHaveAttribute(
-    "href",
-    "/society/life-plan"
-  );
-  await expect(menu.getByRole("link", { name: "Famílias", exact: true })).toHaveAttribute(
-    "href",
-    "/society/familias"
-  );
-  await expect(menu.getByRole("link", { name: "Academy", exact: true })).toHaveAttribute(
-    "href",
-    "/academy"
-  );
-  await expect(
-    menu.getByRole("link", { name: "Companhia de Artes", exact: true })
-  ).toHaveAttribute("href", "/companhia-de-artes");
+  for (const viewport of viewports) {
+    await test.step(viewport.name, async () => {
+      await page.setViewportSize(viewport);
+      await page.goto("/society");
 
-  await page.getByRole("button", { name: "Fechar menu" }).click();
-  await revealPage(page);
-  await expect(page.locator("main [style*='opacity: 0']")).toHaveCount(0);
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth
-    )
-  ).toBe(true);
+      const menuToggle = page.getByRole("button", { name: "Abrir menu" });
+      await menuToggle.click();
+      const menu = page.getByRole("dialog", { name: "Menu de navegação" });
+      await expect(menu).toBeVisible();
+      await expect(menu.getByRole("link", { name: "Life Plan", exact: true })).toHaveAttribute(
+        "href",
+        "/society/life-plan"
+      );
+      await expect(menu.getByRole("link", { name: "Famílias", exact: true })).toHaveAttribute(
+        "href",
+        "/society/familias"
+      );
+      await expect(menu.getByRole("link", { name: "Academy", exact: true })).toHaveAttribute(
+        "href",
+        "/academy"
+      );
+      await expect(
+        menu.getByRole("link", { name: "Companhia de Artes", exact: true })
+      ).toHaveAttribute("href", "/companhia-de-artes");
+
+      const finalCta = menu.getByRole("link", { name: "Começar Life Plan", exact: true });
+      await finalCta.scrollIntoViewIfNeeded();
+      await expect(finalCta).toBeInViewport();
+      await page.keyboard.press("Escape");
+      await expect(menu).toBeHidden();
+      await expect(menuToggle).toBeFocused();
+
+      await revealPage(page);
+      await expect(page.locator("main [style*='opacity: 0']")).toHaveCount(0);
+      await expect(page.getByText("Álvaro Luís · jiu-jitsu", { exact: true })).toBeVisible();
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth
+        ),
+        `${viewport.name} should not overflow horizontally`,
+      ).toBe(true);
+    });
+  }
 
   if (process.env.QA_SCREENSHOT_MOBILE) {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/society");
+    await revealPage(page);
     await page.screenshot({ path: process.env.QA_SCREENSHOT_MOBILE, fullPage: true });
   }
 
   if (process.env.QA_SCREENSHOT_MOBILE_PLATFORM) {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/society");
     await page.locator("#life-plan").scrollIntoViewIfNeeded();
     await page.waitForTimeout(750);
     await page.screenshot({ path: process.env.QA_SCREENSHOT_MOBILE_PLATFORM });
@@ -142,22 +167,28 @@ test("the visitor can choose English and keep the same Society journey", async (
     page.getByRole("heading", { level: 1, name: "From packers to WEPACkers." }),
   ).toBeVisible();
   await expect(
-    page.getByText("Education for a lifetime. It starts with the Life Plan.", {
+    page.getByText("Education for a lifetime.", {
       exact: true,
     }),
   ).toBeVisible();
+
+  await revealPage(page);
   await expect(
     page.getByRole("heading", {
-      name: "Belonging means building together.",
+      name: "Start with what your life needs now.",
       exact: true,
     }),
   ).toBeVisible();
   await expect(
     page.getByRole("link", {
-      name: "Discuss Life Plan for our organization",
+      name: "Explore the Academy",
       exact: true,
     }),
-  ).toHaveAttribute("href", "/en/wepacker/intake?source=organizations");
+  ).toHaveAttribute("href", "/en/academy");
+  await expect(page.getByAltText("Álvaro Luís holding a jiu-jitsu medal")).toBeVisible();
+  await expect(
+    page.getByText(/made available by WEPAC through a partnership/),
+  ).toBeVisible();
 
   await expect
     .poll(async () => {

@@ -219,7 +219,7 @@ const ptPT = {
     eyebrow: "Prova com o tamanho certo",
     title: "Medido, não anunciado.",
     body:
-      "Dezenas de WEPACkers já seguem planos curriculares desenhados pela WEPAC. Entre os percursos que podemos mostrar publicamente estão três atletas medalhados — Álvaro Luís, André Vítor e Alex Florindo — e Jotta Pê, músico com trabalho publicado.",
+      "Alunos que seguiram os currículos internacionais disponibilizados pela WEPAC através de uma parceria alcançaram distinções internacionais. Entre os WEPACkers cujos percursos podemos mostrar publicamente estão três atletas medalhados — Álvaro Luís, André Vítor e Alex Florindo — e Jotta Pê, músico com trabalho publicado.",
     support:
       "Os resultados pertencem às pessoas. A WEPAC não reclama autoria sobre uma medalha ou uma obra: o nosso papel é dar direção, estrutura e continuidade ao trabalho que cada WEPACker assume como seu.",
     media: [
@@ -526,7 +526,7 @@ const enUS = {
     eyebrow: "Proof at the right scale",
     title: "Measured, not announced.",
     body:
-      "Dozens of WEPACkers already follow curricular plans designed by WEPAC. The journeys we can share publicly include three medal-winning athletes — Álvaro Luís, André Vítor, and Alex Florindo — and Jotta Pê, a musician with published work.",
+      "Learners who followed the international curricula made available by WEPAC through a partnership have earned international distinctions. Among the WEPACkers whose journeys we can share publicly are three medal-winning athletes — Álvaro Luís, André Vítor, and Alex Florindo — and Jotta Pê, a musician with published work.",
     support:
       "The results belong to them. WEPAC does not claim authorship of a medal or a body of work. Our role is to provide direction, structure, and continuity to the work each WEPACker takes ownership of.",
     media: [

@@ -109,7 +109,7 @@ export function SocietyHeader() {
           aria-modal="true"
           aria-label={common("navigation")}
           tabIndex={-1}
-          className="border-t border-white/10 bg-black px-5 py-7 xl:hidden"
+          className="max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain border-t border-white/10 bg-black px-5 py-7 xl:hidden"
         >
           <div className="mx-auto flex max-w-[1760px] flex-col">
             {navigation.map((item) => (

@@ -45,6 +45,32 @@ function Arrow() {
   return <span aria-hidden="true">↗</span>;
 }
 
+function HeroLifeMap() {
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 overflow-hidden"
+    >
+      <div
+        className="absolute inset-0 opacity-[0.18]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px)",
+          backgroundSize: "72px 72px",
+        }}
+      />
+      <div className="absolute left-[18%] top-[14%] h-[72%] w-px bg-gradient-to-b from-transparent via-white/55 to-transparent" />
+      <div className="absolute left-[18%] top-[24%] h-px w-[48%] bg-white/20" />
+      <div className="absolute left-[18%] top-1/2 h-px w-[65%] bg-white/20" />
+      <div className="absolute left-[18%] top-[74%] hidden h-px w-[38%] bg-white/20 sm:block" />
+      <div className="absolute left-[18%] top-[calc(24%-5px)] h-3 w-3 -translate-x-1/2 rounded-full border border-white bg-black" />
+      <div className="absolute left-[18%] top-[calc(50%-5px)] h-3 w-3 -translate-x-1/2 rounded-full border border-white bg-black" />
+      <div className="absolute left-[18%] top-[calc(74%-5px)] hidden h-3 w-3 -translate-x-1/2 rounded-full bg-white sm:block" />
+      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black to-transparent" />
+    </div>
+  );
+}
+
 function ProofImage({
   src,
   alt,
@@ -86,15 +112,15 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
     <div className="min-h-screen bg-black text-white selection:bg-wepac-gray selection:text-black">
       <SocietyHeader />
       <main>
-        <section className="relative isolate overflow-hidden border-b border-white/10 px-5 pb-20 pt-32 sm:px-8 lg:min-h-screen lg:px-12 lg:pb-24 lg:pt-40">
+        <section className="relative isolate overflow-hidden border-b border-white/10 px-5 pb-20 pt-32 sm:px-8 lg:px-12 xl:min-h-screen xl:pb-24 xl:pt-36">
           <div className="absolute inset-0 -z-20 bg-black" />
 
-          <div className="mx-auto grid min-h-[650px] max-w-[1760px] items-end gap-12 lg:grid-cols-[1.15fr_0.85fr]">
-            <FadeIn>
+          <div className="mx-auto grid max-w-[1760px] gap-12 md:gap-16 xl:min-h-[calc(100vh-15rem)] xl:grid-cols-[minmax(0,1.05fr)_minmax(440px,0.95fr)] xl:items-center xl:gap-16 2xl:gap-24">
+            <FadeIn className="max-w-[760px]">
               <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/70">
                 {copy.hero.eyebrow}
               </p>
-              <h1 className="mt-8 max-w-5xl text-balance font-barlow text-[clamp(3.6rem,7.6vw,8.2rem)] font-black uppercase leading-[0.82] tracking-[-0.035em]">
+              <h1 className="mt-8 text-balance font-barlow text-[clamp(3.5rem,5.4vw,6.5rem)] font-black uppercase leading-[0.86] tracking-[-0.035em]">
                 {copy.hero.title}
               </h1>
               <p className="mt-10 max-w-2xl text-balance font-barlow text-2xl font-bold uppercase leading-tight sm:text-3xl">
@@ -120,19 +146,31 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
               <p className="mt-4 text-xs leading-relaxed text-white/65">{copy.hero.ctaNote}</p>
             </FadeIn>
 
-            <FadeIn delay={0.1} className="relative overflow-hidden border border-white/15 shadow-[0_30px_100px_rgba(0,0,0,0.55)] lg:w-full lg:max-w-[520px] lg:justify-self-end">
-              <Image
-                src="/images/society/alex-florindo-portrait.jpg"
-                alt={copy.hero.portraitAlt}
-                width={1080}
-                height={1080}
-                sizes="(max-width: 1023px) 100vw, 520px"
-                priority
-                className="aspect-square w-full object-cover"
-              />
-              <p className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/90">
-                {copy.hero.portraitLabel}
-              </p>
+            <FadeIn
+              delay={0.1}
+              className="relative isolate ml-auto min-h-[390px] w-full max-w-[680px] overflow-hidden border border-white/10 bg-[#080808] md:min-h-[460px] xl:ml-0 xl:min-h-[620px] xl:max-w-none"
+            >
+              <HeroLifeMap />
+              <div className="absolute inset-x-6 top-6 flex items-center justify-between text-[9px] font-bold uppercase tracking-[0.22em] text-white/40 sm:inset-x-8 sm:top-8">
+                <span>Life Map</span>
+                <span>01 — 07</span>
+              </div>
+              <figure className="absolute right-0 top-1/2 w-[min(86%,340px)] -translate-y-1/2 overflow-hidden border border-white/15 bg-black shadow-[0_30px_100px_rgba(0,0,0,0.55)] md:w-[min(68%,360px)] xl:w-[min(72%,400px)]">
+                <div className="relative aspect-[4/5]">
+                  <Image
+                    src="/images/society/alex-florindo-portrait.jpg"
+                    alt={copy.hero.portraitAlt}
+                    fill
+                    sizes="(max-width: 767px) 100vw, (max-width: 1279px) 360px, 400px"
+                    priority
+                    className="object-cover object-center"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent" />
+                </div>
+                <figcaption className="absolute inset-x-0 bottom-0 p-5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/90 sm:p-6">
+                  {copy.hero.portraitLabel}
+                </figcaption>
+              </figure>
             </FadeIn>
           </div>
         </section>
@@ -259,8 +297,9 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
 
         <section className="border-b border-white/10 bg-[#080808] px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
           <div className="mx-auto max-w-[1760px]">
-            <div className="grid gap-px bg-white/15 md:grid-cols-3">
+            <div className="grid gap-px bg-white/15 sm:grid-cols-2 xl:grid-cols-4">
               <ProofImage src="/images/society/proof-jiu-jitsu.jpg" alt={copy.proof.media[0].alt} label={copy.proof.media[0].label} />
+              <ProofImage src="/images/society/proof-alvaro-luis-clean.jpg" alt={copy.proof.media[1].alt} label={copy.proof.media[1].label} />
               <ProofImage src="/images/society/proof-alex-podium.jpg" alt={copy.proof.media[2].alt} label={copy.proof.media[2].label} />
               <ProofImage src="/images/society/proof-jotta-pe.jpg" alt={copy.proof.media[3].alt} label={copy.proof.media[3].label} />
             </div>
