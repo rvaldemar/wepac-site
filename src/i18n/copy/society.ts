@@ -106,6 +106,13 @@ const ptPT = {
       },
     ],
   },
+  landing: {
+    routesEyebrow: "A Society abre caminhos",
+    routesTitle: "Começa pelo que a tua vida pede agora.",
+    routesBody:
+      "O Life Plan dá direção. Depois, cada pessoa, família ou equipa encontra a porta certa sem confundir os caminhos entre si.",
+    artsTitle: "Companhia de Artes",
+  },
   families: {
     eyebrow: "Famílias",
     title: "O caminho começa em casa.",
@@ -405,6 +412,13 @@ const enUS = {
         line: "Individual directions connected through shared language, rituals, and priorities.",
       },
     ],
+  },
+  landing: {
+    routesEyebrow: "Society opens paths",
+    routesTitle: "Start with what your life needs now.",
+    routesBody:
+      "The Life Plan provides direction. Then each person, family, or team finds the right door without confusing one path with another.",
+    artsTitle: "Arts Company",
   },
   families: {
     eyebrow: "Families",

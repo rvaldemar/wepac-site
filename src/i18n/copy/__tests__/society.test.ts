@@ -67,4 +67,17 @@ describe("Society narrative", () => {
     expect(pt.organizations.privacyBody).toContain("consentimento explícito");
     expect(en.organizations.body).toContain("HR teams");
   });
+
+  it("keeps the three Academy stages as equal parts of one route", () => {
+    expect(pt.academy.stages.map((stage) => stage.name)).toEqual([
+      "Easy Peasy",
+      "Step Up",
+      "YUP",
+    ]);
+    expect(en.academy.stages.map((stage) => stage.name)).toEqual([
+      "Easy Peasy",
+      "Step Up",
+      "YUP",
+    ]);
+  });
 });
