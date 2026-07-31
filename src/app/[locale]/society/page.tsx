@@ -95,7 +95,7 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
               fill
               sizes="62vw"
               priority
-              className="origin-bottom-right scale-[0.94] object-contain object-right-bottom [filter:brightness(1.2)_saturate(1.08)]"
+              className="origin-bottom-right scale-[0.88] object-contain object-right-bottom [filter:brightness(1.2)_saturate(1.08)]"
             />
             <div
               className="absolute inset-0"
