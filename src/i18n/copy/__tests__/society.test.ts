@@ -57,13 +57,13 @@ describe("Society narrative", () => {
   });
 
   it("states the current proof without claiming ownership of people's results", () => {
-    expect(pt.proof.body).toContain("através de uma parceria");
     expect(pt.proof.body).toContain("três atletas medalhados");
     expect(pt.proof.body).toContain("Jotta Pê");
     expect(pt.proof.support).toContain("Os resultados pertencem às pessoas");
     expect(pt.proof.body).not.toMatch(/\bBGA\b/i);
+    expect(pt.proof.body).not.toContain("parceria");
     expect(pt.proof.body).not.toContain("desenhados pela WEPAC");
-    expect(en.proof.body).toContain("through a partnership");
+    expect(en.proof.body).not.toContain("partnership");
   });
 
   it("shows all four consented proof portraits without the text-bearing Álvaro source", () => {
@@ -86,6 +86,8 @@ describe("Society narrative", () => {
   });
 
   it("keeps the three Academy stages as equal parts of one route", () => {
+    expect(pt.academy.ageLabel).toBe("Idade");
+    expect(en.academy.ageLabel).toBe("Age");
     expect(pt.academy.stages.map((stage) => stage.name)).toEqual([
       "Easy Peasy",
       "Step Up",
@@ -96,6 +98,20 @@ describe("Society narrative", () => {
       "Step Up",
       "YUP",
     ]);
+  });
+
+  it("makes the Arts Company, integral development, and values explicit exits", () => {
+    const page = readFileSync(resolve(process.cwd(), "src/app/[locale]/society/page.tsx"), "utf8");
+
+    expect(pt.landing.artsTitle).toBe("WEPAC Companhia de Artes");
+    expect(pt.houses.artsLine).toContain("Não é só arte. Existe método.");
+    expect(pt.houses.artsLine).not.toContain("porta própria");
+    expect(pt.houses.companyCta).toBe("Conhecer a WEPAC Companhia de Artes");
+    expect(en.houses.artsLine).not.toContain("own doors");
+    expect(pt.landing.values.items).toHaveLength(6);
+    expect(page).toContain('href="/companhia-de-artes"');
+    expect(page).toContain('href="/academy"');
+    expect(page).toContain('href="/sobre"');
   });
 
   it("does not leave navigation pointing at removed Society sections", () => {

@@ -111,7 +111,26 @@ const ptPT = {
     routesTitle: "Começa pelo que a tua vida pede agora.",
     routesBody:
       "O Life Plan dá direção. Depois, cada pessoa, família ou equipa encontra a porta certa sem confundir os caminhos entre si.",
-    artsTitle: "Companhia de Artes",
+    artsTitle: "WEPAC Companhia de Artes",
+    integral: {
+      eyebrow: "Desenvolvimento integral",
+      title: "Seis áreas. Uma pessoa inteira.",
+      body: "O desenvolvimento humano não se separa em departamentos. As seis áreas ajudam a ler a pessoa inteira e o momento que está a viver.",
+      cta: "Conhecer as seis áreas",
+    },
+    values: {
+      eyebrow: "Valores",
+      title: "O que orienta a nossa obra.",
+      items: [
+        "Educação",
+        "Acessibilidade cultural",
+        "Inspiração artística",
+        "Comunidade",
+        "Sofisticação artística",
+        "Proximidade com o território",
+      ],
+      cta: "Conhecer os nossos valores",
+    },
   },
   families: {
     eyebrow: "Famílias",
@@ -131,6 +150,7 @@ const ptPT = {
     body:
       "Easy Peasy, Step Up e YUP adaptam a linguagem, as experiências e a responsabilidade a cada idade, mantendo sempre a pessoa inteira à vista.",
     cta: "Conhecer a Academy",
+    ageLabel: "Idade",
     stages: [
       {
         range: "0—11",
@@ -160,10 +180,11 @@ const ptPT = {
     academyCta: "Conhecer a Academy",
     artsAlt: "Interior de uma igreja histórica",
     artsLabel: "Criação · Produção · Programação",
-    artsLine: "Wessex e Arte à Capela: duas marcas com porta própria e uma régua comum.",
+    artsLine:
+      "Não é só arte. Existe método. Wessex e Arte à Capela reúnem os nossos projetos artísticos e culturais.",
     wessexCta: "Entrar na Wessex",
     arteCta: "Ver Arte à Capela",
-    companyCta: "Conhecer a Companhia",
+    companyCta: "Conhecer a WEPAC Companhia de Artes",
   },
   platform: {
     eyebrow: "Depois do Life Plan",
@@ -219,7 +240,7 @@ const ptPT = {
     eyebrow: "Prova com o tamanho certo",
     title: "Medido, não anunciado.",
     body:
-      "Alunos que seguiram os currículos internacionais disponibilizados pela WEPAC através de uma parceria alcançaram distinções internacionais. Entre os WEPACkers cujos percursos podemos mostrar publicamente estão três atletas medalhados — Álvaro Luís, André Vítor e Alex Florindo — e Jotta Pê, músico com trabalho publicado.",
+      "Alunos que seguiram os currículos internacionais disponibilizados pela WEPAC alcançaram distinções internacionais. Entre os WEPACkers cujos percursos podemos mostrar publicamente estão três atletas medalhados — Álvaro Luís, André Vítor e Alex Florindo — e Jotta Pê, músico com trabalho publicado.",
     support:
       "Os resultados pertencem às pessoas. A WEPAC não reclama autoria sobre uma medalha ou uma obra: o nosso papel é dar direção, estrutura e continuidade ao trabalho que cada WEPACker assume como seu.",
     media: [
@@ -418,7 +439,26 @@ const enUS = {
     routesTitle: "Start with what your life needs now.",
     routesBody:
       "The Life Plan provides direction. Then each person, family, or team finds the right door without confusing one path with another.",
-    artsTitle: "Arts Company",
+    artsTitle: "WEPAC Arts Company",
+    integral: {
+      eyebrow: "Integral development",
+      title: "Six areas. One whole person.",
+      body: "Human development is not divided into departments. The six areas help us read the whole person and the moment they are living through.",
+      cta: "Explore the six areas",
+    },
+    values: {
+      eyebrow: "Values",
+      title: "What guides our work.",
+      items: [
+        "Education",
+        "Cultural access",
+        "Artistic inspiration",
+        "Community",
+        "Artistic sophistication",
+        "Connection to place",
+      ],
+      cta: "Explore our values",
+    },
   },
   families: {
     eyebrow: "Families",
@@ -438,6 +478,7 @@ const enUS = {
     body:
       "Easy Peasy, Step Up, and YUP adapt language, experiences, and responsibility to each age while keeping the whole person in view.",
     cta: "Explore the Academy",
+    ageLabel: "Age",
     stages: [
       {
         range: "0—11",
@@ -467,10 +508,11 @@ const enUS = {
     academyCta: "Explore the Academy",
     artsAlt: "Interior of a historic church",
     artsLabel: "Creation · Production · Programming",
-    artsLine: "Wessex and Arte à Capela: two brands with their own doors and one shared standard.",
+    artsLine:
+      "It is not just art. There is a method. Wessex and Arte à Capela bring together our artistic and cultural projects.",
     wessexCta: "Enter Wessex",
     arteCta: "See Arte à Capela",
-    companyCta: "Explore the Arts Company",
+    companyCta: "Explore WEPAC Arts Company",
   },
   platform: {
     eyebrow: "After the Life Plan",
@@ -526,7 +568,7 @@ const enUS = {
     eyebrow: "Proof at the right scale",
     title: "Measured, not announced.",
     body:
-      "Learners who followed the international curricula made available by WEPAC through a partnership have earned international distinctions. Among the WEPACkers whose journeys we can share publicly are three medal-winning athletes — Álvaro Luís, André Vítor, and Alex Florindo — and Jotta Pê, a musician with published work.",
+      "Learners who followed the international curricula made available by WEPAC have earned international distinctions. Among the WEPACkers whose journeys we can share publicly are three medal-winning athletes — Álvaro Luís, André Vítor, and Alex Florindo — and Jotta Pê, a musician with published work.",
     support:
       "The results belong to them. WEPAC does not claim authorship of a medal or a body of work. Our role is to provide direction, structure, and continuity to the work each WEPACker takes ownership of.",
     media: [

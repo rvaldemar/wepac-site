@@ -45,6 +45,7 @@ test("Society is the public entrance and keeps every existing door reachable", a
     "/society/familias",
     "/academy",
     "/companhia-de-artes",
+    "/sobre",
     "/wessex",
     "/arte-a-capela",
     "/bilheteira",
@@ -126,6 +127,10 @@ test("Society remains usable across phone and tablet orientations", async ({ pag
       await revealPage(page);
       await expect(page.locator("main [style*='opacity: 0']")).toHaveCount(0);
       await expect(page.getByText("Álvaro Luís · jiu-jitsu", { exact: true })).toBeVisible();
+      await expect(page.getByText("Idade", { exact: true })).toHaveCount(3);
+      await expect(
+        page.getByRole("link", { name: "Conhecer a WEPAC Companhia de Artes", exact: true }),
+      ).toHaveAttribute("href", "/companhia-de-artes");
       expect(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= document.documentElement.clientWidth
@@ -185,9 +190,15 @@ test("the visitor can choose English and keep the same Society journey", async (
       exact: true,
     }),
   ).toHaveAttribute("href", "/en/academy");
+  await expect(
+    page.getByRole("link", {
+      name: "Explore WEPAC Arts Company",
+      exact: true,
+    }),
+  ).toHaveAttribute("href", "/en/companhia-de-artes");
   await expect(page.getByAltText("Álvaro Luís holding a jiu-jitsu medal")).toBeVisible();
   await expect(
-    page.getByText(/made available by WEPAC through a partnership/),
+    page.getByText(/made available by WEPAC have earned international distinctions/),
   ).toBeVisible();
 
   await expect

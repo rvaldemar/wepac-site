@@ -215,6 +215,47 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
                 {copy.lifePlan.cta}
               </Link>
             </FadeIn>
+
+            <div className="mt-12 grid gap-px bg-white/15 md:grid-cols-2">
+              <FadeIn className="flex min-h-[310px] flex-col bg-[#080808] p-7 sm:p-9">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/65">
+                  {copy.landing.integral.eyebrow}
+                </p>
+                <h3 className="mt-8 max-w-xl font-barlow text-4xl font-black uppercase leading-[0.92] tracking-[-0.035em]">
+                  {copy.landing.integral.title}
+                </h3>
+                <p className="mt-6 max-w-xl leading-relaxed text-white/75">
+                  {copy.landing.integral.body}
+                </p>
+                <p className="mt-5 max-w-xl text-sm font-semibold uppercase leading-relaxed tracking-[0.1em] text-white/85">
+                  {copy.pillars.join(" · ")}
+                </p>
+                <Link
+                  href="/academy"
+                  className="mt-auto inline-flex items-center gap-2 pt-9 text-xs font-bold uppercase tracking-[0.18em]"
+                >
+                  {copy.landing.integral.cta} <Arrow />
+                </Link>
+              </FadeIn>
+
+              <FadeIn delay={0.08} className="flex min-h-[310px] flex-col bg-[#080808] p-7 sm:p-9">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/65">
+                  {copy.landing.values.eyebrow}
+                </p>
+                <h3 className="mt-8 max-w-xl font-barlow text-4xl font-black uppercase leading-[0.92] tracking-[-0.035em]">
+                  {copy.landing.values.title}
+                </h3>
+                <p className="mt-6 max-w-xl text-sm font-semibold uppercase leading-relaxed tracking-[0.1em] text-white/85">
+                  {copy.landing.values.items.join(" · ")}
+                </p>
+                <Link
+                  href="/sobre"
+                  className="mt-auto inline-flex items-center gap-2 pt-9 text-xs font-bold uppercase tracking-[0.18em]"
+                >
+                  {copy.landing.values.cta} <Arrow />
+                </Link>
+              </FadeIn>
+            </div>
           </div>
         </section>
 
@@ -231,7 +272,7 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
             </FadeIn>
 
             <div className="mt-14 grid gap-px bg-black/15 lg:grid-cols-3">
-              <div className="relative flex min-h-[430px] flex-col overflow-hidden bg-wepac-gray p-7 sm:p-9">
+              <div className="relative flex min-h-[430px] flex-col overflow-hidden border border-black/20 bg-white/60 p-7 sm:p-9">
                 <div className="relative flex flex-1 flex-col">
                   <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/70">{copy.families.eyebrow}</p>
                   <h3 className="mt-10 font-barlow text-4xl font-black uppercase tracking-[-0.03em]">{copy.families.title}</h3>
@@ -250,7 +291,12 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
                   <div className="mt-8 grid grid-cols-3 gap-px bg-white/15">
                     {copy.academy.stages.map((stage) => (
                       <div key={stage.name} className="bg-black/80 px-3 py-4 backdrop-blur-sm">
-                        <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-white/70">{stage.range}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/65">
+                          {copy.academy.ageLabel}
+                        </p>
+                        <p className="mt-2 font-barlow text-2xl font-black tracking-[-0.025em] text-white">
+                          {stage.range}
+                        </p>
                         <p className="mt-3 font-barlow text-lg font-bold uppercase">{stage.name}</p>
                       </div>
                     ))}
@@ -270,6 +316,7 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
                   <div className="mt-10 flex flex-wrap gap-x-7 gap-y-3 text-xs font-bold uppercase tracking-[0.18em]">
                     <Link href="/wessex" className="inline-flex items-center gap-2">{copy.houses.wessexCta} <Arrow /></Link>
                     <Link href="/arte-a-capela" className="inline-flex items-center gap-2">{copy.houses.arteCta} <Arrow /></Link>
+                    <Link href="/companhia-de-artes" className="inline-flex items-center gap-2">{copy.houses.companyCta} <Arrow /></Link>
                   </div>
                 </div>
               </div>
