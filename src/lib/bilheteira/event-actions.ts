@@ -69,12 +69,16 @@ export async function createEventAction(formData: FormData): Promise<void> {
   const tierDescriptions = formData
     .getAll("tierDescription")
     .map((v) => String(v).trim());
+  const tierStripePriceIds = formData
+    .getAll("tierStripePriceId")
+    .map((v) => String(v).trim());
 
   const tiers = tierNames
     .map((name, i) => ({
       name,
       priceCents: priceToCents(tierPrices[i] || "0"),
       description: tierDescriptions[i] || null,
+      stripePriceId: tierStripePriceIds[i] || null,
       sortOrder: i,
     }))
     .filter((t) => t.name.length > 0);
