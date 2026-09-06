@@ -383,7 +383,7 @@ export function EventFormClient({
         </label>
       </div>
 
-      <label style={styles.label}>
+      {!defaults && <label style={styles.label}>
         <span style={styles.labelText}>
           {copy.coverUrl}
         </span>
@@ -395,7 +395,7 @@ export function EventFormClient({
           style={styles.input}
           placeholder={copy.coverPlaceholder}
         />
-      </label>
+      </label>}
 
       <label style={styles.label}>
         <span style={styles.labelText}>

@@ -11,7 +11,6 @@ import {
   uploadsDir,
   extForMime,
   publicUrlForFile,
-  filenameFromPublicUrl,
   MAX_UPLOAD_BYTES,
 } from "./uploads";
 
@@ -55,22 +54,18 @@ export async function uploadEventCoverAction(formData: FormData): Promise<void> 
   const bytes = Buffer.from(await file.arrayBuffer());
   await writeFile(filePath, bytes);
 
-  // Delete previous upload if it was ours.
-  if (event.coverImage) {
-    const prev = filenameFromPublicUrl(event.coverImage);
-    if (prev) {
-      try {
-        await unlink(path.join(dir, prev));
-      } catch {
-        // ignore — file may not exist anymore
-      }
-    }
+  // Keep prior assets: issued emails still reference their immutable URLs.
+  // Compare-and-swap prevents a concurrent replacement from being overwritten.
+  try {
+    const result = await prisma.event.updateMany({
+      where: { id: eventId, coverImage: event.coverImage },
+      data: { coverImage: publicUrlForFile(filename) },
+    });
+    if (result.count !== 1) throw new Error("Cover changed concurrently");
+  } catch {
+    await unlink(filePath).catch(() => {});
+    back(backPath, "Não foi possível guardar a imagem. A imagem anterior foi preservada. Recarrega a página e tenta novamente.");
   }
-
-  await prisma.event.update({
-    where: { id: eventId },
-    data: { coverImage: publicUrlForFile(filename) },
-  });
 
   revalidatePath(backPath);
   revalidatePath("/bilheteira");
@@ -87,21 +82,16 @@ export async function removeEventCoverAction(formData: FormData): Promise<void> 
   const event = await prisma.event.findUnique({ where: { id: eventId } });
   if (!event) back("/bilheteira/admin", "Evento não encontrado.");
 
-  if (event.coverImage) {
-    const prev = filenameFromPublicUrl(event.coverImage);
-    if (prev) {
-      try {
-        await unlink(path.join(uploadsDir(), prev));
-      } catch {
-        // ignore
-      }
-    }
+  if (formData.get("confirmRemove") !== "yes") {
+    back(backPath, "Confirma a remoção. Para substituir a imagem, envia diretamente o novo ficheiro.");
   }
 
-  await prisma.event.update({
-    where: { id: eventId },
+  // Detach only; retain the asset for issued emails and recovery.
+  const removed = await prisma.event.updateMany({
+    where: { id: eventId, coverImage: event.coverImage },
     data: { coverImage: null },
   });
+  if (removed.count !== 1) back(backPath, "A imagem mudou. Recarrega a página.");
 
   revalidatePath(backPath);
   revalidatePath("/bilheteira");

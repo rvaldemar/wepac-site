@@ -22,8 +22,6 @@ type Props = {
   ticketNote?: string | null;
 };
 
-const DEFAULT_CAPELA_VIVA_COVER =
-  "/bilheteira/capela-viva/ananda-roda.jpeg";
 
 const LISBON_TZ = "Europe/Lisbon";
 const ROMAN_MONTHS = [
@@ -123,7 +121,7 @@ export async function CapelaVivaTicketView({
   const copy = getInstitutionalCopy(locale).ticketing;
   const total = priceCents * seats;
   const isAmigoTier = /amigo/i.test(tierName);
-  const photoUrl = coverImage || DEFAULT_CAPELA_VIVA_COVER;
+  const photoUrl = coverImage || null;
 
   // Split subtitle "Artista · instrumento" into two parts for the ticket layout
   const subtitleParts = eventSubtitle?.split("·").map((s) => s.trim()) ?? [];
@@ -154,7 +152,7 @@ export async function CapelaVivaTicketView({
         <article className="cv-ticket">
           <div
             className="cv-photo"
-            style={{ backgroundImage: `url(${photoUrl})` }}
+            style={{ backgroundImage: photoUrl ? `url(${photoUrl})` : undefined }}
           />
           <div className="cv-corpo">
             <div className="cv-corpo-top">

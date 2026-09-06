@@ -242,6 +242,10 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
                 style={{ margin: "12px 0 0 0" }}
               >
                 <input type="hidden" name="eventId" value={event.id} />
+                <label>
+                  <input type="checkbox" name="confirmRemove" value="yes" required />
+                  {copy.confirmRemoveImage}
+                </label>
                 <button type="submit" style={styles.buttonDanger}>
                   {copy.removeImage}
                 </button>
@@ -257,6 +261,7 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
           action={uploadEventCoverAction}
           style={{ ...styles.form, gap: 10 }}
         >
+          <p>{copy.replaceImageHelp}</p>
           <input type="hidden" name="eventId" value={event.id} />
           <label style={styles.label}>
             <span style={styles.labelText}>

@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   eventCreate: vi.fn(),
   eventFindUnique: vi.fn(),
+  eventUpdate: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -18,6 +19,7 @@ vi.mock("@/lib/db", () => ({
     event: {
       create: mocks.eventCreate,
       findUnique: mocks.eventFindUnique,
+      update: mocks.eventUpdate,
     },
   },
 }));
@@ -26,7 +28,7 @@ vi.mock("../session", () => ({
   getSessionAdmin: vi.fn().mockResolvedValue({ id: "admin-1" }),
 }));
 
-import { createEventAction } from "../event-actions";
+import { createEventAction, updateEventAction } from "../event-actions";
 
 describe("createEventAction", () => {
   beforeEach(() => {
@@ -60,5 +62,19 @@ describe("createEventAction", () => {
         }),
       })
     );
+  });
+  it("editing details cannot clear or restore a stale cover URL", async () => {
+    const f = new FormData();
+    f.set("id", "synthetic-event");
+    f.set("title", "Fixture");
+    f.set("description", "Fixture");
+    f.set("departmentId", "synthetic-department");
+    f.set("venue", "Fixture");
+    f.set("startsAt", "2026-10-10T18:00");
+    for (const stale of ["", "/api/bilheteira/uploads/A.png"]) {
+      f.set("coverImage", stale);
+      await expect(updateEventAction(f)).rejects.toThrow("NEXT_REDIRECT");
+      expect(mocks.eventUpdate.mock.lastCall?.[0].data).not.toHaveProperty("coverImage");
+    }
   });
 });

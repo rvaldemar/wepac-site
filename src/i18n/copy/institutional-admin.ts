@@ -116,6 +116,8 @@ type TicketAdminCopy = {
     coverImage: string;
     currentImageAlt: string;
     removeImage: string;
+    confirmRemoveImage: string;
+    replaceImageHelp: string;
     noCover: string;
     uploadImage: string;
     sendImage: string;
@@ -324,6 +326,8 @@ const ptPT: TicketAdminCopy = {
     coverImage: "Imagem de capa",
     currentImageAlt: "Imagem atual",
     removeImage: "Remover imagem",
+    confirmRemoveImage: "Confirmo que quero deixar o evento sem imagem.",
+    replaceImageHelp: "Para substituir a fotografia, envia o novo ficheiro aqui. Não removas a imagem atual primeiro.",
     noCover: "Sem imagem de capa definida.",
     uploadImage: "Carregar imagem (JPG, PNG, WEBP ou GIF — máx. 5MB)",
     sendImage: "Enviar imagem",
@@ -534,6 +538,8 @@ const enUS: TicketAdminCopy = {
     coverImage: "Cover image",
     currentImageAlt: "Current image",
     removeImage: "Remove image",
+    confirmRemoveImage: "I confirm I want to leave this event without an image.",
+    replaceImageHelp: "To replace the photograph, upload the new file here. Do not remove the current image first.",
     noCover: "No cover image is set.",
     uploadImage: "Upload image (JPG, PNG, WEBP or GIF — max. 5MB)",
     sendImage: "Upload image",

@@ -141,7 +141,6 @@ export async function updateEventAction(formData: FormData): Promise<void> {
   const doorsAtRaw = String(formData.get("doorsAt") || "");
   const durationRaw = String(formData.get("durationMinutes") || "");
   const capacityRaw = String(formData.get("capacity") || "");
-  const coverImage = String(formData.get("coverImage") || "").trim() || null;
   const ticketNote = String(formData.get("ticketNote") || "").trim() || null;
   const statusRaw = String(formData.get("status") || "draft");
 
@@ -166,7 +165,6 @@ export async function updateEventAction(formData: FormData): Promise<void> {
       doorsAt: doorsAtRaw ? parseLocalDateTime(doorsAtRaw) : null,
       durationMinutes: durationRaw ? Number(durationRaw) : null,
       capacity: capacityRaw ? Number(capacityRaw) : null,
-      coverImage,
       ticketNote,
       status: ["draft", "published", "cancelled", "completed"].includes(
         statusRaw
