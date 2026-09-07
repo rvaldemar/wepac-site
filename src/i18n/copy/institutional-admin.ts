@@ -129,6 +129,8 @@ type TicketAdminCopy = {
     limit: string;
     save: string;
     delete: string;
+    archiveTier: string;
+    archivedTierBadge: string;
     addTier: string;
     tierNamePlaceholder: string;
     tierPricePlaceholder: string;
@@ -339,6 +341,8 @@ const ptPT: TicketAdminCopy = {
     limit: "Limite",
     save: "Guardar",
     delete: "Apagar",
+    archiveTier: "Arquivar",
+    archivedTierBadge: "Arquivada",
     addTier: "Adicionar tier",
     tierNamePlaceholder: "Nome",
     tierPricePlaceholder: "Preço em €",
@@ -551,6 +555,8 @@ const enUS: TicketAdminCopy = {
     limit: "Limit",
     save: "Save",
     delete: "Delete",
+    archiveTier: "Archive",
+    archivedTierBadge: "Archived",
     addTier: "Add ticket type",
     tierNamePlaceholder: "Name",
     tierPricePlaceholder: "Price in €",

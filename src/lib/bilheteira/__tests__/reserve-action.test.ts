@@ -234,3 +234,31 @@ describe("seats validation rejects instead of silently clamping", () => {
     expect(paymentCreate).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("archived tiers refuse new reservations", () => {
+  it("redirects back with an error and never creates a Payment", async () => {
+    eventFindUnique.mockResolvedValue({
+      ...baseEvent,
+      tiers: [{ ...paidTier, archivedAt: new Date("2026-09-07T09:00:00Z") }],
+    });
+
+    const err = await reserveAction(formData()).catch((e) => e);
+
+    expect(err).toBeInstanceOf(RedirectSignal);
+    expect((err as RedirectSignal).url).toMatch(/^\/bilheteira\/concerto\?error=/);
+    expect(paymentCreate).not.toHaveBeenCalled();
+    expect(sessionsCreate).not.toHaveBeenCalled();
+  });
+
+  it("an explicitly active tier (archivedAt null) still reserves", async () => {
+    eventFindUnique.mockResolvedValue({
+      ...baseEvent,
+      tiers: [{ ...paidTier, archivedAt: null }],
+    });
+    sessionsCreate.mockResolvedValue({ id: "cs_arch", url: "https://checkout.stripe.com/cs_arch" });
+
+    await expect(reserveAction(formData())).rejects.toBeInstanceOf(RedirectSignal);
+
+    expect(paymentCreate).toHaveBeenCalledTimes(1);
+  });
+});

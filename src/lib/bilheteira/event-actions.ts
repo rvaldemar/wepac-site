@@ -238,21 +238,25 @@ export async function updateTierStripePriceAction(
   redirect(`/bilheteira/admin/events/${eventId}?saved=1`);
 }
 
-export async function deleteTierAction(formData: FormData): Promise<void> {
+export async function archiveTierAction(formData: FormData): Promise<void> {
   await requireAdmin();
   const id = String(formData.get("id") || "");
   const eventId = String(formData.get("eventId") || "");
   if (!id) back(`/bilheteira/admin/events/${eventId}`, "Tier inválida.");
 
-  const ticketCount = await prisma.ticket.count({ where: { tierId: id } });
-  if (ticketCount > 0) {
-    back(
-      `/bilheteira/admin/events/${eventId}`,
-      "Não é possível apagar uma tier com bilhetes emitidos."
-    );
-  }
-  await prisma.ticketTier.delete({ where: { id } });
+  // Physical deletion is intentionally not offered: tiers referenced by
+  // payments/tickets are protected by RESTRICT foreign keys, and unreferenced
+  // tiers may still be referenced between the check and the delete. Archiving
+  // is uniform, keeps sales history visible to admins and can never violate
+  // integrity. The eventId in the WHERE pins the tier to the event the admin
+  // is editing; updateMany makes a repeated submit a no-op instead of an
+  // error.
+  await prisma.ticketTier.updateMany({
+    where: { id, eventId, archivedAt: null },
+    data: { archivedAt: new Date() },
+  });
   revalidatePath(`/bilheteira/admin/events/${eventId}`);
+  revalidatePath(`/bilheteira`);
   redirect(`/bilheteira/admin/events/${eventId}`);
 }
 
@@ -281,6 +285,12 @@ export async function createManualTicketAction(
 
   const tier = await prisma.ticketTier.findUnique({ where: { id: tierId } });
   if (!tier) back(`/bilheteira/admin/events/${eventId}`, "Tier inexistente.");
+  if (tier.archivedAt) {
+    back(
+      `/bilheteira/admin/events/${eventId}`,
+      "Esta tier está arquivada e não aceita novos bilhetes."
+    );
+  }
 
   await prisma.ticket.create({
     data: {

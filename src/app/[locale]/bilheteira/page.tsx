@@ -31,7 +31,9 @@ export default async function BilheteiraPublic() {
     include: {
       department: true,
       brand: true,
-      tiers: { orderBy: { priceCents: "asc" } },
+      // Archived tiers are excluded from the public offer and therefore from
+      // the "from €X" price derived below.
+      tiers: { where: { archivedAt: null }, orderBy: { priceCents: "asc" } },
     },
   });
 
@@ -115,11 +117,16 @@ export default async function BilheteiraPublic() {
                       {formatEventTime(e.startsAt, locale)}
                     </span>
                     <span>{e.venue}</span>
-                    <span>
-                      {e.tiers.length > 1
-                        ? copy.fromPrice(formatPriceCents(minPrice, locale))
-                        : formatPriceCents(minPrice, locale)}
-                    </span>
+                    {/* An event whose every tier was archived has no active
+                        price; Math.min over [] is Infinity, so skip the span
+                        entirely instead of rendering garbage. */}
+                    {e.tiers.length > 0 && (
+                      <span>
+                        {e.tiers.length > 1
+                          ? copy.fromPrice(formatPriceCents(minPrice, locale))
+                          : formatPriceCents(minPrice, locale)}
+                      </span>
+                    )}
                   </div>
                 </Link>
               );

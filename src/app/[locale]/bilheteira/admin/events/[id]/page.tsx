@@ -6,7 +6,7 @@ import { prisma } from "@/lib/db";
 import {
   updateEventAction,
   addTierAction,
-  deleteTierAction,
+  archiveTierAction,
   updateTierStripePriceAction,
   createManualTicketAction,
   checkInTicketAction,
@@ -62,6 +62,10 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
     },
   });
   if (!event) notFound();
+
+  // Admins keep full visibility of archived tiers (sales history), but new
+  // tickets — manual or public — only ever target active tiers.
+  const activeTiers = event.tiers.filter((t) => !t.archivedAt);
 
   const [departments, brands] = await Promise.all([
     prisma.department.findMany({ orderBy: { name: "asc" } }),
@@ -205,7 +209,9 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
         <p style={{ fontSize: 12, color: "#666", marginBottom: 16 }}>
           {copy.previewBody}
         </p>
-        <TicketPreview event={event} />
+        {/* The preview mirrors what a buyer would get, so it must not sample
+            an archived tier. */}
+        <TicketPreview event={{ ...event, tiers: activeTiers }} />
       </div>
 
       <h2 style={styles.h2}>{copy.coverImage}</h2>
@@ -300,9 +306,27 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
             </thead>
             <tbody>
               {event.tiers.map((t) => (
-                <tr key={t.id}>
+                <tr key={t.id} style={t.archivedAt ? { opacity: 0.55 } : undefined}>
                   <td style={styles.td}>
                     <strong>{t.name}</strong>
+                    {t.archivedAt && (
+                      <span
+                        style={{
+                          marginLeft: 8,
+                          fontSize: 10,
+                          textTransform: "uppercase",
+                          letterSpacing: 1,
+                          color: "#8a6d1a",
+                          border: "1px solid #d9c37a",
+                          borderRadius: 4,
+                          padding: "2px 6px",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {copy.archivedTierBadge} ·{" "}
+                        {formatEventDate(t.archivedAt, locale)}
+                      </span>
+                    )}
                   </td>
                   <td style={{ ...styles.td, color: "#666" }}>
                     {t.description || "—"}
@@ -312,53 +336,67 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
                   </td>
                   <td style={styles.td}>{t.quantity ?? "—"}</td>
                   <td style={styles.td}>
-                    <form
-                      action={updateTierStripePriceAction}
-                      style={{
-                        display: "flex",
-                        gap: 4,
-                        alignItems: "center",
-                      }}
-                    >
-                      <input type="hidden" name="id" value={t.id} />
-                      <input type="hidden" name="eventId" value={event.id} />
-                      <input
-                        type="text"
-                        name="stripePriceId"
-                        defaultValue={t.stripePriceId || ""}
-                        placeholder="price_..."
+                    {t.archivedAt ? (
+                      <span
                         style={{
-                          ...styles.input,
                           fontFamily: "ui-monospace, Menlo, monospace",
                           fontSize: 12,
-                          padding: "6px 8px",
-                          minWidth: 180,
-                        }}
-                      />
-                      <button
-                        type="submit"
-                        style={{
-                          ...styles.buttonGhost,
-                          padding: "6px 10px",
-                          fontSize: 10,
+                          color: "#666",
                         }}
                       >
-                        {copy.save}
-                      </button>
-                    </form>
+                        {t.stripePriceId || "—"}
+                      </span>
+                    ) : (
+                      <form
+                        action={updateTierStripePriceAction}
+                        style={{
+                          display: "flex",
+                          gap: 4,
+                          alignItems: "center",
+                        }}
+                      >
+                        <input type="hidden" name="id" value={t.id} />
+                        <input type="hidden" name="eventId" value={event.id} />
+                        <input
+                          type="text"
+                          name="stripePriceId"
+                          defaultValue={t.stripePriceId || ""}
+                          placeholder="price_..."
+                          style={{
+                            ...styles.input,
+                            fontFamily: "ui-monospace, Menlo, monospace",
+                            fontSize: 12,
+                            padding: "6px 8px",
+                            minWidth: 180,
+                          }}
+                        />
+                        <button
+                          type="submit"
+                          style={{
+                            ...styles.buttonGhost,
+                            padding: "6px 10px",
+                            fontSize: 10,
+                          }}
+                        >
+                          {copy.save}
+                        </button>
+                      </form>
+                    )}
                   </td>
                   <td style={{ ...styles.td, textAlign: "right" }}>
-                    <form action={deleteTierAction} style={{ margin: 0 }}>
-                      <input type="hidden" name="id" value={t.id} />
-                      <input
-                        type="hidden"
-                        name="eventId"
-                        value={event.id}
-                      />
-                      <button type="submit" style={styles.buttonDanger}>
-                        {copy.delete}
-                      </button>
-                    </form>
+                    {!t.archivedAt && (
+                      <form action={archiveTierAction} style={{ margin: 0 }}>
+                        <input type="hidden" name="id" value={t.id} />
+                        <input
+                          type="hidden"
+                          name="eventId"
+                          value={event.id}
+                        />
+                        <button type="submit" style={styles.buttonDanger}>
+                          {copy.archiveTier}
+                        </button>
+                      </form>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -690,7 +728,7 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
           </div>
         )}
 
-        {event.tiers.length > 0 && (
+        {activeTiers.length > 0 && (
           <form
             action={createManualTicketAction}
             style={{ ...styles.form, marginTop: 20, gap: 10 }}
@@ -723,7 +761,7 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
             </div>
             <div style={styles.grid2}>
               <select name="tierId" required style={styles.select}>
-                {event.tiers.map((t) => (
+                {activeTiers.map((t) => (
                   <option key={t.id} value={t.id}>
                     {t.name} — {formatPriceCents(t.priceCents, locale)}
                   </option>

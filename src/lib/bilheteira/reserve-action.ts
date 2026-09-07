@@ -51,6 +51,14 @@ export async function reserveAction(formData: FormData): Promise<void> {
   const tier = event.tiers.find((t) => t.id === tierId);
   if (!tier) back(backPath, "Tier inválida.");
 
+  // Archived tiers stay in the DB for sales history but must not accept new
+  // reservations — including deep-links and hand-crafted POSTs that bypass
+  // the (already filtered) public page. Completion of payments started before
+  // archiving happens in the webhook and is intentionally unaffected.
+  if (tier.archivedAt) {
+    back(backPath, "Esta tier já não está disponível.");
+  }
+
   // Both forms that post here cap the visible input at MAX_SEATS — silently
   // clamping out-of-range or non-numeric values would let a crafted POST buy
   // a different quantity than what the buyer saw and submitted. Reject

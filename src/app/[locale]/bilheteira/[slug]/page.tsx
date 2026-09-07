@@ -41,7 +41,9 @@ export default async function EventPublicPage({ params, searchParams }: Props) {
     include: {
       department: true,
       brand: true,
-      tiers: { orderBy: { sortOrder: "asc" } },
+      // Archived tiers are admin-only history; the public offer never shows
+      // them. reserveAction re-checks server-side for crafted requests.
+      tiers: { where: { archivedAt: null }, orderBy: { sortOrder: "asc" } },
     },
   });
   if (!event) notFound();

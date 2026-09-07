@@ -1144,6 +1144,7 @@ model TicketTier {
   quantity      Int?
   sortOrder     Int      @default(0)
   stripePriceId String?
+  archivedAt    DateTime?
   createdAt     DateTime @default(now())
 
   event    Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
