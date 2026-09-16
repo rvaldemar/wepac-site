@@ -1,0 +1,64 @@
+name: Quality
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: wepac
+          POSTGRES_PASSWORD: wepac
+          POSTGRES_DB: wepac_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U wepac -d wepac_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      CI: "true"
+      DATABASE_URL: postgresql://wepac:wepac@127.0.0.1:5432/wepac_ci
+      AUTH_SECRET: ci-only-not-a-production-secret
+      AUTH_URL: http://127.0.0.1:3107
+      APP_URL: http://127.0.0.1:3107
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx prisma migrate deploy
+      - run: npm run check
+      - run: npx playwright install --with-deps chromium
+      - name: Start built application
+        run: |
+          mkdir -p .next/standalone/.next/static .next/standalone/public
+          cp -R .next/static/. .next/standalone/.next/static/
+          cp -R public/. .next/standalone/public/
+          (cd .next/standalone && PORT=3107 HOSTNAME=127.0.0.1 node server.js) > /tmp/wepac-next.log 2>&1 &
+          for attempt in {1..60}; do
+            curl --fail --silent http://127.0.0.1:3107/society > /dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/wepac-next.log
+          exit 1
+      - run: BASE_URL=http://127.0.0.1:3107 npm run test:http
+      - run: BASE_URL=http://127.0.0.1:3107 AUDIT_STRICT=1 npm run audit:site
+      - run: BASE_URL=http://127.0.0.1:3107 npm run healthcheck
+      - run: npm run test:e2e:build
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: site-audit
+          path: audit-results/site-audit.json
+          if-no-files-found: ignore

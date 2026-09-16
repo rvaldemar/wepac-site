@@ -1,0 +1,3194 @@
+{
+  "source": "/home/hitman/wepac",
+  "base_sha": "921291dde572b2a0c2fd9222f9706611842804c7",
+  "remote_main_at_capture": "ac4b61e2c97226cd704651e825922c89e0fa95db",
+  "branch": "preserve/server-worktree-20260916",
+  "captured_at_utc": "2026-09-16T17:41:56.444639+00:00",
+  "requested_preservation_date": "2026-09-16",
+  "status_sha256": "c4d6f60e17199254fe70d6201e71de2b2b0a60074a7155a56830e389d6cbb041",
+  "files": [
+    {
+      "path": ".github/workflows/quality.yml",
+      "sha256": "54976fe8cdb1fecb58edabb5f9cb5f2078dcd0b1f75db35c611119af494ca538",
+      "bytes": 2025,
+      "origin": "untracked"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "ce2cb238362f39389ee11131e5c3bfe057c26bf058fad1e6150363bfb242bca6",
+      "bytes": 507,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "662526a10d7bb6b15582b806d0493efaad74a8edecd1829835d0921f273ccf46",
+      "bytes": 1115,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "CLAUDE.md",
+      "sha256": "84972833e49c77b9e47eff438f1afbad9157a0869a3f5eb860da37bf924cf68a",
+      "bytes": 6306,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "OPS_LOG.md",
+      "sha256": "dae53787f06437dd134493f80e7f17fdba598cfbb070079e8554ff48d16e2d19",
+      "bytes": 68077,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "README.md",
+      "sha256": "9b66c89c753610fdabb613299745aa67e2e0270e344abe71424db2ff548dd6ba",
+      "bytes": 4684,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "deploy/DNS_SETUP_PROMPT.md",
+      "sha256": "3272cbb684e240128620543fb181edb02ccffdffaa5a765ae9bb8d44bfeabae0",
+      "bytes": 7742,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "deploy/deploy.sh",
+      "sha256": "3e15864aa10a66e1d84563b75266c0f99548076cdca93c6ffaf15c3c00131530",
+      "bytes": 33538,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "deploy/nginx.conf",
+      "sha256": "f252217ec1b513d4e21b2415c06a3852e51e0daa9b40eef53c3aece99e37395d",
+      "bytes": 11573,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "deploy/server_setup.sh",
+      "sha256": "bdfd1dd40e0e9b4dac50a0789f9a81566ff3d6a4ab1cc90cb4b973d9768bbf20",
+      "bytes": 3404,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "deploy/set-stripe-keys.sh",
+      "sha256": "4676dcdeaeab586cfa6b758ffbc89af62fe3eb18f3e420a4d55c7448dce3d8e5",
+      "bytes": 4589,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "deploy/systemd/wepac-healthcheck.service",
+      "sha256": "5e5350d4a2dc032878e9a5cd7afb499f9c6df3aadbb61c22fd1d576f94224cf2",
+      "bytes": 580,
+      "origin": "untracked"
+    },
+    {
+      "path": "deploy/systemd/wepac-healthcheck.timer",
+      "sha256": "bfb701a6d918587332c0556faf3ad51eec7e5b116386c38832c5687713efe3ab",
+      "bytes": 206,
+      "origin": "untracked"
+    },
+    {
+      "path": "deploy/wepac-ssl-setup.sh",
+      "sha256": "40fedac91d13981e691b8674c1c8b285918b73ad372435bcd031fcaa70347801",
+      "bytes": 6395,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "deploy/wepac-staging.service",
+      "sha256": "16f5d26c8c130f3b32aea01ff3ecc0ff6dfbc62f257cf0f4cdec7dbd2b9ced59",
+      "bytes": 605,
+      "origin": "untracked"
+    },
+    {
+      "path": "deploy/wepac.service",
+      "sha256": "a9fb84725e5116e44ecf278758618ca08f9d4e16f6978a5bc3f4b94f4179a341",
+      "bytes": 554,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "docs/architecture/community-pack-design.md",
+      "sha256": "bb6b40429f14a9735645ad442119e3e0a2bc6e99f55f78528703685aad517f62",
+      "bytes": 23913,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "docs/architecture/domain-graph.md",
+      "sha256": "6c88c1e04194c88e83709fbc238f56a0246fab277c22b954c32d2cc772bf78d6",
+      "bytes": 15471,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "docs/architecture/legacy-contract-removal.md",
+      "sha256": "407ffeb74472dbd17ddd0e0649c41766cda3e2cd3da8ceb27585656bea9d95bf",
+      "bytes": 8119,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "docs/architecture/support-preview-audit-plan.md",
+      "sha256": "8f97d55c08f5d55a5a863f0b3298853b0fc96ce57dce7801be0e86b589ac218e",
+      "bytes": 5542,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "docs/audits/wepac-public-clarity-2026-07-29.md",
+      "sha256": "4d4ea63ed222052dd266220997dae565d6d68acc1b1757927842d6761efa5d09",
+      "bytes": 13278,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "docs/coordination/clinica-care-release-checklist.md",
+      "sha256": "ea78386c8af61a736c5db4e89203d0901a4e08d33f8a57c1ae374dc81018234d",
+      "bytes": 4384,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "docs/design/arte-a-capela-figma-spec.md",
+      "sha256": "3cca4f625abab7b5f173cdf298c5c1d6ede9df1894c2828a4631a19901a6aea9",
+      "bytes": 10849,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "docs/operations/notifications.md",
+      "sha256": "027a9a22d82b2af2526005bf4bcff4be21a666c8cf8b2e2987de71d4f7a6ce39",
+      "bytes": 5224,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "docs/operations/plano-unificacao-discos.md",
+      "sha256": "9bb6f4fb84a252ce87e6aa324910a775be709f3de90ae61252925f0f0ea2ac9b",
+      "bytes": 8127,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "docs/operations/release-a-runtime-cutover.md",
+      "sha256": "1de3acbb35b2365e7d27b55244e297d8b8e33a7012fed80572b4ad8a5afe76cc",
+      "bytes": 8058,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "docs/operations/release-b-legacy-contraction.md",
+      "sha256": "3de6af497bda3d5e5e6a0e523d0a4f42fc4e583a355b764fe496f15f7f879933",
+      "bytes": 37744,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "docs/operations/site-health-and-security.md",
+      "sha256": "d52dea2f7dae7ecad20cc0525bc4e97a69f3c3d9a6c553cd301ee604a1e4d3b6",
+      "bytes": 8478,
+      "origin": "untracked"
+    },
+    {
+      "path": "docs/operations/wessex-rate-limit.md",
+      "sha256": "8ebf86bd232fdaa6e5882e5fc96597d2fe9d03eafdc69c1b0d3548fc32e626e6",
+      "bytes": 2209,
+      "origin": "untracked"
+    },
+    {
+      "path": "docs/privacy/local-form-drafts.md",
+      "sha256": "a1ec7ad4909903fa88c11de458c23f83e2477418ef0d0680dc97008e8e32dc3b",
+      "bytes": 965,
+      "origin": "untracked"
+    },
+    {
+      "path": "docs/product-language-glossary.md",
+      "sha256": "ad90a1d3d7f3b28786c049ac2fcfef0e1be00b35f9f7c449b314dc947d8a40ef",
+      "bytes": 1058,
+      "origin": "untracked"
+    },
+    {
+      "path": "e2e-http/security-headers.spec.ts",
+      "sha256": "e3f5841c3e39cc0ab43f43f46c16d6ebf18e9677520f355c90864881fada3d84",
+      "bytes": 863,
+      "origin": "untracked"
+    },
+    {
+      "path": "e2e/auth-messages.spec.ts",
+      "sha256": "c36ab5906a4e2eeb57aff7028d65887070e1c87f63d420f424f75f4a4a0d65f8",
+      "bytes": 1686,
+      "origin": "untracked"
+    },
+    {
+      "path": "e2e/fixtures/login.ts",
+      "sha256": "8be8e023f2b7cad5d02273a4ff409a3e654520a4c376f9923bff30d8d5961a0c",
+      "bytes": 634,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "e2e/fixtures/test.ts",
+      "sha256": "b64f547f8adce0ab0b17042da66d3418a76fb7b9cc6ba4de00e8e46564309192",
+      "bytes": 704,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "e2e/global-setup.ts",
+      "sha256": "310aeaec239e78ac4d0c816b289c138342138e5368468e1445bc98843fdd36cf",
+      "bytes": 1637,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "e2e/marketing-strategy.spec.ts",
+      "sha256": "f17a8e64a16ae5117d1d57b45b7712a976a66d5ebbf3955a3e121fc31512eb26",
+      "bytes": 4744,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "e2e/member-dashboard.spec.ts",
+      "sha256": "0c77feb952e0adca1002282fb2a2ae648ffc66babce3e21acb6176ab5fcab3a4",
+      "bytes": 559,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "e2e/mentor-session-debrief.spec.ts",
+      "sha256": "c69b2350d4a2ab9285bf8a0ee0e7bf4317e314d2ab6eef72b6c807f565616646",
+      "bytes": 3615,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "e2e/onboarding-gate.spec.ts",
+      "sha256": "60c2d601c6a6f77d7eed8a86a3ced6bed891cdd48b3889b2526b484b1c6ed878",
+      "bytes": 1068,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "e2e/public-accessibility.spec.ts",
+      "sha256": "662b6b4f017ac9df46ec57ebd0df6580662273e89cca7a940eafd22404f77961",
+      "bytes": 3635,
+      "origin": "untracked"
+    },
+    {
+      "path": "e2e/public-candidatura.spec.ts",
+      "sha256": "9073c031baf46bb4a303d9e3ef2166acba6da1a0612eac23c784e31722d2b9de",
+      "bytes": 2065,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "e2e/public-society.spec.ts",
+      "sha256": "d5995e41a75fe90056373a74003b3ca800a6959fd1a604bddf2f4e09a5ac8e64",
+      "bytes": 7658,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "eslint.config.mjs",
+      "sha256": "04c4d3ae53d5b1a0d77ae1d1e5f5a73b0ef24323ccc29dd4a64fe60efb84d9c4",
+      "bytes": 535,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "next.config.ts",
+      "sha256": "9ccdd837f899028773bc143316f14b6dbe31242eb5e31002ebfa9c0dfecaa51c",
+      "bytes": 1848,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "21d14eb3e42fffa4f5c09047c68f13ee1453854d57a2d24f465b6d817a51ae60",
+      "bytes": 387543,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "package.json",
+      "sha256": "d95bce3704881963f4e008c10f79925161997fffbaa7fcd9840c77682461e1ae",
+      "bytes": 2042,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "playwright.config.ts",
+      "sha256": "4945507cce032486151dfe47e7bfd59615e01d6a7dda00897fb4feb061fdd983",
+      "bytes": 1799,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "playwright.http.config.ts",
+      "sha256": "ca355015c1c24fe508328710880fa01f7fab7cf49b3e006a19734d719277552e",
+      "bytes": 530,
+      "origin": "untracked"
+    },
+    {
+      "path": "postcss.config.mjs",
+      "sha256": "dfac7ac2d86d326a0e5adb024e7943c181393ed17a5fcb8f0315b24c7da6ddde",
+      "bytes": 94,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260323181448_init/migration.sql",
+      "sha256": "3936cf727aa99d2fe566f3754e6860aa629c3893bde9003a90cc15e684f6bd73",
+      "bytes": 11777,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260326_add_beta_signup_model/migration.sql",
+      "sha256": "bae763c263a732e102d02a5756c3c678954c3261320012ba68649c44c0e6b4a9",
+      "bytes": 644,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260326_add_lead_model/migration.sql",
+      "sha256": "b2eeb122aa535c4b630aba3e2905951e1e44ef8161335eae7e88312945aef1aa",
+      "bytes": 847,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260416_add_sem_nome_ticket/migration.sql",
+      "sha256": "9650b90edfb5cbb31a9899dd1b2558e3cd25b65aa41caef328e2e59c12d5ba78",
+      "bytes": 427,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260417211130_add_bilheteira_wepac/migration.sql",
+      "sha256": "cf091db8b63dbd72f8b14b2c2d6644ca3469356eb42ae69e012d72447e969ba5",
+      "bytes": 4444,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260417230000_add_admin_email_verification_and_nullable_creator/migration.sql",
+      "sha256": "7c2b9a710b3c03e0d3d0ad4a30acd17a221b621e1421e1ede68fe5fcc4a6ca2e",
+      "bytes": 858,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260417234500_add_payments/migration.sql",
+      "sha256": "d652f3ba144f4c10c87213d58c5548c0990a28af38c4a545bad7deda8b8cf9b0",
+      "bytes": 1569,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260418000000_add_stripe_price_id_to_tier/migration.sql",
+      "sha256": "b5b96dc6868bb7666cbd873c4abbba62e1af6dcbcffe134af2d950425ce4b6e4",
+      "bytes": 60,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260504_add_ticket_note_to_event/migration.sql",
+      "sha256": "6b1e8a71cea01c396554d2b09e0adffa75485cd1f7b78e2cd268c07510646804",
+      "bytes": 116,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260602133020_multitrack_seven_pillars_and_tracks/migration.sql",
+      "sha256": "ee9bbd5bcec53405d7a16b6247bbd8f703c3ef41d397916fd78010b9f48ec875",
+      "bytes": 223,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260618174931_add_marketing_consent/migration.sql",
+      "sha256": "a291d21dd20b9df656c025980468cee862052f39b616e7479e3560bcef81ea43",
+      "bytes": 206,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260618_add_ticket_check_log/migration.sql",
+      "sha256": "c545bb4308f42fd211d1fe5083634b89fa7b7485bb4bf7a41a05c1b618a5d00c",
+      "bytes": 566,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260720120000_wepacker_platform_rebuild/migration.sql",
+      "sha256": "c00dec8771ca7c8d3a16bdc4c63862c5b2dfcbb3818ddac7217c9c841f7a944c",
+      "bytes": 7598,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260720160000_add_contact_lead_source/migration.sql",
+      "sha256": "7ebd122ecda181cdfbd71cc2bd6957e9452f8a8fac7558829883ab79093fb27e",
+      "bytes": 130,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260720200000_add_joined_application_status/migration.sql",
+      "sha256": "17e3864bae967dd1a3510cbaa658d57a713782b8f3182dcd348d7f84d91e5aaf",
+      "bytes": 256,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260720210000_add_professional_evaluation_type/migration.sql",
+      "sha256": "21ddc1798a815b9fca55840ea31502f2faf7ef9fb20b370d7431c13f94020248",
+      "bytes": 267,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260720220000_evaluation_lifeplan_strategicplan_to_user/migration.sql",
+      "sha256": "a0172943aff6013028e474831806d7cd72c7d2d8661dbd18638c9fd40123e23b",
+      "bytes": 5088,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260720222148_life_plan_versioning/migration.sql",
+      "sha256": "bd0b32796af5afc7884d26747838125b846b93d04e063a426cec5b14eacfb24a",
+      "bytes": 716,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260720224156_session_attendee_notes/migration.sql",
+      "sha256": "e361e7a2daf7e83c389d2b1f57d9a5f43a87c5ce2075cbe64466605e00ef956b",
+      "bytes": 215,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260720225121_task_source_session/migration.sql",
+      "sha256": "91ea457affbaa69ae5252d2af0122316e5cbee0daa27872bca99f20e6674b36f",
+      "bytes": 253,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260720230000_area_key_drop_domain/migration.sql",
+      "sha256": "aefaf38a7075a328f083beeba6aa8175422f6d6b7e9a0e0dd5c416bd68d8a9b3",
+      "bytes": 2005,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260720230316_session_kind/migration.sql",
+      "sha256": "ab801cdf70b631daa8580224f384f772396c551f74f1c98a4088b6ebe9c0923f",
+      "bytes": 210,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260720233529_session_debrief/migration.sql",
+      "sha256": "cd034671b72032a618c192411d7f4dc0500c5329981054880c72158302a1d6d8",
+      "bytes": 1424,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260720240000_add_trail/migration.sql",
+      "sha256": "0dad0ec79c61898ede399e7b623b0ea06943285f61056e6a4e4eb85375ef2309",
+      "bytes": 1284,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260720250000_session_optional_cohort_attendee_to_user/migration.sql",
+      "sha256": "8682cd0f6d86726810555c44155b8b7e597a6160ca68f04133f22f8458f8789f",
+      "bytes": 1505,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260721113112_session_meeting_url/migration.sql",
+      "sha256": "7c6acd4295ef138a16f661708b683525471f8e24018e811120ae3b26875b6666",
+      "bytes": 71,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260721120000_add_session_calcom_booking_uid/migration.sql",
+      "sha256": "f0c34864f561c3e6f3ea179e05c19b8a2f80e4afd58589bd47b97d61b475a555",
+      "bytes": 180,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260721210000_add_domain_graph_v2_foundation/migration.sql",
+      "sha256": "3c0a3d770e781de587f3f1f48f41c6ab3509176393577bebfc72951b9b7f7932",
+      "bytes": 20690,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260721220000_add_session_transcript_revision/migration.sql",
+      "sha256": "9b149c8a0da081173e109f25cae0f80cf5f4af39fe71214c2e40c1f5219cf6ed",
+      "bytes": 230,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260722120000_beta_signup_email_pack_unique/migration.sql",
+      "sha256": "455c5f84e69f6be529ec2cf9b43e78d876f58c286ae265306bbe34b303d59ee7",
+      "bytes": 1437,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260722130000_domain_graph_target_expand/migration.sql",
+      "sha256": "da66ea447a01814d7d01f1901dd16ad0cccad6cfef6b3fdd9910f19e7c68b0b1",
+      "bytes": 10439,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260722140000_target_notification_email_outbox/migration.sql",
+      "sha256": "13d1d71be91b9595f37942246ff61c751e409de1c270d9d2112bd4165aeb5ce4",
+      "bytes": 3828,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260722150000_support_preview_capability/migration.sql",
+      "sha256": "0fc7b798be4990006e616ca3f41bac81cd6bcec148f67651957611dd0b303fb0",
+      "bytes": 5621,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260722160000_calcom_booking_references/migration.sql",
+      "sha256": "77ef55e33e77f30474f73d4d3d653a127e7299b61b7850f52dcca1d05987582e",
+      "bytes": 1279,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260722170000_retire_mentor_account_role_data/migration.sql",
+      "sha256": "aa58f0ba5c86e9092d24069c3994615a7733480f7c17f1bbb3b6e32f68be1e72",
+      "bytes": 742,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260722175000_dedupe_agreements/migration.sql",
+      "sha256": "45abc91fa4b2e4444b869180f0bca115b6b99004dafed1900ccf39a350594ea8",
+      "bytes": 639,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260722180000_auth_token_and_agreement_integrity/migration.sql",
+      "sha256": "e5039bfe397d9d577c6545f160f41869424988f25cf3e37c5079e67885fb4830",
+      "bytes": 996,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260722190000_terminal_social_declines/migration.sql",
+      "sha256": "d61c81dfa6b96904d152ec32736f8a6d545f7e009a2595615b4ae43419b52d49",
+      "bytes": 296,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260722200000_notification_concurrency_guards/migration.sql",
+      "sha256": "a7c2bb64d3698b38e72c31d9930fd8ae562a68d2d9c91a6869761c8eadbd1508",
+      "bytes": 543,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260730150000_restore_beta_signup_email_unique/migration.sql",
+      "sha256": "8873c1956472916a0ec58e0021f70ee419537a7151c7efb2c79cdd16c5663084",
+      "bytes": 988,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/migrations/20260825120000_add_beta_signup_submission_history/migration.sql",
+      "sha256": "f422e42888ae75b6561abf060088d3657b7416bd0f94ef4eecbd3a9d2cf17c04",
+      "bytes": 2060,
+      "origin": "untracked"
+    },
+    {
+      "path": "prisma/migrations/20260825143000_add_wessex_rate_limit_buckets/migration.sql",
+      "sha256": "6f0f16869e184b376c70a860c378b1479dc6901cb4d07ed5ab75fbd9de2c5b73",
+      "bytes": 804,
+      "origin": "untracked"
+    },
+    {
+      "path": "prisma/migrations/20260825170000_add_wessex_operational_alerts/migration.sql",
+      "sha256": "cecea18efb4f15aface31d527be5ef984c479e05b0a58700b3f687d65881f659",
+      "bytes": 1399,
+      "origin": "untracked"
+    },
+    {
+      "path": "prisma/migrations/20260825190000_add_message_idempotency/migration.sql",
+      "sha256": "7496eabbbe3d2a247b7ceaa4ac02c6dae457dce33fb29881bfdde390fef518d5",
+      "bytes": 161,
+      "origin": "untracked"
+    },
+    {
+      "path": "prisma/migrations/20260825191000_allow_unverified_submission_deletion/migration.sql",
+      "sha256": "207ef00487a868f003362c50ac8c1ab92b159a7a9cfda664903a9c0845f17f31",
+      "bytes": 391,
+      "origin": "untracked"
+    },
+    {
+      "path": "prisma/migrations/migration_lock.toml",
+      "sha256": "99836963713b4f5b269ad49af0ed3d7b0b2e336115c2f92dc9ac683d139d0900",
+      "bytes": 128,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/release-b/drop_legacy_domain.sql",
+      "sha256": "2d6edfa8104bd905238fa335e894db835c5efa973bb6b590be59d8dbd8ba8fd3",
+      "bytes": 11011,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/schema.prisma",
+      "sha256": "c69168c975554d1aed07e26fd97afe7c3613a0131d0cefbcd245e89b5af46779",
+      "bytes": 42954,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "prisma/seed-safety.ts",
+      "sha256": "ab5388a4a3cc29d8a2767f959a9c10201d7a64f2fcb3922a762de02c46f2db8e",
+      "bytes": 2058,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "prisma/seed.ts",
+      "sha256": "ad3d5c8a050740cb461d7ba325d140737c4719b388849973129d8e0691ba7bb0",
+      "bytes": 16716,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "proposta-contratacao-wepac.md",
+      "sha256": "a8c331cff2ce0c11afda093c05afd5f28a9c0fa10e9488f6b32ee224c4b212d0",
+      "bytes": 723,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "public/bella-arte-proposta.html",
+      "sha256": "7aac47c15475f312a5a1afb26429229a30c6a4dd49aefa85ee476dafbecefc64",
+      "bytes": 21480,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "public/bilheteira/capela-viva/symbol-capela-viva.svg",
+      "sha256": "70b00e8c7127f6b8565cd7adf25e90dd4c0e699d50a766f74e0d1f81c7cca6d4",
+      "bytes": 2445,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "public/llms-full.txt",
+      "sha256": "98c739b36cedd33b49ce3a1c8574eb78b0520208bbd091802dc83379eb0385db",
+      "bytes": 9457,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "public/llms.txt",
+      "sha256": "10559d1c945287d8c0c0d42f2b2d449daa87fb6f3bd87a3840fd13424d47cf2e",
+      "bytes": 3610,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "public/logo/wepac-mark.svg",
+      "sha256": "18f3e66b4fdf6eb402adca74146b986be253f1925c473219bd1f3706a09730ac",
+      "bytes": 281,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "public/logo/wepac/MANIFEST.md",
+      "sha256": "b5168ed14edc81c2c35ae06fea40a04ab239e33307e203c517f88d27b8fe848d",
+      "bytes": 2974,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "public/manifest.json",
+      "sha256": "273c332dfcc907383a0c34eeb92e26ed0bcdea87caa82a6056e7ea65ca2f0c04",
+      "bytes": 506,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "public/qr-scanner-worker.min.js",
+      "sha256": "f4d8445f5a15c4e5f71a8c8c062c6443f09db370b8d3fe1fbdc7fe7889630d14",
+      "bytes": 43994,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "public/robots.txt",
+      "sha256": "761fe5e21bdbfe01be3827d2582ede16a9db8f759bdd45d5da528323ff774c95",
+      "bytes": 198,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "reports/auditoria-site-ux-ui-2026-07-20.html",
+      "sha256": "576c15df0c9a669ddf16fdff50fd654242901e0bfc3c8b33e42bd7d9807033c2",
+      "bytes": 18509,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "scripts/bilheteira-test.ts",
+      "sha256": "5f1018192ca0ea00b0a0db9d9c925ad31f8e1efea2ac9232a7c60bd0f1b76910",
+      "bytes": 28819,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "scripts/bilheteira-uploads-test.ts",
+      "sha256": "c7b20d63644d54574eb5a93dec7413e17899434d4e3670d7bb3b441bc87578b6",
+      "bytes": 9617,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "scripts/create_placeholder.py",
+      "sha256": "03109f7abfb4cc9f045c93d9315e686743c8081af3c0ec2ea5ec2974f1b6c7b2",
+      "bytes": 2401,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "scripts/db-setup.sql",
+      "sha256": "a3f76f30c7583043403b983415921e0069d98d5e059c8c9c53fdf94a9a9f89f7",
+      "bytes": 240,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "scripts/healthcheck.ts",
+      "sha256": "302bb671166195bcce557dd58694bc025905643f0e36633f8e9e692a7e3322b8",
+      "bytes": 5490,
+      "origin": "untracked"
+    },
+    {
+      "path": "scripts/seed-bilheteira.ts",
+      "sha256": "7fdc36d836e49d87d289e4719bc078d4754491768c48f4b2404fabb3c21242f3",
+      "bytes": 5288,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "scripts/site-audit/index.ts",
+      "sha256": "d0631ad23d139dd790a0755d7b99f018821be85e8b0d7da196f2afadc8afdb37",
+      "bytes": 9964,
+      "origin": "untracked"
+    },
+    {
+      "path": "scripts/support-preview-retention.ts",
+      "sha256": "5ec1529a53561e39837b2605ec05c60da8ac40036bfcc91d9a3e136263fbd691",
+      "bytes": 762,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/(site)/artist/page.tsx",
+      "sha256": "a66f29a315bd19a92c9f5c7583cd130eea9e1a020f38b1ba41fc668f6ad1f36d",
+      "bytes": 19309,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/(site)/contacto/layout.tsx",
+      "sha256": "28d5172beef7d41e59adc0c3b62755c52896ee413921be2250db26a5113db7a8",
+      "bytes": 597,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/app/[locale]/(site)/contacto/page.tsx",
+      "sha256": "f70acb3275818eee26442cd4aa08b4e95c0f6c28bb2a833e37f760ccc69a709d",
+      "bytes": 14615,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/(site)/impacto/page.tsx",
+      "sha256": "30b000ccc72b8e619d693863bcb00f40f13c44d34806a81e2fce0b4eba446252",
+      "bytes": 2120,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/(site)/layout.tsx",
+      "sha256": "f3bf3d04561d60a8702c47c9386c753fed938b956e701bca8ce6fed05572256f",
+      "bytes": 278,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/(site)/media/page.tsx",
+      "sha256": "9af9163f8ce8dd18b9d4db174b6714ac3120b4bbaf330a345b1b0a2b70f4c4bb",
+      "bytes": 113,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/(site)/metodologia/page.tsx",
+      "sha256": "60e77ab9d6e456324b4c59af967d55b13d16e6277e9f9086aee7fc70eb217986",
+      "bytes": 3041,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/(site)/page.tsx",
+      "sha256": "e54b44ccd370d1a78acecc3a652e39b78997c38c66f20665f5548fb491ed2f9a",
+      "bytes": 240,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/(site)/parcerias/page.tsx",
+      "sha256": "f6a3d922ef11b8fb3ebdb4888b07d1ff3d6bad05240b1d3fb6b6f6cb56ac1210",
+      "bytes": 3006,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/(site)/privacidade/page.tsx",
+      "sha256": "e5ce745f5bcdf67df79bbc38eba19748d34ec68faac25457a73beeadb62c300b",
+      "bytes": 2967,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/(site)/programacao/page.tsx",
+      "sha256": "cbf4bad7dbeadac3dbf8fc4ec54a239a880a00f879b0cd10058929bb073b80eb",
+      "bytes": 5056,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/(site)/projetos/[slug]/page.tsx",
+      "sha256": "cd5a8252660e799b9f2d94a561f742e26d4bcdde9976b1b7f1aad2021c33eaf2",
+      "bytes": 4843,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/(site)/projetos/page.tsx",
+      "sha256": "06482cc7985f1379f02b570a585603419d585e67d8e244152d39f5fde31bdbfa",
+      "bytes": 3258,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/(site)/servicos/orcamento/page.tsx",
+      "sha256": "e61e49b30aa1f2137d05180c6402df1b481a7d0b64fbf5f08453c72c06c86973",
+      "bytes": 1430,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/(site)/servicos/page.tsx",
+      "sha256": "2e2ba29e443f9af089f47396c19dc82512a4d15ba6d71125a71797f0d38689b2",
+      "bytes": 3548,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/(site)/sobre/page.tsx",
+      "sha256": "0583b0b4d8879d04f57fba32930f4326e1a85626490ebdd2097c91678bdfc9fc",
+      "bytes": 5174,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/(society)/academy/page.tsx",
+      "sha256": "92375f6b6fe58d113cd57bbfc44b886606416ff94ccccbd13bfc17ffa3a0d364",
+      "bytes": 10597,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/(society)/companhia-de-artes/page.tsx",
+      "sha256": "7691bdf3fa9f841a4ae3fe61229313dfb0fa807def43e78fa9f6b3116837b753",
+      "bytes": 9411,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/(society)/layout.tsx",
+      "sha256": "93a5d8cb33785601da0d1dd8ad4b321a10fa20a839f42bfa00ce838902abdd78",
+      "bytes": 429,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/arte-a-capela/layout.tsx",
+      "sha256": "87cf6cfd4ea22bbfb1680fbea548beeb9c53ca102d1fa6fb570b93fa61bb1cd7",
+      "bytes": 778,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/arte-a-capela/page.tsx",
+      "sha256": "ab72e3d633632efdfd8e5b702d9837ad52b0dc6ea97c616aa42616fe822010e0",
+      "bytes": 31862,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/bilhete/[token]/not-found.tsx",
+      "sha256": "0cc68072bc45b8863285da093930ed80ff9e1a30de31794aa37fed0c15e1e050",
+      "bytes": 777,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/app/[locale]/bilhete/[token]/page.tsx",
+      "sha256": "d661680a7f41a4906df4da925523da1a1fe20a0e21b6a1a4e0728999fde4f331",
+      "bytes": 1593,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/bilhete/[token]/ticket-view.tsx",
+      "sha256": "47bf78d53c2f3bf9aa723dc5073900cbcaab1be68a61b3651bf619a5711973ef",
+      "bytes": 6169,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/bilhete/[token]/ticket.css",
+      "sha256": "87a2fa0e04663086502255d4fbfdd0ff7ab1580f0878b67caa11fbcdaa23307d",
+      "bytes": 4329,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/bilheteira/[slug]/page.tsx",
+      "sha256": "e534581902fb6ab1bc4dc386e2d005565baafb84296d33da0671cc7a1c1c4ef6",
+      "bytes": 9506,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/bilheteira/admin/admins/page.tsx",
+      "sha256": "00852811913f256f4b5c8f8d0496be37707767da19d39a3fb980495b036d9e49",
+      "bytes": 4835,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/bilheteira/admin/events/[id]/checkin/page.tsx",
+      "sha256": "9a8b179cae7df413a0e4d7e579ec3d4ace130931bf630085a5ff216e45b55374",
+      "bytes": 2279,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/bilheteira/admin/events/[id]/checkin/scanner.tsx",
+      "sha256": "646bb927e3e7b6cc8e1dc4a78347dcf4023215ddd47776c31c72260092c05557",
+      "bytes": 15438,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/bilheteira/admin/events/[id]/page.tsx",
+      "sha256": "e11302736aadd433089244a618736666b62a789bf83d0d8b5e22ddb080f8d4a5",
+      "bytes": 29280,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/bilheteira/admin/events/event-form-client.tsx",
+      "sha256": "6420dc83422253c9c97a0cc15041721ee4e5d751f02f08858872a693fabb0e09",
+      "bytes": 16339,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/bilheteira/admin/events/new/page.tsx",
+      "sha256": "6f3d197dd18ffa18d37dc32f420230f5dbbf95fc98b0d36ea1f76253cc612f73",
+      "bytes": 1233,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/bilheteira/admin/layout.tsx",
+      "sha256": "b6c39b922be7c7e4903a24dc8b09e020a4826446e882607ed5a2f414c9a57eea",
+      "bytes": 1264,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/bilheteira/admin/page.tsx",
+      "sha256": "a020fb6dbdd279218ffa746b4618aedf4e9c979fe2fb8d65ac02927fc1d5202e",
+      "bytes": 3855,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/bilheteira/checkout/success/page.tsx",
+      "sha256": "02b1c7119b15048decd1629b02181271d27b2eca43b71ad8e56b2e3e6cefa3c4",
+      "bytes": 1635,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/bilheteira/loading.tsx",
+      "sha256": "ebd65d2b9f4828938b17be8854cb328be54dad9a61e189e3b844a92fb96eda80",
+      "bytes": 146,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/app/[locale]/bilheteira/login/page.tsx",
+      "sha256": "037dfb505728272c8353fdb786e09235e335ada3a5968ce24cc03d15fab66bb5",
+      "bytes": 2453,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/bilheteira/page.tsx",
+      "sha256": "7ed18339cd4a56a4e43e78d20dc3ef549140103455279ad81d7b22cc9323cb5c",
+      "bytes": 4813,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/bilheteira/signup/page.tsx",
+      "sha256": "a2fd9ef473df98e20b770d0df462a0a27cec444d3a7d3b7e99c7cc09e39be5fa",
+      "bytes": 2859,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/bilheteira/ticket/[id]/capela-viva-view.tsx",
+      "sha256": "7271def637e7cbfb4e8b22fd9e660934a36e5619de7aa48d3b3da1675f183e4f",
+      "bytes": 8882,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/bilheteira/ticket/[id]/capela-viva.css",
+      "sha256": "574bc2750b21d982975b8ef4a25c42decf0ba8501ac0f5b2d6e03585a756761e",
+      "bytes": 9523,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/bilheteira/ticket/[id]/page.tsx",
+      "sha256": "7093b9abb5656a0dcb8e0848078521ddb393bad7a95c0acc74b1a46961ccba9d",
+      "bytes": 3249,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/bilheteira/ticket/[id]/qr/page.tsx",
+      "sha256": "3cc05b2b377927863884f9d4668307f00973cc0b3d8897a49628c13bea059aea",
+      "bytes": 2369,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/bilheteira/ticket/[id]/ticket-view.tsx",
+      "sha256": "957f88789f9954c2234468c443d81d78e291ae7666eac090ce406d305341aae2",
+      "bytes": 5556,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/bilheteira/ticket/[id]/ticket.css",
+      "sha256": "f668b1370ce408c3468db3fb862f65c1bcbea093089e80065f298394e1d0308d",
+      "bytes": 3569,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/bilheteira/ui.tsx",
+      "sha256": "6748570b26a18039c4d0fb1eac5da91a15c6547f725346f5b9000616a22c4b3f",
+      "bytes": 7327,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/bilheteira/verify-invalid/page.tsx",
+      "sha256": "13e9ca3613cc5a3f34f7db9ef356dbc18508b147b1e0c722f921994387216f0b",
+      "bytes": 897,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/bilheteira/verify-sent/page.tsx",
+      "sha256": "db834e808df60a9b9be78af031a692d05511cb7dc538d55fabeb7f4b84f65184",
+      "bytes": 2244,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/bilheteira/verify/[token]/route.ts",
+      "sha256": "d1fb66a63572202cff245a6b229fc17eceb7627d50a65186019050e5842414fd",
+      "bytes": 1076,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/error.tsx",
+      "sha256": "5dfa4e2946196ac8d7c21ebe709ce747fe4a4485dcb37bccc1fd36bec164174c",
+      "bytes": 1033,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/app/[locale]/layout.tsx",
+      "sha256": "ab228406aaa7dc4559c5bf792f0d02bd070d9909dca195bcedf1c20c6cf4151c",
+      "bytes": 3891,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/loading.tsx",
+      "sha256": "37c59d397bcd3e4edb6bd93fedd74f1605f818453d4bdb985a187c34052bb518",
+      "bytes": 124,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/app/[locale]/not-found.tsx",
+      "sha256": "e52f8a12c39a3f8c9625c83c909ce4fa68ddbdaf4104ca96d333f38b37e724cc",
+      "bytes": 769,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/app/[locale]/sn-admin-c027ea95daf3/admin-form.tsx",
+      "sha256": "137042e8bd119c9ddcbfd359a5844c24fbc94520e9bd6fa6f627b2896ea83e2d",
+      "bytes": 25034,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/sn-admin-c027ea95daf3/imprimir/page.tsx",
+      "sha256": "1179799d038940ed93fa43215e850269d92b130227b2b0952b11e122e49d9b88",
+      "bytes": 10130,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/sn-admin-c027ea95daf3/imprimir/print-button.tsx",
+      "sha256": "b15ed0f6546a085029d0b3e46916389dcc137cc9a93906d1ac2ebdcfbbe06091",
+      "bytes": 723,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/sn-admin-c027ea95daf3/page.tsx",
+      "sha256": "dcf8d843a3a0a696ea278fd85e97c1c9d965aed9ff51cd570065fc3e3dc6d5bb",
+      "bytes": 754,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/sn-porta-56c6bdc4cdf7/page.tsx",
+      "sha256": "7f03c6c0c9f2bb1ce22cc9fc35724525e5d5cffa2eb1d11a9dca29b49d6d435b",
+      "bytes": 316,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/sn-porta-56c6bdc4cdf7/scanner.tsx",
+      "sha256": "2db8c7f3931dbbb377c963a1285286cdd0d5eb73cc8b7fc5e7d2b2162e847800",
+      "bytes": 15770,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/society/adultos/page.tsx",
+      "sha256": "f0f5a3106dd08aadcca4fb8f28946d4bf58220e8839655a15ba224ca007e57b4",
+      "bytes": 9337,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/society/familias/page.tsx",
+      "sha256": "5fa9cbff5ba897e2560dde017ce695c2eb8cf00b320922037db3c8637098fdd0",
+      "bytes": 17885,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/society/life-plan/page.tsx",
+      "sha256": "d22a0488e14f57588b38d11fe2f614a0ab2ce6edc9ebeaa4a6c660dd4fd34502",
+      "bytes": 13446,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/society/page.tsx",
+      "sha256": "f72c20f3040ac0b3254c93941197f5b166585018424c7d29551afb109b68080f",
+      "bytes": 20258,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/society/universidade-verao/page.tsx",
+      "sha256": "047dafa755d4a0535874eeaed4deda3a2db70e3c6a84112d595a27e1b561e5e0",
+      "bytes": 17416,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(onboarding)/agreement/page.tsx",
+      "sha256": "089e410fb0c8fb3d758a522bdaf2d8d8d39c6a7db16d2df32b47d98f9bec91ae",
+      "bytes": 5658,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(onboarding)/layout.tsx",
+      "sha256": "65db58bc98aa82cbd8f25d62f30d95a1c3ae9191ef55899242f4e8bae32dc3b4",
+      "bytes": 599,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(onboarding)/welcome/page.tsx",
+      "sha256": "4736bf265f72803aa3144841dd434c785f608f0c7cdd9d5a51676b576dd32534",
+      "bytes": 3497,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/academy/page-client.tsx",
+      "sha256": "e439dc5ad6900cf67d88cc1be04dc7e3e594dbf813503e7855055192f6a93d96",
+      "bytes": 8015,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/academy/page.tsx",
+      "sha256": "2996a6735afb1b984db42b4baaa9c4017cd0d8c393aab3ff0f28ae9c80a703e3",
+      "bytes": 372,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/actions/page-client.tsx",
+      "sha256": "550772e4ea52e02e7869c8dd3ceb60fe8c96132766d4807a28b500be07aa11e0",
+      "bytes": 13273,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/actions/page.tsx",
+      "sha256": "2df58ba2da0da1ce70d382d5e38eebcac4b67a93432683010da9b6ab5c9634bc",
+      "bytes": 645,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/admin/leads/page-client.tsx",
+      "sha256": "5450790520b73c032433296a14131746daced7fcfa04369c290a2ed54fb3cc92",
+      "bytes": 27522,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/admin/leads/page.tsx",
+      "sha256": "3b026bf72d468804887d6e3de5cd02683b1a81864517b1bc36e5d6a9cc7037cb",
+      "bytes": 760,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/admin/support-preview/page.tsx",
+      "sha256": "0deff6c05bb64c11ea9d4f138f3d5ad07f47be70b21329adff1e3c3f93cc46a8",
+      "bytes": 5782,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/admin/users/page-client.tsx",
+      "sha256": "c90afb751a0ced2d7853aaddb36b50b4e66dc4e42e3243e41d7aed23259a5351",
+      "bytes": 16132,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/admin/users/page.tsx",
+      "sha256": "7068f4cccfc5da5b89b19281ecbd73e86675e1c5746929f9c06377e9806f1313",
+      "bytes": 915,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/basecamp/page.tsx",
+      "sha256": "8320156f7183f7c349698b7eacaf58d1adc6590c58a899f3ae3d7f63ec0c641a",
+      "bytes": 5259,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/communities/page-client.tsx",
+      "sha256": "61f0352dedce88506f453f7768d64c79950fd9cd2ede9abbd9da4b034c5e366f",
+      "bytes": 14193,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/communities/page.tsx",
+      "sha256": "a1cf9d7cb3973be68269969e83b54248d3aaf81ee5d8e603d7036a9c78aef23f",
+      "bytes": 364,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/connections/page-client.tsx",
+      "sha256": "682913aea40cbfa24dc0cbab6b78ad7eae3dfca977492208c17060eb4b0e6d9f",
+      "bytes": 11024,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/connections/page.tsx",
+      "sha256": "d20b4bd7fa912272cfe19a1976b8852c9702c558bb0521439b52a23d61a975b4",
+      "bytes": 374,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/dashboard/page-client.tsx",
+      "sha256": "ca2000ba089134d3c66180ac45d9420c48674d2db3880de6af6643ad7a7d3c1a",
+      "bytes": 10557,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/dashboard/page.tsx",
+      "sha256": "e465a93c527c4bf6991744010f15a0173ea7ca5681edaf24d37bbe60c3ab0b16",
+      "bytes": 2694,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/goals/page-client.tsx",
+      "sha256": "768b0f0aca68e74728439a5d5d9a24aa134a535864818145e6f7fe83906edef7",
+      "bytes": 26819,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/goals/page.tsx",
+      "sha256": "2d0545052cb652e3b3b44ec993fcfb578430a099647fddc1f5763cc50387d4cd",
+      "bytes": 1351,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/layout.tsx",
+      "sha256": "891868dfd62dfcfae780471afeb4ad5e21a61c733c5b06e40ef31f6872c42a17",
+      "bytes": 1383,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/life-map/page-client.tsx",
+      "sha256": "739c5095c039b8dbc6f9856a0bbf4900fc3362832c726bd9543e66148916fdf1",
+      "bytes": 9724,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/life-map/page.tsx",
+      "sha256": "72eef10b6199ff6cdc28700c7f91070d112df782fed0d65aaca26b806a181fa3",
+      "bytes": 1092,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/loading.tsx",
+      "sha256": "99574ce78f0dc3241742cfe0e5a22841586f64d85dc915ffad28eb0e0a34e593",
+      "bytes": 132,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/mentor/page-client.tsx",
+      "sha256": "db7a12ad78061e189fee5f80bf8ca66e31b48eab4445c33ebdd13baf8fd0eec8",
+      "bytes": 4889,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/mentor/page.tsx",
+      "sha256": "f0059b17e590c5b51413836b62eeb762e803493a8ef2c70d9b07008ccebc06b2",
+      "bytes": 1208,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/mentor/sessions/[id]/page-client.tsx",
+      "sha256": "ffadd891e8ece78efb9f934fcef65e825b1009cb6b6bb8ccf8a108c126d21144",
+      "bytes": 36948,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/mentor/sessions/[id]/page.tsx",
+      "sha256": "ba103f6ac4635337ba8afcf7d1f57d1129bced98832ac6d4f2f87f90c2f74611",
+      "bytes": 1936,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/mentor/sessions/page-client.tsx",
+      "sha256": "e1eb52e04314ea3a377eaaccd3656b3dd2d954533b3713fd6a79885e85333175",
+      "bytes": 37916,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/mentor/sessions/page.tsx",
+      "sha256": "4a825df0f57c2892fa9a72ac7b01a8e7c22bbf2514b712828e7769e7fd880ff1",
+      "bytes": 1087,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/mentorships/page-client.tsx",
+      "sha256": "ee79e7868762ba46d9b678b3889c85c798d51e9519f9e2e6723c2c88ecd0e1c7",
+      "bytes": 13051,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/mentorships/page.tsx",
+      "sha256": "fa661ca36b7165f4db0e3966ad2dcb365b92960f2737e2cea101542fe9108276",
+      "bytes": 581,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/messages/page-client.tsx",
+      "sha256": "81e249047249c8774be4c0e4041326b15ab2bbce74f530cb7e48ef2caff84c72",
+      "bytes": 15491,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/messages/page.tsx",
+      "sha256": "e94067f4535d684b9f903e47c2894bdaa8003d4073e47b1db672d51015563bd1",
+      "bytes": 413,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/notifications/page-client.tsx",
+      "sha256": "af5596bcc9f5dd7885199ead415ccd3cd35b515e5b1dae388dd9a6e221e642f8",
+      "bytes": 9133,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/notifications/page.tsx",
+      "sha256": "173bbdd0e20269fce20a35d15f43bc6cf1e3bb3f6fd44b82a72601a41239f081",
+      "bytes": 391,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/profile/page-client.tsx",
+      "sha256": "c5416ab4bea35658b535c6b73f10600ee78d3f8bef6b206e5f04983214849aa1",
+      "bytes": 4561,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/profile/page.tsx",
+      "sha256": "b3d446401f20f808a81431ebfcfc993dc89b52218171d4b91faa4761214faf6a",
+      "bytes": 352,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/sessions/page-client.tsx",
+      "sha256": "7a15c2170e79b347794abe90e731f09f50a8693ee32b87f5cb694b58b62d40fd",
+      "bytes": 9244,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/sessions/page.tsx",
+      "sha256": "b709121b37ab5d3fb7facf216579be19f1e5b3c6be4d9465fec2ad1e7c28efd6",
+      "bytes": 1372,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/trails/[id]/page-client.tsx",
+      "sha256": "f76a560ba75ab0f8df331f49361594348f302875172fa1446168cd138f5130b9",
+      "bytes": 4996,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/trails/[id]/page.tsx",
+      "sha256": "4a394be0ad74f01628292accfaa800d18ed12af9324b957dce30ff6bab05d9b3",
+      "bytes": 1102,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/trails/page-client.tsx",
+      "sha256": "f5e227a0942c03eec0a688673d393d57cf8893c16abf3920647cc2d4082f04e1",
+      "bytes": 10082,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(platform)/trails/page.tsx",
+      "sha256": "f47b12ed98f81668eef8e50702584f3bfe0fb6c08b945820baacae7f86fc1ce2",
+      "bytes": 702,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(preview)/layout.tsx",
+      "sha256": "a36babf7897d7bd9d5ca5cbfba37c6275e535da94a67a2e57d66cb4dd094eb99",
+      "bytes": 541,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(preview)/mentor/sessions/[id]/preview/[userId]/admin-preview-gate.tsx",
+      "sha256": "544ca08984d8f23783777f0e4b15d61e8bfa2c388078c1ef58e4ebfe3e73cf86",
+      "bytes": 7367,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(preview)/mentor/sessions/[id]/preview/[userId]/page.tsx",
+      "sha256": "df8a9f784a288371983d970396cd829ce059a122d6ddefe572789674f5bf6911",
+      "bytes": 8908,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(public)/intake/page-client.tsx",
+      "sha256": "b78977ac5d87eb9aae25164cb7c5eba04a836b60592c21b0bd03007fac02ad7d",
+      "bytes": 17294,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(public)/intake/page.tsx",
+      "sha256": "7cb1a4655c674115ebd1e67be6aa2f3075261d09444cfa85898d3a20cfbcd500",
+      "bytes": 3704,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(public)/invite/[token]/page-client.tsx",
+      "sha256": "c085f693e5226f6bf67cf473c6f73f157ca00dd4fbc848ef4ce0e78b67e5cde4",
+      "bytes": 4793,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(public)/invite/[token]/page.tsx",
+      "sha256": "56b86915674f3ddafab14fea63e21977ac48b831cccebe62b6d81981fb1259f9",
+      "bytes": 1552,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(public)/layout.tsx",
+      "sha256": "36b759c1a79a1c03a50aac550a19bf24a8013d8f87e26c916d24a117132ba0a8",
+      "bytes": 293,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(public)/login/layout.tsx",
+      "sha256": "81e0435f9bb436bcae3a05719ca673e4c35eaf9e74bc597b1a910097ae111ec0",
+      "bytes": 529,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(public)/login/page.tsx",
+      "sha256": "7ee2ae7c1a9c5be2dc87b1e416cc66932c306d8981d9b4dd50cafc3e0b67d710",
+      "bytes": 5422,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(public)/page.tsx",
+      "sha256": "69688d9fb91f8c9aed81a26b939be229cafc8a7b5a89932ca82066955aaa2a20",
+      "bytes": 459,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(public)/password/reset/layout.tsx",
+      "sha256": "6325aaa39bd6d238cee92c90f28d6cabf3fb658142be59e00ec8f850d8561115",
+      "bytes": 624,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/app/[locale]/wepacker/(public)/password/reset/page.tsx",
+      "sha256": "1edb9a6697487b9c85e5e6126c114d6a36e9432c434144cb52bbd41cd35670e2",
+      "bytes": 8791,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/[locale]/wessex/page.tsx",
+      "sha256": "a728be5c757cc9ae1d7cc4e44aa9d8dcca4c2857bbe86c762e2d4768de4754ff",
+      "bytes": 17045,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/__tests__/error-pages-security.test.ts",
+      "sha256": "0be261784a4ded5b96aea5aee67fbab9ae0646cef9dca8001eb82f4b89ee0ea8",
+      "bytes": 783,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/app/__tests__/sitemap.test.ts",
+      "sha256": "a784f0866990daf0b2c8ba108485d585038f0db13155cf867ad9a5c00a395546",
+      "bytes": 626,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/app/api/auth/[...nextauth]/route.ts",
+      "sha256": "11dc850fc211435ea4a4e78e9377a04d85c2c2c3dcf443ba215299e394c8fdd9",
+      "bytes": 79,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/api/bilheteira/checkin/__tests__/route.test.ts",
+      "sha256": "408e6f2649f437084fe75ec462c12b3cfc6e01768f02b9894c50b43edf94cb1f",
+      "bytes": 3880,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/api/bilheteira/checkin/route.ts",
+      "sha256": "5ec7f8e0c4fd59897c7d2f3c094521fac84516a5d46ccf7e75b3044ce2afc97f",
+      "bytes": 3968,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/api/bilheteira/stripe/webhook/__tests__/route.test.ts",
+      "sha256": "a8b4bd48fee1fd5f729db20285f97c0202de60523f836ff6b42929f37157d274",
+      "bytes": 6097,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/api/bilheteira/stripe/webhook/route.ts",
+      "sha256": "3801dff47b492773ae4395d9c1c814bfa51e081b2ada2881b66a1f0d65534134",
+      "bytes": 5561,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/api/bilheteira/uploads/[filename]/route.ts",
+      "sha256": "c64ea40bcb2a22e06d190ea80f9b7505ccfd1ae8ab365c34cbf255f94f127a3d",
+      "bytes": 1414,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/api/sn/checkin/route.ts",
+      "sha256": "899bd987c7c57ac2dfa0bc30a1b6e643d2eb1b07fe609e8cb180b66b54c2a18c",
+      "bytes": 1975,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/api/sn/create/route.ts",
+      "sha256": "3856dd752b326bc6b55aed78549bab608905587ebf23a1c7d159fd6d8f85c43a",
+      "bytes": 1073,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/api/sn/delete/route.ts",
+      "sha256": "1554907688eb8d98f8c097ad46e6d7aa5b7e843eb8ebb7fec5ec609dbcd4d71e",
+      "bytes": 845,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/api/sn/list/route.ts",
+      "sha256": "8169e7de00dc7e9e28972aa38b33ecdc2462af98478b3c34c1c6dd7c9e2cc64d",
+      "bytes": 1135,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/api/sn/status/route.ts",
+      "sha256": "a157cc22968dbd47e2dcd9e4caafb9ca5e9faf0a3900d6286f8112c3e33c761c",
+      "bytes": 1482,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/api/sn/update/route.ts",
+      "sha256": "f7f2b730017072dafcf11b5b325ee7dc78c9f56cdb41b89746a8c099534c9182",
+      "bytes": 1550,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/api/wepacker/calcom-webhook/route.ts",
+      "sha256": "91c09e84ebf277251a87456bd6d01247823d03e03f8450ed16627d278bf7e87c",
+      "bytes": 11713,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/api/wepacker/notifications/dispatch/route.ts",
+      "sha256": "54b0400ec6c149093020e603d5a1e4b2329460794e3d2a02bc8e4fadc2218c5d",
+      "bytes": 566,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/api/wessex/chat/__tests__/route.test.ts",
+      "sha256": "dc28bd96a458367dfd12221be30ea6ab4d808ec7f4111ddef5de6c87788bf57f",
+      "bytes": 7257,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/app/api/wessex/chat/route.ts",
+      "sha256": "96f38670657a7af2c1fff2bbe8266597f72d453bbd93a4e3fed4e613214dab56",
+      "bytes": 18144,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/global-error.tsx",
+      "sha256": "c48c140107a1b09a8d9ffa4debe5138c6c3f9ba145577fc7a32de0bd9dfd2051",
+      "bytes": 1156,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/app/globals.css",
+      "sha256": "2f3471aeb79e0f33f51a88b84a264e71d62bb8b45078687d717997d325e794c3",
+      "bytes": 2795,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/app/oyZz-oSAZPfGYdcoVTpjZA/route.ts",
+      "sha256": "5ace41ffa4648bf9d5198fc22c278761d14ec8d6038577cc00e6cb0756688f78",
+      "bytes": 376,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/app/sitemap.ts",
+      "sha256": "19568a0117fa8e07a11ddb617609052f63705fe4ab064ff59d8c03d87de0228e",
+      "bytes": 2621,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/auth.config.ts",
+      "sha256": "13a95ce2c530090c128c58fd1119ee22279ef93074222fdad8a01d0054883b89",
+      "bytes": 1388,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/components/BrandedStatusPage.tsx",
+      "sha256": "c261e9d5a2e15170be2beff2560d0d25cd8f4b1df60f67e47f86e088e76da5dc",
+      "bytes": 2858,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/components/CookieConsent.tsx",
+      "sha256": "c566cfacb4026d4c4ff394e4037d44fef2e63c0891791da403f5661b34a97923",
+      "bytes": 3045,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/components/FadeIn.tsx",
+      "sha256": "aa4823ea0da20164e80710314ac0be1e8121caa4e2c348b31d14d39365847f9a",
+      "bytes": 643,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/components/Footer.tsx",
+      "sha256": "d59c2033a9a4fbd923629a404e7b07a8c01af3b29fe22f8cb754722f014ffdc7",
+      "bytes": 4380,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/components/Header.tsx",
+      "sha256": "d223be1f81f635fd6bd73d686694f11d3d6677e08ec0977c99f26a49b1dd38a5",
+      "bytes": 3341,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/components/HeroSection.tsx",
+      "sha256": "985e5c0887a275365d81c0ba67a4648903f953439b05f057067cb68356b8c117",
+      "bytes": 3497,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/components/LocaleSwitcher.tsx",
+      "sha256": "32bc36120623e5b05bbcdec9d7dbbc1043149aba7038b5f83c9a3ed9ac6c21e4",
+      "bytes": 1986,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/components/Logo.tsx",
+      "sha256": "f658cb508a7ef701232c1e3257c857f83dbd679989ade30286d46436563e61ec",
+      "bytes": 1153,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/components/RouteLoading.tsx",
+      "sha256": "12efc5d774766249a4ea70caac76efbd0a5d13a3ffac27b5d98faac72e2b8c80",
+      "bytes": 1187,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/components/society/SocietyFooter.tsx",
+      "sha256": "14e1f812a26bacd096e9af952a6cc2d7b24d5e7cc4c1b78dfad107c150916ee1",
+      "bytes": 4037,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/components/society/SocietyHeader.tsx",
+      "sha256": "be239907993b93e726d2053c2fdf18d3f6d0d66577555591628396a21eb6ab31",
+      "bytes": 5292,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/components/wepacker/BetaSignupForm.tsx",
+      "sha256": "85fbe8604095c0cd65d9991310b1ec13666eac5d10b5b62afde6af83e6eaed8a",
+      "bytes": 4973,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/components/wepacker/ExpeditionTrail.tsx",
+      "sha256": "a19515a56660817de608be041087dd273448e281c3ce6d70d01669cb31566844",
+      "bytes": 13193,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/components/wepacker/OnboardingStepper.tsx",
+      "sha256": "eead337ef11f24e80d6f6c18c9d23fa343cd8afc23da8a4fcd902e66b1aacf10",
+      "bytes": 1697,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/components/wepacker/PlatformSidebar.tsx",
+      "sha256": "191ae62e7046b6352e91aa8361aedaa9994af37ea9147ab3075e8100840737fd",
+      "bytes": 11720,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/components/wepacker/SessionsCalendar.tsx",
+      "sha256": "ff1704e187303d248e00b644e03f60d0397a114e5e0eccb44acd07dacdf7da0c",
+      "bytes": 7050,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/components/wessex/ChatAssistant.tsx",
+      "sha256": "0133829105606e298e9982df0c51150ffdac059d2c566d2204f777f5f5d60789",
+      "bytes": 11184,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/components/wessex/OrcamentoTabs.tsx",
+      "sha256": "bea65964cf692b06014ead6952c47450bf7158ccb6a223a582a15d73180a550f",
+      "bytes": 1919,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/components/wessex/PricingCalculator.tsx",
+      "sha256": "36858edf2f1d303cabe86be7ba8433688897d41faa01fdd56c38d059d7fb8a9b",
+      "bytes": 8007,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/components/wessex/WessexHeader.tsx",
+      "sha256": "6b52f2d711b5a3795f7ee87325205f97a28878a8e698004ffd965521e8d5dd58",
+      "bytes": 4309,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/data/arte-a-capela.ts",
+      "sha256": "3f7f8a227783b66a903915467a427cb753999dbf6a7ff657da7a71b6c2b9e3d1",
+      "bytes": 2975,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/data/campanha-adultos.ts",
+      "sha256": "4e58cb26afe6e6e9a0bfbce52ddf20e790f475917f211c626bbeab639ef434fa",
+      "bytes": 5239,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/data/projects.ts",
+      "sha256": "06a06f85d2f2a094ed27bd9778a978716fae041e9cba42ce3c7f46d9aa9e64bb",
+      "bytes": 2678,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/data/team.ts",
+      "sha256": "ba80f2fbf126c5788dd3d0632b915664dca0ebd3232a6a99ca8b4e1e88cd6027",
+      "bytes": 136,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/data/universidade-verao.ts",
+      "sha256": "f75207152ef3239cfa920ddfc20464d3c69ba090075ccdb8fe20a6a05e492bd6",
+      "bytes": 19274,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/data/wessex-pricing.ts",
+      "sha256": "fbf8af7e36397e6e10f7c167feb03827935c906178a437c137a94171cdd268ee",
+      "bytes": 4330,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/data/wessex-repertoire.ts",
+      "sha256": "4b0aaac5e35825335bb11eba49e0af549f083087d2949b1b9fbd81f15e9f53fc",
+      "bytes": 9972,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/i18n/__tests__/routing.test.ts",
+      "sha256": "c1d909e17bd94064ada20cfbf8423b29fddc57ad63bcc9a45a4635ec1c044e7c",
+      "bytes": 1359,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/i18n/copy/__tests__/errors.test.ts",
+      "sha256": "fc8dab38fb3522d9a9146b0fb9cbb41796b0b476ab651aadb54b185d293d73a7",
+      "bytes": 808,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/i18n/copy/__tests__/society.test.ts",
+      "sha256": "a7c6de7d31561fc7c38de61ee4ff06bdb62c5199bf24c6815e5a88263b115097",
+      "bytes": 5136,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/i18n/copy/__tests__/wepacker-language-contract.test.ts",
+      "sha256": "358e7576881ad9aa5c5bab0f32a819105484bba3300ee67241063caaad7d7ab1",
+      "bytes": 4221,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/i18n/copy/errors.ts",
+      "sha256": "148e2bbe70e7fb0e6578890a9d161838f1a23701542e36be300ead8f661d496d",
+      "bytes": 1793,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/i18n/copy/institutional-admin.ts",
+      "sha256": "8d46edfb7039cfbbc5957ec96fc5deb695c4299f4dc9f85e552c5362cec1cc1b",
+      "bytes": 17628,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/i18n/copy/institutional-arte-a-capela.ts",
+      "sha256": "a6462284306be584f3420550a1a8393e6b6f97c876b43d112b8684c0ddd70047",
+      "bytes": 7643,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/i18n/copy/institutional-artist.ts",
+      "sha256": "d9219ae80fc8aa24bc1ecbb1fe8fbdf27d92b28dba37af71d4fbb102e462a38a",
+      "bytes": 15440,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/i18n/copy/institutional-pages.ts",
+      "sha256": "970e7682a7eb67afc1ee0e61f06c7717f28dacfa8ca37eba915d52e06bc5eae7",
+      "bytes": 27180,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/i18n/copy/institutional-privacy.ts",
+      "sha256": "d693d1971969fe53cc0e79755bda5898613aeba300df45043f2501777e514869",
+      "bytes": 14201,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/i18n/copy/institutional-sn.ts",
+      "sha256": "36d53131dded7bae7fdf5c282662220a1d03e724a66ae1fa9a264209ea682b4a",
+      "bytes": 6665,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/i18n/copy/institutional-wessex.ts",
+      "sha256": "f17fff665a1cefd83898baf352bc5c079df64406494975fb8506e67e24f8408c",
+      "bytes": 20745,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/i18n/copy/institutional.ts",
+      "sha256": "89b77e79385bc826e16257450b2afdf6246d6c853a8878f1279374aa7f67d83f",
+      "bytes": 15451,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/i18n/copy/society-surfaces-campaigns.ts",
+      "sha256": "f1d8196d474565ba13b6af0fe9a2287a770d0a8e1110cf9fa3467804a312d591",
+      "bytes": 25993,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/i18n/copy/society-surfaces.ts",
+      "sha256": "0a4c1d7bc5bbc46ce15099cc706469921a0020429e864fb8d6e0b877ae6b8ed2",
+      "bytes": 53175,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/i18n/copy/society.ts",
+      "sha256": "dbe01daaa70356a08fb4244d0997852f8cf7fac57489bd528e4658c21bfa9a05",
+      "bytes": 27003,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/i18n/copy/wepacker.ts",
+      "sha256": "01ae95c2af203fc871bb6dd9a85f286a394467d0d18632c382441a83f513dbc8",
+      "bytes": 888,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/i18n/formats.ts",
+      "sha256": "3213ddb5ed3dc5488afa6e2a536f25df3725b5c766c4e3f09798af21b702af2d",
+      "bytes": 396,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/i18n/navigation.ts",
+      "sha256": "98a00dcd9a7d1c4fe748a972c5f4cbe7705dc8d68a4917404f5fbfdbc49458d9",
+      "bytes": 225,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/i18n/request.ts",
+      "sha256": "f9d42623e8d2989c74d0dc731ba4a42090315bedb2c7a4dd754431322eb63576",
+      "bytes": 652,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/i18n/routing.ts",
+      "sha256": "5e5dd032ed3487f3c621bc54dfdfb3d922c454406c6ce9c8c6be4eec92a12304",
+      "bytes": 1300,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/instrumentation.ts",
+      "sha256": "5feb48fbc012a300e15935be4e17a2db20478041f4ade330719b64d99476d0cc",
+      "bytes": 776,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/lib/__tests__/form-draft-ui-contract.test.ts",
+      "sha256": "1ec27b513c3fdd196fdea9e8ccd286b845411ee3212026f88190354f04bbb501",
+      "bytes": 1084,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/__tests__/healthcheck-state.test.ts",
+      "sha256": "0f2296c61f1ba3c37051eae442ca34d69afe20aacf5018146de03a21be0b80c5",
+      "bytes": 2874,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/__tests__/local-form-draft.test.ts",
+      "sha256": "ab3a82715263b3a05073bda44f9fc6f7779a1afa183c3024233a9eda9ad38865",
+      "bytes": 1346,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/__tests__/nginx-security-contract.test.ts",
+      "sha256": "8704066f20fb179e57c7a1da7d6dad6629c0b5901bb313bfcaecdc74da699455",
+      "bytes": 1331,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/__tests__/security-headers.test.ts",
+      "sha256": "d7232b7f379823f9c21a39375dcc95086169cd925944ba2afec492e2fc6c7edb",
+      "bytes": 1118,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/__tests__/social-metadata-ui-contract.test.ts",
+      "sha256": "69970ce7c5f87c529ebbd4c6a9b6ddb10d19816020aa71b55e4d57896a5ddd69",
+      "bytes": 828,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/__tests__/social-metadata.test.ts",
+      "sha256": "634a0cd2e392274cb33c6e548ae4dcae6abae77971602add0f01da333d2b2c85",
+      "bytes": 1564,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/auth.ts",
+      "sha256": "1b0a214b0491902ddf0e8e010b74d2ec18e94747890b9752ba8c733c4fae2b8d",
+      "bytes": 1848,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/bilheteira/__tests__/event-actions.test.ts",
+      "sha256": "c4f390f900541950f9963c8687627690536ca912501ce7e0bcda25f09b251e47",
+      "bytes": 1731,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/bilheteira/__tests__/event-time.test.ts",
+      "sha256": "14c58a166f1f7f410061f0d3f6090d8d41963bd2bcd0671daf33fdc67c687b4d",
+      "bytes": 872,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/bilheteira/__tests__/reserve-action.test.ts",
+      "sha256": "c4d39083b91a4caa6f565f73e2962639793e742dfd42a47b77707f55b9ef2cc9",
+      "bytes": 9389,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/lib/bilheteira/auth-actions.ts",
+      "sha256": "4728cdf072ff16d12b7f8dddb2f6264a6b6d54beedbe5226a47c55cdb54d9c93",
+      "bytes": 5378,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/bilheteira/event-actions.ts",
+      "sha256": "4e3a4a1d03386a4a528693db81bd627048c05fb2c08333861a163fe9f8735bc6",
+      "bytes": 11526,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/bilheteira/event-time.ts",
+      "sha256": "cdeb6e56afca2b7b71b4841195889e16957d805002cf2df5704104dcdee402ed",
+      "bytes": 126,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/bilheteira/reserve-action.ts",
+      "sha256": "4f455af28e345c9dc70747b1ed7a23593e19384b11026e22a46bec3644da4cab",
+      "bytes": 8153,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/lib/bilheteira/session.ts",
+      "sha256": "7e572e53962a99a4e3986f93db3cf5c3fa268f7e1eb883c82125fa6a1b3043b2",
+      "bytes": 2507,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/bilheteira/stripe.ts",
+      "sha256": "bab5e7927c7ede3e1eab81ff9157ed8dfbb1154135059f0185af95cc373d60bd",
+      "bytes": 478,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/bilheteira/ticket-email.ts",
+      "sha256": "557157fd8209f7d1e30a18afc69732ce2ed5bf12edfa258c8d93f57b9529d7b5",
+      "bytes": 6373,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/bilheteira/upload-actions.ts",
+      "sha256": "8f587cba512cb60e707e14066aa5d77075cf02007dbb642dfe111e1d087bfada",
+      "bytes": 3215,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/bilheteira/uploads.ts",
+      "sha256": "a3725be5467d0c4aebb25b8e649cb51e4d2ee6e9122de8e12f3fb2042140c918",
+      "bytes": 848,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/db.ts",
+      "sha256": "98486d2c08cf541e194170a6b24ded218c0220785c035d1287dab6635ec96739",
+      "bytes": 269,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/deployment-path.ts",
+      "sha256": "53dc7ea49aa4404f451b4e1e07f82cfa0f32bfb6102e96f1d83e1b2a312bda86",
+      "bytes": 285,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/email-security.ts",
+      "sha256": "c51a1f68a9c4d05d05cd3fe35f34e6246cb43920ba71041f310b9722274a5c1e",
+      "bytes": 2199,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/email.ts",
+      "sha256": "43b82c1f8731bc6ebe46b75360edf7256c870edb3ad7613d4ea102a82cb164c9",
+      "bytes": 25259,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/healthcheck-state.ts",
+      "sha256": "d50d5d0e81b6b7245e4aa2ebdf4a7940721ce9c536dcd1f32414c84129a7564e",
+      "bytes": 4430,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/leads.ts",
+      "sha256": "a36352d7f2f9e94c507211644441776c0e395ab39f41c78b96d96b70ccc0290c",
+      "bytes": 2623,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/local-form-draft.ts",
+      "sha256": "dfed5268d33fa6a805b8906498f290171e0d24ffbf82537cc27eb57c7bbb3c0a",
+      "bytes": 4356,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/security-headers.ts",
+      "sha256": "6a9ce54509309abad720a3db527235fb5f15a320843b121428307f280c336efd",
+      "bytes": 1259,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/sem-nome/reserved-seats.ts",
+      "sha256": "d239acf96803f0eb00d040c846c51277397f1bf696e792e408d8652b1944a721",
+      "bytes": 3073,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/social-metadata.ts",
+      "sha256": "29cdf6d956026c11d5fb4c337eb01b6e56e3ed78d096dce09ba072941b463567",
+      "bytes": 1537,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/society/intake-source.ts",
+      "sha256": "39b9eadf821015e619093a41b2f67320fec66f0b042b4371ebf792f0162e60be",
+      "bytes": 406,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/stale-deployment.ts",
+      "sha256": "978f20d465d7438311de10a1f4abbf42dba0210fcd89d293ef9389aa746f7c84",
+      "bytes": 987,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/useMobileDrawer.ts",
+      "sha256": "43076e33c2dda3179e63c26b77bc208e0a5edbae65e7670ebd60f62c89ca853e",
+      "bytes": 2474,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/academy-actions.test.ts",
+      "sha256": "636743401dd4606b882794e724bb5aa04b80b1d217b3bba81d9c94955d2f38ae",
+      "bytes": 3600,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/action-actions.test.ts",
+      "sha256": "deaa69fa4dd08879a5d7699e642ab4eda868eb50adbd0cc767cedff9cc17e577",
+      "bytes": 6617,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/admin-account-role-boundary.test.ts",
+      "sha256": "3c691de6eacda019af2500bab64f46fb4010b8b5a277c313ff01aa1b53afdfc7",
+      "bytes": 4320,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/admin-support-preview.test.ts",
+      "sha256": "7fa1caba157e9f759004c3f7eda770626d4f541df29fd23fcb4e49bd15f0d736",
+      "bytes": 4376,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/application-input-boundary.test.ts",
+      "sha256": "b562b14e12560adb512ef19d66c60ca6b19ffeaec05ff847ae709e0516f204d4",
+      "bytes": 6456,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/auth-action-integrity.test.ts",
+      "sha256": "5ac1cef2da23dbf88e6914492a5c4a3bc0a0afe96a9177fbedf4ef4cbb9f9579",
+      "bytes": 7356,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/auth-schema-integrity.test.ts",
+      "sha256": "3a50c4de2d25fc0e96dd07308eb876139eb16c3135a91584f8414c973d299fb7",
+      "bytes": 1057,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/beta-signup-submission-schema.test.ts",
+      "sha256": "4663438eb7b342c98cc29ca8cdd9da5ae5b4d1f83a275da98c59561b3276ce03",
+      "bytes": 1424,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/calcom-webhook.test.ts",
+      "sha256": "110239be86df7e36f8858c5881f3996b11e810060ca46b81fe7219c014524400",
+      "bytes": 25233,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/community-actions.test.ts",
+      "sha256": "62eed47a58d1d00a73caf2c5f025c5a8e049c09356f077ec4fbe3da2d21fd116",
+      "bytes": 15371,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/community-connection-email-content.test.ts",
+      "sha256": "edb7c8cb18d914a7bfd9a34148b30b458eb1cfdaba46e7b1d4eeaf35a06676c5",
+      "bytes": 3363,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/connection-actions.test.ts",
+      "sha256": "e6e82f8040a661c23b11a0c911628710e8e83d43858df88ab445b6c3b5a4f46b",
+      "bytes": 11642,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/contact-input-boundary.test.ts",
+      "sha256": "cb5c269dc3e6cef0324113da418e2d716b41b9ae3d99f790176f3166605244be",
+      "bytes": 3230,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/credentials-auth.test.ts",
+      "sha256": "ed7e5581841ac5b91a90860f995888c897f6cd4b690087d840370c454d6ab78a",
+      "bytes": 3529,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/debrief-contract-version.test.ts",
+      "sha256": "a3329637ac9582109a04ce616d9f94b578ab34ac81629d5b8206ed492edf3006",
+      "bytes": 3006,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/debrief-generation-page-capability.test.ts",
+      "sha256": "44a6fa7aeee74169bc869e9d46510da65ec8a479d89f48eeb427e614012e7f0c",
+      "bytes": 3292,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/debrief-generation-ui.test.ts",
+      "sha256": "17dd51777cf517dab39205dd861c50d58fcc5dc8f0dbb350c3002768b246f2c3",
+      "bytes": 2469,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/debrief-no-content-logging.test.ts",
+      "sha256": "d3ee0ae1810a537c84d3b4ec238cd85e3253862bcc92d13ec233fa8847c36a12",
+      "bytes": 4198,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/debrief-transcript-race.test.ts",
+      "sha256": "c60068f6b5be271bf2108a83b34d5d5a4640a0b25edc10ea9333e5578f7547ad",
+      "bytes": 4800,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/domain-graph-schema.test.ts",
+      "sha256": "c338c4769b0e5f550f4f3116cdabdf558466f89e842a4438d29e45a4a7dd66eb",
+      "bytes": 12680,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/email-transport-security.test.ts",
+      "sha256": "27f25e192aa1d5d74536c92b9211be411ed504fe015c309be8ef77cdcec51056",
+      "bytes": 854,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/guards-auth-freshness.test.ts",
+      "sha256": "417e2b66c73301b021d7b1e91bf2c293099f4e54662dba54bbdbe44f01de22ee",
+      "bytes": 3112,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/hub-debrief-engine.test.ts",
+      "sha256": "8cce67062fb8d96e41ab4e90bc780e3b049042f412c6a4cc63840823c15b483d",
+      "bytes": 1633,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/ics.test.ts",
+      "sha256": "cfaa01e1e9e9a60adc189808341dc4990de2fc8196528f4716e121e1b8f1c431",
+      "bytes": 6430,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/meeting-url.test.ts",
+      "sha256": "8c113225dc960097ff0c69be1f9155227e438d5e16cbc088311a5ac078d6c57e",
+      "bytes": 1967,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/mentor-workspace-capability.test.ts",
+      "sha256": "d72b05c5ace02a4581b58965a24563ccfe2bcff5443870f39133ea9165624282",
+      "bytes": 3227,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/mentorship-actions.test.ts",
+      "sha256": "5718d539e4ddcb1be36fff253458cd99eb23212b8ef9b34a763a6b538fd60cba",
+      "bytes": 9950,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/mentorship-email-content.test.ts",
+      "sha256": "d6876d7858d9a9ee6260e9c3c797f91a6be74ac1bae581f0c8165f6c479087ee",
+      "bytes": 4187,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/mentorship-page-capability.test.ts",
+      "sha256": "22ab7e155b95d23bf2f22506e954d93212219e77d27fb894a993a9809206c5bd",
+      "bytes": 1686,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/message-capability-containment.test.ts",
+      "sha256": "a426edd5237b45a6b3acd85486682b1fa3b2f096d7b049837bfad2716e4f62f2",
+      "bytes": 2150,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/message-notification-debounce.test.ts",
+      "sha256": "1e589adae681f91b0cae033a03a5a8ebdf911ce5d91c2213cc1abfed1582ccf5",
+      "bytes": 6213,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/my-journey-person-owned.test.ts",
+      "sha256": "2ca8e045c43b444e05fbe67718b2b8ce7da2eb9e55b5c9d92d9fc04ccd84140a",
+      "bytes": 3559,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/nginx-access-log-security.test.ts",
+      "sha256": "dc7a30bbc7af44ea6a60288a4da8ce6081e0f2c981ac506e7af69839ab4b551a",
+      "bytes": 2274,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/notification-actions.test.ts",
+      "sha256": "77ec057ee7c0e96dbbff81cb30050f6617ee62c7b6a0c3f9ecd801826cb1cd49",
+      "bytes": 4062,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/notification-outbox-instrumentation.test.ts",
+      "sha256": "8fd7b058967bb93c60d71b9fd337c4dec79c8a3e1aef833dae262ca79bcc823b",
+      "bytes": 1776,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/notification-outbox-worker.test.ts",
+      "sha256": "089e12e4ca99b5e54a8aa551ad76a635cf436a3cdc73f35a335809c52e859d1a",
+      "bytes": 3013,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/notification-outbox.test.ts",
+      "sha256": "d7982c997147d7695b87719179c57d29885aed7ad228b137e7323187e5c38ad0",
+      "bytes": 25191,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/notification-schema.test.ts",
+      "sha256": "3678620a3b8ab201db395d9625e1139f5fd5f55cdc35c586a4e3aa1d8cacf9cd",
+      "bytes": 3165,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/owner-action-input-boundary.test.ts",
+      "sha256": "7450b5b24b83f2503e17aee8914ba7a828e80f822a04757d7ef197be0c501110",
+      "bytes": 10467,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/plan-restore.test.ts",
+      "sha256": "0d563063f23a0a6a3d267ba214ab3345d5b7de8d78d5fbb00b3264a83f5314cf",
+      "bytes": 5379,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/post-login.test.ts",
+      "sha256": "e63892e0d5dff44ea3fc3606f8736a8e43ccc1ca33b5581d9df89f773a4d8511",
+      "bytes": 1029,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/private-artifact-authorization.test.ts",
+      "sha256": "ec087f00c7cf8d2049702224cd3c122b5797a0315a798b5fde90599bf8c47ce4",
+      "bytes": 1891,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/profile-action-input-boundary.test.ts",
+      "sha256": "eb66d5eecc3e6abc4502f16691c280b80e483a20fbc020d49f58d2fb3f84cc7f",
+      "bytes": 2388,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/retired-runtime-contract.test.ts",
+      "sha256": "9742a00bfb4eb0df81611fd2e35c0e968cb2727536e7f960899ef72d5c34e08c",
+      "bytes": 1895,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/seed-safety.test.ts",
+      "sha256": "34400212dda84df1c2762761ba87e4f81769db4ea874b03052f1232e7f790930",
+      "bytes": 1665,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/session-attendee-preview-route.test.ts",
+      "sha256": "2dcacfa5683353e08cedc00aae4285d94342da97b0ee850edaa0a7580ddec661",
+      "bytes": 2693,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/session-attendee-preview.test.ts",
+      "sha256": "f2b5ac282a4f165cc2fe129f38919b4b0d05e2109ffdff23a00405d21ddb6621",
+      "bytes": 3628,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/session-authorization-lock.test.ts",
+      "sha256": "68dade5011da20ae304f131c2e2a2664b39db9ca71c70cf20286a7292d1ac8fc",
+      "bytes": 1614,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/session-calendar-recipient-privacy.test.ts",
+      "sha256": "fc9fe904e41e572b447e2532dca41fbf7817e147f8810571dbd2219acc61395f",
+      "bytes": 4812,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/session-meeting-url-reinvite.test.ts",
+      "sha256": "bbfb183e5375cf9824f25737efe894a2a98943641bd5a42826b96216cd735775",
+      "bytes": 6964,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/session-mentorship-authorization.test.ts",
+      "sha256": "dd94e7f3670895d31c4a1f42ada85389cac175e70d3c329a95bbce53098459f2",
+      "bytes": 1849,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/session-mentorship-private-access.test.ts",
+      "sha256": "375b74b10dafac42e7c8c87f451a6134c0fa369337f843964f19eb7e7f2e5450",
+      "bytes": 2646,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/session-middleware-capability.test.ts",
+      "sha256": "8d448ebb034955f05918b830199b435d1e50573f6e9977b13e72920024892924",
+      "bytes": 4345,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/session-organizer-page-capability.test.ts",
+      "sha256": "014a0d8c6c26a1b65e2641a935bfbf2b79ec61f8b1c37bfd5aea187b95346fe7",
+      "bytes": 1949,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/session-page-person-owned.test.ts",
+      "sha256": "67bb71c80518d7064437182550ae223d92c5a66bcb80e93a5b0edb8581fe3d1a",
+      "bytes": 1114,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/session-participant-picker.test.ts",
+      "sha256": "1830ca6fa39eb6ac0103b60d12bc5b1fb5b94d5261f7a96873ae38a9e714e58e",
+      "bytes": 15998,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/session-sidebar-capability.test.ts",
+      "sha256": "205bfc9f3547585b8573d155c1ab717ca8f13a68bbb8df3d64f74ed0c11a40e4",
+      "bytes": 3523,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/session-transcript-actions.test.ts",
+      "sha256": "24e24e568ae8062a72435880e3cda9dfc4adc881461e2dc20cd42e6ba01edc6a",
+      "bytes": 4256,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/session-transcript-leak.test.ts",
+      "sha256": "ca849c06948e9754635eb6a9da116a51b36ecacf06daeceab21b3734982ffd41",
+      "bytes": 4781,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/shared-note-published-email.test.ts",
+      "sha256": "fbc61827e504c9c730281606dbbe422f8f7b539116036a2787444c0c42eb8825",
+      "bytes": 7267,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/support-preview-projection.test.ts",
+      "sha256": "a344b6e7a7a3b5a15c76e78b4cd545102d9589a92f04395ca4304a8cbf140863",
+      "bytes": 5255,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/support-preview-retention-worker.test.ts",
+      "sha256": "052453c315bfbbe83189ad8ed70a8b207d2028b6d8034ea0ad5fbc7c1af18e3e",
+      "bytes": 3706,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/support-preview-retention.test.ts",
+      "sha256": "475e3b57b95a4153729ff572d6f430f6646c05cae63c6846f68681a84ec4bafc",
+      "bytes": 4457,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/support-preview-schema.test.ts",
+      "sha256": "2308c9ff98be37b52aa977760fe1704da8a1d87b86a951679d26511ed16566e4",
+      "bytes": 3450,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/support-preview-security.test.ts",
+      "sha256": "e03dadfd19488594fdc79e0d36c6006d64d8dbc06d9f480de46ff05188ab3691",
+      "bytes": 3728,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/support-preview-user-deletion.test.ts",
+      "sha256": "7b24650fbf07eec1bde6b64b7803b6f5a6986f184b49cd95ffc796c7ef353bea",
+      "bytes": 3525,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/target-seed-contract.test.ts",
+      "sha256": "a582e0e0abcdbecf48b717aec8f9e9648bb7238cd563f3e24896c3d5162d13cb",
+      "bytes": 2221,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/transcript-file.test.ts",
+      "sha256": "6101bf40afd37fb5f50cb202801ae65841ddcabb034c459f4cb301539775c25d",
+      "bytes": 2623,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/__tests__/ui-feedback-contract.test.ts",
+      "sha256": "e4903b0536908f2a15acb46fca634d4607307f433de497f163e067edbab19b07",
+      "bytes": 1315,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/wepacker/actions/academy.ts",
+      "sha256": "9d5f0f6356688f498d6cecf30bbae464ee46d840e35e47d56b24dad52f100e7e",
+      "bytes": 2554,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/actions/action.ts",
+      "sha256": "ba5b03eb4a2961ad2d4181362d77883c338b2bc0b0b7dc67d3d366cb7b9cdbed",
+      "bytes": 6862,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/actions/admin.ts",
+      "sha256": "9c3304f786aad97edd1fd41dc9918454fb6ee52c8b303d5002b62c52e35be0cb",
+      "bytes": 5712,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/actions/application.ts",
+      "sha256": "e5c0527822fbaf1dcd8d2efc58bf138d3c3c13ec51a66b14cfa2bf40044074d5",
+      "bytes": 7679,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/lib/wepacker/actions/community.ts",
+      "sha256": "32002a08581a98c700aa720465a3c6dd5b81e788e42868020bd2adabe27e3434",
+      "bytes": 13210,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/actions/connection.ts",
+      "sha256": "375f3263d6732a857e26ff7c0e6a5256b1137004bbdf655c42092b129fefa416",
+      "bytes": 9217,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/actions/contact.ts",
+      "sha256": "f55a15ae8d144601fef0ee724136423a2844d39642b27fe6c90aa6ab63d52d55",
+      "bytes": 4155,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/actions/debrief.ts",
+      "sha256": "8f3ceedb5a7439e8971c4ed4872762f4e6dc401da3bbecf98d106919fdab928f",
+      "bytes": 10665,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/actions/invite.ts",
+      "sha256": "6847d565ca3a97c14363e9ae800515b450fea2c7a39916bc9e605cfe4e4aeea5",
+      "bytes": 7902,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/actions/lead.ts",
+      "sha256": "b59bdeb70a9cc6887d7cc1db56ff8471f67964dab0c613a82816e3613b94c2e2",
+      "bytes": 767,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/actions/mentorship.ts",
+      "sha256": "dde2296c0e760723f813d901ebe6dc68cf6d99201b8674a8043ea3e8f9b9c311",
+      "bytes": 6496,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/actions/message.ts",
+      "sha256": "4bbd2ee4fe7c7815dedd441cf767a836699a0aecd75fc131897f7b05f81bb884",
+      "bytes": 7988,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/lib/wepacker/actions/notification.ts",
+      "sha256": "f4a0c257ea7b17650ba7ced49737b182f10c5662b6cbf08e9a0e439fd66741c1",
+      "bytes": 4061,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/actions/plan.ts",
+      "sha256": "fc02dc5c3bd6b73c0b4eef000e8ceb9c6cfa62ef4879906ae048c6d0335320e1",
+      "bytes": 11540,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/actions/session-attendee-preview.ts",
+      "sha256": "71b7c96a59b0edc797dacc5499aea81dc26e0928557c2f1b64d1297dc22cf8c4",
+      "bytes": 14346,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/actions/session-transcript.ts",
+      "sha256": "1d23a4bed5487d993e0da07bb60c9c3f010e5754b308f3269ebce821d5eb3281",
+      "bytes": 2885,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/actions/session.ts",
+      "sha256": "40e9548afe804d96a7f74e898c40179167de8ea155e4792c0d09920730ce11d0",
+      "bytes": 39573,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/actions/trail.ts",
+      "sha256": "e686e1346f6764d708275a74a03bf9754d8069993773305f009ca53cd71b3241",
+      "bytes": 6606,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/actions/user.ts",
+      "sha256": "a64a4df1b09519307d16c9976ca4024b703972cad1e1b98cc086dd2e05aa434e",
+      "bytes": 4467,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/calcom.ts",
+      "sha256": "413c80f8c14f528e389737c6ee092448888248882c0fc67df0b8ff1ce58c0999",
+      "bytes": 2669,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/credentials-auth.ts",
+      "sha256": "554d6ffc878c4c83a1bc733613f1646d91de0f0c04c21c1b9e4f2e187a17c899",
+      "bytes": 4394,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/debrief/engine.ts",
+      "sha256": "594153ff159d48abf6a643c9f95b867ffb9d687880aa8aa674690808c765952f",
+      "bytes": 960,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/debrief/hub.ts",
+      "sha256": "d93d1b83e6974a0809d37416239b8f67d32fdc4cefb62c42e19fe5ec3059e9a1",
+      "bytes": 832,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/debrief/types.ts",
+      "sha256": "83ed64d9e08504d53d328a7ce2306a295c363cc7738d9d5c07944469c0558008",
+      "bytes": 7209,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/guards.ts",
+      "sha256": "ccaec8ee0c64a67b81626d42e3f31016cb2a2101e085d92989190ae621478470",
+      "bytes": 4639,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/ics.ts",
+      "sha256": "5c0a819f928e2bb641aab1be7212442349c6c7fd1a02530ac14ced6413a834fa",
+      "bytes": 5527,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/log-safe-error.ts",
+      "sha256": "a75f7e4b14270f40b043b53bc720b99689fcfe6eb85bb2f5645522be30388b05",
+      "bytes": 709,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/meeting-url.ts",
+      "sha256": "c07d50a5b6c999a41679ca84b76314fe56a9e367cdd71cef467ed16eeed47f9c",
+      "bytes": 1913,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/notification-copy.ts",
+      "sha256": "fa81ed66524480d2fc16780804dbeb22270f46dc1716d08224e07abb54f5b7b8",
+      "bytes": 1646,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/notification-outbox-worker.ts",
+      "sha256": "d6335cb53931e057f932212c4f1a671e36c9674ff3ec09a6069053e159aa82d0",
+      "bytes": 4434,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/notifications.ts",
+      "sha256": "5577d7a11debc9e905a8d93d5fc0cd741ba5b455d037984ac168d3573dc2d055",
+      "bytes": 25207,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/page-guards.ts",
+      "sha256": "d8282bd52e35e3d736175a575a0990f9c84baeb0d94b1b6060084d247afffe0d",
+      "bytes": 724,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/post-login.ts",
+      "sha256": "70b60e49ca76669418e0a45a4320d6f2e533e152eda2d3c54fd0d240c625b955",
+      "bytes": 810,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/wepacker/support-preview-retention-worker.ts",
+      "sha256": "87a60858995edbea4fc40f8c3c7617164a3986641e3e5a958a01b2fa5954618c",
+      "bytes": 4231,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/support-preview-retention.ts",
+      "sha256": "3c3ad6da3123f77953d19891d07cc1688ae6e6c035715998fe2a23021bfccf1d",
+      "bytes": 5032,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/support-preview-security.ts",
+      "sha256": "559223df298bf8be3c6e49d7814ff01b861ddddea5a441fa42b756e2989972cd",
+      "bytes": 4881,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/transcript-file.ts",
+      "sha256": "ec73b49589fbfb2b8ab8f36869176de2b823a6634af900697e10148e04571466",
+      "bytes": 1978,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wepacker/types.ts",
+      "sha256": "46ba5f6c6f2b80d47471c5d7e2181153522856e008aac31966ac4e2b11c90db6",
+      "bytes": 2421,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wessex/__tests__/chat-contract.test.ts",
+      "sha256": "b334fd950e903b52f395bd5ee8d08b333c029b7b2ac1b8467027e12e3e23c23b",
+      "bytes": 959,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/wessex/__tests__/chat-engine.test.ts",
+      "sha256": "4c4a2276e2dba0f013ca6132d58efef7a1d07d44a1ff47a60e27616b1f147c8f",
+      "bytes": 7503,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/lib/wessex/__tests__/operational-alert.test.ts",
+      "sha256": "9286361cc79c84fd8286ebc0100cf38251d8afeb893c3828b4e222ef23000fa3",
+      "bytes": 4919,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/wessex/__tests__/persistent-rate-limit.test.ts",
+      "sha256": "3da5d6ab64c54e7e9257337c337d7cc5489f8782e277c9473f9d3f70b2a9aa6d",
+      "bytes": 5233,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/wessex/__tests__/rate-limit-migration.test.ts",
+      "sha256": "c4777e4ea4c7b1ba8dbd44a9a50abf62090a17d94206fc0eb02d780c50fb7506",
+      "bytes": 1075,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/wessex/__tests__/rate-limit.test.ts",
+      "sha256": "76e38ab556696024894fc141b6a6b2540f4e28c4619ef75c376411f48287e078",
+      "bytes": 4821,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/lib/wessex/chat-contract.ts",
+      "sha256": "52162d0b536726b0a9d8e622c207205bf59be5d969a0cf2001be9ffaae9a8a73",
+      "bytes": 1496,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/wessex/chat-engine.ts",
+      "sha256": "55e7718e44dcaef02357f3d9d59c1f31ef1b209c87dfd499ae4af9e955d032fb",
+      "bytes": 10946,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/lib/wessex/operational-alert-worker.ts",
+      "sha256": "e351f4137d3ecd80afa606d1720246dd370aac7e749e9affcbd26bf2ea96cbb7",
+      "bytes": 866,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/wessex/operational-alert.ts",
+      "sha256": "88a9f5c584721e879fc03b7b36b3f0aae5317610989a5aa95486e1e140c3d63c",
+      "bytes": 7636,
+      "origin": "untracked"
+    },
+    {
+      "path": "src/lib/wessex/rate-limit.ts",
+      "sha256": "5a423832bb8e7482dc67da73571f201ce2783308a30371b2366ff5bde8ad5328",
+      "bytes": 12520,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/messages/en-US.json",
+      "sha256": "f4617bfba9b1ac53e1645ce0aa1df0ba84f45f1fe8e0bbe56835b8e52e12e00d",
+      "bytes": 3084,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/messages/pt-PT.json",
+      "sha256": "ce729cc7280b01e8358f5e947f909afa05b4910855ff5ee79ee77326b68808dc",
+      "bytes": 3177,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "src/proxy.ts",
+      "sha256": "e5ae9cd268dcd63416ad65d0c805d5ea80610a99586630de0a741eca4a4b77f2",
+      "bytes": 4932,
+      "origin": "tracked-modified"
+    },
+    {
+      "path": "src/types/next-auth.d.ts",
+      "sha256": "3f3cc3d95c38c0aa3a9393550f4b08c275fb5df08a9d2e56504cbccee3a5ff9f",
+      "bytes": 477,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "5c51df4c59f4510d8c7dadf07a5c32132228826a3b331da5e286207b4df7ef9c",
+      "bytes": 670,
+      "origin": "tracked-unchanged"
+    },
+    {
+      "path": "vitest.config.ts",
+      "sha256": "f04f5ddc34c67cccd7a26afdb973e1eed2b939e2f0d498c0fbe2e97d3be17a8d",
+      "bytes": 297,
+      "origin": "tracked-unchanged"
+    }
+  ],
+  "omissions": [
+    {
+      "path": ".claude/settings.json",
+      "reason": "environment/tool configuration or runtime data excluded without reading",
+      "local_delta": false
+    },
+    {
+      "path": ".env.example",
+      "reason": "environment/tool configuration or runtime data excluded without reading",
+      "local_delta": true
+    },
+    {
+      "path": ".mcp.json",
+      "reason": "environment/tool configuration or runtime data excluded without reading",
+      "local_delta": false
+    },
+    {
+      "path": "WEPAC_Artista_Alpha_Guia_Testes.docx",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "brand-assets/wepac/source/wepac-logo.ai",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "brand-assets/wepac/source/wepac-logo.pdf",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "proposta-contratacao-wepac.pdf",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/bilheteira/capela-viva/ananda-roda.jpeg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/bilheteira/capela-viva/logo-arte-a-capela.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/bilheteira/capela-viva/logo-capela-viva.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/bilheteira/capela-viva/logo-wepac.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/arte-a-capela/azulejos.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/arte-a-capela/claustro.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/arte-a-capela/hero.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/arte-a-capela/lisboa.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/arte-a-capela/logo.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/arte-a-capela/talha.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/arte-a-capela/tumulo-vitral.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/arte-a-capela/vitral.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/artist-bg.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/society/alex-florindo-portrait.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/society/alex-florindo.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/society/arte-a-capela.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/society/easy-peasy.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/society/proof-alex-podium.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/society/proof-alvaro-luis-clean.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/society/proof-alvaro-luis.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/society/proof-jiu-jitsu.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/society/proof-jotta-pe.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/society/violin.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/society/wessex.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/wessex/banner.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/wessex/card-casamento.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/wessex/card-cocktail.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/wessex/card-corporativo.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/wessex/cta.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/wessex/detail.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/wessex/features.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/wessex/hero.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/wessex/logo/icon-black.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/wessex/logo/icon-white.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/wessex/logo/main-black.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/wessex/logo/main-white.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/wessex/logo/secondary-black.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/wessex/logo/secondary-white.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/wessex/quem-somos.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/images/wessex/testimonial.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/img/jottape-faded-bg.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/logo/email/wepacker-lockup-black.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/logo/email/wepacker-lockup-white.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/logo/email/wepacker-wordmark-black.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/logo/email/wepacker-wordmark-white.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/logo/icon-192.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/logo/icon-512.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/logo/og-image.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/logo/wepac-brandbook.pdf",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/logo/wepac-logo-black.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/logo/wepac-logo.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/logo/wepac/badge-black.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/logo/wepac/badge-grey.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/logo/wepac/badge-white.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/logo/wepac/lockup-black.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/logo/wepac/lockup-grey.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/logo/wepac/lockup-white.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/logo/wepac/wordmark-black.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/logo/wepac/wordmark-grey.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/logo/wepac/wordmark-white.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "public/sem-nome/cover.jpg",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "src/app/apple-icon.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "src/app/favicon.ico",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    },
+    {
+      "path": "src/app/icon.png",
+      "reason": "binary/static asset omitted; recover versioned original from source base",
+      "local_delta": false
+    }
+  ]
+}

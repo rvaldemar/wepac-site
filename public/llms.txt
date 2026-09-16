@@ -1,0 +1,46 @@
+# WEPAC -- Companhia de Artes
+
+> Unimos arte, formacao e impacto social para valorizar o patrimonio e transformar vidas. Sons que inspiram.
+
+WEPAC e uma companhia de artes sediada em Portugal que opera em quatro areas: servicos musicais para eventos, educacao artistica, programacao cultural em espacos patrimoniais, e desenvolvimento de artistas. Fundada com a missao de tornar a cultura acessivel e transformadora, a WEPAC combina excelencia artistica com impacto social real.
+
+- Website: [https://wepac.pt](https://wepac.pt)
+- Contacto: info@wepac.pt
+- Localizacao: Carcavelos, Portugal (servicos em todo o territorio nacional)
+
+## Departamentos e Servicos
+
+### Wessex -- Servicos Musicais para Eventos
+
+- [Servicos Wessex](https://wepac.pt/servicos): Performances musicais de excelencia para eventos
+- [Simulador de Orcamento](https://wepac.pt/servicos/orcamento): Precos e orcamentos online com assistente AI
+
+Performances musicais ao vivo para casamentos, eventos corporativos, eventos institucionais, e celebracoes privadas. Curadoria artistica dedicada com rede de musicos profissionais. Generos: musica classica, jazz, fado, bossa nova, pop acustico, musica contemporanea, world music, musica antiga, musica de camara. Formatos desde solo instrumental (a partir de 200 EUR) ate orquestra com 14 musicos. Bandas de jazz, pop e bossa nova disponiveis. Composicoes e arranjos originais sob medida. Repertorio de 190+ temas.
+
+### Easy Peasy -- Educacao Artistica
+
+- [Projeto Easy Peasy](https://wepac.pt/projetos/easy-peasy): Musica e artes performativas em escolas e comunidades
+
+Programa educativo que leva musica e artes performativas a escolas e comunidades. Workshops, residencias artisticas, programas curriculares e formacao de professores. Focado em criancas e jovens, com o objetivo de despertar criatividade e promover desenvolvimento pessoal atraves da educacao artistica.
+
+### Arte a Capela -- Patrimonio e Artes
+
+- [Projeto Arte a Capela](https://wepac.pt/projetos/arte-a-capela): Programacao artistica em espacos patrimoniais
+
+Transforma espacos patrimoniais e espirituais -- capelas, igrejas, monumentos historicos -- em palcos de experiencias artisticas unicas. Concertos, instalacoes e performances que criam dialogo entre passado e presente, valorizando o patrimonio e tornando-o acessivel a novos publicos.
+
+### Programa Artistas WEPAC -- Desenvolvimento Artistico
+
+- [Programa Artistas](https://wepac.pt/artist): Sistema integrado de desenvolvimento, ativacao e consolidacao de artistas
+
+Programa de desenvolvimento integral para artistas. Nao e escola, agencia ou mentoria tradicional -- e uma estrutura que combina apoio psicologico, mentoria artistica, formacao continua, planeamento estrategico de carreira, gestao de redes sociais, producao de conteudo, branding e booking. Metodologia propria com 3 camadas (Areas do Saber, Principios, Valores), 4 niveis de progressao (Semente, Crescimento, Assinatura, Parceiro), e plataforma digital dedicada.
+
+## Mais Informacao
+
+- [Sobre a WEPAC](https://wepac.pt/sobre): Missao, visao, valores e metodologia
+- [Impacto Social](https://wepac.pt/impacto): Educacao, patrimonio e comunidade
+- [Parcerias](https://wepac.pt/parcerias): Oportunidades para instituicoes, escolas, empresas e municipios
+- [Programacao](https://wepac.pt/programacao): Agenda de eventos
+- [Metodologia](https://wepac.pt/metodologia): Os 3 pilares -- O Criador, O Sabio, O Cuidador
+- [Contacto](https://wepac.pt/contacto): Formulario de contacto e informacoes
+- [Documentacao completa para LLMs](https://wepac.pt/llms-full.txt): Versao expandida com todos os detalhes

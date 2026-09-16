@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://wepac.pt/sitemap.xml
+
+# LLM documentation
+# See https://wepac.pt/llms.txt for a concise overview
+# See https://wepac.pt/llms-full.txt for full documentation

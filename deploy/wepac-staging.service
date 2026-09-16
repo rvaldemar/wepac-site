@@ -1,0 +1,26 @@
+[Unit]
+Description=WEPAC Next.js staging
+After=network.target
+
+[Service]
+Type=simple
+User=deploy
+Group=deploy
+WorkingDirectory=/var/www/wepac-staging/current
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+RestartSec=5
+EnvironmentFile=/var/www/wepac-staging/shared/.env.staging
+Environment=NODE_ENV=production
+Environment=PORT=3004
+Environment=HOSTNAME=127.0.0.1
+Environment=NEXT_PUBLIC_BASE_PATH=/staging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=wepac-staging
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/var/www/wepac-staging
+
+[Install]
+WantedBy=multi-user.target

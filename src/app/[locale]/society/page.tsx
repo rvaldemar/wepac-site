@@ -1,0 +1,374 @@
+import type { Metadata } from "next";
+import Image from "next/image";
+import { Link } from "@/i18n/navigation";
+import { FadeIn } from "@/components/FadeIn";
+import { SocietyFooter } from "@/components/society/SocietyFooter";
+import { SocietyHeader } from "@/components/society/SocietyHeader";
+import { getSocietyCopy } from "@/i18n/copy/society";
+import { buildSocialMetadata } from "@/lib/social-metadata";
+
+const intakeHref = "/wepacker/intake?source=society";
+
+type SocietyPageProps = {
+  params: Promise<{ locale: string }>;
+};
+
+export async function generateMetadata({
+  params,
+}: SocietyPageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const copy = getSocietyCopy(locale);
+  return buildSocialMetadata({
+    locale,
+    path: "/society",
+    title: copy.meta.title,
+    description: copy.meta.description,
+  });
+}
+
+function Arrow() {
+  return <span aria-hidden="true">↗</span>;
+}
+
+function HeroLifeMap() {
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 overflow-hidden"
+    >
+      <div
+        className="absolute inset-0 opacity-[0.18]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px)",
+          backgroundSize: "72px 72px",
+        }}
+      />
+      <div className="absolute left-[18%] top-[14%] h-[72%] w-px bg-gradient-to-b from-transparent via-white/55 to-transparent" />
+      <div className="absolute left-[18%] top-[24%] h-px w-[48%] bg-white/20" />
+      <div className="absolute left-[18%] top-1/2 h-px w-[65%] bg-white/20" />
+      <div className="absolute left-[18%] top-[74%] hidden h-px w-[38%] bg-white/20 sm:block" />
+      <div className="absolute left-[18%] top-[calc(24%-5px)] h-3 w-3 -translate-x-1/2 rounded-full border border-white bg-black" />
+      <div className="absolute left-[18%] top-[calc(50%-5px)] h-3 w-3 -translate-x-1/2 rounded-full border border-white bg-black" />
+      <div className="absolute left-[18%] top-[calc(74%-5px)] hidden h-3 w-3 -translate-x-1/2 rounded-full bg-white sm:block" />
+      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black to-transparent" />
+    </div>
+  );
+}
+
+function ProofImage({
+  src,
+  alt,
+  label,
+  className,
+}: {
+  src: string;
+  alt: string;
+  label: string;
+  className?: string;
+}) {
+  return (
+    <div className="group relative aspect-[4/5] overflow-hidden bg-[#080808]">
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes="(max-width: 767px) 100vw, (max-width: 1279px) 50vw, 25vw"
+        className={`object-cover transition duration-700 group-hover:scale-[1.02] ${className ?? ""}`}
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent" />
+      <p className="absolute inset-x-0 bottom-0 p-5 text-[10px] font-bold uppercase tracking-[0.18em] text-white/90 sm:p-7">
+        {label}
+      </p>
+    </div>
+  );
+}
+
+export default async function SocietyPage({ params }: SocietyPageProps) {
+  const { locale } = await params;
+  const copy = getSocietyCopy(locale);
+  const lifePlanSteps = [
+    copy.lifePlan.steps[0],
+    copy.lifePlan.steps[2],
+    copy.lifePlan.steps[6],
+  ];
+
+  return (
+    <div className="min-h-screen bg-black text-white selection:bg-wepac-gray selection:text-black">
+      <SocietyHeader />
+      <main>
+        <section className="relative isolate overflow-hidden border-b border-white/10 px-5 pb-20 pt-32 sm:px-8 lg:px-12 xl:min-h-screen xl:pb-24 xl:pt-36">
+          <div className="absolute inset-0 -z-20 bg-black" />
+
+          <div className="mx-auto grid max-w-[1760px] gap-12 md:gap-16 xl:min-h-[calc(100vh-15rem)] xl:grid-cols-[minmax(0,1.05fr)_minmax(440px,0.95fr)] xl:items-center xl:gap-16 2xl:gap-24">
+            <FadeIn className="max-w-[760px]">
+              <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/70">
+                {copy.hero.eyebrow}
+              </p>
+              <h1 className="mt-8 text-balance font-barlow text-[clamp(3.5rem,5.4vw,6.5rem)] font-black uppercase leading-[0.86] tracking-[-0.035em]">
+                {copy.hero.title}
+              </h1>
+              <p className="mt-10 max-w-2xl text-balance font-barlow text-2xl font-bold uppercase leading-tight sm:text-3xl">
+                {copy.hero.subtitle}
+              </p>
+              <p className="mt-5 max-w-2xl text-balance text-lg leading-relaxed text-white/80 sm:text-xl">
+                {copy.hero.body}
+              </p>
+              <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <Link
+                  href={intakeHref}
+                  className="inline-flex min-h-14 items-center justify-center bg-white px-7 text-xs font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-wepac-gray"
+                >
+                  {copy.hero.primaryCta}
+                </Link>
+                <Link
+                  href="#life-plan"
+                  className="inline-flex min-h-14 items-center justify-center border border-white/30 px-7 text-xs font-bold uppercase tracking-[0.18em] transition-colors hover:border-white hover:bg-white hover:text-black"
+                >
+                  {copy.hero.secondaryCta}
+                </Link>
+              </div>
+              <p className="mt-4 text-xs leading-relaxed text-white/65">{copy.hero.ctaNote}</p>
+            </FadeIn>
+
+            <FadeIn
+              delay={0.1}
+              className="relative isolate ml-auto min-h-[390px] w-full max-w-[680px] overflow-hidden border border-white/10 bg-[#080808] md:min-h-[460px] xl:ml-0 xl:min-h-[620px] xl:max-w-none"
+            >
+              <HeroLifeMap />
+              <div className="absolute inset-x-6 top-6 flex items-center justify-between text-[9px] font-bold uppercase tracking-[0.22em] text-white/40 sm:inset-x-8 sm:top-8">
+                <span>Life Map</span>
+                <span>01 — 07</span>
+              </div>
+              <figure className="absolute right-0 top-1/2 w-[min(86%,340px)] -translate-y-1/2 overflow-hidden border border-white/15 bg-black shadow-[0_30px_100px_rgba(0,0,0,0.55)] md:w-[min(68%,360px)] xl:w-[min(72%,400px)]">
+                <div className="relative aspect-[4/5]">
+                  <Image
+                    src="/images/society/alex-florindo-portrait.jpg"
+                    alt={copy.hero.portraitAlt}
+                    fill
+                    sizes="(max-width: 767px) 100vw, (max-width: 1279px) 360px, 400px"
+                    priority
+                    className="object-cover object-center"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent" />
+                </div>
+                <figcaption className="absolute inset-x-0 bottom-0 p-5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/90 sm:p-6">
+                  {copy.hero.portraitLabel}
+                </figcaption>
+              </figure>
+            </FadeIn>
+          </div>
+        </section>
+
+        <section id="life-plan" className="scroll-mt-20 border-b border-white/10 px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
+          <div className="mx-auto max-w-[1760px]">
+            <FadeIn className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/65">
+                  {copy.proposal.eyebrow} · {copy.proposal.title}
+                </p>
+                <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[0.9] tracking-[-0.04em] sm:text-7xl">
+                  {copy.lifePlan.title}
+                </h2>
+              </div>
+              <div>
+                <p className="max-w-3xl text-balance text-2xl leading-snug text-white sm:text-3xl">
+                  {copy.lifePlan.lead}
+                </p>
+                <p className="mt-6 max-w-2xl leading-relaxed text-white/75">{copy.proposal.body}</p>
+              </div>
+            </FadeIn>
+
+            <div className="mt-14 grid gap-px bg-white/15 md:grid-cols-3">
+              {lifePlanSteps.map((step, index) => (
+                <FadeIn key={step.name} delay={index * 0.05} className="bg-[#080808] p-7 sm:p-9">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/55">{step.index}</p>
+                  <h3 className="mt-10 font-barlow text-3xl font-black uppercase tracking-[-0.025em]">
+                    {step.name}
+                  </h3>
+                  <p className="mt-5 max-w-md leading-relaxed text-white/75">{step.line}</p>
+                </FadeIn>
+              ))}
+            </div>
+
+            <FadeIn className="mt-10 flex flex-col gap-5 border-t border-white/15 pt-9 sm:flex-row sm:items-center sm:justify-between">
+              <p className="max-w-2xl text-sm leading-relaxed text-white/70">{copy.lifePlan.support}</p>
+              <Link
+                href={intakeHref}
+                className="inline-flex min-h-14 shrink-0 items-center justify-center bg-white px-7 text-xs font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-wepac-gray"
+              >
+                {copy.lifePlan.cta}
+              </Link>
+            </FadeIn>
+
+            <div className="mt-12 grid gap-px bg-white/15 md:grid-cols-2">
+              <FadeIn className="flex min-h-[310px] flex-col bg-[#080808] p-7 sm:p-9">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/65">
+                  {copy.landing.integral.eyebrow}
+                </p>
+                <h3 className="mt-8 max-w-xl font-barlow text-4xl font-black uppercase leading-[0.92] tracking-[-0.035em]">
+                  {copy.landing.integral.title}
+                </h3>
+                <p className="mt-6 max-w-xl leading-relaxed text-white/75">
+                  {copy.landing.integral.body}
+                </p>
+                <p className="mt-5 max-w-xl text-sm font-semibold uppercase leading-relaxed tracking-[0.1em] text-white/85">
+                  {copy.pillars.join(" · ")}
+                </p>
+                <Link
+                  href="/academy"
+                  className="mt-auto inline-flex items-center gap-2 pt-9 text-xs font-bold uppercase tracking-[0.18em]"
+                >
+                  {copy.landing.integral.cta} <Arrow />
+                </Link>
+              </FadeIn>
+
+              <FadeIn delay={0.08} className="flex min-h-[310px] flex-col bg-[#080808] p-7 sm:p-9">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/65">
+                  {copy.landing.values.eyebrow}
+                </p>
+                <h3 className="mt-8 max-w-xl font-barlow text-4xl font-black uppercase leading-[0.92] tracking-[-0.035em]">
+                  {copy.landing.values.title}
+                </h3>
+                <p className="mt-6 max-w-xl text-sm font-semibold uppercase leading-relaxed tracking-[0.1em] text-white/85">
+                  {copy.landing.values.items.join(" · ")}
+                </p>
+                <Link
+                  href="/sobre"
+                  className="mt-auto inline-flex items-center gap-2 pt-9 text-xs font-bold uppercase tracking-[0.18em]"
+                >
+                  {copy.landing.values.cta} <Arrow />
+                </Link>
+              </FadeIn>
+            </div>
+          </div>
+        </section>
+
+        <section className="border-b border-black/15 bg-wepac-gray px-5 py-24 text-black sm:px-8 lg:px-12 lg:py-32">
+          <div className="mx-auto max-w-[1760px]">
+            <FadeIn className="max-w-3xl">
+              <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-black/65">{copy.landing.routesEyebrow}</p>
+              <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[0.9] tracking-[-0.04em] sm:text-7xl">
+                {copy.landing.routesTitle}
+              </h2>
+              <p className="mt-7 text-lg leading-relaxed text-black/80">
+                {copy.landing.routesBody}
+              </p>
+            </FadeIn>
+
+            <div className="mt-14 grid gap-px bg-black/15 lg:grid-cols-3">
+              <div className="relative flex min-h-[430px] flex-col overflow-hidden border border-black/20 bg-white/60 p-7 sm:p-9">
+                <div className="relative flex flex-1 flex-col">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/70">{copy.families.eyebrow}</p>
+                  <h3 className="mt-10 font-barlow text-4xl font-black uppercase tracking-[-0.03em]">{copy.families.title}</h3>
+                  <p className="mt-6 flex-1 leading-relaxed text-black/80">{copy.families.body}</p>
+                  <Link href="/society/familias" className="mt-10 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em]">
+                    {copy.families.cta} <Arrow />
+                  </Link>
+                </div>
+              </div>
+
+              <div className="relative flex min-h-[430px] flex-col overflow-hidden bg-black p-7 text-white sm:p-9">
+                <div className="relative flex flex-1 flex-col">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/70">{copy.academy.eyebrow}</p>
+                  <h3 className="mt-10 font-barlow text-4xl font-black uppercase tracking-[-0.03em]">{copy.academy.title}</h3>
+                  <p className="mt-6 leading-relaxed text-white/85">{copy.academy.body}</p>
+                  <div className="mt-8 grid grid-cols-3 gap-px bg-white/15">
+                    {copy.academy.stages.map((stage) => (
+                      <div key={stage.name} className="bg-black/80 px-3 py-4 backdrop-blur-sm">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/65">
+                          {copy.academy.ageLabel}
+                        </p>
+                        <p className="mt-2 font-barlow text-2xl font-black tracking-[-0.025em] text-white">
+                          {stage.range}
+                        </p>
+                        <p className="mt-3 font-barlow text-lg font-bold uppercase">{stage.name}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <Link href="/academy" className="mt-10 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em]">
+                    {copy.academy.cta} <Arrow />
+                  </Link>
+                </div>
+              </div>
+
+              <div className="relative flex min-h-[430px] flex-col overflow-hidden bg-wepac-gray p-7 sm:p-9">
+                <Image src="/images/arte-a-capela/hero.jpg" alt="" fill sizes="(max-width: 1023px) 100vw, 33vw" className="object-cover object-center opacity-[0.14]" />
+                <div className="relative flex flex-1 flex-col">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/70">{copy.houses.artsLabel}</p>
+                  <h3 className="mt-10 font-barlow text-4xl font-black uppercase tracking-[-0.03em]">{copy.landing.artsTitle}</h3>
+                  <p className="mt-6 flex-1 leading-relaxed text-black/80">{copy.houses.artsLine}</p>
+                  <div className="mt-10 flex flex-wrap gap-x-7 gap-y-3 text-xs font-bold uppercase tracking-[0.18em]">
+                    <Link href="/wessex" className="inline-flex items-center gap-2">{copy.houses.wessexCta} <Arrow /></Link>
+                    <Link href="/arte-a-capela" className="inline-flex items-center gap-2">{copy.houses.arteCta} <Arrow /></Link>
+                    <Link href="/companhia-de-artes" className="inline-flex items-center gap-2">{copy.houses.companyCta} <Arrow /></Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="border-b border-white/10 px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
+          <div className="mx-auto grid max-w-[1760px] gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
+            <FadeIn>
+              <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/65">{copy.platform.eyebrow}</p>
+              <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[0.9] tracking-[-0.04em] sm:text-7xl">
+                {copy.platform.title}
+              </h2>
+            </FadeIn>
+            <FadeIn delay={0.1}>
+              <p className="max-w-2xl text-lg leading-relaxed text-white/85">{copy.platform.body}</p>
+              <p className="mt-5 max-w-2xl leading-relaxed text-white/75">{copy.platform.support}</p>
+              <Link href="/wepacker/login" className="mt-9 inline-flex items-center gap-2 border-b border-white pb-2 text-xs font-bold uppercase tracking-[0.18em]">
+                {copy.platform.backpackCta} <Arrow />
+              </Link>
+            </FadeIn>
+          </div>
+        </section>
+
+        <section className="border-b border-white/10 bg-[#080808] px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
+          <div className="mx-auto max-w-[1760px]">
+            <div className="grid gap-px bg-white/15 sm:grid-cols-2 xl:grid-cols-4">
+              <ProofImage src="/images/society/proof-jiu-jitsu.jpg" alt={copy.proof.media[0].alt} label={copy.proof.media[0].label} />
+              <ProofImage src="/images/society/proof-alvaro-luis-clean.jpg" alt={copy.proof.media[1].alt} label={copy.proof.media[1].label} />
+              <ProofImage src="/images/society/proof-alex-podium.jpg" alt={copy.proof.media[2].alt} label={copy.proof.media[2].label} />
+              <ProofImage src="/images/society/proof-jotta-pe.jpg" alt={copy.proof.media[3].alt} label={copy.proof.media[3].label} />
+            </div>
+            <FadeIn className="mt-14 grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/65">{copy.proof.eyebrow}</p>
+                <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">{copy.proof.title}</h2>
+              </div>
+              <div>
+                <p className="text-xl leading-relaxed text-white/85">{copy.proof.body}</p>
+                <p className="mt-6 leading-relaxed text-white/75">{copy.proof.support}</p>
+              </div>
+            </FadeIn>
+          </div>
+        </section>
+
+        <section className="relative isolate overflow-hidden px-5 py-28 sm:px-8 lg:px-12 lg:py-40">
+          <div className="absolute inset-0 -z-20">
+            <Image src="/images/wessex/detail.jpg" alt="" fill sizes="100vw" className="object-cover object-[35%_center] opacity-25 sm:object-center" />
+          </div>
+          <div className="absolute inset-0 -z-10 bg-black/65" />
+          <FadeIn className="mx-auto max-w-5xl text-center">
+            <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/70">{copy.closing.eyebrow}</p>
+            <h2 className="mt-8 text-balance font-barlow text-5xl font-black uppercase leading-[0.88] tracking-[-0.045em] sm:text-7xl lg:text-8xl">{copy.closing.title}</h2>
+            <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-white/80">{copy.closing.body}</p>
+            <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
+              <Link href={intakeHref} className="inline-flex min-h-14 items-center justify-center bg-white px-7 text-xs font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-wepac-gray">
+                {copy.closing.lifePlanCta}
+              </Link>
+              <Link href="/wepacker/login" className="inline-flex min-h-14 items-center justify-center border border-white/30 px-7 text-xs font-bold uppercase tracking-[0.18em] transition-colors hover:border-white hover:bg-white hover:text-black">
+                {copy.closing.backpackCta}
+              </Link>
+            </div>
+          </FadeIn>
+        </section>
+      </main>
+      <SocietyFooter />
+    </div>
+  );
+}

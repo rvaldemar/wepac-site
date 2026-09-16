@@ -1,0 +1,99 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme inline {
+  --color-wepac-black: #000000;
+  --color-wepac-white: #FFFFFF;
+  --color-wepac-gray: #DEE0DB;
+  --color-wepac-dark: #0A0A0A;
+  --color-wepac-accent: #FFFFFF;
+  --color-wepac-accent-muted: #DEE0DB;
+  --color-wepac-card: #1A1A1A;
+  --color-wepac-input: #2A2A2A;
+  --color-wepac-border: #2A2A2A;
+  --color-wepac-text-secondary: #E5E5E5;
+  --color-wepac-text-tertiary: #999999;
+  --color-wepac-success: #4ADE80;
+  --color-wepac-success-bg: rgba(74, 222, 128, 0.15);
+  --color-wepac-warning: #FACC15;
+  --color-wepac-warning-bg: rgba(250, 204, 21, 0.15);
+  --color-wepac-error: #F87171;
+  --color-wepac-error-bg: rgba(248, 113, 113, 0.15);
+  --color-wepac-info: #60A5FA;
+  --color-wepac-info-bg: rgba(96, 165, 250, 0.15);
+  --font-barlow: "Barlow", sans-serif;
+  --font-inter: "Inter", sans-serif;
+  --font-pt-serif: "PT Serif", serif;
+  --color-wessex-gold: #B8A042;
+  --color-wessex-red: #540000;
+  --color-wessex-gray: #EFEFF0;
+  --color-wessex-dark: #2c2d2e;
+  --color-wessex-light: #FCFCFC;
+  --font-cormorant: "Cormorant Garamond", serif;
+  --color-capela-bg: #0B0A09;
+  --color-capela-cream: #F0EDE6;
+  --color-capela-red: #C2301F;
+  /* #C2301F only clears 4.5:1 as text on the cream block (4.81:1) — on the
+     near-black --color-capela-bg it measures 3.52:1, which fails for text
+     below the 18px/14px-bold "large text" threshold. This lighter tint
+     (4.78:1 on --color-capela-bg) is for text set directly on the dark
+     background only; button fills, borders and cream-background text keep
+     the base --color-capela-red. */
+  --color-capela-red-on-dark: #DC4A32;
+}
+
+body {
+  background: var(--color-wepac-black);
+  color: var(--color-wepac-white);
+  font-family: var(--font-inter);
+  padding-bottom: var(--cookie-consent-height, 0px);
+}
+
+:root {
+  --usable-viewport-height: calc(100dvh - var(--cookie-consent-height, 0px));
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Keyboard focus indicator: white outline + black offset ring so it reads
+   on both dark (wepac-black) and light (wepac-white) sections. */
+:focus-visible {
+  outline: 2px solid var(--color-wepac-white);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--color-wepac-black);
+  border-radius: 2px;
+}
+
+/* Scrollbar minimal */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #000;
+}
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

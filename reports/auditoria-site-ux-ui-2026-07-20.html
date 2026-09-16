@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pt-PT">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Auditoria WEPAC — placeholders, UX e UI</title>
+    <style>
+      :root { --ink:#151515; --muted:#656565; --paper:#f6f6f2; --line:#d9d9d3; --critical:#9d1c1c; --high:#a85300; --medium:#695500; --low:#276342; --card:#fff; }
+      * { box-sizing:border-box; }
+      body { margin:0; color:var(--ink); background:var(--paper); font:16px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      main { max-width:1100px; margin:auto; padding:56px 24px 80px; }
+      h1,h2,h3 { line-height:1.12; letter-spacing:-.025em; }
+      h1 { max-width:850px; margin:0; font-size:clamp(2.4rem,6vw,4.8rem); }
+      h2 { margin:56px 0 16px; font-size:1.8rem; border-top:1px solid var(--line); padding-top:28px; }
+      h3 { margin:0 0 10px; font-size:1.1rem; }
+      p { max-width:850px; }
+      .intro { color:var(--muted); font-size:1.15rem; }
+      .meta { display:flex; flex-wrap:wrap; gap:10px; margin:24px 0; }
+      .pill { border:1px solid var(--line); padding:5px 10px; border-radius:999px; color:var(--muted); font-size:.85rem; }
+      .summary { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:28px 0; }
+      .stat { background:#111; color:white; padding:20px; }
+      .stat b { display:block; font-size:2rem; line-height:1; margin-bottom:5px; }
+      .stat span { color:#c9c9c9; font-size:.9rem; }
+      nav { background:#e9e9e2; padding:16px 20px; }
+      nav a { color:inherit; margin-right:18px; white-space:nowrap; }
+      .finding { background:var(--card); border:1px solid var(--line); border-left:5px solid var(--line); padding:20px; margin:14px 0; }
+      .finding.critical { border-left-color:var(--critical); }
+      .finding.high { border-left-color:var(--high); }
+      .finding.medium { border-left-color:var(--medium); }
+      .finding.low { border-left-color:var(--low); }
+      .tag { display:inline-block; padding:3px 7px; border-radius:4px; color:#fff; font-size:.72rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; }
+      .critical .tag { background:var(--critical); } .high .tag { background:var(--high); } .medium .tag { background:var(--medium); } .low .tag { background:var(--low); }
+      code { padding:2px 5px; border-radius:3px; background:#eeeeea; font-size:.88em; overflow-wrap:anywhere; }
+      ul { padding-left:22px; } li { margin:7px 0; }
+      table { width:100%; border-collapse:collapse; background:white; margin:16px 0; }
+      th,td { padding:12px; text-align:left; vertical-align:top; border:1px solid var(--line); }
+      th { background:#e9e9e2; }
+      .status { font-weight:700; } .missing { color:var(--critical); } .present { color:var(--low); }
+      .note { padding:18px; background:#eeece4; border-left:4px solid #726b47; }
+      @media (max-width:700px) { main { padding:32px 16px 56px; } .summary { grid-template-columns:repeat(2,1fr); } table { display:block; overflow-x:auto; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="pill">Auditoria estática · 20 de julho de 2026</p>
+      <h1>WEPAC: placeholders, UX/UI e pontos sem sentido</h1>
+      <p class="intro">Inventário accionável das superfícies públicas e da plataforma WEPACKER. A prioridade é eliminar o que aparenta estar terminado mas não está, e tornar claro o percurso comercial e de activação.</p>
+      <div class="meta"><span class="pill">Código analisado: <code>src/</code> e <code>public/</code></span><span class="pill">Sem alterações ao produto</span><span class="pill">Alterações locais pré-existentes preservadas</span></div>
+      <div class="summary"><div class="stat"><b>5</b><span>placeholders públicos</span></div><div class="stat"><b>3</b><span>imagens declaradas em falta</span></div><div class="stat"><b>3</b><span>problemas UX P0</span></div><div class="stat"><b>12</b><span>melhorias UX/UI prioritárias</span></div></div>
+      <nav><a href="#placeholders">Placeholders</a><a href="#imagens">Imagens</a><a href="#ux">UX/UI</a><a href="#sentido">Sem sentido</a><a href="#plano">Ordem de correcção</a></nav>
+
+      <h2 id="placeholders">Placeholders de conteúdo</h2>
+      <div class="finding critical"><span class="tag">Crítico</span><h3>Galeria exposta, mas ainda em construção</h3><p><code>/media</code> está na navegação e sitemap, porém a página só apresenta “Galeria em construção. Em breve, mais conteúdos.” Não há grelha, colecção, CTA alternativo nem imagens editoriais.</p><p><b>Evidência:</b> <code>src/app/(site)/media/page.tsx:25–30</code>.</p><p><b>Decisão:</b> publicar uma galeria mínima curada, ou retirar temporariamente a rota da navegação/sitemap. Um placeholder público reduz a percepção de actividade da companhia.</p></div>
+      <div class="finding critical"><span class="tag">Crítico</span><h3>Cards e heróis de projectos são blocos gráficos, não imagens</h3><p>As páginas de projectos representam a área de imagem por um gradiente com o nome do projecto. Isto é especialmente frágil para ofertas culturais: não há prova de qualidade, pessoas, contexto nem diferenciação visual.</p><p><b>Evidência:</b> <code>src/app/(site)/projetos/page.tsx:39–45</code>; <code>src/app/(site)/projetos/[slug]/page.tsx:56–65</code>.</p><p><b>Decisão:</b> usar imagens reais e alt text editorial; aplicar um fallback visual honesto apenas quando a imagem não exista.</p></div>
+      <div class="finding high"><span class="tag">Alto</span><h3>Página Impacto promete resultados, mas não apresenta prova</h3><p>“Resultados reais” e “Medimos o nosso sucesso” são claims fortes. A página contém somente três textos genéricos: não há números, período, fontes, casos, parceiros, metodologia de medição ou fotografia documental.</p><p><b>Evidência:</b> <code>src/app/(site)/impacto/page.tsx:19–68</code>.</p><p><b>Decisão:</b> incluir 3–5 métricas verificáveis (com ano e fonte), 1 caso concreto e imagens; se esses dados não existem ainda, trocar a promessa por uma formulação honesta.</p></div>
+      <div class="finding high"><span class="tag">Alto</span><h3>“Equipa” anunciada, mas ausente</h3><p>Os metadados de <code>/sobre</code> anunciam a equipa, mas o dataset <code>team</code> está vazio e a página termina depois da metodologia. É uma expectativa quebrada numa página institucional central.</p><p><b>Evidência:</b> <code>src/app/(site)/sobre/page.tsx:5–7, 185–190</code>; <code>src/data/team.ts:8</code>.</p><p><b>Decisão:</b> publicar equipa/funções/fotografias ou retirar “equipa” da descrição e navegar para contacto.</p></div>
+      <div class="finding medium"><span class="tag">Médio</span><h3>Avatar WEPACKER é um placeholder explícito</h3><p>O perfil desenha apenas iniciais; a prop <code>avatarUrl</code> existe mas não é usada. Não é bloqueante, mas cria uma promessa técnica inacabada e perde uma forma simples de reconhecimento no produto.</p><p><b>Evidência:</b> <code>src/app/wepacker/(platform)/profile/page-client.tsx:14, 46–55</code>.</p><p><b>Decisão:</b> ou implementar upload/uso de avatar, ou remover a prop e tratar as iniciais como decisão de produto.</p></div>
+      <div class="finding medium"><span class="tag">Médio</span><h3>Indicadores de packs não-Artista são provisórios</h3><p>O próprio tipo assinala “Sport pack — placeholder”; os packs sem indicadores específicos recebem <code>DEFAULT_INDICATORS</code>. Se outro pack entrar em produção, a avaliação pode medir dimensões erradas.</p><p><b>Evidência:</b> <code>src/lib/wepacker/types.ts:173–182</code>.</p><p><b>Decisão:</b> bloquear a publicação de packs sem indicadores próprios ou criar uma configuração de indicadores por pack antes da activação.</p></div>
+
+      <h2 id="imagens">Inventário de imagens</h2>
+      <table><thead><tr><th>Referência</th><th>Estado</th><th>Impacto</th><th>Acção</th></tr></thead><tbody>
+        <tr><td><code>/images/easy-peasy.jpg</code><br><code>src/data/projects.ts:20</code></td><td class="status missing">Ausente</td><td>Quebrará ao ligar a imagem real nos cards/herói.</td><td>Adicionar asset original optimizado ou actualizar a referência.</td></tr>
+        <tr><td><code>/images/arte-a-capela.jpg</code><br><code>src/data/projects.ts:36</code></td><td class="status missing">Ausente</td><td>Idem.</td><td>Adicionar asset original optimizado ou actualizar a referência.</td></tr>
+        <tr><td><code>/images/wessex.jpg</code><br><code>src/data/projects.ts:52</code></td><td class="status missing">Ausente</td><td>Idem.</td><td>Adicionar asset original optimizado ou actualizar a referência.</td></tr>
+        <tr><td><code>public/images/wessex/testimonial.jpg</code></td><td class="status present">Existe, não usado</td><td>Possível asset órfão; não resolve a falta de prova social por si só.</td><td>Usar num testemunho real ou remover do inventário de publicação.</td></tr>
+      </tbody></table>
+      <p class="note"><b>Nota:</b> os campos de formulário com <code>placeholder</code> (“Nome”, “Email”, etc.) não foram classificados como conteúdo provisório. São auxiliares válidos, mas não podem substituir labels visíveis — ver P0 abaixo.</p>
+
+      <h2 id="ux">Auditoria UX/UI</h2>
+      <div class="finding critical"><span class="tag">P0</span><h3>O dashboard pode parecer vazio imediatamente depois da avaliação</h3><p>O onboarding grava a avaliação de entrada (<code>entry</code>) e encaminha para o dashboard. O dashboard usa <code>mid</code> para o valor “Actual”, comparando-o com <code>entry</code>. Antes da avaliação intermédia, o mapa tende a mostrar zero/sem dados precisamente após o utilizador preencher tudo.</p><p><b>Evidência:</b> <code>assessment/page-client.tsx:55–58, 92–97</code>; <code>dashboard/page.tsx:30–33</code>.</p><p><b>Correcção:</b> mostrar o último momento disponível, rotulá-lo “Avaliação inicial” e só comparar fases que existem.</p></div>
+      <div class="finding critical"><span class="tag">P0</span><h3>Mensagens impraticáveis em telemóvel</h3><p>A lista de conversas ocupa sempre 18rem e a conversa fica ao lado. Em 320–390px, sobra largura insuficiente para ler ou escrever. É um fluxo essencial do produto.</p><p><b>Evidência:</b> <code>src/app/wepacker/(platform)/messages/page-client.tsx:65–67, 131–212</code>.</p><p><b>Correcção:</b> master/detail: lista ou conversa em ecrã inteiro, com botão Voltar; validar em 320px, 375px e desktop.</p></div>
+      <div class="finding critical"><span class="tag">P0</span><h3>Candidatura recolhe dados pessoais sem labels nem contexto</h3><p>Nome, email e telefone são pedidos só por placeholders. Não há label associado para leitor de ecrã, nem aviso curto de privacidade/tratamento antes de submeter.</p><p><b>Evidência:</b> <code>src/app/wepacker/(public)/[pack]/intake/page-client.tsx:53–106</code>.</p><p><b>Correcção:</b> labels persistentes, obrigatório explicitado, erro por campo e texto curto com link à política e expectativa de resposta.</p></div>
+      <div class="finding high"><span class="tag">P1</span><h3>Oferta comercial fragmentada: Wessex, Programa Artistas e WEPACKER</h3><p>O menu envia “Wessex” para <code>/servicos</code>, uma página minimalista, mas existe <code>/wessex</code>, uma landing mais completa. Em paralelo, o site fala de “Programa Artistas” e a outra landing fala de Packs/Journey. O visitante não consegue formar um mapa mental coerente.</p><p><b>Evidência:</b> <code>Header.tsx:6–14</code>; <code>servicos/page.tsx:10–120</code>; <code>wessex/page.tsx:11–94</code>; <code>wepacker/(public)/page.tsx:148–196</code>.</p><p><b>Correcção:</b> escolher uma URL canónica e uma hierarquia de marcas; redireccionar/alinhar CTAs e aplicar um glossário único.</p></div>
+      <div class="finding high"><span class="tag">P1</span><h3>Landing Wessex perde navegação no mobile</h3><p>A navegação é escondida em <code>lg</code> sem menu alternativo. As âncoras, depoimentos e conteúdo de decisão ficam escondidos ou difíceis de alcançar.</p><p><b>Evidência:</b> <code>src/app/wessex/page.tsx:15–31</code>.</p><p><b>Correcção:</b> menu hamburger/drawer com as mesmas âncoras e CTA persistente.</p></div>
+      <div class="finding high"><span class="tag">P1</span><h3>Acessibilidade transversal: contraste e foco insuficientes</h3><p>Não há skip link nem padrão global de foco. Vários campos removem o outline sem alternativa robusta; texto branco a 30–40% em preto falha ou fica próximo do limite AA para texto normal.</p><p><b>Evidência:</b> <code>globals.css:34–58</code>; <code>contacto/page.tsx:215, 230, 245, 278</code>; <code>PricingCalculator.tsx:52, 92</code>; <code>Footer.tsx:34, 58, 67, 94, 98</code>.</p><p><b>Correcção:</b> skip link, <code>:focus-visible</code> consistente, tokens de contraste AA e revisão por teclado.</p></div>
+      <div class="finding high"><span class="tag">P1</span><h3>A avaliação inicial não oferece segurança nem recuperação</h3><p>As escalas são botões sem estrutura de radio/estado acessível; a legenda só surge quando seleccionada. Não há rascunho, resumo de respostas em falta ou recuperação após falha de rede.</p><p><b>Evidência:</b> <code>assessment/page-client.tsx:45–66, 123–142, 157–221</code>.</p><p><b>Correcção:</b> <code>fieldset</code> e radios com labels completos, guardar rascunho, resumo de pendências e retry sem perda de respostas.</p></div>
+      <div class="finding high"><span class="tag">P1</span><h3>Dashboard mostra mapas antes de orientar a próxima acção</h3><p>Dois radars ocupam o topo; tarefas, sessões e mensagens aparecem muito abaixo. O sistema mede, mas não guia claramente o utilizador no que fazer agora.</p><p><b>Evidência:</b> <code>dashboard/page-client.tsx:96–164, 244–352</code>.</p><p><b>Correcção:</b> topo com próxima sessão, tarefa atrasada/urgente e CTA; mapas como informação secundária.</p></div>
+      <div class="finding high"><span class="tag">P1</span><h3>Tarefas aceitam prazos livres e falham sem feedback robusto</h3><p>O prazo é texto livre e as mutações não comunicam todos os erros. A ordenação por deadline pode manter concluídas no topo, prejudicando a priorização.</p><p><b>Evidência:</b> <code>tasks/page-client.tsx:90–115, 164–169</code>; <code>actions/task.ts:12–18</code>.</p><p><b>Correcção:</b> <code>input type=date</code>, validação/feedback persistente e ordenação: atrasadas → pendentes → concluídas.</p></div>
+      <div class="finding medium"><span class="tag">P2</span><h3>Orientação e menus mobile incompletos</h3><p>A sidebar só activa links por igualdade exacta, portanto subrotas perdem contexto. Os menus mobile institucional e WEPACKER não expõem estado ARIA nem gerem foco, Escape ou scroll do fundo.</p><p><b>Evidência:</b> <code>PlatformSidebar.tsx:47–52, 69–73, 125–170</code>; <code>Header.tsx:39–70</code>.</p><p><b>Correcção:</b> match por prefixo, breadcrumb/título de área e diálogo acessível.</p></div>
+      <div class="finding medium"><span class="tag">P2</span><h3>Contacto pode confirmar sucesso parcial e não define expectativa</h3><p>A confirmação pode aparecer se apenas uma das persistências terminar. Não informa prazo de resposta, alternativa de contacto ou enquadramento de privacidade.</p><p><b>Evidência:</b> <code>src/app/(site)/contacto/page.tsx:47–73, 172–180</code>.</p><p><b>Correcção:</b> backend canónico ou estado explícito; confirmação com prazo, canal alternativo e privacidade.</p></div>
+
+      <h2 id="sentido">O que hoje não faz sentido</h2>
+      <ul>
+        <li><b>Prometer “resultados reais” sem os mostrar:</b> é um claim de confiança que actualmente só aumenta a exigência do visitante.</li>
+        <li><b>Ter uma página Media pública “em construção”:</b> transmite actividade incompleta, quando poderia encaminhar para programação, Instagram ou contactos.</li>
+        <li><b>Manter dois destinos Wessex de maturidade distinta:</b> o menu conduz a uma versão inferior da oferta enquanto uma landing mais completa existe fora desse percurso.</li>
+        <li><b>Alternar “Programa Artistas”, “WEPACKER”, “Pack”, “Journey” e “wepacker”:</b> a mudança de nome pode ser estratégia, mas sem uma frase de transição parece que são produtos diferentes ou uma migração inacabada.</li>
+        <li><b>Mostrar dados intermédios como actuais no primeiro dia:</b> invalida a confiança na avaliação, a funcionalidade mais sensível de onboarding.</li>
+        <li><b>Publicar projetos culturais sem imagem:</b> o layout sugere que a imagem foi esquecida, e não que a ausência é uma escolha artística.</li>
+        <li><b>Permitir pagamento público antes de Stripe estar configurado:</b> o comprador chega a “Pagamento online ainda não está configurado”. Melhor esconder tiers pagos ou publicar apenas eventos com checkout operacional. Evidência: <code>src/lib/bilheteira/reserve-action.ts:112–117</code>.</li>
+      </ul>
+
+      <h2 id="plano">Ordem de correcção recomendada</h2>
+      <ol>
+        <li><b>Não negociar:</b> corrigir o dashboard pós-avaliação, candidatura acessível/RGPD e mensagens mobile.</li>
+        <li><b>Converter o funil:</b> decidir a rota/arquitectura canónica de Wessex e a relação Programa Artistas → WEPACKER; actualizar header, footer e CTAs de uma vez.</li>
+        <li><b>Eliminar aparência de site inacabado:</b> resolver Media, imagens de projetos e equipa/metadata; publicar prova de impacto ou moderar o claim.</li>
+        <li><b>Elevar a base UI:</b> foco, contraste, menus mobile, linguagem e estados de erro/empty/loading.</li>
+        <li><b>Antes de activar novos packs ou vendas:</b> indicadores específicos por pack e checkout Stripe verificado ponta-a-ponta.</li>
+      </ol>
+      <p class="note"><b>Limite da auditoria:</b> o relatório cruza código e assets locais. O servidor de desenvolvimento iniciou, mas a ligação de browser disponível nesta sessão não aceitou a inspecção visual; por isso não afirma validação de screenshots. Recomenda-se uma passagem final em desktop e 320/375/768px depois das correcções.</p>
+    </main>
+  </body>
+</html>

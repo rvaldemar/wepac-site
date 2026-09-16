@@ -1,0 +1,22 @@
+[Unit]
+Description=WEPAC read-only external healthcheck
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=deploy
+Group=deploy
+WorkingDirectory=/var/www/wepac/current
+Environment=BASE_URL=https://wepac.pt
+Environment=HEALTHCHECK_STATE_FILE=/var/lib/wepac-healthcheck/state.json
+EnvironmentFile=-/etc/wepac/healthcheck.env
+ExecStart=/usr/bin/npm run healthcheck
+StateDirectory=wepac-healthcheck
+StateDirectoryMode=0700
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/wepac-healthcheck

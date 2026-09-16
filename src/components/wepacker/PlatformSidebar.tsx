@@ -1,0 +1,348 @@
+"use client";
+
+import Image from "next/image";
+import { useLocale, useTranslations } from "next-intl";
+import { useState } from "react";
+import { useSession, signOut } from "next-auth/react";
+import { LocaleSwitcher } from "@/components/LocaleSwitcher";
+import { wp } from "@/i18n/copy/wepacker";
+import { getPathname, Link, usePathname } from "@/i18n/navigation";
+import type { AppLocale } from "@/i18n/routing";
+import { useMobileDrawer } from "@/lib/useMobileDrawer";
+
+interface NavItem {
+  label: string;
+  href: string;
+  icon: string;
+  nested?: boolean;
+  // Match this item only on the exact path — for index-style hrefs that are
+  // a prefix of every sibling route (e.g. /wepacker/mentor).
+  exact?: boolean;
+}
+
+interface NavGroup {
+  header?: string;
+  items: NavItem[];
+}
+
+const memberNavGroups: NavGroup[] = [
+  {
+    items: [
+      { label: "My Journey", href: "/wepacker/dashboard", icon: "◆" },
+      { label: "Basecamp", href: "/wepacker/basecamp", icon: "◫", nested: true },
+      { label: "Life Map", href: "/wepacker/life-map", icon: "◇", nested: true },
+      { label: "Goals", href: "/wepacker/goals", icon: "▣", nested: true },
+      { label: "Trails", href: "/wepacker/trails", icon: "⟡", nested: true },
+      { label: "Actions", href: "/wepacker/actions", icon: "☑", nested: true },
+      { label: "Sessions", href: "/wepacker/sessions", icon: "◷", nested: true },
+    ],
+  },
+  {
+    header: "Relationships",
+    items: [
+      { label: "Mentorships", href: "/wepacker/mentorships", icon: "↗" },
+      { label: "Connections", href: "/wepacker/connections", icon: "∞" },
+    ],
+  },
+  {
+    header: "Communities",
+    items: [{ label: "Packs", href: "/wepacker/communities", icon: "◈" }],
+  },
+  {
+    header: "Academy",
+    items: [{ label: "My Academy", href: "/wepacker/academy", icon: "△" }],
+  },
+  {
+    header: "Activity",
+    items: [
+      { label: "Notifications", href: "/wepacker/notifications", icon: "●" },
+      { label: "Messages", href: "/wepacker/messages", icon: "✉" },
+      { label: "Profile", href: "/wepacker/profile", icon: "◉" },
+    ],
+  },
+];
+
+const mentorNavGroups: NavGroup[] = [
+  {
+    items: [
+      { label: "Organizer Workspace", href: "/wepacker/mentor", icon: "◆", exact: true },
+      { label: "Mentorships", href: "/wepacker/mentorships", icon: "↗" },
+      { label: "Sessions", href: "/wepacker/mentor/sessions", icon: "◷" },
+      { label: "Notifications", href: "/wepacker/notifications", icon: "●" },
+    ],
+  },
+];
+
+const adminNavGroups: NavGroup[] = [
+  {
+    items: [
+      { label: "People", href: "/wepacker/admin/users", icon: "◉" },
+      { label: "Leads", href: "/wepacker/admin/leads", icon: "◈" },
+      {
+        label: "Support Preview",
+        href: "/wepacker/admin/support-preview",
+        icon: "◇",
+      },
+      { label: "Notifications", href: "/wepacker/notifications", icon: "●" },
+    ],
+  },
+];
+
+interface SidebarProps {
+  unreadMessages?: number;
+  pendingActions?: number;
+  pendingMentorships?: number;
+  unreadNotifications?: number;
+  canAccessMentorWorkspace?: boolean;
+}
+
+export function PlatformSidebar({
+  unreadMessages = 0,
+  pendingActions = 0,
+  pendingMentorships = 0,
+  unreadNotifications = 0,
+  canAccessMentorWorkspace = false,
+}: SidebarProps) {
+  const locale = useLocale() as AppLocale;
+  const common = useTranslations("Common");
+  const navigation = useTranslations("Navigation.wepacker");
+  const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const closeMobileMenu = () => setMobileOpen(false);
+  const { toggleRef, drawerRef } = useMobileDrawer<HTMLButtonElement, HTMLDivElement>(
+    mobileOpen,
+    closeMobileMenu
+  );
+  const { data: session } = useSession();
+  const role = session?.user?.role;
+
+  const isMentor =
+    pathname === "/wepacker/mentor" ||
+    pathname.startsWith("/wepacker/mentor/");
+  const isAdmin = pathname.includes("/admin");
+
+  const canAdmin = role === "admin";
+
+  let navGroups = memberNavGroups;
+  if (isMentor) {
+    navGroups = canAccessMentorWorkspace
+      ? mentorNavGroups
+      : mentorNavGroups.map((group) => ({
+          ...group,
+          items: group.items.filter(
+            (item) => item.href !== "/wepacker/mentor",
+          ),
+        }));
+  }
+  if (isAdmin) navGroups = adminNavGroups;
+
+  function isActive(item: NavItem): boolean {
+    if (item.exact) return pathname === item.href;
+    return pathname === item.href || pathname.startsWith(item.href + "/");
+  }
+
+  function getBadgeCount(label: string): number {
+    if (label === "Messages") return unreadMessages;
+    if (label === "Actions") return pendingActions;
+    if (label === "Mentorships") return pendingMentorships;
+    if (label === "Notifications") return unreadNotifications;
+    return 0;
+  }
+
+  function localizedLabel(label: string): string {
+    const portuguese: Record<string, string> = {
+      Relationships: "Relações",
+      Communities: "Comunidades",
+      Activity: "Atividade",
+      "My Academy": "A minha Academy",
+      Notifications: "Notificações",
+      Messages: "Mensagens",
+      Profile: "Perfil",
+      "Organizer Workspace": "Espaço do organizador",
+      "Manage Sessions": "Gerir Sessions",
+      People: "Pessoas",
+      Leads: "Potenciais clientes",
+      "Support Preview": "Pré-visualização de suporte",
+    };
+    return wp(locale, portuguese[label] ?? label, label);
+  }
+
+  const navLinks = (onNavigate?: () => void) =>
+    navGroups.map((group, groupIndex) => (
+      <div key={group.header ?? `group-${groupIndex}`}>
+        {group.header && (
+          <div className="px-3 pb-1 pt-4 text-[10px] font-bold uppercase tracking-wider text-wepac-text-tertiary">
+            {localizedLabel(group.header)}
+          </div>
+        )}
+        {group.items.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={onNavigate}
+            className={`flex min-h-11 items-center gap-3 py-2.5 pr-3 text-sm transition-colors ${
+              item.nested ? "pl-9" : "pl-3"
+            } ${
+              isActive(item)
+                ? "bg-wepac-white text-wepac-black"
+                : "text-wepac-text-secondary hover:bg-wepac-card hover:text-wepac-white"
+            }`}
+          >
+            <span className="text-xs opacity-60">{item.icon}</span>
+            {localizedLabel(item.label)}
+            {getBadgeCount(item.label) > 0 && (
+              <span className="ml-auto bg-wepac-white px-1.5 py-0.5 text-[10px] font-bold text-wepac-black">
+                {getBadgeCount(item.label)}
+              </span>
+            )}
+          </Link>
+        ))}
+      </div>
+    ));
+
+  const contextLinks = (onNavigate?: () => void) => (
+    <>
+      {!isMentor && !isAdmin && canAccessMentorWorkspace && (
+        <Link
+          href="/wepacker/mentor"
+          onClick={onNavigate}
+          className="flex min-h-11 items-center px-3 py-2 text-xs text-wepac-text-tertiary transition-colors hover:text-wepac-text-secondary"
+        >
+          {localizedLabel("Organizer Workspace")} →
+        </Link>
+      )}
+      {!isMentor && !isAdmin && canAccessMentorWorkspace && (
+        <Link
+          href="/wepacker/mentor/sessions"
+          onClick={onNavigate}
+          className="flex min-h-11 items-center px-3 py-2 text-xs text-wepac-text-tertiary transition-colors hover:text-wepac-text-secondary"
+        >
+          {localizedLabel("Manage Sessions")} →
+        </Link>
+      )}
+      {!isMentor && !isAdmin && canAdmin && (
+        <Link
+          href="/wepacker/admin/users"
+          onClick={onNavigate}
+          className="flex min-h-11 items-center px-3 py-2 text-xs text-wepac-text-tertiary transition-colors hover:text-wepac-text-secondary"
+        >
+          Admin →
+        </Link>
+      )}
+      {(isMentor || isAdmin) && (
+        <Link
+          href="/wepacker/dashboard"
+          onClick={onNavigate}
+          className="flex min-h-11 items-center px-3 py-2 text-xs text-wepac-text-tertiary transition-colors hover:text-wepac-text-secondary"
+        >
+          ← My Journey
+        </Link>
+      )}
+      <button
+        onClick={async () => {
+          await signOut({ redirect: false });
+          window.location.assign(
+            getPathname({ locale, href: "/wepacker/login" }),
+          );
+        }}
+        className="block min-h-11 w-full px-3 py-2 text-left text-xs text-wepac-text-tertiary transition-colors hover:text-wepac-text-secondary"
+      >
+        {navigation("signOut")}
+      </button>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile header */}
+      <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-wepac-black/95 px-4 py-3 backdrop-blur-md lg:hidden">
+        <Link href="/wepacker/dashboard" className="flex min-h-11 min-w-11 items-center">
+          <Image
+            src="/logo/email/wepacker-lockup-white.png"
+            alt="WEPACKER"
+            width={112}
+            height={56}
+            className="h-7 w-auto"
+            priority
+          />
+        </Link>
+        <div className="flex items-center gap-3">
+          <LocaleSwitcher className="[&_select]:w-32" />
+          <button
+            ref={toggleRef}
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="flex min-h-11 min-w-11 items-center justify-center text-wepac-white"
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-sidebar-menu"
+            aria-label={mobileOpen ? common("closeMenu") : common("openMenu")}
+          >
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+            >
+              {mobileOpen ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+                />
+              )}
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile nav overlay */}
+      {mobileOpen && (
+        <div
+          id="mobile-sidebar-menu"
+          ref={drawerRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label={common("navigation")}
+          tabIndex={-1}
+          className="fixed inset-0 z-40 overflow-y-auto overscroll-contain bg-wepac-black/95 pt-14 lg:hidden"
+        >
+          <nav className="flex min-h-full flex-col gap-1 p-4 pb-8">
+            {navLinks(closeMobileMenu)}
+            <div className="my-4 border-t border-wepac-border" />
+            {contextLinks(closeMobileMenu)}
+          </nav>
+        </div>
+      )}
+
+      {/* Desktop sidebar */}
+      <aside className="fixed left-0 top-0 hidden h-screen w-56 flex-col border-r border-wepac-border bg-wepac-black lg:flex">
+        <div className="border-b border-wepac-border px-5 py-5">
+          <Link href="/wepacker/dashboard" className="flex min-h-11 items-center">
+            <Image
+              src="/logo/email/wepacker-lockup-white.png"
+              alt="WEPACKER"
+              width={128}
+              height={64}
+              className="h-8 w-auto"
+            />
+          </Link>
+        </div>
+
+        <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-3">
+          {navLinks()}
+        </nav>
+
+        <div className="border-t border-wepac-border p-3">
+          <LocaleSwitcher className="mb-2 px-3" />
+          {contextLinks()}
+        </div>
+      </aside>
+    </>
+  );
+}

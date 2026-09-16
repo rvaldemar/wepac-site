@@ -1,0 +1,62 @@
+{
+  "name": "wepac-site",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "eslint",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run lint && npm test && npm run typecheck && npm run build",
+    "audit:site": "tsx scripts/site-audit/index.ts",
+    "healthcheck": "tsx scripts/healthcheck.ts",
+    "test:http": "playwright test --config=playwright.http.config.ts",
+    "test:e2e": "E2E_ALLOW_DB_RESET=1 SESSION_TRANSCRIPT_WRITES_ENABLED=true playwright test",
+    "test:e2e:ui": "E2E_ALLOW_DB_RESET=1 SESSION_TRANSCRIPT_WRITES_ENABLED=true playwright test --ui",
+    "test:e2e:build": "E2E_ALLOW_DB_RESET=1 SESSION_TRANSCRIPT_WRITES_ENABLED=true E2E_SERVER=build playwright test",
+    "test:e2e:report": "playwright show-report",
+    "support-preview:retention": "tsx scripts/support-preview-retention.ts",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.91.1",
+    "@auth/prisma-adapter": "^2.11.3",
+    "@prisma/client": "^6.19.2",
+    "@tailwindcss/typography": "^0.5.19",
+    "bcryptjs": "^3.0.3",
+    "framer-motion": "^12.37.0",
+    "next": "^16.3.3",
+    "next-auth": "^5.0.0-beta.32",
+    "next-intl": "4.13.4",
+    "nodemailer": "^8.0.11",
+    "prisma": "^6.19.2",
+    "qr-scanner": "^1.4.2",
+    "qrcode": "^1.5.4",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-markdown": "^10.1.0",
+    "stripe": "^22.0.2"
+  },
+  "prisma": {
+    "seed": "npx tsx prisma/seed.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "@tailwindcss/postcss": "^4",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20",
+    "@types/nodemailer": "^7.0.11",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "dotenv": "^17.4.2",
+    "eslint": "^9",
+    "eslint-config-next": "^16.3.3",
+    "tailwindcss": "^4",
+    "tsx": "^4.21.0",
+    "typescript": "^5",
+    "vitest": "^4.1.11"
+  }
+}
