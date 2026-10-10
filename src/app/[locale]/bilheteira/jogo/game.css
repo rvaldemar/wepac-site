@@ -485,7 +485,10 @@ body:has(.game-root) > div.fixed.bottom-0 { display: none; }
   height: 100%;
   display: block;
   border-radius: 50%;
-  filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.65));
+  /* box-shadow on the element, never a filter: a filter forces the whole
+     canvas through a blur pass on every animation frame. */
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.65);
+  will-change: transform;
 }
 .wheel::before {
   content: "";
@@ -526,10 +529,11 @@ body:has(.game-root) > div.fixed.bottom-0 { display: none; }
   pointer-events: none;
 }
 .wheel__hub img { width: 58%; height: auto; }
-.wheel--won { animation: wheel-glow 1.6s ease-in-out infinite; cursor: default; }
+.wheel--won { cursor: default; }
+.wheel--won canvas { animation: wheel-glow 1.6s ease-in-out infinite; }
 @keyframes wheel-glow {
-  0%, 100% { filter: drop-shadow(0 0 0 rgba(193, 17, 12, 0)); }
-  50% { filter: drop-shadow(0 0 28px rgba(193, 17, 12, 0.55)); }
+  0%, 100% { box-shadow: 0 18px 40px rgba(0, 0, 0, 0.65), 0 0 0 rgba(193, 17, 12, 0); }
+  50% { box-shadow: 0 18px 40px rgba(0, 0, 0, 0.65), 0 0 36px 6px rgba(193, 17, 12, 0.55); }
 }
 .claim {
   margin-top: clamp(20px, 3vh, 36px);
@@ -601,8 +605,10 @@ body:has(.game-root) > div.fixed.bottom-0 { display: none; }
 .confetti {
   position: fixed;
   inset: 0;
+  width: 100vw;
+  height: 100vh;
   pointer-events: none;
-  z-index: 5;
+  z-index: 20;
 }
 
 @media (prefers-reduced-motion: reduce) {

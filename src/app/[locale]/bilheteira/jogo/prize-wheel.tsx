@@ -26,28 +26,33 @@ function easeOutSpin(t: number) {
   return 1 - Math.pow(1 - t, 6);
 }
 
-function drawWheel(
-  canvas: HTMLCanvasElement,
-  rotation: number,
-  labels: Record<PrizeKind, string>,
-  highlight: { index: number; phase: number } | null = null,
-) {
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  const size = canvas.clientWidth;
-  if (canvas.width !== Math.floor(size * dpr)) {
-    canvas.width = Math.floor(size * dpr);
-    canvas.height = Math.floor(size * dpr);
-  }
+type Highlight = { index: number; phase: number } | null;
+
+function resolveFont(el: HTMLElement): string {
+  // next/font exposes a hashed family through the CSS variable; the canvas
+  // needs the real family name, not the variable.
+  const v = getComputedStyle(el).getPropertyValue("--font-rubik").trim();
+  return v ? `${v}, Rubik, Inter, sans-serif` : "Rubik, Inter, sans-serif";
+}
+
+/**
+ * Renders the static wheel face (bezel, segments, labels, vignette, studs)
+ * once into an offscreen canvas. Per frame we only rotate and blit it, which
+ * keeps the spin smooth on tablets; the highlight is drawn on top.
+ */
+function renderFace(size: number, dpr: number, labels: Record<PrizeKind, string>, font: string): HTMLCanvasElement {
+  const face = document.createElement("canvas");
+  face.width = Math.floor(size * dpr);
+  face.height = Math.floor(size * dpr);
+  const ctx = face.getContext("2d");
+  if (!ctx) return face;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, size, size);
 
   const cx = size / 2;
   const cy = size / 2;
   const r = size / 2 - size * 0.045;
 
-  // Outer bezel: cream ring with a thin red filet, like a gilded frame.
+  // Outer bezel: beige ring with a thin red filet, like a gilded frame.
   const bezel = ctx.createRadialGradient(cx, cy, r, cx, cy, r + size * 0.045);
   bezel.addColorStop(0, "#E6DED6");
   bezel.addColorStop(0.55, "#DACFC5");
@@ -64,16 +69,12 @@ function drawWheel(
 
   for (let i = 0; i < SEGMENTS; i++) {
     const kind = WHEEL_SEGMENTS[i];
-    const start = rotation + i * SEGMENT_ANGLE - Math.PI / 2 - SEGMENT_ANGLE / 2;
+    const start = i * SEGMENT_ANGLE - Math.PI / 2 - SEGMENT_ANGLE / 2;
     const end = start + SEGMENT_ANGLE;
-    const lit = highlight && highlight.index === i;
-    const dim = highlight && !lit;
-
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.arc(cx, cy, r, start, end);
     ctx.closePath();
-    // Radial shading: lighter towards the hub, deeper at the rim.
     const base = FILLS[kind].bg;
     const g = ctx.createRadialGradient(cx, cy, r * 0.15, cx, cy, r);
     g.addColorStop(0, shade(base, 0.14));
@@ -81,20 +82,12 @@ function drawWheel(
     g.addColorStop(1, shade(base, -0.16));
     ctx.fillStyle = g;
     ctx.fill();
-    if (dim) {
-      ctx.fillStyle = `rgba(0,0,0,${0.55 + 0.1 * highlight.phase})`;
-      ctx.fill();
-    }
-    if (lit) {
-      ctx.fillStyle = `rgba(255,240,220,${0.18 + 0.32 * highlight.phase})`;
-      ctx.fill();
-    }
-    ctx.strokeStyle = lit ? "#C1110C" : "rgba(218,207,197,0.85)";
-    ctx.lineWidth = lit ? Math.max(4, size * 0.008) : Math.max(1.5, size * 0.003);
+    ctx.strokeStyle = "rgba(218,207,197,0.85)";
+    ctx.lineWidth = Math.max(1.5, size * 0.003);
     ctx.stroke();
 
-    // Label along the radius. Segments on the left half are flipped so the
-    // text never reads upside down.
+    // Label along the radius; left-half labels are flipped so they never
+    // read upside down.
     const mid = start + SEGMENT_ANGLE / 2;
     const normalized = ((mid % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
     const flip = normalized > Math.PI / 2 && normalized < (3 * Math.PI) / 2;
@@ -105,14 +98,12 @@ function drawWheel(
     ctx.textBaseline = "middle";
     ctx.fillStyle = FILLS[kind].fg;
     const fontSize = Math.max(12, Math.round(size * 0.031));
-    ctx.font = `500 ${fontSize}px Rubik, Inter, sans-serif`;
-    ctx.letterSpacing = "0.08em";
+    ctx.font = `500 ${fontSize}px ${font}`;
     const label = labels[kind].toUpperCase();
     ctx.fillText(label, (flip ? -1 : 1) * r * 0.9, 0, r * 0.6);
     ctx.restore();
   }
 
-  // Inner vignette so the segments read as a dished surface.
   const vignette = ctx.createRadialGradient(cx, cy, r * 0.55, cx, cy, r);
   vignette.addColorStop(0, "rgba(0,0,0,0)");
   vignette.addColorStop(1, "rgba(0,0,0,0.22)");
@@ -121,9 +112,8 @@ function drawWheel(
   ctx.fillStyle = vignette;
   ctx.fill();
 
-  // Rim studs on each divider.
   for (let i = 0; i < SEGMENTS; i++) {
-    const a = rotation + i * SEGMENT_ANGLE - Math.PI / 2 - SEGMENT_ANGLE / 2;
+    const a = i * SEGMENT_ANGLE - Math.PI / 2 - SEGMENT_ANGLE / 2;
     const sx = cx + Math.cos(a) * (r + size * 0.032);
     const sy = cy + Math.sin(a) * (r + size * 0.032);
     const stud = ctx.createRadialGradient(sx - 1, sy - 1, 0, sx, sy, size * 0.009);
@@ -133,6 +123,49 @@ function drawWheel(
     ctx.arc(sx, sy, size * 0.009, 0, Math.PI * 2);
     ctx.fillStyle = stud;
     ctx.fill();
+  }
+  return face;
+}
+
+function drawWheel(
+  canvas: HTMLCanvasElement,
+  face: HTMLCanvasElement,
+  rotation: number,
+  highlight: Highlight = null,
+) {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  const size = canvas.clientWidth;
+  const dpr = canvas.width / Math.max(1, size);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, size, size);
+  const cx = size / 2;
+  const cy = size / 2;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(rotation);
+  ctx.drawImage(face, -cx, -cy, size, size);
+  ctx.restore();
+
+  if (!highlight) return;
+  const r = size / 2 - size * 0.045;
+  for (let i = 0; i < SEGMENTS; i++) {
+    const start = rotation + i * SEGMENT_ANGLE - Math.PI / 2 - SEGMENT_ANGLE / 2;
+    const end = start + SEGMENT_ANGLE;
+    const lit = highlight.index === i;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, start, end);
+    ctx.closePath();
+    ctx.fillStyle = lit
+      ? `rgba(255,240,220,${0.18 + 0.32 * highlight.phase})`
+      : `rgba(0,0,0,${0.55 + 0.1 * highlight.phase})`;
+    ctx.fill();
+    if (lit) {
+      ctx.strokeStyle = "#C1110C";
+      ctx.lineWidth = Math.max(4, size * 0.008);
+      ctx.stroke();
+    }
   }
 }
 
@@ -162,6 +195,7 @@ export function PrizeWheel({
   handleRef: React.MutableRefObject<WheelHandle | null>;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const faceRef = useRef<{ size: number; dpr: number; canvas: HTMLCanvasElement } | null>(null);
   const rotationRef = useRef(0);
   const [spinning, setSpinning] = useState(false);
   const labels = useMemo(
@@ -172,15 +206,38 @@ export function PrizeWheel({
     [copy.prizes],
   );
 
-  const highlightRef = useRef<{ index: number; phase: number } | null>(null);
+  const highlightRef = useRef<Highlight>(null);
   const aliveRef = useRef(true);
   const redraw = useCallback(() => {
-    if (canvasRef.current) drawWheel(canvasRef.current, rotationRef.current, labels, highlightRef.current);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const size = canvas.clientWidth;
+    if (size === 0) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    if (canvas.width !== Math.floor(size * dpr)) {
+      canvas.width = Math.floor(size * dpr);
+      canvas.height = Math.floor(size * dpr);
+    }
+    let cached = faceRef.current;
+    if (!cached || cached.size !== size || cached.dpr !== dpr) {
+      cached = { size, dpr, canvas: renderFace(size, dpr, labels, resolveFont(canvas)) };
+      faceRef.current = cached;
+    }
+    drawWheel(canvas, cached.canvas, rotationRef.current, highlightRef.current);
   }, [labels]);
 
   useEffect(() => {
     aliveRef.current = true;
+    faceRef.current = null;
     redraw();
+    // Re-render the face once the brand font has loaded so labels use it.
+    if (typeof document !== "undefined" && "fonts" in document) {
+      document.fonts.ready.then(() => {
+        if (!aliveRef.current) return;
+        faceRef.current = null;
+        redraw();
+      });
+    }
     window.addEventListener("resize", redraw);
     return () => {
       aliveRef.current = false;

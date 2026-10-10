@@ -12,10 +12,11 @@ export function Confetti({ burstKey }: { burstKey: string }) {
   useEffect(() => {
     const canvas = ref.current;
     if (!canvas) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // Kiosk celebration: deliberately ignores prefers-reduced-motion, which
+    // some tablets have on by default and would silently hide the burst.
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     const w = window.innerWidth;
     const h = window.innerHeight;
     canvas.width = w * dpr;
@@ -39,9 +40,9 @@ export function Confetti({ burstKey }: { burstKey: string }) {
       });
     // Three bursts: centre, then left and right, over ~6 s.
     const bursts: { at: number; pieces: Piece[]; fired: boolean }[] = [
-      { at: 0, pieces: makeBurst(220, w / 2, h * 0.55), fired: false },
-      { at: 1.4, pieces: makeBurst(140, w * 0.22, h * 0.6), fired: false },
-      { at: 2.2, pieces: makeBurst(140, w * 0.78, h * 0.6), fired: false },
+      { at: 0, pieces: makeBurst(200, w / 2, h * 0.55), fired: false },
+      { at: 1.4, pieces: makeBurst(120, w * 0.22, h * 0.6), fired: false },
+      { at: 2.2, pieces: makeBurst(120, w * 0.78, h * 0.6), fired: false },
     ];
     const live: { p: Piece; born: number }[] = [];
     let raf = 0;
