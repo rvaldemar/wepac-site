@@ -4,6 +4,20 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-10-10 — Roda da Capela: jogo de prémios no quiosque (local, não deployado)
+
+Novo jogo touch em `/bilheteira/jogo` (identidade Arte à Capela sobre a base
+WEPAC): ecrã de atração animado, leitura do QR do bilhete com confirmação de
+email mascarado ou email manual, termos + consentimento de marketing separado,
+roda de prémios com sorteio server-side, código `AC-XXXX-XXXX` por email.
+Admin em `/bilheteira/admin/jogo` (resgate, histórico, CSV de consentimentos).
+Migração aditiva `20261010120000_bilheteira_prize_game` (tabelas
+`game_participants`, `prize_vouchers`). Gate opcional de quiosque via
+`GAME_KIOSK_ACCESS_KEY`. Detalhe em `docs/operations/bilheteira-prize-game.md`.
+Branch `feat/bilheteira-prize-game`; sem deploy, sem migração em produção.
+
+---
+
 ## 2026-07-30 — Manage Sessions: Prisma P2032 em registos legacy
 
 **Sintoma:** `/wepacker/mentor/sessions` devolvia uma exceção server-side com o

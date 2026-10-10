@@ -5,6 +5,7 @@ import { logoutAction } from "@/lib/bilheteira/auth-actions";
 import { Shell, styles } from "../ui";
 import { getLocale } from "next-intl/server";
 import { getTicketAdminCopy } from "@/i18n/copy/institutional-admin";
+import { getGameCopy } from "@/i18n/copy/institutional-game";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,9 @@ export default async function AdminLayout({
 }) {
   const admin = await getSessionAdmin();
   if (!admin) redirect("/bilheteira/login");
-  const copy = getTicketAdminCopy(await getLocale()).layout;
+  const locale = await getLocale();
+  const copy = getTicketAdminCopy(locale).layout;
+  const gameCopy = getGameCopy(locale).admin;
 
   return (
     <Shell
@@ -26,6 +29,9 @@ export default async function AdminLayout({
           </Link>
           <Link href="/bilheteira/admin/admins" style={styles.buttonGhost}>
             {copy.admins}
+          </Link>
+          <Link href="/bilheteira/admin/jogo" style={styles.buttonGhost}>
+            {gameCopy.nav}
           </Link>
           <span style={{ fontSize: 13, color: "#666" }}>{admin.email}</span>
           <form action={logoutAction} style={{ margin: 0 }}>

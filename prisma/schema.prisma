@@ -1072,7 +1072,8 @@ model TicketingAdmin {
   verificationToken     String?   @unique
   verificationExpiresAt DateTime?
 
-  events Event[]
+  events           Event[]
+  redeemedVouchers PrizeVoucher[]
 
   @@map("ticketing_admins")
 }
@@ -1136,16 +1137,16 @@ model Event {
 }
 
 model TicketTier {
-  id            String   @id @default(cuid())
+  id            String    @id @default(cuid())
   eventId       String
   name          String
   description   String?
-  priceCents    Int      @default(0)
+  priceCents    Int       @default(0)
   quantity      Int?
-  sortOrder     Int      @default(0)
+  sortOrder     Int       @default(0)
   stripePriceId String?
   archivedAt    DateTime?
-  createdAt     DateTime @default(now())
+  createdAt     DateTime  @default(now())
 
   event    Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
   tickets  Ticket[]
@@ -1171,10 +1172,11 @@ model Ticket {
   checkedInAt      DateTime?
   createdAt        DateTime     @default(now())
 
-  event     Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  tier      TicketTier       @relation(fields: [tierId], references: [id])
-  payment   Payment?         @relation(fields: [paymentId], references: [id])
-  checkLogs TicketCheckLog[]
+  event            Event             @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tier             TicketTier        @relation(fields: [tierId], references: [id])
+  payment          Payment?          @relation(fields: [paymentId], references: [id])
+  checkLogs        TicketCheckLog[]
+  gameParticipants GameParticipant[]
 
   @@index([eventId, status])
   @@map("tickets")
@@ -1219,4 +1221,68 @@ model Payment {
 
   @@index([eventId, status])
   @@map("payments")
+}
+
+// ===== BILHETEIRA PRIZE GAME (kiosk) =====
+
+enum PrizeKind {
+  two_for_one_single_2026
+  two_for_one_all_2026
+  free_ticket_single_2026
+  free_all_q4_2026
+}
+
+enum PrizeVoucherStatus {
+  issued
+  redeemed
+  expired
+  cancelled
+}
+
+// One row per person per campaign. The email is the identity; the ticket is
+// optional provenance (scanned at the kiosk). Consent timestamps are the
+// GDPR evidence: `termsAcceptedAt` is required to play, `marketingConsentAt`
+// is a separate, explicit opt-in and may be null.
+model GameParticipant {
+  id                 String    @id @default(cuid())
+  campaign           String
+  email              String
+  name               String?
+  phone              String?
+  ticketId           String?
+  locale             String    @default("pt-PT")
+  termsAcceptedAt    DateTime
+  marketingConsentAt DateTime?
+  consentVersion     String
+  createdAt          DateTime  @default(now())
+
+  ticket   Ticket?        @relation(fields: [ticketId], references: [id], onDelete: SetNull)
+  vouchers PrizeVoucher[]
+
+  @@unique([campaign, email])
+  @@index([campaign, marketingConsentAt])
+  @@index([ticketId])
+  @@map("game_participants")
+}
+
+model PrizeVoucher {
+  id                String             @id @default(cuid())
+  code              String             @unique
+  campaign          String
+  participantId     String
+  kind              PrizeKind
+  status            PrizeVoucherStatus @default(issued)
+  validFrom         DateTime
+  validUntil        DateTime
+  emailSentAt       DateTime?
+  redeemedAt        DateTime?
+  redeemedByAdminId String?
+  redemptionNote    String?
+  createdAt         DateTime           @default(now())
+
+  participant     GameParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  redeemedByAdmin TicketingAdmin? @relation(fields: [redeemedByAdminId], references: [id], onDelete: SetNull)
+
+  @@index([campaign, status])
+  @@map("prize_vouchers")
 }
