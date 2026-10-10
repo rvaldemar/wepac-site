@@ -13,11 +13,12 @@ const EXTRA_TURNS = 8;
 // the step unmounts (the visitor taps "claim prize").
 const HIGHLIGHT_MS = 1600;
 
+// Arte à Capela brandbook palette only: beige, navy, red, black.
 const FILLS: Record<PrizeKind, { bg: string; fg: string }> = {
-  two_for_one_single_2026: { bg: "#F0EDE6", fg: "#0B0A09" },
-  two_for_one_all_2026: { bg: "#1A1816", fg: "#F0EDE6" },
-  free_ticket_single_2026: { bg: "#C2301F", fg: "#F0EDE6" },
-  free_all_q4_2026: { bg: "#2E5944", fg: "#F0EDE6" },
+  two_for_one_single_2026: { bg: "#DACFC5", fg: "#1C1B2F" },
+  two_for_one_all_2026: { bg: "#1C1B2F", fg: "#DACFC5" },
+  free_ticket_single_2026: { bg: "#C1110C", fg: "#DACFC5" },
+  free_all_q4_2026: { bg: "#000000", fg: "#DACFC5" },
 };
 
 // Fast launch, long slow tail: the last two turns take almost half the time.
@@ -48,16 +49,16 @@ function drawWheel(
 
   // Outer bezel: cream ring with a thin red filet, like a gilded frame.
   const bezel = ctx.createRadialGradient(cx, cy, r, cx, cy, r + size * 0.045);
-  bezel.addColorStop(0, "#F7F4EC");
-  bezel.addColorStop(0.55, "#E6E2D6");
-  bezel.addColorStop(1, "#B9B4A6");
+  bezel.addColorStop(0, "#E6DED6");
+  bezel.addColorStop(0.55, "#DACFC5");
+  bezel.addColorStop(1, "#A99E93");
   ctx.beginPath();
   ctx.arc(cx, cy, r + size * 0.045, 0, Math.PI * 2);
   ctx.fillStyle = bezel;
   ctx.fill();
   ctx.beginPath();
   ctx.arc(cx, cy, r + size * 0.02, 0, Math.PI * 2);
-  ctx.strokeStyle = "#C2301F";
+  ctx.strokeStyle = "#C1110C";
   ctx.lineWidth = Math.max(1.5, size * 0.004);
   ctx.stroke();
 
@@ -81,14 +82,14 @@ function drawWheel(
     ctx.fillStyle = g;
     ctx.fill();
     if (dim) {
-      ctx.fillStyle = `rgba(11,10,9,${0.55 + 0.1 * highlight.phase})`;
+      ctx.fillStyle = `rgba(0,0,0,${0.55 + 0.1 * highlight.phase})`;
       ctx.fill();
     }
     if (lit) {
-      ctx.fillStyle = `rgba(255,236,200,${0.18 + 0.32 * highlight.phase})`;
+      ctx.fillStyle = `rgba(255,240,220,${0.18 + 0.32 * highlight.phase})`;
       ctx.fill();
     }
-    ctx.strokeStyle = lit ? "#DC4A32" : "rgba(240,237,230,0.85)";
+    ctx.strokeStyle = lit ? "#C1110C" : "rgba(218,207,197,0.85)";
     ctx.lineWidth = lit ? Math.max(4, size * 0.008) : Math.max(1.5, size * 0.003);
     ctx.stroke();
 
@@ -104,7 +105,7 @@ function drawWheel(
     ctx.textBaseline = "middle";
     ctx.fillStyle = FILLS[kind].fg;
     const fontSize = Math.max(12, Math.round(size * 0.031));
-    ctx.font = `700 ${fontSize}px Barlow, Inter, sans-serif`;
+    ctx.font = `500 ${fontSize}px Rubik, Inter, sans-serif`;
     ctx.letterSpacing = "0.08em";
     const label = labels[kind].toUpperCase();
     ctx.fillText(label, (flip ? -1 : 1) * r * 0.9, 0, r * 0.6);
@@ -126,8 +127,8 @@ function drawWheel(
     const sx = cx + Math.cos(a) * (r + size * 0.032);
     const sy = cy + Math.sin(a) * (r + size * 0.032);
     const stud = ctx.createRadialGradient(sx - 1, sy - 1, 0, sx, sy, size * 0.009);
-    stud.addColorStop(0, "#F08A72");
-    stud.addColorStop(1, "#A3261A");
+    stud.addColorStop(0, "#E0453F");
+    stud.addColorStop(1, "#8A0C08");
     ctx.beginPath();
     ctx.arc(sx, sy, size * 0.009, 0, Math.PI * 2);
     ctx.fillStyle = stud;
@@ -250,12 +251,12 @@ export function PrizeWheel({
       <svg className="wheel__pointer" viewBox="0 0 40 52" aria-hidden>
         <defs>
           <linearGradient id="ptr" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#E8603F" />
-            <stop offset="1" stopColor="#A3261A" />
+            <stop offset="0" stopColor="#D8302A" />
+            <stop offset="1" stopColor="#8A0C08" />
           </linearGradient>
         </defs>
-        <path d="M20 52 L2 14 A18 18 0 1 1 38 14 Z" fill="url(#ptr)" stroke="#F0EDE6" strokeWidth="1.5" />
-        <circle cx="20" cy="16" r="6" fill="#0B0A09" stroke="#F0EDE6" strokeWidth="1" />
+        <path d="M20 52 L2 14 A18 18 0 1 1 38 14 Z" fill="url(#ptr)" stroke="#DACFC5" strokeWidth="1.5" />
+        <circle cx="20" cy="16" r="6" fill="#000" stroke="#DACFC5" strokeWidth="1" />
       </svg>
       <div className="wheel__hub" aria-hidden>
         {/* eslint-disable-next-line @next/next/no-img-element */}

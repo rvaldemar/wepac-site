@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-const COLORS = ["#F0EDE6", "#DC4A32", "#C2301F", "#DEE0DB", "#2E5944"];
+const COLORS = ["#DACFC5", "#C1110C", "#1C1B2F", "#DEE0DB", "#FFFFFF"];
 
 type Piece = { x: number; y: number; vx: number; vy: number; w: number; h: number; rot: number; vr: number; c: string };
 

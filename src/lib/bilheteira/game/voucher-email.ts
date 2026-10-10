@@ -57,15 +57,15 @@ export async function sendVoucherEmail(data: VoucherEmailData): Promise<void> {
   ].join("\n");
 
   const html = `
-<div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#0B0A09;color:#F0EDE6;padding:40px 32px">
-  <p style="margin:0 0 24px;font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:#DC4A32">${escapeEmailHtml(copy.brand)}</p>
+<div style="font-family:Rubik,Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#000000;color:#DACFC5;padding:40px 32px">
+  <p style="margin:0 0 24px;font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:#DACFC5">${escapeEmailHtml(copy.brand)}</p>
   <p style="margin:0 0 16px;font-size:16px">${escapeEmailHtml(e.greeting(data.name ?? ""))}</p>
   <p style="margin:0 0 8px;font-size:16px">${escapeEmailHtml(e.intro)}</p>
-  <h1 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-weight:500;font-size:28px;line-height:1.15;color:#F0EDE6">${escapeEmailHtml(prize.title)}</h1>
+  <h1 style="margin:0 0 8px;font-family:'IBM Plex Serif',Georgia,'Times New Roman',serif;font-weight:500;font-size:28px;line-height:1.15;color:#DACFC5">${escapeEmailHtml(prize.title)}</h1>
   <p style="margin:0 0 28px;font-size:15px;color:#DEE0DB">${escapeEmailHtml(prize.description)}</p>
-  <div style="border:1px solid #DC4A32;padding:20px 24px;margin:0 0 28px">
+  <div style="border:1px solid #C1110C;padding:20px 24px;margin:0 0 28px">
     <p style="margin:0 0 6px;font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:#DEE0DB">${escapeEmailHtml(e.codeLabel)}</p>
-    <p style="margin:0 0 12px;font-family:'Courier New',monospace;font-size:30px;letter-spacing:.08em;font-weight:700;color:#F0EDE6">${escapeEmailHtml(data.code)}</p>
+    <p style="margin:0 0 12px;font-family:'Courier New',monospace;font-size:30px;letter-spacing:.08em;font-weight:700;color:#DACFC5">${escapeEmailHtml(data.code)}</p>
     <p style="margin:0;font-size:13px;color:#DEE0DB">${escapeEmailHtml(e.validUntil)} ${escapeEmailHtml(validUntil)}</p>
   </div>
   <p style="margin:0 0 8px;font-size:13px;color:#DEE0DB">${escapeEmailHtml(prize.rules)}</p>
