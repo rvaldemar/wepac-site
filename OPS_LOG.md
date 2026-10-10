@@ -4,7 +4,16 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
-## 2026-10-10 — Roda da Capela: jogo de prémios no quiosque (local, não deployado)
+## 2026-10-10 — Roda da Capela: jogo de prémios no quiosque (DEPLOYADO)
+
+**Release:** `758bf1abc008`, `/var/www/wepac/releases/20261010T111856Z-758bf1abc008`
+(primeiro cutover `ff2902ae4366` às 11:17 UTC; hotfix do redirect de desbloqueio
+que apontava para `0.0.0.0:3003` atrás do nginx, redeploy às 11:19 UTC).
+Migração `20261010120000_bilheteira_prize_game` aplicada às 11:17:54 UTC.
+`GAME_KIOSK_ACCESS_KEY` definido pelo Rui em `shared/.env.production` com backup.
+Smoke: `/bilheteira/jogo` 200 (bloqueado até desbloqueio), unlock errado → 303
+para `https://wepac.pt/bilheteira/jogo?unlock=failed`, export sem sessão → 401.
+Tabelas novas vazias no cutover.
 
 Novo jogo touch em `/bilheteira/jogo` (identidade Arte à Capela sobre a base
 WEPAC): ecrã de atração animado, leitura do QR do bilhete com confirmação de
@@ -17,8 +26,8 @@ produção: exige `GAME_KIOSK_ACCESS_KEY` (desbloqueio por POST no próprio ecr�
 ou `GAME_PUBLIC=1`. Review gatekeeper aplicado: código nunca mostrado para
 email digitado sem bilhete (só por email), lock `FOR UPDATE` por bilhete,
 resgate com escrita guardada, link de cancelamento de marketing em cada email.
-Detalhe em `docs/operations/bilheteira-prize-game.md`. Branch
-`feat/bilheteira-prize-game`; sem deploy, sem migração em produção.
+Detalhe em `docs/operations/bilheteira-prize-game.md`. PR #12 mergeado em main
+por fast-forward.
 
 ---
 
