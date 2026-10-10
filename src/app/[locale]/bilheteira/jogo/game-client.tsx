@@ -27,7 +27,7 @@ type Step =
   | { name: "consent"; identity: PlayIdentity; ticket: Found | null }
   | { name: "wheel"; identity: PlayIdentity; marketingConsent: boolean; ticket: Found | null }
   | { name: "result"; result: Extract<PlayResult, { ok: true }>; ticket: Found | null }
-  | { name: "already_played"; kind: PrizeKind; code: string; maskedEmail: string; ticket: Found | null }
+  | { name: "already_played"; kind: PrizeKind; code: string | null; resent: boolean; maskedEmail: string; ticket: Found | null }
   | { name: "error"; message: string };
 
 const PHONE_RE = /^\+?[0-9 ()-]{6,20}$/;
@@ -49,9 +49,17 @@ function formatDate(iso: string, locale: string) {
 }
 
 function requestFullscreen() {
-  const el = document.documentElement as HTMLElement & { webkitRequestFullscreen?: () => Promise<void> };
-  const fn = el.requestFullscreen ?? el.webkitRequestFullscreen;
-  if (fn && !document.fullscreenElement) fn.call(el).catch(() => undefined);
+  // Older iPad Safari returns undefined (not a Promise) from the webkit
+  // variant, and some kiosks block the API entirely; never let it throw.
+  try {
+    const el = document.documentElement as HTMLElement & { webkitRequestFullscreen?: () => unknown };
+    const fn = el.requestFullscreen ?? el.webkitRequestFullscreen;
+    if (!fn || document.fullscreenElement) return;
+    const p = fn.call(el) as unknown;
+    if (p && typeof (p as Promise<void>).catch === "function") (p as Promise<void>).catch(() => undefined);
+  } catch {
+    // ignore
+  }
 }
 
 export function GameClient({ locale }: { locale: string }) {
@@ -61,6 +69,7 @@ export function GameClient({ locale }: { locale: string }) {
   const wheelRef = useRef<WheelHandle | null>(null);
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const spinningRef = useRef(false);
+  const [busy, setBusy] = useState(false);
 
   const reset = useCallback(() => {
     setTermsOpen(false);
@@ -106,13 +115,14 @@ export function GameClient({ locale }: { locale: string }) {
   const spin = async (identity: PlayIdentity, marketingConsent: boolean, ticket: Found | null) => {
     if (spinningRef.current) return;
     spinningRef.current = true;
+    setBusy(true);
     try {
       const result = await playAction({ identity, termsAccepted: true, marketingConsent, locale });
       if (result.ok) {
         await wheelRef.current?.spinTo(result.kind);
         setStep({ name: "result", result, ticket });
       } else if (result.error === "already_played") {
-        setStep({ name: "already_played", kind: result.kind, code: result.code, maskedEmail: result.maskedEmail, ticket });
+        setStep({ name: "already_played", kind: result.kind, code: result.code, resent: result.resent, maskedEmail: result.maskedEmail, ticket });
       } else {
         const message =
           result.error === "rate_limited" ? copy.errors.rateLimited
@@ -130,6 +140,7 @@ export function GameClient({ locale }: { locale: string }) {
       setStep({ name: "error", message: copy.errors.generic });
     } finally {
       spinningRef.current = false;
+      setBusy(false);
     }
   };
 
@@ -230,11 +241,11 @@ export function GameClient({ locale }: { locale: string }) {
         <section className="step">
           <p className="game-eyebrow">{copy.campaignName}</p>
           <h2 className="game-serif game-h2">{copy.wheel.title}</h2>
-          <p className="game-body">{spinningRef.current ? copy.wheel.spinning : copy.wheel.tapToSpin}</p>
+          <p className="game-body">{busy ? copy.wheel.spinning : copy.wheel.tapToSpin}</p>
           <PrizeWheel
             copy={copy}
             handleRef={wheelRef}
-            disabled={false}
+            disabled={busy}
             onTap={() => void spin(step.identity, step.marketingConsent, step.ticket)}
           />
         </section>
@@ -258,7 +269,11 @@ export function GameClient({ locale }: { locale: string }) {
           <p className="game-body">{copy.alreadyPlayed.body(step.maskedEmail)}</p>
           <p className="game-eyebrow" style={{ marginTop: 32 }}>{copy.alreadyPlayed.yourPrize}</p>
           <h3 className="game-serif" style={{ fontSize: "clamp(26px,3.4vw,44px)" }}>{copy.prizes[step.kind].title}</h3>
-          <div className="result__code">{step.code}</div>
+          {step.code ? (
+            <div className="result__code">{step.code}</div>
+          ) : (
+            <p className="result__meta">{step.resent ? copy.alreadyPlayed.resent(step.maskedEmail) : copy.alreadyPlayed.notResent}</p>
+          )}
           <div className="game-actions">
             {step.ticket && step.ticket.seats - step.ticket.spinsUsed > 0 && (
               <button type="button" className="game-btn game-btn--primary" onClick={() => void nextPlayer(step.ticket as Found)}>
@@ -437,14 +452,24 @@ function ResultStep({
   const prize = copy.prizes[result.kind];
   return (
     <section className="step">
-      <Confetti burstKey={result.code} />
+      <Confetti burstKey={result.code ?? result.validUntil} />
       <p className="game-eyebrow">{copy.result.eyebrow}</p>
       <h2 className="game-serif game-h1" style={{ fontSize: "clamp(36px,6vw,88px)" }}>{prize.title}</h2>
       <p className="game-body">{prize.description}</p>
-      <p className="game-eyebrow" style={{ marginTop: 28, marginBottom: 0 }}>{copy.result.codeLabel}</p>
-      <div className="result__code">{result.code}</div>
+      {result.code && (
+        <>
+          <p className="game-eyebrow" style={{ marginTop: 28, marginBottom: 0 }}>{copy.result.codeLabel}</p>
+          <div className="result__code">{result.code}</div>
+        </>
+      )}
       <p className="result__meta">{copy.result.validUntil(formatDate(result.validUntil, locale))}</p>
-      <p className="result__meta">{result.emailSent ? copy.result.emailed(result.maskedEmail) : copy.result.emailFailed}</p>
+      <p className="result__meta">
+        {!result.emailSent
+          ? copy.result.emailFailed
+          : result.code
+            ? copy.result.emailed(result.maskedEmail)
+            : copy.result.emailOnly(result.maskedEmail)}
+      </p>
       <p className="result__meta">{copy.result.howTo}</p>
       <div className="game-actions">
         {onNextPlayer && spinsLeft > 0 && (

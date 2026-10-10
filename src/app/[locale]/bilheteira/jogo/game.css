@@ -86,6 +86,8 @@ body:has(.game-root) > div.fixed.bottom-0 { display: none; }
   color: var(--g-cream-dim);
 }
 .game-locked h1 { font-size: 48px; }
+.unlock { display: grid; gap: 16px; justify-items: center; margin-top: 8px; }
+.unlock .field { margin-top: 0; width: min(100%, 360px); }
 
 /* ───── buttons ───── */
 

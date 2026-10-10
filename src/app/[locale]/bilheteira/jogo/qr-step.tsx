@@ -19,6 +19,7 @@ export function QrStep({
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const scannerRef = useRef<import("qr-scanner").default | null>(null);
+  const unmountedRef = useRef(false);
   const busyRef = useRef(false);
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
@@ -61,6 +62,7 @@ export function QrStep({
     setStatus("starting");
     try {
       const QrScanner = (await import("qr-scanner")).default;
+      if (unmountedRef.current || !videoRef.current) return;
       const scanner = new QrScanner(
         videoRef.current,
         (result) => void handleData(result.data),
@@ -72,10 +74,19 @@ export function QrStep({
           maxScansPerSecond: 8,
         },
       );
-      await scanner.start();
+      // Register before awaiting start(): if the step unmounts mid-start the
+      // cleanup below must find the scanner and stop the camera stream.
       scannerRef.current = scanner;
+      await scanner.start();
+      if (unmountedRef.current) {
+        scanner.destroy();
+        scannerRef.current = null;
+        return;
+      }
       setStatus("scanning");
     } catch {
+      if (unmountedRef.current) return;
+      scannerRef.current = null;
       setStatus("error");
       setMessage(copy.identify.cameraError);
     }
@@ -84,8 +95,10 @@ export function QrStep({
   // Kiosk: the camera opens as soon as the step mounts; permission is granted
   // once per browser profile and remembered.
   useEffect(() => {
+    unmountedRef.current = false;
     void start();
     return () => {
+      unmountedRef.current = true;
       scannerRef.current?.destroy();
       scannerRef.current = null;
     };

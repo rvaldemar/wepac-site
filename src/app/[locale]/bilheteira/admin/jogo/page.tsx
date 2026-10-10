@@ -1,5 +1,7 @@
 import { getLocale } from "next-intl/server";
+import { redirect } from "next/navigation";
 import { Link } from "@/i18n/navigation";
+import { getSessionAdmin } from "@/lib/bilheteira/session";
 import { prisma } from "@/lib/db";
 import { getGameCopy } from "@/i18n/copy/institutional-game";
 import { GAME_CAMPAIGN } from "@/lib/bilheteira/game/prizes";
@@ -9,6 +11,9 @@ import { RedeemClient } from "./redeem-client";
 export const dynamic = "force-dynamic";
 
 export default async function GameAdminPage() {
+  // The layout also checks, but this page lists personal data: authorise here
+  // too so a direct segment request cannot skip the layout.
+  if (!(await getSessionAdmin())) redirect("/bilheteira/login");
   const locale = await getLocale();
   const copy = getGameCopy(locale);
   const a = copy.admin;

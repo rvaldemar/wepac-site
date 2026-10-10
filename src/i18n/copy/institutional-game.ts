@@ -79,6 +79,7 @@ export type GameCopy = {
     codeLabel: string;
     validUntil: (date: string) => string;
     emailed: (masked: string) => string;
+    emailOnly: (masked: string) => string;
     emailFailed: string;
     howTo: string;
     done: string;
@@ -89,6 +90,8 @@ export type GameCopy = {
     title: string;
     body: (masked: string) => string;
     yourPrize: string;
+    resent: (masked: string) => string;
+    notResent: string;
     done: string;
   };
   errors: {
@@ -96,6 +99,13 @@ export type GameCopy = {
     rateLimited: string;
     locked: string;
     ticketExhausted: string;
+  };
+  unlock: {
+    title: string;
+    body: string;
+    keyLabel: string;
+    submit: string;
+    failed: string;
   };
   prizes: Record<PrizeKind, PrizeCopy>;
   admin: {
@@ -134,6 +144,7 @@ export type GameCopy = {
     howTo: string;
     footer: string;
     marketingNote: string;
+    unsubscribe: string;
   };
 };
 
@@ -242,21 +253,21 @@ const ptPT: GameCopy = {
   consent: {
     title: "Antes de girar",
     intro: "Lê e confirma. Demora dez segundos.",
-    termsLabel: "Li e aceito os termos do jogo e a política de privacidade.",
+    termsLabel: "Li e aceito os termos do jogo e tomei conhecimento da informação de privacidade.",
     termsLink: "Ver termos",
     termsTitle: "Termos do jogo e privacidade",
     marketingLabel: "Quero receber novidades da WEPAC e da Arte à Capela por email.",
-    marketingHint: "Opcional. Podes cancelar em qualquer email que te enviarmos.",
+    marketingHint: "Opcional. Cada email que te enviarmos tem um link para deixares de receber.",
     privacyLink: "Política de privacidade",
     play: "Girar a roda",
     termsRequired: "Precisas de aceitar os termos para jogar.",
     termsBody: [
       "Promoção da WEPAC – Companhia de Artes, válida até 31 de dezembro de 2026, limitada a uma participação por pessoa (email). Um bilhete com vários lugares dá uma participação por lugar, cada uma a uma pessoa diferente.",
-      "Todos os participantes recebem um prémio em forma de código, enviado por email e resgatável na bilheteira Arte à Capela, sujeito a lotação.",
+      "Todos os participantes recebem um prémio em forma de código, enviado por email e resgatável na bilheteira Arte à Capela, sujeito a lotação. Probabilidades: 2x1 num espetáculo 55%; 2x1 em todos 27%; bilhete grátis 15%; trimestre grátis 3%. A roda no ecrã é ilustrativa; o sorteio é feito pelo sistema com estas probabilidades.",
       "Os prémios não são convertíveis em dinheiro nem transmissíveis. Prémios de bilhete grátis e de trimestre grátis valem para uma pessoa.",
       "Dados tratados: nome, email, telemóvel (opcional), bilhete associado (se existir) e data/hora da participação. Finalidade: entrega e resgate do prémio. Base legal: execução da promoção que solicitaste.",
       "O envio de comunicações de marketing só acontece com o teu consentimento expresso, dado em separado, e pode ser retirado a qualquer momento através do link em cada email ou por info@wepac.pt.",
-      "Os dados são conservados até 12 meses após o fim da promoção, ou até retirares o consentimento de marketing. Responsável pelo tratamento: WEPAC – Companhia de Artes, info@wepac.pt.",
+      "Os dados da participação são conservados até 12 meses após o fim da promoção. O email deixa de ser usado para marketing assim que retirares o consentimento. Responsável pelo tratamento: WEPAC – Companhia de Artes, info@wepac.pt.",
     ],
   },
   wheel: {
@@ -269,6 +280,7 @@ const ptPT: GameCopy = {
     codeLabel: "O teu código",
     validUntil: (date) => `Válido até ${date}`,
     emailed: (masked) => `Enviámos o código para ${masked}.`,
+    emailOnly: (masked) => `Enviámos o teu código para ${masked}. Vê a caixa de entrada (e o spam).`,
     emailFailed: "Não conseguimos enviar o email agora. Fotografa o código: é tudo o que precisas.",
     howTo: "Apresenta o código na bilheteira ao reservar o teu lugar.",
     done: "Terminar",
@@ -279,6 +291,8 @@ const ptPT: GameCopy = {
     title: "Já giraste a roda",
     body: (masked) => `Este email (${masked}) já participou. Cada pessoa joga uma vez.`,
     yourPrize: "O teu prémio",
+    resent: (masked) => `Voltámos a enviar o código para ${masked}.`,
+    notResent: "Não conseguimos reenviar o email agora. Pede ajuda na bilheteira.",
     done: "Terminar",
   },
   errors: {
@@ -286,6 +300,13 @@ const ptPT: GameCopy = {
     rateLimited: "Demasiadas tentativas. Aguarda um momento.",
     locked: "Este jogo só está disponível no quiosque Arte à Capela.",
     ticketExhausted: "Este bilhete já usou todas as jogadas.",
+  },
+  unlock: {
+    title: "Quiosque bloqueado",
+    body: "Introduz a chave do quiosque para ativar este dispositivo.",
+    keyLabel: "Chave",
+    submit: "Ativar",
+    failed: "Chave incorreta.",
   },
   prizes: prizesPt,
   admin: {
@@ -328,7 +349,8 @@ const ptPT: GameCopy = {
     validUntil: "Válido até",
     howTo: "Apresenta este código na bilheteira Arte à Capela ao reservar. Um código por pessoa, sujeito a lotação.",
     footer: "WEPAC – Companhia de Artes · Arte à Capela",
-    marketingNote: "Recebes este email porque participaste na Roda da Capela. Se autorizaste novidades, podes retirar o consentimento respondendo a este email.",
+    marketingNote: "Recebes este email porque participaste na Roda da Capela. Se autorizaste novidades da WEPAC e da Arte à Capela, podes retirar esse consentimento a qualquer momento:",
+    unsubscribe: "Deixar de receber novidades",
   },
 };
 
@@ -383,21 +405,21 @@ const enUS: GameCopy = {
   consent: {
     title: "Before you spin",
     intro: "Read and confirm. It takes ten seconds.",
-    termsLabel: "I have read and accept the game terms and the privacy policy.",
+    termsLabel: "I have read and accept the game terms and have read the privacy information.",
     termsLink: "View terms",
     termsTitle: "Game terms and privacy",
     marketingLabel: "I'd like news from WEPAC and Arte à Capela by email.",
-    marketingHint: "Optional. Unsubscribe from any email we send you.",
+    marketingHint: "Optional. Every email we send has a link to stop receiving them.",
     privacyLink: "Privacy policy",
     play: "Spin the wheel",
     termsRequired: "You need to accept the terms to play.",
     termsBody: [
       "Promotion by WEPAC – Companhia de Artes, valid until 31 December 2026, limited to one entry per person (email). A ticket with several seats grants one entry per seat, each for a different person.",
-      "Every participant receives a prize as a code, sent by email and redeemable at the Arte à Capela box office, subject to availability.",
+      "Every participant receives a prize as a code, sent by email and redeemable at the Arte à Capela box office, subject to availability. Odds: 2 for 1 at one concert 55%; 2 for 1 at all 27%; free ticket 15%; free quarter 3%. The on-screen wheel is illustrative; the draw is made by the system with these odds.",
       "Prizes cannot be exchanged for cash or transferred. Free ticket and free quarter prizes are for one person.",
       "Data processed: name, email, mobile (optional), linked ticket (if any) and entry timestamp. Purpose: delivering and redeeming the prize. Legal basis: performance of the promotion you requested.",
       "Marketing emails are sent only with your explicit, separate consent, which you can withdraw at any time via the link in each email or at info@wepac.pt.",
-      "Data is kept for up to 12 months after the promotion ends, or until you withdraw marketing consent. Controller: WEPAC – Companhia de Artes, info@wepac.pt.",
+      "Entry data is kept for up to 12 months after the promotion ends. Your email stops being used for marketing as soon as you withdraw consent. Controller: WEPAC – Companhia de Artes, info@wepac.pt.",
     ],
   },
   wheel: {
@@ -410,6 +432,7 @@ const enUS: GameCopy = {
     codeLabel: "Your code",
     validUntil: (date) => `Valid until ${date}`,
     emailed: (masked) => `We sent the code to ${masked}.`,
+    emailOnly: (masked) => `We sent your code to ${masked}. Check your inbox (and spam).`,
     emailFailed: "We couldn't send the email right now. Take a photo of the code: that's all you need.",
     howTo: "Show the code at the box office when booking your seat.",
     done: "Done",
@@ -420,6 +443,8 @@ const enUS: GameCopy = {
     title: "You've already spun",
     body: (masked) => `This email (${masked}) has already entered. One spin per person.`,
     yourPrize: "Your prize",
+    resent: (masked) => `We re-sent the code to ${masked}.`,
+    notResent: "We couldn't re-send the email right now. Ask at the box office.",
     done: "Done",
   },
   errors: {
@@ -427,6 +452,13 @@ const enUS: GameCopy = {
     rateLimited: "Too many attempts. Wait a moment.",
     locked: "This game is only available at the Arte à Capela kiosk.",
     ticketExhausted: "This ticket has used all of its spins.",
+  },
+  unlock: {
+    title: "Kiosk locked",
+    body: "Enter the kiosk key to activate this device.",
+    keyLabel: "Key",
+    submit: "Activate",
+    failed: "Wrong key.",
   },
   prizes: prizesEn,
   admin: {
@@ -469,7 +501,8 @@ const enUS: GameCopy = {
     validUntil: "Valid until",
     howTo: "Show this code at the Arte à Capela box office when booking. One code per person, subject to availability.",
     footer: "WEPAC – Companhia de Artes · Arte à Capela",
-    marketingNote: "You're receiving this because you entered the Chapel Wheel. If you opted in to news, you can withdraw consent by replying to this email.",
+    marketingNote: "You're receiving this because you entered the Chapel Wheel. If you opted in to WEPAC and Arte à Capela news, you can withdraw that consent at any time:",
+    unsubscribe: "Stop receiving news",
   },
 };
 

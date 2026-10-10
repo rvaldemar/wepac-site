@@ -62,7 +62,24 @@ export async function lookupVoucherAction(raw: string): Promise<VoucherLookup> {
   if (!VOUCHER_CODE_RE.test(code)) return { ok: false, error: "invalid_code" };
   const v = await prisma.prizeVoucher.findUnique({ where: { code }, include });
   if (!v) return { ok: false, error: "not_found" };
-  return { ok: true, voucher: toView(v) };
+  return { ok: true, voucher: toView(await expireIfOutOfWindow(v)) };
+}
+
+type VoucherRow = NonNullable<Awaited<ReturnType<typeof findByCode>>>;
+
+function findByCode(code: string) {
+  return prisma.prizeVoucher.findUnique({ where: { code }, include });
+}
+
+/** Flips an `issued` voucher outside its validity window to `expired`. */
+async function expireIfOutOfWindow(v: VoucherRow): Promise<VoucherRow> {
+  const now = new Date();
+  if (v.status !== "issued" || (now <= v.validUntil && now >= v.validFrom)) return v;
+  await prisma.prizeVoucher.updateMany({
+    where: { id: v.id, status: "issued" },
+    data: { status: "expired" },
+  });
+  return (await findByCode(v.code)) ?? v;
 }
 
 /**
@@ -79,36 +96,33 @@ export async function redeemVoucherAction(
   const normalized = normalizeVoucherCode(String(code || ""));
   if (!VOUCHER_CODE_RE.test(normalized)) return { ok: false, error: "invalid_code" };
 
-  const v = await prisma.prizeVoucher.findUnique({ where: { code: normalized }, include });
+  let v = await findByCode(normalized);
   if (!v) return { ok: false, error: "not_found" };
+  v = await expireIfOutOfWindow(v);
+  if (v.status !== "issued") return { ok: true, voucher: toView(v) };
 
   const now = new Date();
   const multiUse = v.kind === "two_for_one_all_2026" || v.kind === "free_all_q4_2026";
-  const expired = now > v.validUntil || now < v.validFrom;
-  if (expired && v.status === "issued") {
-    const updated = await prisma.prizeVoucher.update({
-      where: { id: v.id },
-      data: { status: "expired" },
-      include,
-    });
-    revalidatePath("/bilheteira/admin/jogo");
-    return { ok: true, voucher: toView(updated) };
-  }
-  if (v.status !== "issued") return { ok: true, voucher: toView(v) };
-
   const line = `${now.toISOString()} ${admin.email}${note.trim() ? ` — ${note.trim().slice(0, 200)}` : ""}`;
-  const updated = await prisma.prizeVoucher.update({
-    where: { id: v.id },
+  // Guarded write: a double click or two staff redeeming the same single-use
+  // code at once must not both succeed.
+  const result = await prisma.prizeVoucher.updateMany({
+    where: { id: v.id, status: "issued", redemptionNote: v.redemptionNote },
     data: {
       status: multiUse ? "issued" : "redeemed",
       redeemedAt: now,
       redeemedByAdminId: admin.id,
       redemptionNote: v.redemptionNote ? `${v.redemptionNote}\n${line}` : line,
     },
-    include,
   });
   revalidatePath("/bilheteira/admin/jogo");
-  return { ok: true, voucher: toView(updated) };
+  const fresh = await findByCode(normalized);
+  if (!fresh) return { ok: false, error: "not_found" };
+  if (result.count === 0) {
+    // Lost the race: return the current state without claiming the redeem.
+    return { ok: true, voucher: toView(fresh) };
+  }
+  return { ok: true, voucher: toView(fresh) };
 }
 
 export async function cancelVoucherAction(code: string): Promise<VoucherLookup> {
@@ -116,16 +130,16 @@ export async function cancelVoucherAction(code: string): Promise<VoucherLookup> 
   if (!admin) return { ok: false, error: "unauthorized" };
   const normalized = normalizeVoucherCode(String(code || ""));
   if (!VOUCHER_CODE_RE.test(normalized)) return { ok: false, error: "invalid_code" };
-  const v = await prisma.prizeVoucher.findUnique({ where: { code: normalized } });
+  const v = await findByCode(normalized);
   if (!v) return { ok: false, error: "not_found" };
-  const updated = await prisma.prizeVoucher.update({
-    where: { id: v.id },
+  await prisma.prizeVoucher.updateMany({
+    where: { id: v.id, status: { in: ["issued", "expired"] } },
     data: {
       status: "cancelled",
       redemptionNote: `${v.redemptionNote ? `${v.redemptionNote}\n` : ""}${new Date().toISOString()} ${admin.email} — cancelled`,
     },
-    include,
   });
   revalidatePath("/bilheteira/admin/jogo");
-  return { ok: true, voucher: toView(updated) };
+  const fresh = await findByCode(normalized);
+  return fresh ? { ok: true, voucher: toView(fresh) } : { ok: false, error: "not_found" };
 }

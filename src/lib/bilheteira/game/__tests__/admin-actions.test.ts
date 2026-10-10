@@ -1,14 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const findUnique = vi.fn();
-const update = vi.fn();
+const updateMany = vi.fn();
 let admin: { id: string; email: string } | null = { id: "adm1", email: "admin@wepac.pt" };
 
 vi.mock("@/lib/db", () => ({
   prisma: {
     prizeVoucher: {
       findUnique: (...a: unknown[]) => findUnique(...a),
-      update: (...a: unknown[]) => update(...a),
+      updateMany: (...a: unknown[]) => updateMany(...a),
+      // update intentionally absent: every write must be a guarded updateMany.
     },
   },
 }));
@@ -29,11 +30,21 @@ const baseVoucher = {
   participant,
 };
 
+/** Simulates the DB: findUnique returns `row`, updateMany mutates it when the guard matches. */
+function db(row: Record<string, unknown>, { guardFails = false } = {}) {
+  findUnique.mockImplementation(async () => ({ ...row }));
+  updateMany.mockImplementation(async ({ data }) => {
+    if (guardFails) return { count: 0 };
+    Object.assign(row, data);
+    return { count: 1 };
+  });
+  return row;
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   admin = { id: "adm1", email: "admin@wepac.pt" };
   vi.useRealTimers();
-  update.mockImplementation(async ({ data }) => ({ ...baseVoucher, ...data, participant }));
 });
 
 describe("lookupVoucherAction", () => {
@@ -43,7 +54,7 @@ describe("lookupVoucherAction", () => {
     expect(findUnique).not.toHaveBeenCalled();
   });
   it("normalises the code before querying", async () => {
-    findUnique.mockResolvedValue({ ...baseVoucher, kind: "two_for_one_single_2026" });
+    db({ ...baseVoucher, kind: "two_for_one_single_2026" });
     const r = await lookupVoucherAction("ac aaaa bbbb");
     expect(findUnique).toHaveBeenCalledWith(expect.objectContaining({ where: { code: "AC-AAAA-BBBB" } }));
     expect(r.ok).toBe(true);
@@ -52,52 +63,71 @@ describe("lookupVoucherAction", () => {
     expect(await lookupVoucherAction("DROP TABLE")).toEqual({ ok: false, error: "invalid_code" });
     expect(findUnique).not.toHaveBeenCalled();
   });
+  it("flips an out-of-window voucher to expired on lookup", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2027-01-02T10:00:00Z"));
+    db({ ...baseVoucher, kind: "two_for_one_all_2026" });
+    const r = await lookupVoucherAction("AC-AAAA-BBBB");
+    expect(updateMany).toHaveBeenCalledWith(expect.objectContaining({ where: { id: "v1", status: "issued" }, data: { status: "expired" } }));
+    expect(r.ok && r.voucher.status).toBe("expired");
+  });
 });
 
 describe("redeemVoucherAction", () => {
-  it("single-use prize becomes redeemed with an audit line", async () => {
+  it("single-use prize becomes redeemed with an audit line, via a guarded write", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-10-20T20:00:00Z"));
-    findUnique.mockResolvedValue({ ...baseVoucher, kind: "free_ticket_single_2026" });
+    db({ ...baseVoucher, kind: "free_ticket_single_2026" });
     const r = await redeemVoucherAction("AC-AAAA-BBBB", "sala 2");
-    expect(r.ok).toBe(true);
-    const data = update.mock.calls[0][0].data;
-    expect(data.status).toBe("redeemed");
-    expect(data.redeemedByAdminId).toBe("adm1");
-    expect(data.redemptionNote).toContain("admin@wepac.pt");
-    expect(data.redemptionNote).toContain("sala 2");
+    expect(r.ok && r.voucher.status).toBe("redeemed");
+    const call = updateMany.mock.calls[0][0];
+    expect(call.where).toEqual({ id: "v1", status: "issued", redemptionNote: null });
+    expect(call.data.redeemedByAdminId).toBe("adm1");
+    expect(call.data.redemptionNote).toContain("admin@wepac.pt");
+    expect(call.data.redemptionNote).toContain("sala 2");
   });
   it("multi-use prize stays issued and appends to the history", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-10-20T20:00:00Z"));
-    findUnique.mockResolvedValue({ ...baseVoucher, kind: "free_all_q4_2026", redemptionNote: "first" });
-    await redeemVoucherAction("AC-AAAA-BBBB", "");
-    const data = update.mock.calls[0][0].data;
+    db({ ...baseVoucher, kind: "free_all_q4_2026", redemptionNote: "first" });
+    const r = await redeemVoucherAction("AC-AAAA-BBBB", "");
+    const data = updateMany.mock.calls[0][0].data;
     expect(data.status).toBe("issued");
     expect(data.redemptionNote.startsWith("first\n")).toBe(true);
+    expect(r.ok && r.voucher.status).toBe("issued");
   });
   it("marks an out-of-window voucher as expired instead of redeeming", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2027-01-02T10:00:00Z"));
-    findUnique.mockResolvedValue({ ...baseVoucher, kind: "two_for_one_all_2026" });
+    db({ ...baseVoucher, kind: "two_for_one_all_2026" });
     const r = await redeemVoucherAction("AC-AAAA-BBBB", "");
-    expect(update.mock.calls[0][0].data).toEqual({ status: "expired" });
+    expect(updateMany).toHaveBeenCalledTimes(1);
+    expect(updateMany.mock.calls[0][0].data).toEqual({ status: "expired" });
     expect(r.ok && r.voucher.status).toBe("expired");
   });
   it("does not re-redeem an already used voucher", async () => {
-    findUnique.mockResolvedValue({ ...baseVoucher, kind: "free_ticket_single_2026", status: "redeemed" });
+    db({ ...baseVoucher, kind: "free_ticket_single_2026", status: "redeemed" });
     const r = await redeemVoucherAction("AC-AAAA-BBBB", "");
-    expect(update).not.toHaveBeenCalled();
+    expect(updateMany).not.toHaveBeenCalled();
+    expect(r.ok && r.voucher.status).toBe("redeemed");
+  });
+  it("losing the redeem race returns the current state without claiming success", async () => {
+    const row = db({ ...baseVoucher, kind: "free_ticket_single_2026" }, { guardFails: true });
+    // Another staff member redeemed in between: the re-read sees it.
+    findUnique.mockImplementationOnce(async () => ({ ...row })).mockImplementation(async () => ({ ...row, status: "redeemed" }));
+    const r = await redeemVoucherAction("AC-AAAA-BBBB", "");
     expect(r.ok && r.voucher.status).toBe("redeemed");
   });
 });
 
 describe("cancelVoucherAction", () => {
-  it("cancels and logs who did it", async () => {
-    findUnique.mockResolvedValue({ ...baseVoucher, kind: "two_for_one_single_2026" });
+  it("cancels and logs who did it, only from issued/expired", async () => {
+    db({ ...baseVoucher, kind: "two_for_one_single_2026" });
     const r = await cancelVoucherAction("AC-AAAA-BBBB");
-    expect(update.mock.calls[0][0].data.status).toBe("cancelled");
-    expect(update.mock.calls[0][0].data.redemptionNote).toContain("cancelled");
-    expect(r.ok).toBe(true);
+    const call = updateMany.mock.calls[0][0];
+    expect(call.where).toEqual({ id: "v1", status: { in: ["issued", "expired"] } });
+    expect(call.data.status).toBe("cancelled");
+    expect(call.data.redemptionNote).toContain("cancelled");
+    expect(r.ok && r.voucher.status).toBe("cancelled");
   });
 });

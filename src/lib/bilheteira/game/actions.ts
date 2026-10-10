@@ -6,8 +6,9 @@ import type { PrizeKind } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { logSafeError } from "@/lib/wepacker/log-safe-error";
-import { EMAIL_RE, maskEmail, normalizeEmail } from "./email-mask";
-import { hasKioskAccess } from "./kiosk-access";
+import { getVisitorIpFromHeaders } from "@/lib/wessex/rate-limit";
+import { EMAIL_RE, canonicalizeEmail, maskEmail, normalizeEmail } from "./email-mask";
+import { kioskAccess } from "./kiosk-access";
 import {
   GAME_CAMPAIGN,
   GAME_CONSENT_VERSION,
@@ -20,11 +21,15 @@ import { generateVoucherCode } from "./voucher-code";
 import { sendVoucherEmail } from "./voucher-email";
 
 const CODE_INSERT_ATTEMPTS = 5;
-
-class TicketExhausted extends Error {}
+// A kiosk device (signed cookie) serves a whole audience from one IP; the
+// ungated/open path keeps a strict per-IP ceiling.
+const PLAY_LIMIT_PER_DEVICE = 600;
 const PLAY_LIMIT_PER_IP = 60;
+const LOOKUP_LIMIT_PER_DEVICE = 3000;
 const LOOKUP_LIMIT_PER_IP = 300;
 const WINDOW_MS = 60 * 60 * 1000;
+
+class TicketExhausted extends Error {}
 
 export type GameErrorCode =
   | "locked"
@@ -39,7 +44,11 @@ export type GameErrorCode =
 
 const PHONE_RE = /^\+?[0-9 ()-]{6,20}$/;
 
-type ValidatedPerson = { ok: true; name: string; email: string; phone: string | null } | { ok: false; error: GameErrorCode };
+export type PersonDetails = { name: string; email: string; phone?: string };
+
+type ValidatedPerson =
+  | { ok: true; name: string; email: string; phone: string | null }
+  | { ok: false; error: GameErrorCode };
 
 function validatePerson(raw: PersonDetails | undefined): ValidatedPerson {
   const name = String(raw?.name || "").trim().replace(/\s+/g, " ");
@@ -48,10 +57,8 @@ function validatePerson(raw: PersonDetails | undefined): ValidatedPerson {
   if (!EMAIL_RE.test(email) || email.length > 254) return { ok: false, error: "invalid_email" };
   const phoneRaw = String(raw?.phone || "").trim();
   if (phoneRaw && !PHONE_RE.test(phoneRaw)) return { ok: false, error: "invalid_phone" };
-  return { ok: true, name, email, phone: phoneRaw || null };
+  return { ok: true, name, email: canonicalizeEmail(email), phone: phoneRaw || null };
 }
-
-export type PersonDetails = { name: string; email: string; phone?: string };
 
 export type TicketLookupResult =
   | {
@@ -90,7 +97,12 @@ export type PlayResult =
   | {
       ok: true;
       kind: PrizeKind;
-      code: string;
+      /**
+       * Null when the code is delivered by email only (typed email, no
+       * ticket): a code on screen would let anyone farm prizes with made-up
+       * addresses. Ticket holders (buyer or capped companions) see it.
+       */
+      code: string | null;
       validUntil: string;
       maskedEmail: string;
       emailSent: boolean;
@@ -99,15 +111,27 @@ export type PlayResult =
       ok: false;
       error: "already_played";
       kind: PrizeKind;
-      code: string;
+      /** Only for the ticket buyer (QR proves possession); null otherwise. */
+      code: string | null;
       maskedEmail: string;
+      /** True when the existing code was re-sent to the inbox. */
+      resent: boolean;
     }
   | { ok: false; error: Exclude<GameErrorCode, never> };
 
-async function clientIp(): Promise<string> {
-  const h = await headers();
-  const fwd = h.get("x-forwarded-for");
-  return (fwd?.split(",")[0] || h.get("x-real-ip") || "unknown").trim();
+type Access = { device: string; ip: string };
+
+async function gate(kind: "play" | "lookup"): Promise<Access | "locked" | "rate_limited"> {
+  const access = await kioskAccess();
+  if (!access) return "locked";
+  const ip = getVisitorIpFromHeaders(await headers());
+  const gated = access.device !== "open";
+  const key = gated ? `game:${kind}:device:${access.device}` : `game:${kind}:ip:${ip}`;
+  const limit = gated
+    ? kind === "play" ? PLAY_LIMIT_PER_DEVICE : LOOKUP_LIMIT_PER_DEVICE
+    : kind === "play" ? PLAY_LIMIT_PER_IP : LOOKUP_LIMIT_PER_IP;
+  if (!checkRateLimit(key, limit, WINDOW_MS)) return "rate_limited";
+  return { device: access.device, ip };
 }
 
 function extractTicketId(raw: string): string {
@@ -126,10 +150,8 @@ function extractTicketId(raw: string): string {
 /** Resolves a scanned QR to a ticket. Returns only a masked email so the
  *  kiosk screen never shows a stranger's full address. */
 export async function lookupTicketForGame(raw: string): Promise<TicketLookupResult> {
-  if (!(await hasKioskAccess())) return { ok: false, error: "locked" };
-  if (!checkRateLimit(`game:lookup:${await clientIp()}`, LOOKUP_LIMIT_PER_IP, WINDOW_MS)) {
-    return { ok: false, error: "rate_limited" };
-  }
+  const access = await gate("lookup");
+  if (access === "locked" || access === "rate_limited") return { ok: false, error: access };
   const id = extractTicketId(String(raw || ""));
   if (!id || id.length > 64) return { ok: false, error: "ticket_not_found" };
 
@@ -147,7 +169,7 @@ export async function lookupTicketForGame(raw: string): Promise<TicketLookupResu
   if (!ticket || ticket.status === "cancelled") {
     return { ok: false, error: "ticket_not_found" };
   }
-  const buyerEmail = normalizeEmail(ticket.buyerEmail);
+  const buyerEmail = canonicalizeEmail(ticket.buyerEmail);
   const [spinsUsed, buyer] = await Promise.all([
     prisma.gameParticipant.count({ where: { campaign: GAME_CAMPAIGN, ticketId: ticket.id } }),
     prisma.gameParticipant.findUnique({
@@ -173,12 +195,43 @@ function cryptoRng(): number {
   return randomInt(0, 2 ** 47) / 2 ** 47;
 }
 
-export async function playAction(input: PlayInput): Promise<PlayResult> {
-  if (!(await hasKioskAccess())) return { ok: false, error: "locked" };
-  if (!checkRateLimit(`game:play:${await clientIp()}`, PLAY_LIMIT_PER_IP, WINDOW_MS)) {
-    return { ok: false, error: "rate_limited" };
+async function sendBestEffort(args: {
+  participantId: string;
+  code: string;
+  email: string;
+  name: string | null;
+  kind: PrizeKind;
+  validUntil: Date;
+  locale: string;
+}): Promise<boolean> {
+  try {
+    await sendVoucherEmail({
+      to: args.email,
+      name: args.name,
+      kind: args.kind,
+      code: args.code,
+      validUntil: args.validUntil,
+      locale: args.locale,
+      participantId: args.participantId,
+    });
+  } catch (err) {
+    // The prize is already persisted; callers decide what the screen shows.
+    console.error("[bilheteira] game_voucher_email_failed", logSafeError(err));
+    return false;
   }
-  if (!input?.termsAccepted) return { ok: false, error: "terms_required" };
+  try {
+    await prisma.prizeVoucher.update({ where: { code: args.code }, data: { emailSentAt: new Date() } });
+  } catch (err) {
+    console.error("[bilheteira] game_voucher_email_sent_mark_failed", logSafeError(err));
+  }
+  return true;
+}
+
+export async function playAction(input: PlayInput): Promise<PlayResult> {
+  const access = await gate("play");
+  if (access === "locked" || access === "rate_limited") return { ok: false, error: access };
+  if (input?.termsAccepted !== true) return { ok: false, error: "terms_required" };
+  const marketingConsent = input.marketingConsent === true;
   const locale = input.locale === "en-US" ? "en-US" : "pt-PT";
 
   // Resolve identity. In buyer mode the email comes from the DB, never from
@@ -190,6 +243,8 @@ export async function playAction(input: PlayInput): Promise<PlayResult> {
   let phone: string | null = null;
   let ticketId: string | null = null;
   let seatCap: number | null = null;
+  const typedEmail = input.identity.mode === "email" || !!input.identity.companion;
+  const isBuyer = input.identity.mode === "ticket" && !input.identity.companion;
   if (input.identity.mode === "ticket") {
     const ticket = await prisma.ticket.findUnique({
       where: { id: String(input.identity.ticketId || "") },
@@ -207,7 +262,7 @@ export async function playAction(input: PlayInput): Promise<PlayResult> {
       name = person.name;
       phone = person.phone;
     } else {
-      email = normalizeEmail(ticket.buyerEmail);
+      email = canonicalizeEmail(ticket.buyerEmail);
       name = ticket.buyerName;
     }
   } else {
@@ -219,29 +274,36 @@ export async function playAction(input: PlayInput): Promise<PlayResult> {
   }
   const masked = maskEmail(email);
 
-  // One entry per email per campaign. If this email already played, surface
-  // the existing prize instead of a bare error — the person may just want to
-  // see their code again.
+  // One entry per email per campaign. A typed email proves nothing, so the
+  // existing code is never shown for it: it is re-sent to the inbox instead.
+  // The ticket buyer (QR in hand) may see it again on screen.
   const existing = await prisma.gameParticipant.findUnique({
     where: { campaign_email: { campaign: GAME_CAMPAIGN, email } },
     include: { vouchers: { orderBy: { createdAt: "asc" }, take: 1 } },
   });
-  if (existing?.vouchers[0]) {
-    const v = existing.vouchers[0];
-    return { ok: false, error: "already_played", kind: v.kind, code: v.code, maskedEmail: masked };
-  }
+  const alreadyPlayed = async (v: { kind: PrizeKind; code: string; validUntil: Date }, participantId: string): Promise<PlayResult> => {
+    if (isBuyer) return { ok: false, error: "already_played", kind: v.kind, code: v.code, maskedEmail: masked, resent: false };
+    const resent = await sendBestEffort({ participantId, code: v.code, email, name, kind: v.kind, validUntil: v.validUntil, locale });
+    return { ok: false, error: "already_played", kind: v.kind, code: null, maskedEmail: masked, resent };
+  };
+  if (existing?.vouchers[0]) return alreadyPlayed(existing.vouchers[0], existing.id);
 
   const now = new Date();
   const kind = pickPrize(cryptoRng, parsePrizeWeights(process.env.GAME_PRIZE_WEIGHTS));
   const { validFrom, validUntil } = prizeValidity(kind, now);
 
   let code = "";
+  let participantId = "";
   let created = false;
   for (let attempt = 0; attempt < CODE_INSERT_ATTEMPTS && !created; attempt++) {
     code = generateVoucherCode();
     try {
       await prisma.$transaction(async (tx) => {
-        if (ticketId && seatCap !== null && !existing) {
+        if (ticketId && seatCap !== null) {
+          // Serialise concurrent registrations on the same ticket: Prisma
+          // transactions run at READ COMMITTED, where count-then-insert is
+          // write-skew prone. The row lock makes the cap check exact.
+          await tx.$queryRaw`SELECT id FROM tickets WHERE id = ${ticketId} FOR UPDATE`;
           const used = await tx.gameParticipant.count({
             where: { campaign: GAME_CAMPAIGN, ticketId },
           });
@@ -258,10 +320,11 @@ export async function playAction(input: PlayInput): Promise<PlayResult> {
                 ticketId,
                 locale,
                 termsAcceptedAt: now,
-                marketingConsentAt: input.marketingConsent ? now : null,
+                marketingConsentAt: marketingConsent ? now : null,
                 consentVersion: GAME_CONSENT_VERSION,
               },
             });
+        participantId = participant.id;
         await tx.prizeVoucher.create({
           data: {
             code,
@@ -285,13 +348,13 @@ export async function playAction(input: PlayInput): Promise<PlayResult> {
       const target = (err.meta?.target as string[] | string | undefined) ?? "";
       const onEmail = String(target).includes("email");
       if (onEmail) {
-        // Two kiosks raced on the same email: return the winner's prize.
+        // Two kiosks raced on the same email: surface the winner's prize.
         const winner = await prisma.gameParticipant.findUnique({
           where: { campaign_email: { campaign: GAME_CAMPAIGN, email } },
           include: { vouchers: { orderBy: { createdAt: "asc" }, take: 1 } },
         });
         const v = winner?.vouchers[0];
-        if (v) return { ok: false, error: "already_played", kind: v.kind, code: v.code, maskedEmail: masked };
+        if (v && winner) return alreadyPlayed(v, winner.id);
         return { ok: false, error: "generic" };
       }
       // Otherwise a code collision — loop and regenerate.
@@ -299,15 +362,17 @@ export async function playAction(input: PlayInput): Promise<PlayResult> {
   }
   if (!created) return { ok: false, error: "generic" };
 
-  let emailSent = false;
-  try {
-    await sendVoucherEmail({ to: email, name, kind, code, validUntil, locale });
-    emailSent = true;
-    await prisma.prizeVoucher.update({ where: { code }, data: { emailSentAt: new Date() } });
-  } catch (err) {
-    // The prize is already persisted; the screen shows the code regardless.
-    console.error("[bilheteira] game_voucher_email_failed", logSafeError(err));
-  }
+  const emailSent = await sendBestEffort({ participantId, code, email, name, kind, validUntil, locale });
 
-  return { ok: true, kind, code, validUntil: validUntil.toISOString(), maskedEmail: masked, emailSent };
+  // No ticket: the code lives in the inbox only, unless delivery failed, in
+  // which case the screen is the only channel left.
+  const showCode = !(typedEmail && !ticketId) || !emailSent;
+  return {
+    ok: true,
+    kind,
+    code: showCode ? code : null,
+    validUntil: validUntil.toISOString(),
+    maskedEmail: masked,
+    emailSent,
+  };
 }

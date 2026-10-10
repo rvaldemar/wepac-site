@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { PrizeKind } from "@prisma/client";
 import type { GameCopy } from "@/i18n/copy/institutional-game";
 import { WHEEL_SEGMENTS, segmentIndexesFor } from "@/lib/bilheteira/game/prizes";
@@ -105,9 +105,13 @@ export function PrizeWheel({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rotationRef = useRef(0);
   const [spinning, setSpinning] = useState(false);
-  const labels = Object.fromEntries(
-    Object.entries(copy.prizes).map(([k, v]) => [k, v.short]),
-  ) as Record<PrizeKind, string>;
+  const labels = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(copy.prizes).map(([k, v]) => [k, v.short]),
+      ) as Record<PrizeKind, string>,
+    [copy.prizes],
+  );
 
   const redraw = useCallback(() => {
     if (canvasRef.current) drawWheel(canvasRef.current, rotationRef.current, labels);

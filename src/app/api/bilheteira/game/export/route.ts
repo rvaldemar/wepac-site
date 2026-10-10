@@ -29,7 +29,8 @@ export async function GET() {
       [
         r.email,
         r.name ?? "",
-        r.phone ?? "",
+        // "+351…" would be apostrophe-escaped as a formula; export as 00-prefixed.
+        (r.phone ?? "").replace(/^\+/, "00"),
         r.locale,
         r.marketingConsentAt?.toISOString() ?? "",
         r.consentVersion,

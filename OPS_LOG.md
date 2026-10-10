@@ -12,9 +12,13 @@ email mascarado ou email manual, termos + consentimento de marketing separado,
 roda de prémios com sorteio server-side, código `AC-XXXX-XXXX` por email.
 Admin em `/bilheteira/admin/jogo` (resgate, histórico, CSV de consentimentos).
 Migração aditiva `20261010120000_bilheteira_prize_game` (tabelas
-`game_participants`, `prize_vouchers`). Gate opcional de quiosque via
-`GAME_KIOSK_ACCESS_KEY`. Detalhe em `docs/operations/bilheteira-prize-game.md`.
-Branch `feat/bilheteira-prize-game`; sem deploy, sem migração em produção.
+`game_participants`, `prize_vouchers`). Gate de quiosque fail-closed em
+produção: exige `GAME_KIOSK_ACCESS_KEY` (desbloqueio por POST no próprio ecrã)
+ou `GAME_PUBLIC=1`. Review gatekeeper aplicado: código nunca mostrado para
+email digitado sem bilhete (só por email), lock `FOR UPDATE` por bilhete,
+resgate com escrita guardada, link de cancelamento de marketing em cada email.
+Detalhe em `docs/operations/bilheteira-prize-game.md`. Branch
+`feat/bilheteira-prize-game`; sem deploy, sem migração em produção.
 
 ---
 
