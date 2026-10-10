@@ -25,7 +25,7 @@ type Step =
   | { name: "ticket_panel"; ticket: Found }
   | { name: "details"; ticket: Found | null }
   | { name: "consent"; identity: PlayIdentity; ticket: Found | null }
-  | { name: "wheel"; identity: PlayIdentity; marketingConsent: boolean; ticket: Found | null }
+  | { name: "wheel"; identity: PlayIdentity; marketingConsent: boolean; ticket: Found | null; won?: Extract<PlayResult, { ok: true }> }
   | { name: "result"; result: Extract<PlayResult, { ok: true }>; ticket: Found | null }
   | { name: "already_played"; kind: PrizeKind; code: string | null; resent: boolean; maskedEmail: string; ticket: Found | null }
   | { name: "error"; message: string };
@@ -37,7 +37,7 @@ const IDLE_RESET_MS = 75_000;
 const CheckIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden><path d="M5 12.5l4.2 4.2L19 7.5" /></svg>
 );
-const RESULT_RESET_S = 45;
+const RESULT_RESET_S = 75;
 
 function formatDate(iso: string, locale: string) {
   return new Intl.DateTimeFormat(locale, {
@@ -120,7 +120,8 @@ export function GameClient({ locale }: { locale: string }) {
       const result = await playAction({ identity, termsAccepted: true, marketingConsent, locale });
       if (result.ok) {
         await wheelRef.current?.spinTo(result.kind);
-        setStep({ name: "result", result, ticket });
+        // Hold on the lit wheel until the visitor claims the prize.
+        setStep({ name: "wheel", identity, marketingConsent, ticket, won: result });
       } else if (result.error === "already_played") {
         setStep({ name: "already_played", kind: result.kind, code: result.code, resent: result.resent, maskedEmail: result.maskedEmail, ticket });
       } else {
@@ -241,13 +242,25 @@ export function GameClient({ locale }: { locale: string }) {
         <section className="step">
           <p className="game-eyebrow">{copy.campaignName}</p>
           <h2 className="game-serif game-h2">{copy.wheel.title}</h2>
-          <p className="game-body">{busy ? copy.wheel.spinning : copy.wheel.tapToSpin}</p>
+          <p className="game-body">{step.won ? copy.wheel.won : busy ? copy.wheel.spinning : copy.wheel.tapToSpin}</p>
           <PrizeWheel
             copy={copy}
             handleRef={wheelRef}
-            disabled={busy}
+            disabled={busy || !!step.won}
+            won={!!step.won}
             onTap={() => void spin(step.identity, step.marketingConsent, step.ticket)}
           />
+          {step.won && (
+            <div className="game-actions claim">
+              <button
+                type="button"
+                className="game-btn game-btn--primary"
+                onClick={() => setStep({ name: "result", result: step.won as Extract<PlayResult, { ok: true }>, ticket: step.ticket })}
+              >
+                {copy.wheel.claim}
+              </button>
+            </div>
+          )}
         </section>
       )}
 
@@ -451,27 +464,27 @@ function ResultStep({
   }, [left, onDone]);
   const prize = copy.prizes[result.kind];
   return (
-    <section className="step">
+    <section className="step step--result">
       <Confetti burstKey={result.code ?? result.validUntil} />
-      <p className="game-eyebrow">{copy.result.eyebrow}</p>
-      <h2 className="game-serif game-h1" style={{ fontSize: "clamp(36px,6vw,88px)" }}>{prize.title}</h2>
-      <p className="game-body">{prize.description}</p>
+      <p className="game-eyebrow reveal reveal-1">{copy.result.eyebrow}</p>
+      <h2 className="game-serif game-h1 reveal reveal-2" style={{ fontSize: "clamp(36px,6vw,88px)" }}>{prize.title}</h2>
+      <p className="game-body reveal reveal-3">{prize.description}</p>
       {result.code && (
         <>
-          <p className="game-eyebrow" style={{ marginTop: 28, marginBottom: 0 }}>{copy.result.codeLabel}</p>
-          <div className="result__code">{result.code}</div>
+          <p className="game-eyebrow reveal reveal-4" style={{ marginTop: 28, marginBottom: 0 }}>{copy.result.codeLabel}</p>
+          <div className="result__code reveal reveal-code">{result.code}</div>
         </>
       )}
-      <p className="result__meta">{copy.result.validUntil(formatDate(result.validUntil, locale))}</p>
-      <p className="result__meta">
+      <p className="result__meta reveal reveal-5">{copy.result.validUntil(formatDate(result.validUntil, locale))}</p>
+      <p className="result__meta reveal reveal-5">
         {!result.emailSent
           ? copy.result.emailFailed
           : result.code
             ? copy.result.emailed(result.maskedEmail)
             : copy.result.emailOnly(result.maskedEmail)}
       </p>
-      <p className="result__meta">{copy.result.howTo}</p>
-      <div className="game-actions">
+      <p className="result__meta reveal reveal-5">{copy.result.howTo}</p>
+      <div className="game-actions reveal reveal-6">
         {onNextPlayer && spinsLeft > 0 && (
           <button type="button" className="game-btn game-btn--primary" onClick={onNextPlayer}>{copy.result.nextPlayer(spinsLeft)}</button>
         )}

@@ -73,6 +73,8 @@ export type GameCopy = {
     title: string;
     tapToSpin: string;
     spinning: string;
+    won: string;
+    claim: string;
   };
   result: {
     eyebrow: string;
@@ -274,6 +276,8 @@ const ptPT: GameCopy = {
     title: "Gira a roda",
     tapToSpin: "Toca na roda",
     spinning: "Boa sorte…",
+    won: "A roda parou.",
+    claim: "Receber prémio",
   },
   result: {
     eyebrow: "Ganhaste",
@@ -426,6 +430,8 @@ const enUS: GameCopy = {
     title: "Spin the wheel",
     tapToSpin: "Tap the wheel",
     spinning: "Good luck…",
+    won: "The wheel has stopped.",
+    claim: "Claim prize",
   },
   result: {
     eyebrow: "You won",
