@@ -3,6 +3,7 @@ import { getLocale } from "next-intl/server";
 import { getGameCopy } from "@/i18n/copy/institutional-game";
 import { hasKioskAccess, kioskMode } from "@/lib/bilheteira/game/kiosk-access";
 import { GameClient } from "./game-client";
+import { KioskHeader } from "./kiosk-header";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,7 @@ export default async function GamePage({ searchParams }: Props) {
     const gated = kioskMode() === "gated";
     return (
       <main className="game-locked">
+        <KioskHeader />
         <p className="game-eyebrow">{copy.attract.eyebrow}</p>
         <h1 className="game-serif">{gated ? copy.unlock.title : copy.campaignName}</h1>
         <p>{gated ? copy.unlock.body : copy.errors.locked}</p>

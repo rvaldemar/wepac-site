@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { GameCopy } from "@/i18n/copy/institutional-game";
+import { KioskHeader } from "./kiosk-header";
 
 const SLIDES = [
   "/images/arte-a-capela/hero.jpg",
@@ -99,9 +100,8 @@ export function AttractScreen({ copy, onStart }: { copy: GameCopy; onStart: () =
       ))}
       <div className="attract__shade" />
       <canvas ref={canvasRef} className="attract__particles" aria-hidden />
+      <KioskHeader />
       <div className="attract__content">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="attract__logo" src="/images/arte-a-capela/logo.png" alt="Arte à Capela" />
         <p className="game-eyebrow">{copy.attract.eyebrow}</p>
         <h1 className="game-serif attract__headline">
           {copy.attract.headline.map((line, i) => (

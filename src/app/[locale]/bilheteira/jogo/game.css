@@ -30,7 +30,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: safe center;
-  padding: clamp(64px, 9vh, 96px) clamp(16px, 4vw, 48px) clamp(24px, 4vh, 48px);
+  padding: clamp(96px, 14vh, 140px) clamp(16px, 4vw, 48px) clamp(24px, 4vh, 48px);
   text-align: center;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -89,43 +89,62 @@ body:has(.game-root) > div.fixed.bottom-0 { display: none; }
 .unlock { display: grid; gap: 16px; justify-items: center; margin-top: 8px; }
 .unlock .field { margin-top: 0; width: min(100%, 360px); }
 
-/* ───── buttons ───── */
+/* ───── co-branded header (mirrors wepac.pt/arte-a-capela) ───── */
+
+.kiosk-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 1.6vw, 22px);
+  padding: clamp(18px, 3vh, 32px) clamp(20px, 4vw, 48px);
+  pointer-events: none;
+}
+.kiosk-header__capela { height: clamp(40px, 6.5vh, 64px); width: auto; }
+.kiosk-header__divider { width: 1px; height: clamp(22px, 3.6vh, 36px); background: rgba(240, 237, 230, 0.35); }
+.kiosk-header__wepac { height: clamp(14px, 2.2vh, 22px); width: auto; opacity: 0.9; }
+
+/* ───── buttons — same language as the site: rectangular, Inter,
+   uppercase, 0.18em tracking, red fill or hairline outline ───── */
 
 .game-btn {
   appearance: none;
   border: 0;
+  border-radius: 0;
   cursor: pointer;
-  font-family: var(--g-display);
-  font-weight: 700;
-  font-size: clamp(16px, 1.7vw, 22px);
-  letter-spacing: 0.06em;
+  font-family: var(--g-sans);
+  font-weight: 500;
+  font-size: clamp(13px, 1.25vw, 16px);
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  padding: clamp(16px, 1.8vw, 24px) clamp(28px, 3.4vw, 48px);
+  padding: 0 clamp(28px, 3.4vw, 44px);
   min-height: 64px;
-  border-radius: 999px;
-  transition: transform 120ms ease, background 160ms ease, color 160ms ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 120ms ease, background 160ms ease, color 160ms ease, border-color 160ms ease;
   touch-action: manipulation;
 }
-.game-btn:active { transform: scale(0.97); }
-.game-btn:focus-visible { outline: 3px solid var(--g-cream); outline-offset: 4px; }
+.game-btn:active { transform: scale(0.98); }
+.game-btn:focus-visible { outline: 2px solid var(--g-cream); outline-offset: 4px; }
 
-.game-btn--primary { background: var(--g-red); color: var(--g-cream); }
+.game-btn--primary { background: var(--g-red); color: #fff; }
 .game-btn--primary:disabled { background: rgba(194, 48, 31, 0.35); color: var(--g-cream-dim); cursor: default; }
 .game-btn--cream { background: var(--g-cream); color: var(--g-ink); }
 .game-btn--ghost {
   background: transparent;
-  color: var(--g-cream);
-  border: 1.5px solid rgba(240, 237, 230, 0.35);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.55);
 }
 .game-btn--text {
   background: transparent;
   color: var(--g-cream-dim);
-  text-transform: none;
-  letter-spacing: 0;
-  font-family: var(--g-sans);
-  font-weight: 500;
   min-height: 48px;
-  padding: 12px 20px;
+  padding: 0 16px;
+  font-size: 12px;
 }
 
 .game-actions {
@@ -193,16 +212,6 @@ body:has(.game-root) > div.fixed.bottom-0 { display: none; }
   padding: 12vh 6vw 30vh;
   text-align: center;
   gap: 0;
-}
-
-.attract__logo {
-  position: absolute;
-  top: clamp(20px, 4vh, 48px);
-  left: 50%;
-  transform: translateX(-50%);
-  height: clamp(28px, 4.5vh, 56px);
-  width: auto;
-  opacity: 0.92;
 }
 
 .attract__headline {
@@ -274,10 +283,10 @@ body:has(.game-root) > div.fixed.bottom-0 { display: none; }
 }
 
 .attract__cta-label {
-  font-family: var(--g-display);
-  font-weight: 700;
-  font-size: clamp(14px, 1.6vw, 20px);
-  letter-spacing: 0.18em;
+  font-family: var(--g-sans);
+  font-weight: 500;
+  font-size: clamp(12px, 1.3vw, 16px);
+  letter-spacing: 0.24em;
   text-transform: uppercase;
   animation: attract-blink 2.2s ease-in-out infinite;
 }
@@ -295,16 +304,12 @@ body:has(.game-root) > div.fixed.bottom-0 { display: none; }
 
 .step__back {
   position: fixed;
-  top: clamp(16px, 3vh, 32px);
-  left: clamp(16px, 3vw, 32px);
-}
-
-.step__brand {
-  position: fixed;
-  top: clamp(16px, 3vh, 32px);
-  right: clamp(16px, 3vw, 32px);
-  height: clamp(22px, 3.2vh, 36px);
-  opacity: 0.75;
+  top: clamp(18px, 3vh, 32px);
+  right: clamp(20px, 4vw, 48px);
+  z-index: 4;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: var(--g-cream);
+  letter-spacing: 0.18em;
 }
 
 .scanner {
@@ -312,7 +317,7 @@ body:has(.game-root) > div.fixed.bottom-0 { display: none; }
   width: min(100%, 520px, 48vh);
   aspect-ratio: 1;
   position: relative;
-  border-radius: 24px;
+  border-radius: 0;
   overflow: hidden;
   background: #151311;
   border: 1px solid rgba(240, 237, 230, 0.12);
@@ -321,7 +326,7 @@ body:has(.game-root) > div.fixed.bottom-0 { display: none; }
 .scanner__frame {
   position: absolute;
   inset: 12%;
-  border-radius: 18px;
+  border-radius: 0;
   pointer-events: none;
   box-shadow: 0 0 0 9999px rgba(11, 10, 9, 0.45);
 }
@@ -335,10 +340,10 @@ body:has(.game-root) > div.fixed.bottom-0 { display: none; }
   height: 44px;
   border: 3px solid var(--g-red-on-dark);
 }
-.scanner__frame::before { top: -3px; left: -3px; border-right: 0; border-bottom: 0; border-radius: 18px 0 0 0; }
-.scanner__frame::after { top: -3px; right: -3px; border-left: 0; border-bottom: 0; border-radius: 0 18px 0 0; }
-.scanner__frame > i::before { bottom: -3px; left: -3px; border-right: 0; border-top: 0; border-radius: 0 0 0 18px; }
-.scanner__frame > i::after { bottom: -3px; right: -3px; border-left: 0; border-top: 0; border-radius: 0 0 18px 0; }
+.scanner__frame::before { top: -3px; left: -3px; border-right: 0; border-bottom: 0; }
+.scanner__frame::after { top: -3px; right: -3px; border-left: 0; border-bottom: 0; }
+.scanner__frame > i::before { bottom: -3px; left: -3px; border-right: 0; border-top: 0; }
+.scanner__frame > i::after { bottom: -3px; right: -3px; border-left: 0; border-top: 0; }
 .scanner__line {
   position: absolute;
   left: 14%;
@@ -368,8 +373,7 @@ body:has(.game-root) > div.fixed.bottom-0 { display: none; }
   display: inline-block;
   margin-top: 20px;
   padding: 14px 28px;
-  border-radius: 999px;
-  border: 1px solid rgba(240, 237, 230, 0.25);
+  border: 1px solid rgba(240, 237, 230, 0.35);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: clamp(18px, 2.2vw, 30px);
   letter-spacing: 0.04em;
@@ -394,8 +398,7 @@ body:has(.game-root) > div.fixed.bottom-0 { display: none; }
   font: 500 clamp(20px, 2.2vw, 28px) var(--g-sans);
   color: var(--g-cream);
   background: #151311;
-  border: 1.5px solid rgba(240, 237, 230, 0.2);
-  border-radius: 16px;
+  border: 1px solid rgba(240, 237, 230, 0.3);
   padding: 18px 22px;
   outline: none;
 }
@@ -415,9 +418,8 @@ body:has(.game-root) > div.fixed.bottom-0 { display: none; }
   gap: 16px;
   align-items: start;
   padding: 18px 20px;
-  border-radius: 18px;
   background: #151311;
-  border: 1.5px solid rgba(240, 237, 230, 0.14);
+  border: 1px solid rgba(240, 237, 230, 0.22);
   cursor: pointer;
   font-size: clamp(16px, 1.6vw, 20px);
   line-height: 1.4;
@@ -426,7 +428,6 @@ body:has(.game-root) > div.fixed.bottom-0 { display: none; }
 .consent__box {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
   border: 2px solid var(--g-cream-dim);
   display: grid;
   place-items: center;
@@ -455,7 +456,6 @@ body:has(.game-root) > div.fixed.bottom-0 { display: none; }
   background: var(--g-cream);
   color: var(--g-ink);
   padding: clamp(24px, 4vw, 48px);
-  border-radius: 20px;
   text-align: left;
 }
 .terms__panel h2 { font-family: var(--g-serif); font-weight: 500; font-size: 36px; margin: 0 0 16px; }
@@ -516,7 +516,7 @@ body:has(.game-root) > div.fixed.bottom-0 { display: none; }
   color: var(--g-cream);
   pointer-events: none;
 }
-.wheel__hub span { padding-left: 0.22em; }
+.wheel__hub img { width: 58%; height: auto; }
 .wheel--won { animation: wheel-glow 1.6s ease-in-out infinite; cursor: default; }
 @keyframes wheel-glow {
   0%, 100% { filter: drop-shadow(0 0 0 rgba(220, 74, 50, 0)); }
@@ -565,8 +565,7 @@ body:has(.game-root) > div.fixed.bottom-0 { display: none; }
   margin: clamp(20px, 3vh, 36px) auto 0;
   display: inline-block;
   padding: clamp(18px, 2.4vh, 28px) clamp(28px, 4vw, 56px);
-  border: 2px solid var(--g-red-on-dark);
-  border-radius: 20px;
+  border: 1px solid var(--g-red-on-dark);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: clamp(34px, 5vw, 72px);
   letter-spacing: 0.1em;

@@ -109,8 +109,6 @@ export function QrStep({
       <button type="button" className="game-btn game-btn--text step__back" onClick={onBack}>
         ← {copy.identify.back}
       </button>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img className="step__brand" src="/images/arte-a-capela/logo.png" alt="Arte à Capela" />
       <p className="game-eyebrow">{copy.campaignName}</p>
       <h2 className="game-serif game-h2">{copy.identify.title}</h2>
       <p className="game-body">{copy.identify.body}</p>

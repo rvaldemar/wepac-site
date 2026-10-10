@@ -13,6 +13,7 @@ import {
 } from "@/lib/bilheteira/game/actions";
 import { EMAIL_RE } from "@/lib/bilheteira/game/email-mask";
 import { AttractScreen } from "./attract-screen";
+import { KioskHeader } from "./kiosk-header";
 import { Confetti } from "./confetti";
 import { PrizeWheel, type WheelHandle } from "./prize-wheel";
 import { QrStep } from "./qr-step";
@@ -149,6 +150,7 @@ export function GameClient({ locale }: { locale: string }) {
 
   return (
     <main className="game-stage">
+      <KioskHeader />
       {step.name === "identify" && (
         <QrStep
           copy={copy}

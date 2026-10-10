@@ -257,7 +257,10 @@ export function PrizeWheel({
         <path d="M20 52 L2 14 A18 18 0 1 1 38 14 Z" fill="url(#ptr)" stroke="#F0EDE6" strokeWidth="1.5" />
         <circle cx="20" cy="16" r="6" fill="#0B0A09" stroke="#F0EDE6" strokeWidth="1" />
       </svg>
-      <div className="wheel__hub" aria-hidden><span>WEPAC</span></div>
+      <div className="wheel__hub" aria-hidden>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo/wepac/wordmark-white.png" alt="" />
+      </div>
     </div>
   );
 }
