@@ -9,7 +9,8 @@ import { resetRateLimits } from "../rate-limit";
 
 function post(key: string, extra: Record<string, string> = {}) {
   const body = new URLSearchParams({ key, ...extra });
-  return new NextRequest("https://wepac.pt/api/bilheteira/game/unlock", {
+  // Internal bind address, as seen behind the reverse proxy.
+  return new NextRequest("http://0.0.0.0:3003/api/bilheteira/game/unlock", {
     method: "POST",
     body,
     headers: { "content-type": "application/x-www-form-urlencoded", "x-real-ip": "203.0.113.9" },
@@ -18,6 +19,7 @@ function post(key: string, extra: Record<string, string> = {}) {
 
 beforeEach(() => {
   resetRateLimits();
+  process.env.APP_URL = "https://wepac.pt";
   process.env.NEXTAUTH_SECRET = "test-secret";
   process.env.GAME_KIOSK_ACCESS_KEY = "kiosk-key-123";
 });

@@ -21,17 +21,21 @@ export async function POST(req: NextRequest) {
   const key = String(form?.get("key") ?? "");
   const locale = String(form?.get("locale") ?? "") === "en-US" ? "/en" : "";
   const gamePath = `${locale}/bilheteira/jogo`;
+  // Behind nginx req.url is the internal bind address (http://0.0.0.0:3003),
+  // so redirects must be built from the public origin.
+  const origin = process.env.APP_URL || req.nextUrl.origin;
+  const to = (path: string) => NextResponse.redirect(new URL(path, origin), 303);
 
   if (kioskMode() !== "gated") {
-    return NextResponse.redirect(new URL(gamePath, req.url), 303);
+    return to(gamePath);
   }
   if (!checkRateLimit(`game:unlock:${getVisitorIp(req)}`, 10, 15 * 60 * 1000)) {
     return NextResponse.json({ error: "Too many attempts" }, { status: 429 });
   }
   if (!keyMatches(key)) {
-    return NextResponse.redirect(new URL(`${gamePath}?unlock=failed`, req.url), 303);
+    return to(`${gamePath}?unlock=failed`);
   }
-  const res = NextResponse.redirect(new URL(gamePath, req.url), 303);
+  const res = to(gamePath);
   res.cookies.set(KIOSK_COOKIE_NAME, kioskCookieValue(), kioskCookieOptions);
   return res;
 }
