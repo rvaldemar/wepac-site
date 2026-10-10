@@ -59,12 +59,15 @@ export type GameCopy = {
   consent: {
     title: string;
     intro: string;
+    /** May contain `{terms}` and `{privacy}` placeholders rendered as links. */
     termsLabel: string;
-    termsLink: string;
+    termsInline: string;
     termsTitle: string;
     marketingLabel: string;
+    /** May contain a `{privacy}` placeholder rendered as a link. */
     marketingHint: string;
-    privacyLink: string;
+    privacyInline: string;
+    close: string;
     play: string;
     termsRequired: string;
     termsBody: string[];
@@ -255,12 +258,13 @@ const ptPT: GameCopy = {
   consent: {
     title: "Antes de girar",
     intro: "Lê e confirma. Demora dez segundos.",
-    termsLabel: "Li e aceito os termos do jogo e tomei conhecimento da informação de privacidade.",
-    termsLink: "Ver termos",
+    termsLabel: "Li e aceito os {terms} e tomei conhecimento da {privacy}.",
+    termsInline: "termos do jogo",
     termsTitle: "Termos do jogo e privacidade",
     marketingLabel: "Quero receber novidades da WEPAC e da Arte à Capela por email.",
-    marketingHint: "Opcional. Cada email que te enviarmos tem um link para deixares de receber.",
-    privacyLink: "Política de privacidade",
+    marketingHint: "Opcional. Cada email que te enviarmos tem um link para deixares de receber. Ver {privacy}.",
+    privacyInline: "política de privacidade",
+    close: "Fechar",
     play: "Girar a roda",
     termsRequired: "Precisas de aceitar os termos para jogar.",
     termsBody: [
@@ -409,12 +413,13 @@ const enUS: GameCopy = {
   consent: {
     title: "Before you spin",
     intro: "Read and confirm. It takes ten seconds.",
-    termsLabel: "I have read and accept the game terms and have read the privacy information.",
-    termsLink: "View terms",
+    termsLabel: "I have read and accept the {terms} and have read the {privacy}.",
+    termsInline: "game terms",
     termsTitle: "Game terms and privacy",
     marketingLabel: "I'd like news from WEPAC and Arte à Capela by email.",
-    marketingHint: "Optional. Every email we send has a link to stop receiving them.",
-    privacyLink: "Privacy policy",
+    marketingHint: "Optional. Every email we send has a link to stop receiving them. See the {privacy}.",
+    privacyInline: "privacy policy",
+    close: "Close",
     play: "Spin the wheel",
     termsRequired: "You need to accept the terms to play.",
     termsBody: [

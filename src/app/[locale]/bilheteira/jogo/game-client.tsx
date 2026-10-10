@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PrizeKind } from "@prisma/client";
 import { getGameCopy } from "@/i18n/copy/institutional-game";
+import { getPrivacyCopy } from "@/i18n/copy/institutional-privacy";
 import {
   lookupTicketForGame,
   playAction,
@@ -96,6 +97,13 @@ export function GameClient({ locale }: { locale: string }) {
     };
   }, [step.name, reset]);
 
+  // "Girar a roda" was already pressed on the consent step: spin straight away.
+  useEffect(() => {
+    if (step.name !== "wheel" || step.won) return;
+    void spin(step.identity, step.marketingConsent, step.ticket);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step.name]);
+
   const start = () => {
     requestFullscreen();
     setStep({ name: "identify" });
@@ -117,6 +125,8 @@ export function GameClient({ locale }: { locale: string }) {
     if (spinningRef.current) return;
     spinningRef.current = true;
     setBusy(true);
+    // The visitor already pressed "spin": start turning while the draw runs.
+    wheelRef.current?.start();
     try {
       const result = await playAction({ identity, termsAccepted: true, marketingConsent, locale });
       if (result.ok) {
@@ -124,6 +134,7 @@ export function GameClient({ locale }: { locale: string }) {
         // Hold on the lit wheel until the visitor claims the prize.
         setStep({ name: "wheel", identity, marketingConsent, ticket, won: result });
       } else if (result.error === "already_played") {
+        wheelRef.current?.stop();
         setStep({ name: "already_played", kind: result.kind, code: result.code, resent: result.resent, maskedEmail: result.maskedEmail, ticket });
       } else {
         const message =
@@ -136,9 +147,11 @@ export function GameClient({ locale }: { locale: string }) {
           : result.error === "invalid_phone" ? copy.details.invalidPhone
           : result.error === "terms_required" ? copy.consent.termsRequired
           : copy.errors.generic;
+        wheelRef.current?.stop();
         setStep({ name: "error", message });
       }
     } catch {
+      wheelRef.current?.stop();
       setStep({ name: "error", message: copy.errors.generic });
     } finally {
       spinningRef.current = false;
@@ -227,6 +240,7 @@ export function GameClient({ locale }: { locale: string }) {
       {step.name === "consent" && (
         <ConsentStep
           copy={copy}
+          locale={locale}
           termsOpen={termsOpen}
           setTermsOpen={setTermsOpen}
           onBack={() =>
@@ -244,7 +258,7 @@ export function GameClient({ locale }: { locale: string }) {
         <section className="step">
           <p className="game-eyebrow">{copy.campaignName}</p>
           <h2 className="game-serif game-h2">{copy.wheel.title}</h2>
-          <p className="game-body">{step.won ? copy.wheel.won : busy ? copy.wheel.spinning : copy.wheel.tapToSpin}</p>
+          <p className="game-body">{step.won ? copy.wheel.won : copy.wheel.spinning}</p>
           <PrizeWheel
             copy={copy}
             handleRef={wheelRef}
@@ -379,14 +393,36 @@ function DetailsStep({
   );
 }
 
+/** Replace `{terms}` / `{privacy}` placeholders in a copy string with inline links. */
+function withLinks(template: string, links: Record<string, React.ReactNode>) {
+  return template.split(/(\{[a-z]+\})/g).map((part, i) => {
+    const key = part.match(/^\{([a-z]+)\}$/)?.[1];
+    return key && key in links ? <span key={i}>{links[key]}</span> : part;
+  });
+}
+
+function InlineLink({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      className="consent__link"
+      onClick={(e) => { e.preventDefault(); e.stopPropagation(); onClick(); }}
+    >
+      {children}
+    </button>
+  );
+}
+
 function ConsentStep({
   copy,
+  locale,
   termsOpen,
   setTermsOpen,
   onBack,
   onPlay,
 }: {
   copy: ReturnType<typeof getGameCopy>;
+  locale: string;
   termsOpen: boolean;
   setTermsOpen: (v: boolean) => void;
   onBack: () => void;
@@ -394,7 +430,11 @@ function ConsentStep({
 }) {
   const [terms, setTerms] = useState(false);
   const [marketing, setMarketing] = useState(false);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
   const [error, setError] = useState("");
+  const privacy = getPrivacyCopy(locale);
+  const termsLink = <InlineLink onClick={() => setTermsOpen(true)}>{copy.consent.termsInline}</InlineLink>;
+  const privacyLink = <InlineLink onClick={() => setPrivacyOpen(true)}>{copy.consent.privacyInline}</InlineLink>;
   return (
     <section className="step">
       <button type="button" className="game-btn game-btn--text step__back" onClick={onBack}>← {copy.identify.back}</button>
@@ -405,19 +445,16 @@ function ConsentStep({
         <label className={`consent__row ${terms ? "consent__row--checked" : ""}`}>
           <input type="checkbox" checked={terms} onChange={(e) => { setTerms(e.target.checked); setError(""); }} />
           <span className="consent__box">{terms && <CheckIcon />}</span>
-          <span>{copy.consent.termsLabel}</span>
+          <span>{withLinks(copy.consent.termsLabel, { terms: termsLink, privacy: privacyLink })}</span>
         </label>
         <label className={`consent__row ${marketing ? "consent__row--checked" : ""}`}>
           <input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} />
           <span className="consent__box">{marketing && <CheckIcon />}</span>
           <span>
             {copy.consent.marketingLabel}
-            <span className="consent__hint">{copy.consent.marketingHint}</span>
+            <span className="consent__hint">{withLinks(copy.consent.marketingHint, { privacy: privacyLink })}</span>
           </span>
         </label>
-        <div className="consent__links">
-          <button type="button" className="game-btn game-btn--text" onClick={() => setTermsOpen(true)}>{copy.consent.termsLink}</button>
-        </div>
         {error && <div className="field__error" style={{ textAlign: "center" }}>{error}</div>}
       </div>
       <div className="game-actions">
@@ -434,7 +471,34 @@ function ConsentStep({
           <div className="terms__panel">
             <h2>{copy.consent.termsTitle}</h2>
             {copy.consent.termsBody.map((p) => <p key={p}>{p}</p>)}
-            <button type="button" className="game-btn game-btn--primary" onClick={() => setTermsOpen(false)}>OK</button>
+            <button type="button" className="game-btn game-btn--primary" onClick={() => setTermsOpen(false)}>{copy.consent.close}</button>
+          </div>
+        </div>
+      )}
+      {privacyOpen && (
+        <div className="terms" role="dialog" aria-modal="true">
+          <div className="terms__panel">
+            <h2>{privacy.title}</h2>
+            <p className="terms__meta">{privacy.updated}</p>
+            {privacy.sections.map((section) => (
+              <div key={section.title} className="terms__section">
+                <h3>{section.title}</h3>
+                {section.bullets && (
+                  <ul>
+                    {section.bullets.map((b) => (
+                      <li key={b.label}><strong>{b.label}</strong> {b.text}</li>
+                    ))}
+                  </ul>
+                )}
+                {section.paragraphs?.map((paragraph, index) => (
+                  <p key={paragraph}>
+                    {paragraph}
+                    {section.contactLink && index === 0 && " info@wepac.pt"}
+                  </p>
+                ))}
+              </div>
+            ))}
+            <button type="button" className="game-btn game-btn--primary" onClick={() => setPrivacyOpen(false)}>{copy.consent.close}</button>
           </div>
         </div>
       )}

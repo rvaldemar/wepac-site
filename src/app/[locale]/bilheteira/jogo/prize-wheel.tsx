@@ -7,11 +7,11 @@ import { WHEEL_SEGMENTS, segmentIndexesFor } from "@/lib/bilheteira/game/prizes"
 
 const SEGMENTS = WHEEL_SEGMENTS.length;
 const SEGMENT_ANGLE = (Math.PI * 2) / SEGMENTS;
-const SPIN_MS = 9500;
-const EXTRA_TURNS = 8;
+const SPIN_MS = 6500;
+const EXTRA_TURNS = 6;
 // After the wheel stops, the winning segment pulses; it keeps pulsing until
 // the step unmounts (the visitor taps "claim prize").
-const HIGHLIGHT_MS = 1600;
+const HIGHLIGHT_MS = 1300;
 
 // Arte à Capela brandbook palette only: beige, navy, red, black.
 const FILLS: Record<PrizeKind, { bg: string; fg: string }> = {
@@ -179,7 +179,17 @@ function shade(hex: string, amount: number): string {
   return `rgb(${rr},${gg},${bb})`;
 }
 
-export type WheelHandle = { spinTo: (kind: PrizeKind) => Promise<void> };
+export type WheelHandle = {
+  /** Free spin at a steady pace while the draw is in flight. */
+  start: () => void;
+  /** Stop a free spin (used when the draw fails). */
+  stop: () => void;
+  /** Decelerate onto the winning segment and pulse it. */
+  spinTo: (kind: PrizeKind) => Promise<void>;
+};
+
+const FREE_SPIN_RAD_PER_S = 11;
+const FREE_SPIN_RAMP_MS = 700;
 
 export function PrizeWheel({
   copy,
@@ -245,10 +255,36 @@ export function PrizeWheel({
     };
   }, [redraw]);
 
+  const freeSpinRef = useRef<number | null>(null);
   useEffect(() => {
+    const stopFree = () => {
+      if (freeSpinRef.current !== null) cancelAnimationFrame(freeSpinRef.current);
+      freeSpinRef.current = null;
+    };
     handleRef.current = {
+      start: () => {
+        if (freeSpinRef.current !== null) return;
+        setSpinning(true);
+        highlightRef.current = null;
+        let last = performance.now();
+        const startedAt = last;
+        const tick = (now: number) => {
+          if (!aliveRef.current) return;
+          const ramp = Math.min(1, (now - startedAt) / FREE_SPIN_RAMP_MS);
+          rotationRef.current += FREE_SPIN_RAD_PER_S * ramp * ramp * ((now - last) / 1000);
+          last = now;
+          redraw();
+          freeSpinRef.current = requestAnimationFrame(tick);
+        };
+        freeSpinRef.current = requestAnimationFrame(tick);
+      },
+      stop: () => {
+        stopFree();
+        setSpinning(false);
+      },
       spinTo: (kind) =>
         new Promise<void>((resolve) => {
+          stopFree();
           const candidates = segmentIndexesFor(kind);
           const target = candidates[Math.floor(Math.random() * candidates.length)];
           // Pointer is at the top; segment `i` is centred at rotation + i*angle.
@@ -293,6 +329,7 @@ export function PrizeWheel({
           requestAnimationFrame(frame);
         }),
     };
+    return stopFree;
   }, [handleRef, redraw]);
 
   return (
