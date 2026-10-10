@@ -250,6 +250,7 @@ export function GameClient({ locale }: { locale: string }) {
             won={!!step.won}
             onTap={() => void spin(step.identity, step.marketingConsent, step.ticket)}
           />
+          {step.won && <Confetti burstKey={step.won.code ?? step.won.validUntil} />}
           {step.won && (
             <div className="game-actions claim">
               <button
@@ -465,7 +466,6 @@ function ResultStep({
   const prize = copy.prizes[result.kind];
   return (
     <section className="step step--result">
-      <Confetti burstKey={result.code ?? result.validUntil} />
       <p className="game-eyebrow reveal reveal-1">{copy.result.eyebrow}</p>
       <h2 className="game-serif game-h1 reveal reveal-2" style={{ fontSize: "clamp(36px,6vw,88px)" }}>{prize.title}</h2>
       <p className="game-body reveal reveal-3">{prize.description}</p>
