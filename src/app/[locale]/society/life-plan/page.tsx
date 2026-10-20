@@ -59,7 +59,7 @@ export default async function LifePlanPage() {
               <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/50">
                 {copy.hero.eyebrow}
               </p>
-              <h1 className="mt-8 max-w-6xl text-balance font-barlow text-[clamp(3.45rem,7.8vw,8rem)] font-black uppercase leading-[0.84] tracking-[-0.045em]">
+              <h1 className="mt-8 max-w-6xl text-balance font-barlow text-[clamp(3.45rem,7.8vw,8rem)] font-black uppercase leading-[1.02] tracking-[-0.045em]">
                 {copy.hero.titleLines.map((line, index) => (
                   <span key={line}>
                     {line}
@@ -86,7 +86,7 @@ export default async function LifePlanPage() {
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-black/45">
                 {copy.entry.eyebrow}
               </p>
-              <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">
+              <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.04em] sm:text-7xl">
                 {copy.entry.title}
               </h2>
             </FadeIn>
@@ -107,7 +107,7 @@ export default async function LifePlanPage() {
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">
                 {copy.movement.eyebrow}
               </p>
-              <h2 className="mt-6 max-w-4xl text-balance font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">
+              <h2 className="mt-6 max-w-4xl text-balance font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.04em] sm:text-7xl">
                 {copy.movement.title}
               </h2>
             </FadeIn>
@@ -153,7 +153,7 @@ export default async function LifePlanPage() {
                 <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">
                   {copy.relevance.eyebrow}
                 </p>
-                <h2 className="mt-6 font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">
+                <h2 className="mt-6 font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.04em] sm:text-7xl">
                   {copy.relevance.title}
                 </h2>
               </div>
@@ -190,7 +190,7 @@ export default async function LifePlanPage() {
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-black/45">
                 {copy.outcomesSection.eyebrow}
               </p>
-              <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">
+              <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.04em] sm:text-7xl">
                 {copy.outcomesSection.title}
               </h2>
               <p className="mt-8 max-w-lg leading-relaxed text-black/60">
@@ -222,7 +222,7 @@ export default async function LifePlanPage() {
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">
                 {copy.privacy.eyebrow}
               </p>
-              <h2 className="mt-6 font-barlow text-4xl font-black uppercase leading-[0.95] tracking-[-0.035em] sm:text-5xl">
+              <h2 className="mt-6 font-barlow text-4xl font-black uppercase leading-[1.02] tracking-[-0.035em] sm:text-5xl">
                 {copy.privacy.title}
               </h2>
               <div className="mt-8 space-y-5 leading-relaxed text-white/60">
@@ -236,7 +236,7 @@ export default async function LifePlanPage() {
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">
                 {copy.limits.eyebrow}
               </p>
-              <h2 className="mt-6 font-barlow text-4xl font-black uppercase leading-[0.95] tracking-[-0.035em] sm:text-5xl">
+              <h2 className="mt-6 font-barlow text-4xl font-black uppercase leading-[1.02] tracking-[-0.035em] sm:text-5xl">
                 {copy.limits.title}
               </h2>
               <div className="mt-8 space-y-5 leading-relaxed text-white/60">
@@ -253,7 +253,7 @@ export default async function LifePlanPage() {
             <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-black/45">
               {copy.continuity.eyebrow}
             </p>
-            <h2 className="mt-7 text-balance font-barlow text-5xl font-black uppercase leading-[0.9] tracking-[-0.04em] sm:text-7xl">
+            <h2 className="mt-7 text-balance font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.04em] sm:text-7xl">
               {copy.continuity.title}
             </h2>
             <p className="mx-auto mt-8 max-w-2xl leading-relaxed text-black/60">
@@ -267,7 +267,7 @@ export default async function LifePlanPage() {
             <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/45">
               {copy.closing.eyebrow}
             </p>
-            <h2 className="mt-8 text-balance font-barlow text-5xl font-black uppercase leading-[0.88] tracking-[-0.045em] sm:text-7xl lg:text-8xl">
+            <h2 className="mt-8 text-balance font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.045em] sm:text-7xl lg:text-8xl">
               {copy.closing.title}
             </h2>
             <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-white/60">

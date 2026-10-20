@@ -59,7 +59,7 @@ function AcademyContent({ copy }: { copy: AcademySurfaceCopy }) {
             <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/55">
               {copy.hero.eyebrow}
             </p>
-            <h1 className="mt-8 text-balance font-barlow text-[clamp(3.5rem,8vw,8rem)] font-black uppercase leading-[0.84] tracking-[-0.05em]">
+            <h1 className="mt-8 text-balance font-barlow text-[clamp(3.5rem,8vw,8rem)] font-black uppercase leading-[1.02] tracking-[-0.05em]">
               {copy.hero.title}
             </h1>
             <p className="mt-9 max-w-2xl text-lg leading-relaxed text-white/70 sm:text-xl">
@@ -89,7 +89,7 @@ function AcademyContent({ copy }: { copy: AcademySurfaceCopy }) {
             <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-black/45">
               {copy.person.eyebrow}
             </p>
-            <h2 className="mt-6 font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">
+            <h2 className="mt-6 font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.04em] sm:text-7xl">
               {copy.person.titleLines.map((line, index) => (
                 <span key={line}>
                   {line}
@@ -118,7 +118,7 @@ function AcademyContent({ copy }: { copy: AcademySurfaceCopy }) {
             <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">
               {copy.stagesSection.eyebrow}
             </p>
-            <h2 className="mt-6 max-w-4xl font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">
+            <h2 className="mt-6 max-w-4xl font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.04em] sm:text-7xl">
               {copy.stagesSection.title}
             </h2>
           </FadeIn>
@@ -158,7 +158,7 @@ function AcademyContent({ copy }: { copy: AcademySurfaceCopy }) {
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">
                 {copy.curriculumSection.eyebrow}
               </p>
-              <h2 className="mt-6 font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">
+              <h2 className="mt-6 font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.04em] sm:text-7xl">
                 {copy.curriculumSection.title}
               </h2>
             </div>
@@ -197,7 +197,7 @@ function AcademyContent({ copy }: { copy: AcademySurfaceCopy }) {
             <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">
               {copy.firstDoor.eyebrow}
             </p>
-            <h2 className="mt-6 font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">
+            <h2 className="mt-6 font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.04em] sm:text-7xl">
               {copy.firstDoor.title}
             </h2>
             <p className="mt-7 text-2xl leading-snug text-white/80">
@@ -221,7 +221,7 @@ function AcademyContent({ copy }: { copy: AcademySurfaceCopy }) {
           <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-black/45">
             {copy.closing.eyebrow}
           </p>
-          <h2 className="mt-7 text-balance font-barlow text-5xl font-black uppercase leading-[0.9] tracking-[-0.04em] sm:text-7xl">
+          <h2 className="mt-7 text-balance font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.04em] sm:text-7xl">
             {copy.closing.title}
           </h2>
           <p className="mx-auto mt-8 max-w-2xl leading-relaxed text-black/60">

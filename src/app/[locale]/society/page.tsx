@@ -120,7 +120,7 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
               <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/70">
                 {copy.hero.eyebrow}
               </p>
-              <h1 className="mt-8 text-balance font-barlow text-[clamp(3.5rem,5.4vw,6.5rem)] font-black uppercase leading-[0.86] tracking-[-0.035em]">
+              <h1 className="mt-8 text-balance font-barlow text-[clamp(3.5rem,5.4vw,6.5rem)] font-black uppercase leading-[1.02] tracking-[-0.035em]">
                 {copy.hero.title}
               </h1>
               <p className="mt-10 max-w-2xl text-balance font-barlow text-2xl font-bold uppercase leading-tight sm:text-3xl">
@@ -182,7 +182,7 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
                 <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/65">
                   {copy.proposal.eyebrow} · {copy.proposal.title}
                 </p>
-                <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[0.9] tracking-[-0.04em] sm:text-7xl">
+                <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.04em] sm:text-7xl">
                   {copy.lifePlan.title}
                 </h2>
               </div>
@@ -221,7 +221,7 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
                 <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/65">
                   {copy.landing.integral.eyebrow}
                 </p>
-                <h3 className="mt-8 max-w-xl font-barlow text-4xl font-black uppercase leading-[0.92] tracking-[-0.035em]">
+                <h3 className="mt-8 max-w-xl font-barlow text-4xl font-black uppercase leading-[1.02] tracking-[-0.035em]">
                   {copy.landing.integral.title}
                 </h3>
                 <p className="mt-6 max-w-xl leading-relaxed text-white/75">
@@ -242,7 +242,7 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
                 <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/65">
                   {copy.landing.values.eyebrow}
                 </p>
-                <h3 className="mt-8 max-w-xl font-barlow text-4xl font-black uppercase leading-[0.92] tracking-[-0.035em]">
+                <h3 className="mt-8 max-w-xl font-barlow text-4xl font-black uppercase leading-[1.02] tracking-[-0.035em]">
                   {copy.landing.values.title}
                 </h3>
                 {/* «A WEPAC» now lives on this page, so the values are the
@@ -259,7 +259,7 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
           <div className="mx-auto max-w-[1760px]">
             <FadeIn className="max-w-3xl">
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-black/65">{copy.landing.routesEyebrow}</p>
-              <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[0.9] tracking-[-0.04em] sm:text-7xl">
+              <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.04em] sm:text-7xl">
                 {copy.landing.routesTitle}
               </h2>
               <p className="mt-7 text-lg leading-relaxed text-black/80">
@@ -324,7 +324,7 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
           <div className="mx-auto grid max-w-[1760px] gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
             <FadeIn>
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/65">{copy.platform.eyebrow}</p>
-              <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[0.9] tracking-[-0.04em] sm:text-7xl">
+              <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.04em] sm:text-7xl">
                 {copy.platform.title}
               </h2>
             </FadeIn>
@@ -349,7 +349,7 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
             <FadeIn className="mt-14 grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
               <div>
                 <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/65">{copy.proof.eyebrow}</p>
-                <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">{copy.proof.title}</h2>
+                <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.04em] sm:text-7xl">{copy.proof.title}</h2>
               </div>
               <div>
                 <p className="text-xl leading-relaxed text-white/85">{copy.proof.body}</p>
@@ -366,7 +366,7 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
           <div className="absolute inset-0 -z-10 bg-black/65" />
           <FadeIn className="mx-auto max-w-5xl text-center">
             <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/70">{copy.closing.eyebrow}</p>
-            <h2 className="mt-8 text-balance font-barlow text-5xl font-black uppercase leading-[0.88] tracking-[-0.045em] sm:text-7xl lg:text-8xl">{copy.closing.title}</h2>
+            <h2 className="mt-8 text-balance font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.045em] sm:text-7xl lg:text-8xl">{copy.closing.title}</h2>
             <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-white/80">{copy.closing.body}</p>
             <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
               <Link href={intakeHref} className="inline-flex min-h-14 items-center justify-center bg-white px-7 text-xs font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-wepac-gray">

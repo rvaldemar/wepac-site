@@ -24,15 +24,17 @@ export default async function CompanhiaDeArtesPage() {
   return (
     <>
       <section className="relative isolate min-h-[820px] overflow-hidden border-b border-white/10 px-5 pb-20 pt-32 sm:px-8 lg:px-12 lg:pt-40">
-        <div className="absolute inset-0 -z-20">
+        {/* Text-free crop: the original artwork has the headline baked in. */}
+        <div className="absolute inset-y-0 right-0 -z-20 w-full sm:w-[60%] lg:w-[45%]">
           <Image
-            src="/images/society/violin.jpg"
+            src="/images/society/violin-clean.jpg"
             alt=""
             fill
             priority
             sizes="100vw"
             className="object-cover object-center opacity-65"
           />
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/30 to-transparent" />
         </div>
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black via-black/80 to-black/20" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black via-transparent to-black/35" />
@@ -42,7 +44,7 @@ export default async function CompanhiaDeArtesPage() {
             <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/55">
               {copy.hero.eyebrow}
             </p>
-            <h1 className="mt-8 text-balance font-barlow text-[clamp(3.5rem,8vw,8rem)] font-black uppercase leading-[0.84] tracking-[-0.05em]">
+            <h1 className="mt-8 text-balance font-barlow text-[clamp(3.5rem,8vw,8rem)] font-black uppercase leading-[1.02] tracking-[-0.04em]">
               {copy.hero.title}
             </h1>
             <p className="mt-9 max-w-2xl text-lg leading-relaxed text-white/70 sm:text-xl">
@@ -58,7 +60,7 @@ export default async function CompanhiaDeArtesPage() {
             <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-black/45">
               {copy.company.eyebrow}
             </p>
-            <h2 className="mt-6 font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">
+            <h2 className="mt-6 font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.04em] sm:text-7xl">
               {copy.company.titleLines.map((line, index) => (
                 <span key={line}>
                   {line}
@@ -130,7 +132,7 @@ export default async function CompanhiaDeArtesPage() {
                 <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/60">
                   {copy.arteACapela.eyebrow}
                 </p>
-                <h2 className="mt-4 font-barlow text-5xl font-black uppercase leading-[0.9] tracking-[-0.04em] sm:text-7xl">
+                <h2 className="mt-4 font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.04em] sm:text-7xl">
                   Arte à Capela
                 </h2>
                 <p className="mt-5 max-w-lg leading-relaxed text-white/70">
@@ -152,7 +154,7 @@ export default async function CompanhiaDeArtesPage() {
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">
                 {copy.circulation.eyebrow}
               </p>
-              <h2 className="mt-6 font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">
+              <h2 className="mt-6 font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.04em] sm:text-7xl">
                 {copy.circulation.title}
               </h2>
             </div>
@@ -191,7 +193,7 @@ export default async function CompanhiaDeArtesPage() {
           <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-black/45">
             {copy.closing.eyebrow}
           </p>
-          <h2 className="mt-7 text-balance font-barlow text-5xl font-black uppercase leading-[0.9] tracking-[-0.04em] sm:text-7xl">
+          <h2 className="mt-7 text-balance font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.04em] sm:text-7xl">
             {copy.closing.title}
           </h2>
           <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">

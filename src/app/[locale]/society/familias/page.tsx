@@ -136,7 +136,7 @@ export default async function FamiliesPage() {
               <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/50">
                 {copy.hero.eyebrow}
               </p>
-              <h1 className="mt-8 max-w-5xl text-balance font-barlow text-[clamp(3.7rem,8vw,8.2rem)] font-black uppercase leading-[0.84] tracking-[-0.045em]">
+              <h1 className="mt-8 max-w-5xl text-balance font-barlow text-[clamp(3.7rem,8vw,8.2rem)] font-black uppercase leading-[1.02] tracking-[-0.045em]">
                 {copy.hero.title}
               </h1>
               <p className="mt-10 max-w-2xl text-balance text-lg leading-relaxed text-white/68 sm:text-xl">
@@ -171,7 +171,7 @@ export default async function FamiliesPage() {
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-black/45">
                 {copy.firstTeam.eyebrow}
               </p>
-              <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">
+              <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.04em] sm:text-7xl">
                 {copy.firstTeam.title}
               </h2>
             </FadeIn>
@@ -192,7 +192,7 @@ export default async function FamiliesPage() {
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">
                 {copy.moments.eyebrow}
               </p>
-              <h2 className="mt-6 max-w-4xl text-balance font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">
+              <h2 className="mt-6 max-w-4xl text-balance font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.04em] sm:text-7xl">
                 {copy.moments.title}
               </h2>
             </FadeIn>
@@ -228,7 +228,7 @@ export default async function FamiliesPage() {
                 <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">
                   {copy.scales.eyebrow}
                 </p>
-                <h2 className="mt-6 font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">
+                <h2 className="mt-6 font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.04em] sm:text-7xl">
                   {copy.scales.title}
                 </h2>
               </div>
@@ -282,7 +282,7 @@ export default async function FamiliesPage() {
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-black/45">
                 {copy.ages.eyebrow}
               </p>
-              <h2 className="mt-6 max-w-5xl text-balance font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">
+              <h2 className="mt-6 max-w-5xl text-balance font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.04em] sm:text-7xl">
                 {copy.ages.title}
               </h2>
               <p className="mt-8 max-w-2xl leading-relaxed text-black/60">
@@ -335,7 +335,7 @@ export default async function FamiliesPage() {
                 <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45">
                   {copy.processSection.eyebrow}
                 </p>
-                <h2 className="mt-6 font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">
+                <h2 className="mt-6 font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.04em] sm:text-7xl">
                   {copy.processSection.title}
                 </h2>
               </div>
@@ -370,7 +370,7 @@ export default async function FamiliesPage() {
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-black/45">
                 {copy.privacy.eyebrow}
               </p>
-              <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-7xl">
+              <h2 className="mt-6 text-balance font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.04em] sm:text-7xl">
                 {copy.privacy.title}
               </h2>
             </FadeIn>
@@ -394,7 +394,7 @@ export default async function FamiliesPage() {
             <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/45">
               {copy.closing.eyebrow}
             </p>
-            <h2 className="mt-8 text-balance font-barlow text-5xl font-black uppercase leading-[0.88] tracking-[-0.045em] sm:text-7xl lg:text-8xl">
+            <h2 className="mt-8 text-balance font-barlow text-5xl font-black uppercase leading-[1.02] tracking-[-0.045em] sm:text-7xl lg:text-8xl">
               {copy.closing.title}
             </h2>
             <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-white/60">
