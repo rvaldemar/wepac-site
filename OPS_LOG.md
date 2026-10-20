@@ -4,6 +4,16 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-10-20 — Bilheteira com navbar e footer do site (DEPLOYADO)
+
+**Release:** `1e08ea0c692b`. Páginas públicas da bilheteira (índice, evento,
+pedido, sucesso de checkout) usam o Header e o Footer do site, com uma barra
+«WEPAC Bilheteira» por baixo da navbar; o menu do site ganhou
+«Bilheteira»/«Tickets». Admin mantém a barra compacta. Smoke: footer e link
+presentes em /bilheteira, landing do festival e /en/bilheteira.
+
+---
+
 ## 2026-10-20 — Bilheteira: cartões com identidade do evento e versão inglesa (DEPLOYADO)
 
 **Releases:** `159a45c16187` (cartões do índice e da promoção cruzada seguem o
