@@ -46,7 +46,10 @@ export function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-wepac-black/90 backdrop-blur-md">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-        <Link href="/" className="font-barlow text-xl font-bold tracking-tight text-wepac-white">
+        <Link
+          href={isCompanhia ? "/companhia-de-artes" : "/"}
+          className="font-barlow text-xl font-bold tracking-tight text-wepac-white"
+        >
           wepac
           {isCompanhia && (
             <span className="ml-1.5 font-inter text-sm font-normal tracking-normal text-wepac-white/60">

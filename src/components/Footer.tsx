@@ -1,8 +1,10 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { getLegalCopy } from "@/i18n/copy/institutional-legal";
 import { Link } from "@/i18n/navigation";
 
 export async function Footer() {
   const t = await getTranslations("SiteFooter");
+  const legal = getLegalCopy(await getLocale());
 
   return (
     <footer className="bg-wepac-black border-t border-white/10">
@@ -66,7 +68,7 @@ export async function Footer() {
               <li>
                 <Link
                   href="/society"
-                  className="text-xs text-wepac-white/50 transition-colors hover:text-wepac-white/60"
+                  className="text-sm text-wepac-white/50 transition-colors hover:text-wepac-white"
                 >
                   Society
                 </Link>
@@ -74,7 +76,7 @@ export async function Footer() {
               <li>
                 <Link
                   href="/wepacker/login"
-                  className="text-xs text-wepac-white/50 transition-colors hover:text-wepac-white/60"
+                  className="text-sm font-semibold text-wepac-white/80 transition-colors hover:text-wepac-white"
                 >
                   Login WEPACKER
                 </Link>
@@ -98,15 +100,32 @@ export async function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-white/10 pt-8 flex flex-col items-center gap-2">
-          <Link
-            href="/privacidade"
-            className="text-xs text-wepac-white/50 transition-colors hover:text-wepac-white/60"
-          >
-            {t("privacy")}
-          </Link>
+        <div className="mt-12 border-t border-white/10 pt-8 flex flex-col items-center gap-3">
+          <nav aria-label={legal.footer.privacy} className="flex flex-wrap justify-center gap-x-5 gap-y-2">
+            {[
+              { name: legal.footer.privacy, href: "/privacidade" },
+              { name: legal.footer.cookies, href: "/cookies" },
+              { name: legal.footer.terms, href: "/termos" },
+            ].map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="text-xs text-wepac-white/50 transition-colors hover:text-wepac-white"
+              >
+                {item.name}
+              </Link>
+            ))}
+            <a
+              href="https://www.livroreclamacoes.pt/Inicio/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-wepac-white/50 transition-colors hover:text-wepac-white"
+            >
+              {legal.footer.complaints}
+            </a>
+          </nav>
           <p className="text-xs text-wepac-white/50">
-            &copy; {new Date().getFullYear()} WEPAC. {t("rights")}
+            &copy; {new Date().getFullYear()} WEPAC — Companhia de Artes, Lda · NIPC 518 267 342. {t("rights")}
           </p>
         </div>
       </div>

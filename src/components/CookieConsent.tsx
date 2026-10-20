@@ -34,6 +34,13 @@ export function hasMarketingConsent(): boolean {
   }
 }
 
+// Clears the stored choice so the banner asks again (Cookie Policy page).
+export function resetCookieConsent() {
+  localStorage.removeItem(COOKIE_CONSENT_KEY);
+  listeners.forEach((listener) => listener());
+  window.dispatchEvent(new Event(COOKIE_CONSENT_EVENT));
+}
+
 function setConsent(value: "accepted" | "rejected") {
   localStorage.setItem(COOKIE_CONSENT_KEY, value);
   listeners.forEach((listener) => listener());

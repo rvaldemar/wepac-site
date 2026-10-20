@@ -30,6 +30,8 @@ const entries: SitemapEntry[] = [
   { path: "/artist", changeFrequency: "weekly", priority: 0.8 },
   { path: "/contacto", changeFrequency: "monthly", priority: 0.5 },
   { path: "/privacidade", changeFrequency: "yearly", priority: 0.2 },
+  { path: "/cookies", changeFrequency: "yearly", priority: 0.2 },
+  { path: "/termos", changeFrequency: "yearly", priority: 0.2 },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

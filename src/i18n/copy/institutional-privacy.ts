@@ -21,12 +21,12 @@ const ptPT: PrivacyCopy = {
   metadataDescription:
     "Política de privacidade e proteção de dados da WEPAC.",
   title: "Política de Privacidade",
-  updated: "Última atualização: 22 de julho de 2026",
+  updated: "Última atualização: 20 de outubro de 2026",
   sections: [
     {
       title: "1. Responsável pelo tratamento",
       paragraphs: [
-        "WEPAC — Companhia de Artes, com sede em Carcavelos, Portugal. Para questões de privacidade ou para exercer direitos, contacta-nos através de",
+        "WEPAC — Companhia de Artes, Lda (NIPC 518 267 342), com sede em Carcavelos, Cascais, Portugal. Para questões de privacidade ou para exercer direitos, contacta-nos através de",
       ],
       contactLink: true,
     },
@@ -62,6 +62,22 @@ const ptPT: PrivacyCopy = {
           text: "cookies estritamente necessários, segurança e registos operacionais sem conteúdo privado sempre que possível.",
         },
         {
+          label: "Bilheteira:",
+          text: "nome, email e telefone do comprador, bilhete, lugares, valor, estado do pagamento e registo de entrada (check-in). Os pagamentos são processados pela Stripe; a WEPAC não recebe nem guarda os dados do cartão.",
+        },
+        {
+          label: "Candidaturas e Montra do Festival:",
+          text: "trabalho candidatado, nome, contacto e resultado da seleção. A publicação na Montra do Festival e o vídeo dos selecionados dependem do consentimento dado no formulário de candidatura.",
+        },
+        {
+          label: "Pedidos de acreditação e lista de espera:",
+          text: "nome, email, telefone, estrutura, função, site e mensagem do pedido, decisão da equipa; email para aviso de abertura de bilhetes.",
+        },
+        {
+          label: "Medição de campanhas:",
+          text: "parâmetros de campanha (UTM) associados à compra e, só com aceitação de cookies de marketing, eventos do Meta Pixel (visita, início de compra, compra).",
+        },
+        {
           label: "Support Preview:",
           text: "identificadores do Admin, Person e Session, finalidade estruturada, digest keyed da referência externa, timestamps e eventos de acesso sem o conteúdo projetado.",
         },
@@ -88,6 +104,7 @@ const ptPT: PrivacyCopy = {
     {
       title: "6. Conservação",
       paragraphs: [
+        "Dados de bilhetes e pagamentos são conservados pelo prazo exigido pela lei fiscal e contabilística. Candidaturas e a Montra do Festival ficam disponíveis até 12 meses após o evento, salvo retirada do consentimento; pedidos de acreditação até 12 meses após o evento; a lista de espera até ao fim das vendas do respetivo bilhete.",
         "Pedidos comerciais e candidaturas são conservados enquanto houver seguimento legítimo e, em regra, não mais de 24 meses após o último contacto. Dados de conta, My Journey, relações e Sessions permanecem enquanto a conta ou relação correspondente estiver ativa e pelo período adicional necessário para resolver pedidos, segurança ou obrigações legais. Atualmente não existe um prazo automático separado para Transcripts existentes; por isso novos attachments estão bloqueados até esse prazo ser definido e aplicado. Um pedido de apagamento é avaliado sem demora indevida, ressalvadas obrigações de conservação e direitos de terceiros.",
         "No Support Preview, o digest da referência fica elegível para redaction quando o grant de 15 minutos expira; o grant é apagado após 30 dias e o audit event sem conteúdo após 365 dias. Num pedido de apagamento, grants ativos são removidos e as referências diretas à Person são anonymized antes da eliminação possível da conta.",
       ],
@@ -95,7 +112,7 @@ const ptPT: PrivacyCopy = {
     {
       title: "7. Destinatários e prestadores",
       paragraphs: [
-        "O acesso dentro da WEPAC é limitado à função e à relação necessárias. Podemos usar prestadores de alojamento, email, calendarização, autenticação e AI como subcontratantes. O Wessex chat pode enviar a mensagem necessária ao fornecedor AI configurado. O Session Debrief não envia Transcripts para o Agents Hub enquanto estiver desativado. Não vendemos dados pessoais. Transferências internacionais, quando existam, ficam sujeitas às salvaguardas aplicáveis e podem ser esclarecidas através do contacto acima.",
+        "O acesso dentro da WEPAC é limitado à função e à relação necessárias. Podemos usar prestadores de alojamento, email, calendarização, autenticação, pagamentos (Stripe) e AI como subcontratantes. Só com aceitação de cookies de marketing, dados de navegação e compra são partilhados com a Meta (Meta Pixel) para medir campanhas. O Wessex chat pode enviar a mensagem necessária ao fornecedor AI configurado. O Session Debrief não envia Transcripts para o Agents Hub enquanto estiver desativado. Não vendemos dados pessoais. Transferências internacionais, quando existam, ficam sujeitas às salvaguardas aplicáveis e podem ser esclarecidas através do contacto acima.",
       ],
     },
     {
@@ -109,7 +126,7 @@ const ptPT: PrivacyCopy = {
     {
       title: "9. Cookies e segurança",
       paragraphs: [
-        "Usamos cookies necessários para autenticação e funcionamento. Não usamos estes cookies para publicidade comportamental. Aplicamos controlos técnicos e organizativos proporcionais, incluindo HTTPS, autorização por recurso e limitação do conteúdo incluído em logs. Nenhuma medida elimina totalmente o risco; incidentes são tratados de acordo com as obrigações aplicáveis.",
+        "Usamos cookies necessários para autenticação e funcionamento. Cookies de marketing (Meta Pixel) só são usados se os aceitares, e podes mudar a escolha a qualquer momento na Política de Cookies (wepac.pt/cookies). Aplicamos controlos técnicos e organizativos proporcionais, incluindo HTTPS, autorização por recurso e limitação do conteúdo incluído em logs. Nenhuma medida elimina totalmente o risco; incidentes são tratados de acordo com as obrigações aplicáveis.",
         "O Support Preview de uma Session é read-only e não troca identidade, JWT ou role. O organizer exato só pode projetar um attendee explícito da própria Session. Admin support exige password re-authentication, reason code, ticket digest e um cookie assinado e limitado àquela Session/Person; a projeção Admin não inclui meeting URL, Transcript, Debrief, discussion points nem private notes.",
       ],
     },
@@ -120,12 +137,12 @@ const enUS: PrivacyCopy = {
   metadataTitle: "Privacy Policy",
   metadataDescription: "WEPAC's privacy and data-protection policy.",
   title: "Privacy Policy",
-  updated: "Last updated: July 22, 2026",
+  updated: "Last updated: October 20, 2026",
   sections: [
     {
       title: "1. Data controller",
       paragraphs: [
-        "WEPAC — Companhia de Artes, based in Carcavelos, Portugal. For privacy questions or to exercise your rights, contact us at",
+        "WEPAC — Companhia de Artes, Lda (company no. 518 267 342), based in Carcavelos, Cascais, Portugal. For privacy questions or to exercise your rights, contact us at",
       ],
       contactLink: true,
     },
@@ -161,6 +178,22 @@ const enUS: PrivacyCopy = {
           text: "strictly necessary cookies, security information and operational records without private content wherever possible.",
         },
         {
+          label: "Ticketing:",
+          text: "buyer name, email and phone, ticket, seats, amount, payment status and entry record (check-in). Payments are processed by Stripe; WEPAC does not receive or store card details.",
+        },
+        {
+          label: "Submissions and Festival Showcase:",
+          text: "submitted work, name, contact and selection result. Publication in the Festival Showcase and the video of selected artists depend on the consent given in the submission form.",
+        },
+        {
+          label: "Accreditation requests and waitlist:",
+          text: "name, email, phone, organisation, role, website and message, the team's decision; email to be notified when tickets open.",
+        },
+        {
+          label: "Campaign measurement:",
+          text: "campaign parameters (UTM) linked to the purchase and, only if marketing cookies are accepted, Meta Pixel events (visit, checkout start, purchase).",
+        },
+        {
           label: "Support Preview:",
           text: "Admin, Person and Session identifiers, structured purpose, a keyed digest of the external reference, timestamps and access events without the projected content.",
         },
@@ -187,6 +220,7 @@ const enUS: PrivacyCopy = {
     {
       title: "6. Retention",
       paragraphs: [
+        "Ticket and payment data is retained for the period required by tax and accounting law. Submissions and the Festival Showcase remain available for up to 12 months after the event unless consent is withdrawn; accreditation requests for up to 12 months after the event; the waitlist until sales of the related ticket end.",
         "Commercial enquiries and applications are retained while legitimate follow-up continues and, as a rule, for no longer than 24 months after the last contact. Account, My Journey, relationship and Session data remains while the corresponding account or relationship is active and for any additional period needed to resolve requests, security matters or legal obligations. There is currently no separate automatic retention period for existing Transcripts; new attachments therefore remain blocked until that period is defined and applied. Erasure requests are assessed without undue delay, subject to retention obligations and third-party rights.",
         "In Support Preview, the reference digest becomes eligible for redaction when the 15-minute grant expires; the grant is deleted after 30 days and the content-free audit event after 365 days. When erasure is requested, active grants are removed and direct references to the Person are anonymized before the account can be deleted.",
       ],
@@ -194,7 +228,7 @@ const enUS: PrivacyCopy = {
     {
       title: "7. Recipients and service providers",
       paragraphs: [
-        "Access within WEPAC is limited to the necessary role and relationship. We may use hosting, email, scheduling, authentication and AI providers as processors. Wessex chat may send the necessary message to the configured AI provider. Session Debrief does not send Transcripts to Agents Hub while disabled. We do not sell personal data. International transfers, where they occur, are subject to applicable safeguards and can be clarified through the contact above.",
+        "Access within WEPAC is limited to the necessary role and relationship. We may use hosting, email, scheduling, authentication, payment (Stripe) and AI providers as processors. Only if marketing cookies are accepted, browsing and purchase data is shared with Meta (Meta Pixel) to measure campaigns. Wessex chat may send the necessary message to the configured AI provider. Session Debrief does not send Transcripts to Agents Hub while disabled. We do not sell personal data. International transfers, where they occur, are subject to applicable safeguards and can be clarified through the contact above.",
       ],
     },
     {
@@ -208,7 +242,7 @@ const enUS: PrivacyCopy = {
     {
       title: "9. Cookies and security",
       paragraphs: [
-        "We use cookies required for authentication and operation. We do not use these cookies for behavioural advertising. We apply proportionate technical and organisational controls, including HTTPS, resource-level authorisation and limits on content included in logs. No measure eliminates all risk; incidents are handled in accordance with applicable obligations.",
+        "We use cookies required for authentication and operation. Marketing cookies (Meta Pixel) are only used if you accept them, and you can change your choice at any time in the Cookie Policy (wepac.pt/cookies). We apply proportionate technical and organisational controls, including HTTPS, resource-level authorisation and limits on content included in logs. No measure eliminates all risk; incidents are handled in accordance with applicable obligations.",
         "A Session Support Preview is read-only and does not exchange identity, JWT or role. The exact organizer can project only an explicit attendee in their own Session. Admin support requires password re-authentication, a reason code, ticket digest and a signed cookie limited to that Session and Person; the Admin projection excludes the meeting URL, Transcript, Debrief, discussion points and private notes.",
       ],
     },

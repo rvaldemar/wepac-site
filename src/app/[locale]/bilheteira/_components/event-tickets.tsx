@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { reserveAction } from "@/lib/bilheteira/reserve-action";
 import { joinWaitlistAction } from "@/lib/bilheteira/request-actions";
 import { getBilheteiraCopy, type BilheteiraCopy } from "@/i18n/copy/institutional-bilheteira";
+import { getLegalCopy } from "@/i18n/copy/institutional-legal";
 import type { TierOffer } from "@/lib/bilheteira/offers";
 import { formatEuro, formatOfferPrice, stateLabel } from "./offer-format";
 import { readUtmRaw, trackPixel, UTM_KEYS } from "./tracking";
@@ -33,6 +34,7 @@ export function EventTickets({
   // Copy holds formatter functions, which cannot cross the server/client
   // boundary as props; resolve it here from the locale instead.
   const copy = getBilheteiraCopy(locale);
+  const legal = getLegalCopy(locale);
   const purchasable = offers.filter((o) => o.state === "on_sale");
   const initial =
     purchasable.find((o) => o.id === preselectedId) ??
@@ -185,7 +187,11 @@ export function EventTickets({
 
               <p className="text-[12px] leading-relaxed text-[var(--ev-faint)]">
                 {total > 0 && <>{copy.checkout.discountCodes} </>}
-                {copy.checkout.privacyLead}{" "}
+                {legal.checkoutConsent.lead}{" "}
+                <Link href="/termos" className="underline">
+                  {legal.checkoutConsent.terms}
+                </Link>
+                . {copy.checkout.privacyLead}{" "}
                 <Link href="/privacidade" className="underline">
                   {copy.checkout.privacyLink}
                 </Link>
