@@ -7,8 +7,9 @@
  *
  * Usage:
  *   DATABASE_URL=... npx tsx scripts/seed-festival-21-nov-2026.ts
+ * Artist phases have no quantity: the team opens the next phase by closing
+ * the current one in the admin (Estado → «Vendas encerradas» or «Esgotado»).
  * Options (env):
- *   EARLY_BIRD_QTY, SECOND_WAVE_QTY  seats per artist phase (default 20 / 20)
  *   CAPACITY                         chapel capacity for the evening (default 80)
  *   KEY_PLAYERS_QTY                  accreditations to approve (default 20)
  */
@@ -75,7 +76,7 @@ function tiers(): TierSeed[] {
       phaseOrder: 1,
       priceCents: 3500,
       referencePriceCents: 7500,
-      quantity: qty("EARLY_BIRD_QTY", 20),
+      quantity: null,
       salesEndAt: ARTIST_SALES_END,
       section: "Festival · dia e noite",
       featured: true,
@@ -89,9 +90,9 @@ function tiers(): TierSeed[] {
       phaseOrder: 2,
       priceCents: 5000,
       referencePriceCents: 7500,
-      quantity: qty("SECOND_WAVE_QTY", 20),
+      quantity: null,
       salesEndAt: ARTIST_SALES_END,
-      lockedNote: "Abre quando o Early Bird esgotar.",
+      lockedNote: "Abre quando o Early Bird fechar.",
       waitlistEnabled: true,
       section: "Festival · dia e noite",
       description: ARTIST_DESCRIPTION,
@@ -104,7 +105,7 @@ function tiers(): TierSeed[] {
       phaseOrder: 3,
       priceCents: 7500,
       salesEndAt: ARTIST_SALES_END,
-      lockedNote: "Abre quando o Second Wave esgotar.",
+      lockedNote: "Abre quando o Second Wave fechar.",
       waitlistEnabled: true,
       section: "Festival · dia e noite",
       description: ARTIST_DESCRIPTION,

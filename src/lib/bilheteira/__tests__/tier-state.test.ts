@@ -117,6 +117,19 @@ describe("computeTierState", () => {
       expect(computeTierState(second, c).state).toBe("on_sale");
     });
 
+    it("phases without quantity are handed over by closing them manually", () => {
+      const manualEarly = { ...early, quantity: null };
+      const manualSecond = { ...second, quantity: null };
+      const open = ctx([manualEarly, manualSecond, last], { eb: 40 });
+      expect(computeTierState(manualEarly, open).state).toBe("on_sale");
+      expect(computeTierState(manualSecond, open).state).toBe("locked");
+      const closedEarly = { ...manualEarly, stateOverride: "closed" as const };
+      const c = ctx([closedEarly, manualSecond, last], { eb: 40 });
+      expect(computeTierState(closedEarly, c).state).toBe("closed");
+      expect(computeTierState(manualSecond, c).state).toBe("on_sale");
+      expect(computeTierState(last, c).state).toBe("locked");
+    });
+
     it("a phase closed by date does not unlock the next one", () => {
       const end = new Date("2026-10-27T00:00:00Z");
       const closedEarly = { ...early, salesEndAt: end };

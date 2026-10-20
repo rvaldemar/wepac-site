@@ -92,11 +92,12 @@ export function minimumSeatsPerPurchase(tier: TierStateInput): number {
   return 1;
 }
 
-// A phase counts as exhausted for the next one only when it really sold out
-// (or was forced to sold out): a phase closed by date does not unlock the
-// following one.
+// A phase hands over to the next one when it sold out, or when the team
+// closed it by hand (forced sold out or forced closed). Phases without a
+// quantity are therefore opened and closed manually. A phase closed by date
+// does not unlock the following one.
 function phaseExhausted(tier: TierStateInput, ctx: TierStateContext): boolean {
-  if (tier.stateOverride === "sold_out") return true;
+  if (tier.stateOverride === "sold_out" || tier.stateOverride === "closed") return true;
   const remaining = tierRemaining(tier, ctx.usage);
   return remaining != null && remaining < minimumSeatsPerPurchase(tier);
 }

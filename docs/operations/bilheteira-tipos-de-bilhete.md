@@ -7,7 +7,7 @@
 | Individual | Preço por lugar; o comprador escolhe 1 a N lugares | Público 25 €, Concerto 10 € |
 | Pacote | Preço fixo por pacote com N lugares; conta N lugares na lotação e no check-in | Concerto a Dois (15 € / 2), Família (20 € / 4) |
 | Grupo | Preço por lugar escondido, mínimo obrigatório, mostra «a partir de» (mínimo × preço) | Pack Escola (15 €, mín. 10 → «a partir de 150 €») |
-| Fase | Sequência (`phaseGroup`) ordenada (`phaseOrder`); a seguinte só abre quando a anterior esgota | Artista Early Bird → Second Wave → Last Call |
+| Fase | Sequência (`phaseGroup`) ordenada (`phaseOrder`); a seguinte abre quando a anterior esgota ou quando a equipa a fecha à mão (estado forçado «Vendas encerradas» ou «Esgotado»). Sem quantidade, a passagem é sempre manual | Artista Early Bird → Second Wave → Last Call |
 | Pedido | Sem pagamento: botão leva à página `/bilheteira/[evento]/pedido/[bilhete]` (ou a um link externo); a equipa aprova no admin e a aprovação emite o bilhete | Acreditação Key Players da Cultura |
 
 ## Estados (calculados em `src/lib/bilheteira/tier-state.ts`)
@@ -24,7 +24,7 @@ Ordem de avaliação: arquivado → estado forçado (esgotado/encerrado) → fec
 
 A reserva (`reserve-action.ts`) usa a mesma máquina de estados: nenhuma compra passa num bilhete que não esteja «À venda», mesmo com POST forjado. Lugares pendentes de pagamento contam durante 30 minutos.
 
-Regra para as fases como âncora: se a fase anterior esgotar, a seguinte abre mesmo; nunca forçar «Esgotado» num bilhete que não esgotou.
+Fases do festival: sem quantidade, abertas e fechadas à mão. Para passar à fase seguinte, pôr a fase atual em «Vendas encerradas» (ou «Esgotado» se esgotou de facto); a seguinte abre sozinha. Não usar «Esgotado» num bilhete que não esgotou.
 
 ## Email de confirmação
 
@@ -44,6 +44,6 @@ A descrição do evento (detalhes do evento) é markdown.
 
 ## Festival 21 nov 2026
 
-`scripts/seed-festival-21-nov-2026.ts` cria/atualiza o evento (em rascunho) e os 11 bilhetes. Quantidades por env: `EARLY_BIRD_QTY`, `SECOND_WAVE_QTY`, `KEY_PLAYERS_QTY`, `CAPACITY`.
+`scripts/seed-festival-21-nov-2026.ts` cria/atualiza o evento (em rascunho) e os 11 bilhetes. Fases do Artista sem quantidade (passagem manual). Por env: `KEY_PLAYERS_QTY`, `CAPACITY`.
 
 Opcional: `BILHETEIRA_REQUESTS_INBOX` define o email que recebe o aviso de novos pedidos (por omissão `SMTP_FROM`).

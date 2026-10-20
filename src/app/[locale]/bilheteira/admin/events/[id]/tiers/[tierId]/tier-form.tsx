@@ -38,7 +38,8 @@ const KIND_HELP: Record<TierFormValues["kind"], string> = {
   single: "Preço por lugar; o comprador escolhe quantos lugares quer.",
   bundle: "Preço fixo por pacote com um número fixo de lugares (ex.: A Dois, Família).",
   group: "Preço por lugar escondido; mínimo de lugares obrigatório; mostra «a partir de».",
-  phase: "Fase de uma sequência: só abre quando a fase anterior esgota.",
+  phase:
+    "Fase de uma sequência: abre quando a anterior esgota ou quando a fechas à mão (Estado → «Vendas encerradas» ou «Esgotado»). Sem quantidade, é sempre manual.",
   request: "Sem pagamento: o botão leva à página de pedido; a equipa aprova e emite.",
 };
 
