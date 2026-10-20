@@ -29,7 +29,7 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
   }
 
   return (
-    <Shell>
+    <Shell withFooter>
       <head>
         <meta httpEquiv="refresh" content="3" />
       </head>

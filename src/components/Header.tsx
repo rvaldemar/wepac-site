@@ -13,6 +13,7 @@ const navigation = [
   { key: "arteACapela", href: "/arte-a-capela" },
   { key: "artists", href: "/artist" },
   { key: "agenda", href: "/programacao" },
+  { key: "tickets", href: "/bilheteira" },
   { key: "society", href: "/society" },
   { key: "contact", href: "/contacto" },
 ] as const;

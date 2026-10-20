@@ -168,6 +168,7 @@ export default async function EventPublicPage({ params, searchParams }: Props) {
 
   return (
     <Shell
+      withFooter
       rightSlot={
         <Link
           href="/bilheteira"

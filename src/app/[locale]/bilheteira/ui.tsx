@@ -1,6 +1,8 @@
 import type { CSSProperties, ReactNode } from "react";
 import { getLocale } from "next-intl/server";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
+import { Footer } from "@/components/Footer";
+import { Header } from "@/components/Header";
 import { Link } from "@/i18n/navigation";
 import { getInstitutionalCopy } from "@/i18n/copy/institutional";
 
@@ -239,11 +241,34 @@ export const styles: Record<string, CSSProperties> = {
 export async function Shell({
   children,
   rightSlot,
+  withFooter = false,
 }: {
   children: ReactNode;
   rightSlot?: ReactNode;
+  // Public ticketing pages wear the WEPAC site chrome (navbar and footer);
+  // admin screens keep the compact ticketing bar.
+  withFooter?: boolean;
 }) {
   const copy = getInstitutionalCopy(await getLocale()).ticketing;
+
+  if (withFooter) {
+    return (
+      <div style={styles.page}>
+        <Header />
+        {/* The site header is fixed; this bar sits right under it. */}
+        <div className="mt-[60px] border-b border-black/10 bg-white">
+          <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-4 px-5 py-3 sm:px-8">
+            <Link href="/bilheteira" style={{ ...styles.brand, fontSize: 15 }}>
+              WEPAC<span style={styles.brandSub}>{copy.brand}</span>
+            </Link>
+            <div style={styles.row}>{rightSlot}</div>
+          </div>
+        </div>
+        {children}
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div style={styles.page}>

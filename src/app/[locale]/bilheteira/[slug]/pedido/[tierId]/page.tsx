@@ -65,6 +65,7 @@ export default async function TierRequestPage({ params, searchParams }: Props) {
 
   return (
     <Shell
+      withFooter
       rightSlot={
         <Link
           href={`/bilheteira/${event.slug}`}

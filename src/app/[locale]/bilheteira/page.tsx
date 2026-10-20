@@ -58,6 +58,7 @@ export default async function BilheteiraPublic({ searchParams }: Props) {
 
   return (
     <Shell
+      withFooter
       rightSlot={
         <Link href="/bilheteira/login" className="text-[11px] font-bold uppercase tracking-[0.18em] text-black/50 hover:text-black">
           Admin
