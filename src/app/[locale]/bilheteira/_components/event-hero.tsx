@@ -18,7 +18,7 @@ type Props = {
 
 // «|» in the hero title forces a line break (campaign line breaks); a
 // trailing «?» or «!» takes the accent, as in the campaign artwork.
-function AccentTitle({ text, accent }: { text: string; accent: string | null }) {
+export function AccentTitle({ text, accent }: { text: string; accent: string | null }) {
   const lines = text.split("|").map((l) => l.trim()).filter(Boolean);
   return (
     <>
