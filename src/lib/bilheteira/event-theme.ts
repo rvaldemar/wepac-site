@@ -48,7 +48,9 @@ export function parseEventTheme(value: unknown): EventTheme {
           detail: str(r.detail, 200) ?? undefined,
           highlight: str(r.highlight, 120) ?? undefined,
         }))
-        .filter((r) => r.time && r.label)
+        // A row without time continues the previous slot (same hour, another
+        // item), so only the first row must carry one.
+        .filter((r, i) => r.label && (r.time || i > 0))
         .slice(0, 6)
     : [];
   return {
@@ -64,12 +66,13 @@ export function parseEventTheme(value: unknown): EventTheme {
 }
 
 // Admin text format for the hero schedule, one line per row:
-// «10h–18h30 | Festival | detalhe opcional | destaque opcional».
+// «10h–18h30 | Festival | detalhe opcional | destaque opcional». A row that
+// starts with «|» (no time) belongs to the same hour as the row above.
 export function scheduleFromText(text: string): ScheduleLine[] {
   return text
     .split("\n")
     .map((line) => line.split("|").map((p) => p.trim()))
-    .filter((parts) => parts.length >= 2 && parts[0] && parts[1])
+    .filter((parts, i) => parts.length >= 2 && parts[1] && (parts[0] || i > 0))
     .slice(0, 6)
     .map(([time, label, detail, highlight]) => ({
       time,

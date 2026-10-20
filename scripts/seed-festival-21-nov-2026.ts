@@ -240,12 +240,9 @@ async function main() {
       heroImage: "/images/eventos/quem-e-o-teu-mestre/hero-duo.webp",
       schedule: [
         { time: "10h–18h30", label: "Festival" },
-        {
-          time: "19h30",
-          label: "Concerto de homenagem a Paulo Gaio Lima",
-          detail: "e Prémios WEPAC ’26",
-          highlight: "Edição Orpheu",
-        },
+        { time: "19h30", label: "Concerto de homenagem a Paulo Gaio Lima" },
+        // Same hour: the prizes, with their edition name directly under them.
+        { time: "", label: "Prémios WEPAC ’26", highlight: "Edição Orpheu" },
       ],
     } as Prisma.InputJsonValue,
     program: [

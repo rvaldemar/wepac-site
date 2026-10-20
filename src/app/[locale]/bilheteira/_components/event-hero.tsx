@@ -101,17 +101,22 @@ function CampaignHero({ theme, title, subtitle, brandName, facts, dateLine, plac
         <div>
           {theme.schedule.length > 0 ? (
             <dl className="border-b border-[var(--ev-line)]">
-              {theme.schedule.map((row) => (
-                <div key={row.time + row.label} className="grid grid-cols-[150px_1fr] gap-4 border-t border-[var(--ev-line)] py-3 sm:grid-cols-[175px_1fr]">
-                  <dt className={`${CONDENSED} whitespace-nowrap text-[34px] font-bold leading-none sm:text-[42px]`}>{row.time}</dt>
+              {theme.schedule.map((row, i) => (
+                <div
+                  key={`${i}-${row.label}`}
+                  className={`grid grid-cols-[150px_1fr] gap-4 py-3 sm:grid-cols-[175px_1fr] ${row.time ? "border-t border-[var(--ev-line)]" : "-mt-1 pt-0"}`}
+                >
+                  <dt className={`${CONDENSED} whitespace-nowrap text-[34px] font-bold leading-none sm:text-[42px]`}>
+                    {row.time || <span className="sr-only">{theme.schedule[i - 1]?.time}</span>}
+                  </dt>
                   <dd className="self-center">
                     <div className="font-barlow text-[18px] font-bold leading-tight">{row.label}</div>
-                    {row.detail && <div className="mt-0.5 text-[14px] text-[var(--ev-muted)]">{row.detail}</div>}
                     {row.highlight && (
-                      <div className="font-barlow text-[17px] font-bold leading-tight" style={{ color: "var(--ev-accent)" }}>
+                      <div className="font-barlow text-[18px] font-bold leading-tight" style={{ color: "var(--ev-accent)" }}>
                         {row.highlight}
                       </div>
                     )}
+                    {row.detail && <div className="mt-0.5 text-[14px] text-[var(--ev-muted)]">{row.detail}</div>}
                   </dd>
                 </div>
               ))}

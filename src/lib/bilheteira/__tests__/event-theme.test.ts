@@ -25,6 +25,15 @@ describe("event theme", () => {
     expect(scheduleToText(lines)).toBe(text);
   });
 
+  it("lets a row without time continue the previous hour, never the first", () => {
+    expect(scheduleFromText("| Sem hora\n19h30 | Concerto\n| Prémios | | Edição Orpheu")).toEqual([
+      { time: "19h30", label: "Concerto", detail: undefined, highlight: undefined },
+      { time: "", label: "Prémios", detail: undefined, highlight: "Edição Orpheu" },
+    ]);
+    const parsed = parseEventTheme({ schedule: [{ time: "", label: "X" }, { time: "19h30", label: "Y" }] });
+    expect(parsed.schedule.map((r) => r.label)).toEqual(["Y"]);
+  });
+
   it("uses the accent for calls to action in dark mode", () => {
     const vars = themeVars(parseEventTheme({ mode: "dark", accent: "#E04E2F" })) as Record<string, string>;
     expect(vars["--ev-bg"]).toBe("#0A0A0A");
