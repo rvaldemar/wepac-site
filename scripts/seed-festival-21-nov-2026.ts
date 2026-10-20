@@ -25,9 +25,7 @@ const qty = (name: string, fallback: number) => {
   return Number.isInteger(n) && n > 0 ? n : fallback;
 };
 
-const EVENT_DESCRIPTION = `**Quem é o teu mestre?**
-
-Ninguém aprende uma arte sozinho. Houve sempre alguém que corrigiu um gesto, cortou uma frase, mostrou para onde olhar. E cada artista acaba por chegar às mesmas perguntas: o que vou passar a quem vem a seguir? E em que condições vou conseguir continuar a criar?
+const EVENT_DESCRIPTION = `Ninguém aprende uma arte sozinho. Houve sempre alguém que corrigiu um gesto, cortou uma frase, mostrou para onde olhar. E cada artista acaba por chegar às mesmas perguntas: o que vou passar a quem vem a seguir? E em que condições vou conseguir continuar a criar?
 
 A 21 de novembro, a WEPAC – Companhia de Artes dedica um dia inteiro a essas perguntas. Um festival sobre transmissão: quem nos ensinou, o que escolhemos passar aos outros e o que é preciso para que a criação continue.
 
@@ -67,9 +65,7 @@ O teu bilhete inclui o direito de candidatar um trabalho teu ao festival. Vamos 
 
 // ---------- English (shown on /en) ----------
 
-const EVENT_DESCRIPTION_EN = `**Who is your master?**
-
-Nobody learns an art alone. There was always someone who corrected a gesture, cut a sentence, showed where to look. And every artist ends up asking the same questions: what will I pass on to those who come next? And under what conditions will I be able to keep creating?
+const EVENT_DESCRIPTION_EN = `Nobody learns an art alone. There was always someone who corrected a gesture, cut a sentence, showed where to look. And every artist ends up asking the same questions: what will I pass on to those who come next? And under what conditions will I be able to keep creating?
 
 On 21 November, WEPAC – Companhia de Artes devotes a whole day to those questions. A festival about transmission: who taught us, what we choose to pass on, and what it takes for creation to go on.
 
