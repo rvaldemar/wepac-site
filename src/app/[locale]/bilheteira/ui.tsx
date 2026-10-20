@@ -255,16 +255,8 @@ export async function Shell({
     return (
       <div style={styles.page}>
         <Header />
-        {/* The site header is fixed; this bar sits right under it. */}
-        <div className="mt-[60px] border-b border-black/10 bg-white">
-          <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-4 px-5 py-3 sm:px-8">
-            <Link href="/bilheteira" style={{ ...styles.brand, fontSize: 15 }}>
-              WEPAC<span style={styles.brandSub}>{copy.brand}</span>
-            </Link>
-            <div style={styles.row}>{rightSlot}</div>
-          </div>
-        </div>
-        {children}
+        {/* The site header is fixed: offset the content by its height. */}
+        <div className="pt-[60px]">{children}</div>
         <Footer />
       </div>
     );

@@ -82,7 +82,13 @@ export default async function TierRequestPage({ params, searchParams }: Props) {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={theme.heroImage} alt="" className="absolute right-0 top-0 -z-10 h-full w-1/2 object-cover object-top opacity-50 [mask-image:linear-gradient(90deg,transparent,black_40%)]" />
         )}
-        <div className="mx-auto max-w-[1100px] px-5 pb-12 pt-16 sm:px-8 sm:pt-24">
+        <div className="mx-auto max-w-[1100px] px-5 pb-12 pt-10 sm:px-8 sm:pt-14">
+          <Link
+            href={`/bilheteira/${event.slug}`}
+            className="mb-8 inline-block text-[11px] font-bold uppercase tracking-[0.18em] text-white/70 hover:text-white"
+          >
+            ← {copy.request.backToEvent}
+          </Link>
           <p className="text-[11px] uppercase tracking-[0.22em] text-white/65">
             {event.title} · {formatEventDate(event.startsAt, locale)} · {formatEventTime(event.startsAt, locale)}
           </p>

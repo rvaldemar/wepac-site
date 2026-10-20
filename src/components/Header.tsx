@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
-import { Link } from "@/i18n/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { useMobileDrawer } from "@/lib/useMobileDrawer";
 
 const navigation = [
@@ -21,6 +21,8 @@ const navigation = [
 export function Header() {
   const t = useTranslations("Navigation.site");
   const common = useTranslations("Common");
+  const pathname = usePathname();
+  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
   const { toggleRef, drawerRef } = useMobileDrawer<HTMLButtonElement, HTMLDivElement>(
@@ -41,7 +43,10 @@ export function Header() {
             <Link
               key={item.key}
               href={item.href}
-              className="font-inter text-sm text-wepac-white/70 transition-colors hover:text-wepac-white"
+              aria-current={isActive(item.href) ? "page" : undefined}
+              className={`font-inter text-sm transition-colors hover:text-wepac-white ${
+                isActive(item.href) ? "text-wepac-white" : "text-wepac-white/70"
+              }`}
             >
               {t(item.key)}
             </Link>
@@ -84,7 +89,10 @@ export function Header() {
               <Link
                 key={item.key}
                 href={item.href}
-                className="font-inter text-base text-wepac-white/70 transition-colors hover:text-wepac-white"
+                aria-current={isActive(item.href) ? "page" : undefined}
+                className={`font-inter text-base transition-colors hover:text-wepac-white ${
+                  isActive(item.href) ? "text-wepac-white" : "text-wepac-white/70"
+                }`}
                 onClick={closeMenu}
               >
                 {t(item.key)}
