@@ -17,6 +17,7 @@ import { EventCards } from "../_components/event-cards";
 import { EventHero } from "../_components/event-hero";
 import { barlowCondensed, CONDENSED } from "../_components/fonts";
 import { parseEventTheme, themeVars } from "@/lib/bilheteira/event-theme";
+import { localizeEvent, localizeTier } from "@/lib/bilheteira/localize";
 
 export const dynamic = "force-dynamic";
 
@@ -43,10 +44,12 @@ function plainSummary(markdown: string, max = 160): string {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const copy = getInstitutionalCopy(await getLocale()).ticketing;
+  const locale = await getLocale();
+  const copy = getInstitutionalCopy(locale).ticketing;
   const { slug } = await params;
-  const event = await prisma.event.findUnique({ where: { slug } });
-  if (!event || event.status !== "published") return { title: copy.eventFallbackTitle };
+  const found = await prisma.event.findUnique({ where: { slug } });
+  if (!found || found.status !== "published") return { title: copy.eventFallbackTitle };
+  const event = localizeEvent(found, locale);
   const description = event.seoDescription || event.subtitle || plainSummary(event.description);
   const image = event.ogImage || event.coverImage;
   return {
@@ -69,7 +72,7 @@ export default async function EventPublicPage({ params, searchParams }: Props) {
   const { error, cancelled, tier: tierParam, waitlist } = await searchParams;
   const now = new Date();
 
-  const event = await prisma.event.findUnique({
+  const rawEvent = await prisma.event.findUnique({
     where: { slug },
     include: {
       department: true,
@@ -81,7 +84,11 @@ export default async function EventPublicPage({ params, searchParams }: Props) {
       },
     },
   });
-  if (!event || event.status !== "published") notFound();
+  if (!rawEvent || rawEvent.status !== "published") notFound();
+  const event = localizeEvent(
+    { ...rawEvent, tiers: rawEvent.tiers.map((t) => localizeTier(t, locale)) },
+    locale,
+  );
 
   const [usage, hiddenGuests, others] = await Promise.all([
     loadTierUsage(event.id, now),
@@ -105,7 +112,7 @@ export default async function EventPublicPage({ params, searchParams }: Props) {
 
   const otherCards = await Promise.all(
     others.map(async (e) => ({
-      event: e,
+      event: localizeEvent(e, locale),
       fromPrice: lowestOpenPrice(buildTierOffers(e, e.tiers, await loadTierUsage(e.id, now), now)),
     })),
   );

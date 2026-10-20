@@ -10,6 +10,7 @@ import { Shell, formatEventDate, formatEventTime } from "../../../ui";
 import { Markdown } from "../../../_components/markdown";
 import { BilheteiraTracking } from "../../../_components/tracking";
 import { parseEventTheme, themeVars } from "@/lib/bilheteira/event-theme";
+import { localizeEvent, localizeTier } from "@/lib/bilheteira/localize";
 import { barlowCondensed, CONDENSED } from "../../../_components/fonts";
 
 export const dynamic = "force-dynamic";
@@ -19,20 +20,21 @@ type Props = {
   searchParams: Promise<{ error?: string; sent?: string }>;
 };
 
-async function load(slug: string, tierId: string) {
-  const event = await prisma.event.findUnique({
+async function load(slug: string, tierId: string, locale: string) {
+  const raw = await prisma.event.findUnique({
     where: { slug },
     include: { tiers: true, brand: true, department: true },
   });
-  if (!event || event.status !== "published") return null;
-  const tier = event.tiers.find((t) => t.id === tierId && t.kind === "request" && !t.archivedAt);
-  if (!tier) return null;
-  return { event, tier };
+  if (!raw || raw.status !== "published") return null;
+  const event = localizeEvent(raw, locale);
+  const rawTier = raw.tiers.find((t) => t.id === tierId && t.kind === "request" && !t.archivedAt);
+  if (!rawTier) return null;
+  return { event, tier: localizeTier(rawTier, locale) };
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, tierId } = await params;
-  const found = await load(slug, tierId);
+  const found = await load(slug, tierId, await getLocale());
   if (!found) return { title: "WEPAC" };
   const image = found.event.ogImage || found.event.coverImage;
   return {
@@ -47,7 +49,7 @@ export default async function TierRequestPage({ params, searchParams }: Props) {
   const copy = getBilheteiraCopy(locale);
   const { slug, tierId } = await params;
   const { error, sent } = await searchParams;
-  const found = await load(slug, tierId);
+  const found = await load(slug, tierId, locale);
   if (!found) notFound();
   const { event, tier } = found;
 

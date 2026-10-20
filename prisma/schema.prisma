@@ -1213,6 +1213,8 @@ model Event {
   featured        Boolean     @default(false)
   // Per-event visual identity for the landing (mode, accent, hero, schedule).
   theme           Json?
+  // Public copy per locale, e.g. {"en-US": {title, description, …}}.
+  translations    Json?
   // Appended to every confirmation email of this event (merge fields allowed).
   emailNote       String?
   status          EventStatus @default(draft)
@@ -1273,6 +1275,8 @@ model TicketTier {
   emailNote           String?
   emailCtaLabel       String?
   emailCtaUrl         String?
+  // Public copy per locale, e.g. {"en-US": {name, description, …}}.
+  translations        Json?
 
   event    Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
   tickets  Ticket[]

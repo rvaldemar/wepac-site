@@ -6,6 +6,7 @@ import { getBilheteiraCopy } from "@/i18n/copy/institutional-bilheteira";
 import { prisma } from "@/lib/db";
 import { loadTierUsage } from "@/lib/bilheteira/tier-state";
 import { buildTierOffers, lowestOpenPrice } from "@/lib/bilheteira/offers";
+import { localizeEvent } from "@/lib/bilheteira/localize";
 import { Shell } from "./ui";
 import { EventCards } from "./_components/event-cards";
 import { BilheteiraTracking } from "./_components/tracking";
@@ -38,7 +39,7 @@ export default async function BilheteiraPublic({ searchParams }: Props) {
 
   const cards = await Promise.all(
     events.map(async (e) => ({
-      event: e,
+      event: localizeEvent(e, locale),
       fromPrice: lowestOpenPrice(buildTierOffers(e, e.tiers, await loadTierUsage(e.id, now), now)),
     })),
   );

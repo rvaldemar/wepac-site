@@ -106,7 +106,13 @@ function CampaignHero({ theme, title, subtitle, brandName, facts, dateLine, plac
                   key={`${i}-${row.label}`}
                   className={`grid grid-cols-[150px_1fr] gap-4 py-3 sm:grid-cols-[175px_1fr] ${row.time ? "border-t border-[var(--ev-line)]" : "-mt-1 pt-0"}`}
                 >
-                  <dt className={`${CONDENSED} whitespace-nowrap text-[34px] font-bold leading-none sm:text-[42px]`}>
+                  <dt
+                    className={`${CONDENSED} whitespace-nowrap font-bold leading-none ${
+                      // Longer formats (e.g. «10am–6:30pm») step down so the
+                      // column never runs into the label.
+                      row.time.length > 9 ? "text-[26px] sm:text-[32px]" : "text-[34px] sm:text-[42px]"
+                    }`}
+                  >
                     {row.time || <span className="sr-only">{theme.schedule[i - 1]?.time}</span>}
                   </dt>
                   <dd className="self-center">

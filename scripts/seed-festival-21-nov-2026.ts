@@ -64,6 +64,121 @@ const ARTIST_EMAIL_NOTE = `Olá {{nome}},
 
 O teu bilhete inclui o direito de candidatar um trabalho teu ao festival. Vamos enviar-te por email as instruções da candidatura, com o teu número de bilhete ({{bilhete}}) já associado.`;
 
+
+// ---------- English (shown on /en) ----------
+
+const EVENT_DESCRIPTION_EN = `**Who is your master?**
+
+Nobody learns an art alone. There was always someone who corrected a gesture, cut a sentence, showed where to look. And every artist ends up asking the same questions: what will I pass on to those who come next? And under what conditions will I be able to keep creating?
+
+On 21 November, WEPAC – Companhia de Artes devotes a whole day to those questions. A festival about transmission: who taught us, what we choose to pass on, and what it takes for creation to go on.
+
+**Learn from those who make.** Masters of different arts work on stage with selected artists: word and theatre, body and music, visual arts and cinema. They experiment, discuss choices, show how they think. In the late afternoon, street art, light and photography come together on the panel the audience has been filling all day with the names of their masters.
+
+**Discuss what deserves to continue.** An open debate on two arts put to the test: bullfighting, contested, and the baroque, without a natural audience in our time. Speakers of Mirandese, Barranquenho, Minderico, the Azores and Madeira dialects and Portuguese-based creoles show how a language passes from mouth to mouth, and what can make it disappear.
+
+**Understand how a life in the arts is sustained.** A practical conversation on career, contracts and tax, with people who live from the arts and people who do their accounts. A panel on who keeps culture alive between two shows. And a closing session where the room says what it wants to see happen in culture in Portugal.
+
+**The evening is for those who taught us.** At 7:30 pm, a cello concert in tribute to Paulo Gaio Lima, master of generations of cellists, the handover of support to Associação Candeia and Hospital de Jesus, and the WEPAC ’26 Awards — Orpheu Edition: figures of Portuguese culture receive an award and, on the same stage, each one passes the baton, handing the New Generation Orpheu award to a young artist of their choice.
+
+**If you are an artist,** the day is also yours to show your work. You submit a piece, enter the Festival Showcase, get priority booking for the lunch meetings with masters, programmers, producers, agents, associations and public decision-makers in culture, and may be chosen to work on stage with masters.
+
+**If you come to watch and listen,** choose how: the whole festival, from the first master on stage to the last conversation about the future of culture, with the evening included; or just the evening, for the tribute concert and the Orpheu Awards, alone, as a couple or with family.
+
+**If you come with your school, class or association,** there are group tickets to experience the festival together and, for anyone who wants to, to present their own work.
+
+**If you programme, produce, hire or decide on support for artistic creation,** you can request accreditation as a culture key player, subject to approval, to meet the artists and the works in the Showcase.`;
+
+const ARTIST_DESCRIPTION_EN = `**Present your work. Learn from those who make.**
+
+The Artist Ticket gives you the whole festival (workshops with masters, the debate on what deserves to continue, the less-heard languages and dialects, the conversation on living from the arts, the closing session) and the concert with the WEPAC ’26 Awards — Orpheu Edition at 7:30 pm. And it gives you the right to submit a piece of your own.
+
+After purchase you receive the submission link. You can submit text, a scene, choreography, music, image, film, photography or light.
+
+With your submission:
+
+- your work enters the Festival Showcase, an online page with the work, name and contact of each applicant, shown to the programmers, producers and cultural decision-makers present and published on the day;
+- you get priority booking for the lunch meetings with masters, programmers, producers, agents, associations and public decision-makers in culture, subject to availability;
+- you may be chosen as a finalist, to sit at the master's table at lunch and hear their comments on your work;
+- or as a selected artist, to work on your piece on stage with masters (experimenting, discussing choices, trying alternatives) and receive the video of the session.`;
+
+const TIER_EN: Record<string, { name: string; description: string; lockedNote?: string; ctaLabel?: string }> = {
+  "Festival – Bilhete Artista (Early Bird)": { name: "Festival – Artist Ticket (Early Bird)", description: ARTIST_DESCRIPTION_EN },
+  "Festival – Bilhete Artista (Second Wave)": {
+    name: "Festival – Artist Ticket (Second Wave)",
+    description: ARTIST_DESCRIPTION_EN,
+    lockedNote: "Opens when the Early Bird closes.",
+  },
+  "Festival – Bilhete Artista (Last Call)": {
+    name: "Festival – Artist Ticket (Last Call)",
+    description: ARTIST_DESCRIPTION_EN,
+    lockedNote: "Opens when the Second Wave closes.",
+  },
+  "Festival – Bilhete Público": {
+    name: "Festival – General Ticket",
+    description: `**See, hear and discuss the whole festival.**
+
+Masters working on stage with artists: word and theatre, body and music, visual arts and cinema. A debate on what deserves to continue, from bullfighting to the baroque. Less-heard languages and dialects, spoken by those who speak them. A frank conversation on living from the arts and a panel on who keeps culture alive between two shows. And, at the end, the session on the future of culture, where your voice counts.
+
+Includes the concert and the WEPAC ’26 Awards — Orpheu Edition at 7:30 pm.
+
+Does not include a submission or a place in the Showcase. If you want to present your own work, buy the Artist Ticket.`,
+  },
+  "Festival – Pack Escola": {
+    name: "Festival – School Pack",
+    description: `**The whole festival for the class.**
+
+A day to watch masters at work on stage, hear a serious debate on what deserves to continue, discover languages and dialects that are rarely heard and understand how people live from the arts in Portugal. And the concert with the WEPAC ’26 Awards — Orpheu Edition at 7:30 pm.
+
+Minimum 10 seats, counting students and teachers; you choose the number of seats at checkout. Does not include a submission or a place in the Showcase. Anyone who wants to present their own work should buy the Artist Ticket.`,
+  },
+  "Festival – Pack Associação": {
+    name: "Festival – Association Pack",
+    description: `**Bring your people.**
+
+For associations, collectives and groups that make culture every day. The whole festival: masters at work on stage, the debate on what deserves to continue, the less-heard languages and dialects, the panel on who keeps culture alive between two shows and the closing session on the future of culture, where your voice counts. And the concert with the WEPAC ’26 Awards — Orpheu Edition at 7:30 pm.
+
+Minimum 10 seats; you choose the number of seats at checkout. Does not include a submission or a place in the Showcase. Anyone who wants to present their own work should buy the Artist Ticket.`,
+  },
+  "Festival – Acreditação Key Players da Cultura": {
+    name: "Festival – Culture Key Players Accreditation",
+    ctaLabel: "Request accreditation",
+    description: `**Meet the artists and the works that come next.**
+
+For those attending in the role of programming, hiring, producing or deciding on support for artistic creation: programmers, producers, agents, heads of cultural organisations and institutions and of public cultural administration. If you are also an artist and come in that role, you can request this accreditation.
+
+You send the request with your name, your organisation or institution and your role. WEPAC reviews every request and replies by email; entry is only guaranteed after approval.
+
+With the accreditation you get access to the Festival Showcase before it is published, can book meetings with applicant artists during lunch, subject to availability, and follow the whole festival and the concert with the WEPAC ’26 Awards — Orpheu Edition at 7:30 pm.
+
+Does not include an artistic submission or a place in the Showcase. To present your own work, you need the Artist Ticket.`,
+  },
+  "Festival – Bilhete Concerto": {
+    name: "Festival – Concert Ticket",
+    description: `**An evening for those who taught us.**
+
+Cello concert in tribute to Paulo Gaio Lima, handover of support to Associação Candeia and Hospital de Jesus, and the WEPAC ’26 Awards — Orpheu Edition: figures of Portuguese culture receive an award and, on the same stage, each one passes the baton, handing the New Generation Orpheu award to a young artist of their choice. In an 18th-century chapel, at 7:30 pm.`,
+  },
+  "Festival – Bilhete Concerto Patrono": {
+    name: "Festival – Patron Concert Ticket",
+    description: `**So that this evening happens again.**
+
+A seat at the cello concert in tribute to Paulo Gaio Lima and the WEPAC ’26 Awards — Orpheu Edition, at 7:30 pm. The difference from the standard ticket supports the next season in the chapel.`,
+  },
+  "Festival – Bilhete Concerto a Dois": {
+    name: "Festival – Concert Ticket for Two",
+    description: `**Bring the one who taught you.**
+
+Two seats for the tribute concert and the WEPAC ’26 Awards — Orpheu Edition, at 7:30 pm. Bring your teacher, your mother, the friend who showed you the way, or someone you are now showing it to.`,
+  },
+  "Festival – Bilhete Concerto Família": {
+    name: "Festival – Family Concert Ticket",
+    description: `**Show them where music comes from.**
+
+Four seats for the tribute concert and the WEPAC ’26 Awards — Orpheu Edition, at 7:30 pm, in a chapel where the youngest can see a cello up close. Children up to 6 on a lap don't need a ticket.`,
+  },
+};
+
 type TierSeed = Omit<Prisma.TicketTierUncheckedCreateInput, "eventId" | "sortOrder">;
 
 function tiers(): TierSeed[] {
@@ -247,6 +362,38 @@ async function main() {
         { time: "", label: "Prémios WEPAC ’26", highlight: "Edição Orpheu" },
       ],
     } as Prisma.InputJsonValue,
+    translations: {
+      "en-US": {
+        title: "Who Is Your Master? Festival",
+        subtitle: "A day about who teaches us, what we choose to pass on and how creation goes on.",
+        description: EVENT_DESCRIPTION_EN,
+        seoDescription:
+          "WEPAC – Companhia de Artes festival on 21 November at the Hospital de Jesus Chapel, Lisbon: masters on stage, debate, languages, living from the arts and, at 7:30 pm, concert and WEPAC ’26 Awards — Orpheu Edition.",
+        heroTitle: "Who is|your|master?",
+        eyebrow: "FESTIVAL · WEPAC",
+        tagline: "A gathering to learn, bring the arts together and care for what sustains them.",
+        schedule: [
+          { time: "10am–6:30pm", label: "Festival" },
+          { time: "7:30pm", label: "Tribute concert to Paulo Gaio Lima" },
+          { time: "", label: "WEPAC ’26 Awards", highlight: "Orpheu Edition" },
+        ],
+        program: [
+          { time: "10:00", title: "Opening · Who is your master?" },
+          { time: "10:10", title: "Round table · What we receive from a master" },
+          { time: "10:45", title: "Joint workshop · Word and theatre" },
+          { time: "11:30", title: "Debate · What deserves to continue?" },
+          { time: "12:15", title: "Talk and demonstration · Less-heard languages and dialects" },
+          { time: "12:45", title: "Lunch · meetings with programmers, producers and masters" },
+          { time: "14:00", title: "Practical conversation · How is an artistic life sustained?" },
+          { time: "14:45", title: "Joint workshop · Body and music" },
+          { time: "15:20", title: "Joint workshop · Visual arts and cinema" },
+          { time: "16:05", title: "Round table · Who keeps culture alive between two shows?" },
+          { time: "17:05", title: "Demonstration · Street art, light and photography" },
+          { time: "17:40", title: "Closing session · What we do next" },
+          { time: "19:30", title: "Tribute concert and WEPAC ’26 Awards — Orpheu Edition" },
+        ],
+      },
+    } as Prisma.InputJsonValue,
     program: [
       { time: "10h00", title: "Abertura · Quem é o teu mestre?" },
       { time: "10h10", title: "Mesa redonda · O que recebemos de um mestre" },
@@ -272,7 +419,9 @@ async function main() {
 
   const current = await prisma.ticketTier.findMany({ where: { eventId: event.id } });
   const list = tiers();
-  for (const [i, t] of list.entries()) {
+  for (const [i, base] of list.entries()) {
+    const en = TIER_EN[base.name];
+    const t = en ? { ...base, translations: { "en-US": en } as Prisma.InputJsonValue } : base;
     const match = current.find((c) => c.name === t.name);
     if (match) {
       await prisma.ticketTier.update({ where: { id: match.id }, data: { ...t, sortOrder: i } });

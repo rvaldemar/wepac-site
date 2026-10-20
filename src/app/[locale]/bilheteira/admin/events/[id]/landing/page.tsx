@@ -5,7 +5,8 @@ import { faqToText, parseFaq, parseProgram, programToText } from "@/lib/bilhetei
 import { deleteGuestAction, saveEventLandingAction, saveGuestAction } from "@/lib/bilheteira/landing-admin-actions";
 import { toLisbonInput } from "@/lib/bilheteira/lisbon-time";
 import { EMAIL_MERGE_FIELDS } from "@/lib/bilheteira/email-merge";
-import { parseEventTheme, scheduleToText } from "@/lib/bilheteira/event-theme";
+import { parseEventTheme, scheduleToText, type ScheduleLine } from "@/lib/bilheteira/event-theme";
+import { eventTranslation } from "@/lib/bilheteira/localize";
 import { styles, formatEventDate, formatEventTime } from "../../../../ui";
 
 export const dynamic = "force-dynamic";
@@ -27,6 +28,7 @@ export default async function LandingEditorPage({ params, searchParams }: Props)
   if (!event) notFound();
   const now = new Date();
   const theme = parseEventTheme(event.theme);
+  const en = eventTranslation(event, "en-US");
 
   return (
     <main style={styles.container}>
@@ -149,6 +151,68 @@ export default async function LandingEditorPage({ params, searchParams }: Props)
               ))}
             </span>
           </label>
+          <fieldset style={styles.fieldset}>
+            <legend style={styles.legend}>Versão em inglês (página /en)</legend>
+            <span style={hint}>Vazio = mostra o texto em português. Os formatos são os mesmos dos campos em português.</span>
+            <div style={styles.grid2}>
+              <label style={styles.label}>
+                <span style={styles.labelText}>Título (EN)</span>
+                <input name="en_title" defaultValue={en.title ?? ""} style={styles.input} />
+              </label>
+              <label style={styles.label}>
+                <span style={styles.labelText}>Subtítulo (EN)</span>
+                <input name="en_subtitle" defaultValue={en.subtitle ?? ""} style={styles.input} />
+              </label>
+            </div>
+            <label style={styles.label}>
+              <span style={styles.labelText}>Descrição do evento (EN, markdown)</span>
+              <textarea name="en_description" rows={12} defaultValue={en.description ?? ""} style={styles.textarea} />
+            </label>
+            <div style={styles.grid2}>
+              <label style={styles.label}>
+                <span style={styles.labelText}>Título no topo (EN)</span>
+                <input name="en_heroTitle" defaultValue={en.heroTitle ?? ""} style={styles.input} />
+              </label>
+              <label style={styles.label}>
+                <span style={styles.labelText}>Sobretítulo (EN)</span>
+                <input name="en_eyebrow" defaultValue={en.eyebrow ?? ""} style={styles.input} />
+              </label>
+            </div>
+            <label style={styles.label}>
+              <span style={styles.labelText}>Frase (EN)</span>
+              <input name="en_tagline" defaultValue={en.tagline ?? ""} style={styles.input} />
+            </label>
+            <label style={styles.label}>
+              <span style={styles.labelText}>Horário em destaque (EN)</span>
+              <textarea
+                name="en_schedule"
+                rows={4}
+                defaultValue={Array.isArray(en.schedule) ? scheduleToText(en.schedule as ScheduleLine[]) : ""}
+                style={{ ...styles.textarea, minHeight: 90, fontFamily: "ui-monospace, Menlo, monospace", fontSize: 13 }}
+              />
+            </label>
+            <label style={styles.label}>
+              <span style={styles.labelText}>Descrição para Google e partilhas (EN)</span>
+              <input name="en_seoDescription" defaultValue={en.seoDescription ?? ""} style={styles.input} />
+            </label>
+            <label style={styles.label}>
+              <span style={styles.labelText}>Programa (EN)</span>
+              <textarea
+                name="en_program"
+                rows={8}
+                defaultValue={programToText(parseProgram(en.program))}
+                style={{ ...styles.textarea, fontFamily: "ui-monospace, Menlo, monospace", fontSize: 13 }}
+              />
+            </label>
+            <label style={styles.label}>
+              <span style={styles.labelText}>Perguntas frequentes (EN)</span>
+              <textarea name="en_faq" rows={6} defaultValue={faqToText(parseFaq(en.faq))} style={styles.textarea} />
+            </label>
+            <label style={styles.label}>
+              <span style={styles.labelText}>Como chegar (EN)</span>
+              <textarea name="en_directions" rows={3} defaultValue={en.directions ?? ""} style={styles.textarea} />
+            </label>
+          </fieldset>
           <button type="submit" style={styles.button}>
             Guardar página
           </button>

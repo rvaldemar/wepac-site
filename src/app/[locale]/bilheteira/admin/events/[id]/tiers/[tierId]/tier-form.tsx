@@ -32,6 +32,7 @@ export type TierFormValues = {
   emailCtaLabel: string;
   emailCtaUrl: string;
   stripePriceId: string;
+  en: { name: string; description: string; lockedNote: string; ctaLabel: string };
 };
 
 const KIND_HELP: Record<TierFormValues["kind"], string> = {
@@ -233,6 +234,25 @@ export function TierForm({ eventId, values }: { eventId: string; values: TierFor
               <code>{`{{${key}}}`}</code> {label.toLowerCase()}
             </span>
           ))}
+        </div>
+      </fieldset>
+
+      <fieldset style={styles.fieldset}>
+        <legend style={styles.legend}>Versão em inglês (página /en)</legend>
+        <span style={hint}>Vazio = mostra o texto em português.</span>
+        <Field label="Nome (EN)">
+          <input name="en_name" defaultValue={values.en.name} style={styles.input} />
+        </Field>
+        <Field label="Descrição (EN)">
+          <textarea name="en_description" defaultValue={values.en.description} rows={8} style={styles.textarea} />
+        </Field>
+        <div style={styles.grid2}>
+          <Field label="Frase por baixo de «Em breve» (EN)">
+            <input name="en_lockedNote" defaultValue={values.en.lockedNote} style={styles.input} />
+          </Field>
+          <Field label="Texto do botão de pedido (EN)">
+            <input name="en_ctaLabel" defaultValue={values.en.ctaLabel} style={styles.input} />
+          </Field>
         </div>
       </fieldset>
 

@@ -49,6 +49,16 @@ function dateTime(formData: FormData, name: string): Date | null {
   return raw ? fromLisbonInput(raw) : null;
 }
 
+// Only filled fields are stored, so partial translations fall back to PT.
+function englishCopy(formData: FormData, fields: Record<string, number>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [field, max] of Object.entries(fields)) {
+    const value = text(formData, `en_${field}`, max);
+    if (value) out[field] = value;
+  }
+  return out;
+}
+
 function httpsUrl(value: string | null): string | null {
   if (!value) return null;
   if (value.startsWith("/")) return value;
@@ -128,6 +138,9 @@ export async function saveTierAction(formData: FormData): Promise<void> {
     emailCtaLabel: text(formData, "emailCtaLabel", 80),
     emailCtaUrl,
     stripePriceId,
+    translations: {
+      "en-US": englishCopy(formData, { name: 200, description: 8000, lockedNote: 300, ctaLabel: 80 }),
+    } as Prisma.InputJsonValue,
   };
 
   let savedId = tierId;
@@ -250,6 +263,29 @@ export async function saveEventLandingAction(formData: FormData): Promise<void> 
       featured: formData.get("featured") === "on",
       emailNote: text(formData, "emailNote", 4000),
       theme: theme as unknown as Prisma.InputJsonValue,
+      translations: {
+        "en-US": {
+          ...englishCopy(formData, {
+            title: 200,
+            subtitle: 300,
+            description: 20000,
+            seoDescription: 300,
+            directions: 4000,
+            heroTitle: 160,
+            eyebrow: 80,
+            tagline: 240,
+          }),
+          ...(programFromText(text(formData, "en_program", 10000) ?? "").length
+            ? { program: programFromText(text(formData, "en_program", 10000) ?? "") }
+            : {}),
+          ...(faqFromText(text(formData, "en_faq", 20000) ?? "").length
+            ? { faq: faqFromText(text(formData, "en_faq", 20000) ?? "") }
+            : {}),
+          ...(scheduleFromText(text(formData, "en_schedule", 2000) ?? "").length
+            ? { schedule: scheduleFromText(text(formData, "en_schedule", 2000) ?? "") }
+            : {}),
+        },
+      } as unknown as Prisma.InputJsonValue,
     },
   });
   revalidatePath(`/bilheteira/${event.slug}`);

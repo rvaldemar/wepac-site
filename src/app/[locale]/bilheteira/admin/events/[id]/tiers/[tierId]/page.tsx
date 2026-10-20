@@ -5,6 +5,7 @@ import { renderTicketEmail } from "@/lib/bilheteira/ticket-email";
 import { SAMPLE_MERGE_VALUES } from "@/lib/bilheteira/email-merge";
 import { sendTestTicketEmailAction } from "@/lib/bilheteira/landing-admin-actions";
 import { toLisbonInput } from "@/lib/bilheteira/lisbon-time";
+import { tierTranslation } from "@/lib/bilheteira/localize";
 import { styles } from "../../../../../ui";
 import { TierForm, type TierFormValues } from "./tier-form";
 
@@ -56,6 +57,10 @@ export default async function TierEditPage({ params, searchParams }: Props) {
     emailCtaLabel: tier?.emailCtaLabel ?? "",
     emailCtaUrl: tier?.emailCtaUrl ?? "",
     stripePriceId: tier?.stripePriceId ?? "",
+    en: (() => {
+      const t = tier ? tierTranslation(tier, "en-US") : {};
+      return { name: t.name ?? "", description: t.description ?? "", lockedNote: t.lockedNote ?? "", ctaLabel: t.ctaLabel ?? "" };
+    })(),
   };
 
   // Preview with sample buyer data: exactly what the buyer will receive,
