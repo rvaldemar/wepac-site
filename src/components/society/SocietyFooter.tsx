@@ -1,13 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { getLegalCopy } from "@/i18n/copy/institutional-legal";
 import { Link, usePathname } from "@/i18n/navigation";
 import { getSocietyIntakeHref } from "@/lib/society/intake-source";
 
 export function SocietyFooter() {
   const t = useTranslations("SocietyFooter");
   const intakeHref = getSocietyIntakeHref(usePathname());
+  const nav = useTranslations("Navigation.society");
+  const legal = getLegalCopy(useLocale()).footer;
 
   return (
     <footer className="border-t border-white/10 bg-black text-white">
@@ -55,6 +58,8 @@ export function SocietyFooter() {
               <Link href="/bilheteira" className="hover:text-white">{t("ticketing")}</Link>
               <Link href="/wessex" className="hover:text-white">Wessex</Link>
               <Link href="/arte-a-capela" className="hover:text-white">Arte à Capela</Link>
+              <Link href="/artist" className="hover:text-white">{nav("artists")}</Link>
+              <Link href="/parcerias" className="hover:text-white">{nav("partnerships")}</Link>
               <Link href="/contacto" className="hover:text-white">{t("contact")}</Link>
             </div>
           </div>
@@ -79,12 +84,23 @@ export function SocietyFooter() {
           </div>
         </div>
 
-        <div className="mt-14 flex flex-col gap-4 border-t border-white/10 pt-7 text-xs text-white/60 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} WEPAC · Carcavelos, Portugal</p>
-          <div className="flex gap-5">
-            <Link href="/privacidade" className="hover:text-white">{t("privacy")}</Link>
-            <span>From packers to WEPACkers.</span>
-          </div>
+        <div className="mt-14 flex flex-col gap-4 border-t border-white/10 pt-7 text-xs text-white/60 lg:flex-row lg:items-center lg:justify-between">
+          <p>
+            © {new Date().getFullYear()} WEPAC — Companhia de Artes, Lda · NIPC 518 267 342 · Carcavelos, Portugal
+          </p>
+          <nav aria-label={legal.privacy} className="flex flex-wrap gap-x-5 gap-y-2">
+            <Link href="/privacidade" className="hover:text-white">{legal.privacy}</Link>
+            <Link href="/cookies" className="hover:text-white">{legal.cookies}</Link>
+            <Link href="/termos" className="hover:text-white">{legal.terms}</Link>
+            <a
+              href="https://www.livroreclamacoes.pt/Inicio/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white"
+            >
+              {legal.complaints}
+            </a>
+          </nav>
         </div>
       </div>
     </footer>

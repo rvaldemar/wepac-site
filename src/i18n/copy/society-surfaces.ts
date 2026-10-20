@@ -299,7 +299,7 @@ export const artsCompanySurfaceCopy = {
         {
           name: "Agenda",
           line: "Programação WEPAC e próximos encontros.",
-          href: "/programacao",
+          href: "/bilheteira",
         },
         {
           name: "Bilheteira",
@@ -359,7 +359,7 @@ export const artsCompanySurfaceCopy = {
         {
           name: "Calendar",
           line: "WEPAC programming and upcoming gatherings.",
-          href: "/programacao",
+          href: "/bilheteira",
         },
         {
           name: "Box office",

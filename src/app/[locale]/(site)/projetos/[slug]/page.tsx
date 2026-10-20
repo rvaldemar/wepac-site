@@ -57,10 +57,11 @@ export default async function ProjectPage({
         <div className="mx-auto max-w-4xl">
           <FadeIn>
             <Link
-              href="/projetos"
+              // Easy Peasy is the Academy's first door, part of WEPAC Society.
+              href={slug === "easy-peasy" ? "/academy" : "/companhia-de-artes"}
               className="text-sm text-wepac-white/40 transition-colors hover:text-wepac-white"
             >
-              {copy.back}
+              {slug === "easy-peasy" ? "← Academy" : copy.back}
             </Link>
             <p className="mt-6 text-sm font-bold uppercase tracking-widest text-wepac-white/40">
               {project.tagline}

@@ -8,18 +8,48 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { useMobileDrawer } from "@/lib/useMobileDrawer";
 import { getSocietyIntakeHref } from "@/lib/society/intake-source";
 
-const navigation = [
+const societyNavigation = [
   { key: "lifePlan", href: "/society/life-plan" },
   { key: "families", href: "/society/familias" },
   { key: "academy", href: "/academy" },
   { key: "artsCompany", href: "/companhia-de-artes" },
 ] as const;
 
+// WEPAC Society is the parent brand; the Companhia de Artes is its artistic
+// arm and gets its own navigation on its sections.
+const companhiaNavigation = [
+  { key: "wessex", href: "/wessex" },
+  { key: "arteACapela", href: "/arte-a-capela" },
+  { key: "ticketing", href: "/bilheteira" },
+  { key: "artists", href: "/artist" },
+  { key: "partnerships", href: "/parcerias" },
+  { key: "society", href: "/society" },
+] as const;
+
+const COMPANHIA_SECTIONS = [
+  "/companhia-de-artes",
+  "/wessex",
+  "/arte-a-capela",
+  "/bilheteira",
+  "/artist",
+  "/parcerias",
+  "/servicos",
+];
+
+function inSection(pathname: string, href: string): boolean {
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function SocietyHeader() {
   const t = useTranslations("Navigation.society");
   const common = useTranslations("Common");
   const pathname = usePathname();
   const intakeHref = getSocietyIntakeHref(pathname);
+  const companhia = COMPANHIA_SECTIONS.some((href) => inSection(pathname, href));
+  const navigation = companhia ? companhiaNavigation : societyNavigation;
+  const cta = companhia
+    ? { href: "/bilheteira", label: t("seeTickets") }
+    : { href: intakeHref, label: t("startLifePlan") };
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
   const { toggleRef, drawerRef } = useMobileDrawer<HTMLButtonElement, HTMLDivElement>(
@@ -33,7 +63,11 @@ export function SocietyHeader() {
         className="mx-auto flex h-20 max-w-[1760px] items-center justify-between px-5 sm:px-8 lg:px-12"
         aria-label={common("navigation")}
       >
-        <Link href="/society" className="flex items-center gap-4" aria-label="WEPAC Society">
+        <Link
+          href={companhia ? "/companhia-de-artes" : "/society"}
+          className="flex items-center gap-4"
+          aria-label={companhia ? `WEPAC ${t("artsCompany")}` : "WEPAC Society"}
+        >
           <Image
             src="/logo/wepac/wordmark-white.png"
             alt="WEPAC"
@@ -43,7 +77,7 @@ export function SocietyHeader() {
             priority
           />
           <span className="hidden border-l border-white/25 pl-4 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/75 sm:block">
-            Society
+            {companhia ? t("artsCompany") : "Society"}
           </span>
         </Link>
 
@@ -52,7 +86,10 @@ export function SocietyHeader() {
             <Link
               key={item.key}
               href={item.href}
-              className="text-[13px] font-medium text-white/80 transition-colors hover:text-white"
+              aria-current={inSection(pathname, item.href) ? "page" : undefined}
+              className={`text-[13px] font-medium transition-colors hover:text-white ${
+                inSection(pathname, item.href) ? "text-white" : "text-white/70"
+              }`}
             >
               {t(item.key)}
             </Link>
@@ -64,10 +101,10 @@ export function SocietyHeader() {
             {t("openBackpack")}
           </Link>
           <Link
-            href={intakeHref}
+            href={cta.href}
             className="border border-white bg-white px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.16em] text-black transition-colors hover:bg-wepac-gray"
           >
-            {t("startLifePlan")}
+            {cta.label}
           </Link>
           <LocaleSwitcher />
         </div>
@@ -130,11 +167,11 @@ export function SocietyHeader() {
               {t("openBackpack")}
             </Link>
             <Link
-              href={intakeHref}
+              href={cta.href}
               onClick={closeMenu}
               className="mt-3 bg-white px-5 py-4 text-center text-xs font-bold uppercase tracking-[0.16em] text-black"
             >
-              {t("startLifePlan")}
+              {cta.label}
             </Link>
           </div>
         </div>

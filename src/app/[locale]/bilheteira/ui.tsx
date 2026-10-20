@@ -1,8 +1,8 @@
 import type { CSSProperties, ReactNode } from "react";
 import { getLocale } from "next-intl/server";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
-import { Footer } from "@/components/Footer";
-import { Header } from "@/components/Header";
+import { SocietyFooter } from "@/components/society/SocietyFooter";
+import { SocietyHeader } from "@/components/society/SocietyHeader";
 import { Link } from "@/i18n/navigation";
 import { getInstitutionalCopy } from "@/i18n/copy/institutional";
 
@@ -254,10 +254,12 @@ export async function Shell({
   if (withFooter) {
     return (
       <div style={styles.page}>
-        <Header />
-        {/* The site header is fixed: offset the content by its height. */}
-        <div className="pt-[60px]">{children}</div>
-        <Footer />
+        <SocietyHeader />
+        {/* The site header is fixed and translucent: a black band under it
+            keeps it black on light ticketing pages. */}
+        <div className="h-20 bg-black" aria-hidden />
+        {children}
+        <SocietyFooter />
       </div>
     );
   }

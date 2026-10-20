@@ -49,7 +49,7 @@ export const footerSocialLinks = [
 ];
 
 export const footerInfoLinks = [
-  { label: "Sobre o Projecto", href: "/projetos/arte-a-capela" },
+  { label: "Sobre o Projecto", href: "/arte-a-capela" },
   { label: "Bilheteira", href: "/bilheteira" },
   { label: "Contacto", href: "/contacto" },
   { label: "Privacidade", href: "/privacidade" },

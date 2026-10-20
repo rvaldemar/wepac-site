@@ -358,7 +358,7 @@ const ptPT: InstitutionalPagesCopy = {
     introduction:
       "Três projetos, uma missão: usar a arte como motor de transformação social.",
     learnMore: "Saber mais →",
-    back: "← Projetos",
+    back: "← Companhia de Artes",
     highlights: "Destaques",
     interested: "Interessado neste projeto?",
     contact: "Entre em contacto",
@@ -666,7 +666,7 @@ const enUS: InstitutionalPagesCopy = {
     introduction:
       "Three projects, one mission: using art as a force for social transformation.",
     learnMore: "Learn more →",
-    back: "← Projects",
+    back: "← Arts Company",
     highlights: "Highlights",
     interested: "Interested in this project?",
     contact: "Get in touch",

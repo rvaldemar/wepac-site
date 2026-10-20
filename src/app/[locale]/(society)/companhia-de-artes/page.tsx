@@ -196,7 +196,7 @@ export default async function CompanhiaDeArtesPage() {
           </h2>
           <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
-              href="/programacao"
+              href="/bilheteira"
               className="inline-flex min-h-14 items-center justify-center bg-black px-7 text-xs font-bold uppercase tracking-[0.18em] text-white hover:bg-black/80"
             >
               {copy.closing.primaryCta}

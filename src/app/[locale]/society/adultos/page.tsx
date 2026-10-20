@@ -221,7 +221,7 @@ export default async function CampanhaAdultosPage() {
               WEPAC Society
             </Link>
             <Link
-              href="/sobre"
+              href="/society"
               className="transition-colors hover:text-wepac-white"
             >
               {copy.footer.about}

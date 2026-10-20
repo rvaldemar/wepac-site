@@ -7,7 +7,28 @@ const nextConfig: NextConfig = {
   output: "standalone",
   serverExternalPackages: ["@prisma/client", "prisma"],
   async redirects() {
+    // WEPAC Society is the parent brand: «A WEPAC», method and impact live
+    // on the Society page; the Companhia
+    // de Artes has one canonical page per area and the agenda is the
+    // ticketing index.
+    const consolidated: Array<[string, string]> = [
+      ["/sobre", "/society"],
+      ["/metodologia", "/society"],
+      ["/impacto", "/society"],
+      // Exact match only: /projetos/easy-peasy stays (Academy, first door).
+      ["/projetos", "/companhia-de-artes"],
+      ["/servicos", "/wessex"],
+      ["/programacao", "/bilheteira"],
+    ];
     return [
+      ...consolidated.flatMap(([source, destination]) => [
+        { source, destination, permanent: true },
+        {
+          source: `/:locale(en|en-US|pt|pt-PT)${source}`,
+          destination: `/:locale${destination}`,
+          permanent: true,
+        },
+      ]),
       {
         source: "/academia",
         destination: "/academy",

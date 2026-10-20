@@ -111,7 +111,7 @@ const ptPT: ArteACapelaCopy = {
   socialNetworks: "Redes sociais",
   information: "Informações",
   footerInfoLinks: [
-    { label: "Sobre o Projeto", href: "/projetos/arte-a-capela" },
+    { label: "Sobre o Projeto", href: "/arte-a-capela" },
     { label: "Bilheteira", href: "/bilheteira" },
     { label: "Contacto", href: "/contacto" },
     { label: "Privacidade", href: "/privacidade" },
@@ -182,7 +182,7 @@ const enUS: ArteACapelaCopy = {
   socialNetworks: "Social media",
   information: "Information",
   footerInfoLinks: [
-    { label: "About the project", href: "/projetos/arte-a-capela" },
+    { label: "About the project", href: "/arte-a-capela" },
     { label: "Tickets", href: "/bilheteira" },
     { label: "Contact", href: "/contacto" },
     { label: "Privacy", href: "/privacidade" },

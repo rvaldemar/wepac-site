@@ -245,15 +245,11 @@ export default async function SocietyPage({ params }: SocietyPageProps) {
                 <h3 className="mt-8 max-w-xl font-barlow text-4xl font-black uppercase leading-[0.92] tracking-[-0.035em]">
                   {copy.landing.values.title}
                 </h3>
+                {/* «A WEPAC» now lives on this page, so the values are the
+                    destination itself, not a link away. */}
                 <p className="mt-6 max-w-xl text-sm font-semibold uppercase leading-relaxed tracking-[0.1em] text-white/85">
                   {copy.landing.values.items.join(" · ")}
                 </p>
-                <Link
-                  href="/sobre"
-                  className="mt-auto inline-flex items-center gap-2 pt-9 text-xs font-bold uppercase tracking-[0.18em]"
-                >
-                  {copy.landing.values.cta} <Arrow />
-                </Link>
               </FadeIn>
             </div>
           </div>

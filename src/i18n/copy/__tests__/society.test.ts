@@ -111,7 +111,8 @@ describe("Society narrative", () => {
     expect(pt.landing.values.items).toHaveLength(6);
     expect(page).toContain('href="/companhia-de-artes"');
     expect(page).toContain('href="/academy"');
-    expect(page).toContain('href="/sobre"');
+    // «A WEPAC» was folded into the Society page (/sobre redirects here).
+    expect(page).not.toContain('href="/sobre"');
   });
 
   it("does not leave navigation pointing at removed Society sections", () => {

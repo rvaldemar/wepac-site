@@ -56,13 +56,13 @@ export function HeroSection() {
           className="mt-12 flex flex-col gap-4 sm:flex-row sm:justify-center"
         >
           <Link
-            href="/servicos"
+            href="/wessex"
             className="inline-block bg-wepac-white px-8 py-3 font-barlow text-sm font-bold uppercase tracking-wider text-wepac-black transition-opacity hover:opacity-90"
           >
             Serviços Wessex
           </Link>
           <Link
-            href="/sobre"
+            href="/society"
             className="inline-block border-2 border-wepac-white/30 px-8 py-3 font-barlow text-sm font-bold uppercase tracking-wider text-wepac-white transition-colors hover:border-wepac-white"
           >
             Conhecer a WEPAC
