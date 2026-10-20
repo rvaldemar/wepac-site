@@ -4,6 +4,16 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-10-20 — Bilhete com a identidade da campanha (DEPLOYADO)
+
+**Release:** `9b35a15df68d`. Eventos com tema próprio (dark/condensed) emitem o
+bilhete na identidade da campanha: imagem do hero, título condensado com «?»
+em destaque, cor de acento, QR em canhoto. A página do bilhete passa a usar a
+tradução do evento e do bilhete. Primeira tentativa de build falhou a
+descarregar Google Fonts (transitório); a segunda passou.
+
+---
+
 ## 2026-10-20 — Estrutura do site: WEPAC Society como marca-mãe (DEPLOYADO)
 
 **Release:** `ff6ec9298f01` (inclui `80b4587` páginas legais e `2036a69`).
