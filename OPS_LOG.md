@@ -4,6 +4,38 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-10-20 — Bilheteira: tipos de bilhete, estados e landing de evento (DEPLOYADO)
+
+**Release:** `fe5e993ccd0d`, `/var/www/wepac/releases/20261020T125153Z-fe5e993ccd0d`.
+Migração aditiva `20261020120000_bilheteira_tier_kinds_landing` aplicada no cutover.
+PR #13 (fast-forward em main). Gate: 541 testes unitários, tsc, lint, build e
+E2E de build 11/11.
+
+**Primeira tentativa falhou no backup:** `rvs-backup@wepac` saiu com
+`No space left on device` em `/mnt/HC_Volume_104391672`; o script repôs o
+runtime anterior (nada migrado). Os dois discos estavam a 100 % (`/` com
+478 MB livres). Limpeza autorizada pelo Rui: cópia de restauro
+`backups-recovery-20260923/private` (ficaram os ficheiros de prova do
+incidente de 22/09), pastas de teste `hub-quality-20260910`,
+`capacity-staging-e0*`, `hub-db-restore-20260924T150927Z`,
+`hitman-mechanism-verify-restore-20260928T141825Z`, `docker builder prune -af`,
+`docker image prune -af` (volumes Docker intactos) e releases WEPAC antigas
+(ficaram as 5 mais recentes). Resultado: volume 11 GB livres (89 %), `/`
+5,2 GB livres (93 %). Pendentes fora da WEPAC: `/home/hitman` 22 GB,
+`backups/hitman-webui` 13 GB, 27 GB de volumes Docker sem uso;
+`hitman-platform-postgres-1` e `mailcowdockerized-netfilter-mailcow-1` em
+restart loop e `hitman-platform-zitadel-api-1`, `mailcowdockerized-unbound-mailcow-1`
+unhealthy (não tocados).
+
+**Festival 21/11:** `scripts/seed-festival-21-nov-2026.ts` corrido em produção
+(evento `festival-quem-e-o-teu-mestre-2026`, 11 bilhetes, lotação 120) e
+evento publicado com autorização do Rui. Smoke: landing 200, 11 bilhetes,
+Second Wave e Last Call «Em breve», acreditação «Por pedido» e página de pedido
+200. Fases do Artista sem quantidade: passagem manual (pôr a fase em
+«Vendas encerradas» abre a seguinte). Por configurar no admin: nota e link da
+candidatura no email do Bilhete Artista; `NEXT_PUBLIC_META_PIXEL_ID` (Pixel
+desligado sem ele). Guia: `docs/operations/bilheteira-tipos-de-bilhete.md`.
+
 ## 2026-10-10 — Roda da Capela: jogo de prémios no quiosque (DEPLOYADO)
 
 **Release:** `758bf1abc008`, `/var/www/wepac/releases/20261010T111856Z-758bf1abc008`
