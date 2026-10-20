@@ -44,6 +44,6 @@ A descrição do evento (detalhes do evento) é markdown.
 
 ## Festival 21 nov 2026
 
-`scripts/seed-festival-21-nov-2026.ts` cria/atualiza o evento (em rascunho) e os 11 bilhetes. Fases do Artista sem quantidade (passagem manual). Por env: `KEY_PLAYERS_QTY`, `CAPACITY`.
+`scripts/seed-festival-21-nov-2026.ts` cria/atualiza o evento (em rascunho) e os 11 bilhetes. Lotação única de 120 lugares para todo o evento, sem limites por bilhete; fases do Artista com passagem manual. Por env: `CAPACITY`.
 
 Opcional: `BILHETEIRA_REQUESTS_INBOX` define o email que recebe o aviso de novos pedidos (por omissão `SMTP_FROM`).

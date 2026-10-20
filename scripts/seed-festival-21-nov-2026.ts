@@ -10,8 +10,7 @@
  * Artist phases have no quantity: the team opens the next phase by closing
  * the current one in the admin (Estado → «Vendas encerradas» or «Esgotado»).
  * Options (env):
- *   CAPACITY                         chapel capacity for the evening (default 80)
- *   KEY_PLAYERS_QTY                  accreditations to approve (default 20)
+ *   CAPACITY                         event capacity, shared by every ticket (default 120)
  */
 
 import { PrismaClient, type Prisma } from "@prisma/client";
@@ -154,7 +153,7 @@ Mínimo de 10 lugares; escolhes o número de lugares na compra. Não inclui cand
       name: "Festival – Acreditação Key Players da Cultura",
       kind: "request",
       priceCents: 0,
-      quantity: qty("KEY_PLAYERS_QTY", 20),
+      quantity: null,
       ctaLabel: "Pedir acreditação",
       section: "Acreditação",
       description: `**Conhece os artistas e os trabalhos que vêm a seguir.**
@@ -224,7 +223,8 @@ async function main() {
     // 21 Nov is winter time in Lisbon (UTC+0).
     startsAt: new Date("2026-11-21T10:00:00Z"),
     durationMinutes: 11 * 60,
-    capacity: qty("CAPACITY", 80),
+    // One shared capacity for the whole event; no per-ticket limits.
+    capacity: qty("CAPACITY", 120),
     seoDescription:
       "Festival da WEPAC – Companhia de Artes a 21 de novembro na Capela do Hospital de Jesus, Lisboa: mestres em palco, debate, línguas, como se vive da arte e, às 19h30, concerto e Prémios WEPAC ’26 — Edição Orpheu.",
     featured: true,
