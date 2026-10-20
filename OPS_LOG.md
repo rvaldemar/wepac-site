@@ -4,6 +4,22 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-10-20 — Bilheteira: cartões com identidade do evento e versão inglesa (DEPLOYADO)
+
+**Releases:** `159a45c16187` (cartões do índice e da promoção cruzada seguem o
+tema do evento; festival com imagem de capa `hero-duo.jpg`) e `440b073c2004`
+(cópia por língua em `events.translations` e `ticket_tiers.translations`,
+migração aditiva `20261020170000_bilheteira_translations`; /en mostra título,
+descrição, topo, horário, programa, FAQ e bilhetes em inglês, com recurso ao
+português campo a campo). Festival atualizado em produção com o script (só
+update). Smoke: /en mostra «Who is your master?» e «Artist Ticket (Early
+Bird)»; /bilheteira continua em português. Testes 550/550.
+
+Nota: correr o script remoto com `| tail`, nunca `| head` (o pipe fechado
+dá EPIPE e interrompe o script a meio).
+
+---
+
 ## 2026-10-20 — Bilheteira: horário dos Prémios e imagem de partilha (DEPLOYADO)
 
 **Releases:** `6de54b4d9253` (linha própria «Prémios WEPAC ’26 / Edição Orpheu»
