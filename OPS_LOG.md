@@ -4,6 +4,18 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-10-20 — Bilheteira: horário dos Prémios e imagem de partilha (DEPLOYADO)
+
+**Releases:** `6de54b4d9253` (linha própria «Prémios WEPAC ’26 / Edição Orpheu»
+no horário do topo; linhas sem hora continuam a hora anterior) e
+`eb11824f5aa2` (imagem de partilha com o duo inteiro, também no recorte
+quadrado do WhatsApp, renomeada para `partilha-duo.jpg` para forçar
+pré-visualizações novas). Festival atualizado em produção com o script
+(só update). Smoke: og:image aponta para a nova imagem (200) e a landing
+mostra «Edição Orpheu» sob os Prémios.
+
+---
+
 ## 2026-10-20 — Bilheteira: tema de campanha por evento (DEPLOYADO)
 
 **Release:** `512d04eceb28`, `/var/www/wepac/releases/20261020T130407Z-512d04eceb28`.
