@@ -21,14 +21,14 @@ export function EventCards({
   large?: boolean;
 }) {
   return (
-    <ul className={`grid gap-6 ${large ? "md:grid-cols-2" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
+    <ul className={`grid gap-6 ${large ? "grid-cols-1" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
       {cards.map(({ event, fromPrice }) => (
         <li key={event.id}>
           <Link
             href={`/bilheteira/${event.slug}`}
-            className="group block h-full border border-black/12 bg-white transition hover:border-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-black"
+            className={`group block h-full border border-black/12 bg-white transition hover:border-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-black ${large ? "md:grid md:grid-cols-[1.3fr_1fr]" : ""}`}
           >
-            <div className="aspect-[16/10] overflow-hidden bg-[#e9e6df]">
+            <div className={`overflow-hidden bg-[#e9e6df] ${large ? "aspect-[16/10] md:aspect-auto md:min-h-[340px]" : "aspect-[16/10]"}`}>
               {event.coverImage && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -39,7 +39,7 @@ export function EventCards({
                 />
               )}
             </div>
-            <div className="p-5">
+            <div className={large ? "flex flex-col justify-end p-6 md:p-8" : "p-5"}>
               <p className="text-[10px] uppercase tracking-[0.2em] text-black/55">
                 {event.brand?.name || event.department.name}
               </p>

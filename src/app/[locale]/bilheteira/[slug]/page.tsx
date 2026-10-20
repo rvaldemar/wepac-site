@@ -299,7 +299,6 @@ export default async function EventPublicPage({ params, searchParams }: Props) {
             eventTitle={event.title}
             offers={offers}
             locale={locale}
-            copy={copy}
             preselectedId={tierParam}
             waitlistJoinedId={waitlist}
           />

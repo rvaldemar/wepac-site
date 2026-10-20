@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown";
 import { Link } from "@/i18n/navigation";
 import { reserveAction } from "@/lib/bilheteira/reserve-action";
 import { joinWaitlistAction } from "@/lib/bilheteira/request-actions";
-import type { BilheteiraCopy } from "@/i18n/copy/institutional-bilheteira";
+import { getBilheteiraCopy, type BilheteiraCopy } from "@/i18n/copy/institutional-bilheteira";
 import type { TierOffer } from "@/lib/bilheteira/offers";
 import { formatEuro, formatOfferPrice, stateLabel } from "./offer-format";
 import { readUtmRaw, trackPixel, UTM_KEYS } from "./tracking";
@@ -15,7 +15,6 @@ type Props = {
   eventTitle: string;
   offers: TierOffer[];
   locale: string;
-  copy: BilheteiraCopy;
   preselectedId?: string;
   waitlistJoinedId?: string;
 };
@@ -28,10 +27,12 @@ export function EventTickets({
   eventTitle,
   offers,
   locale,
-  copy,
   preselectedId,
   waitlistJoinedId,
 }: Props) {
+  // Copy holds formatter functions, which cannot cross the server/client
+  // boundary as props; resolve it here from the locale instead.
+  const copy = getBilheteiraCopy(locale);
   const purchasable = offers.filter((o) => o.state === "on_sale");
   const initial =
     purchasable.find((o) => o.id === preselectedId) ??

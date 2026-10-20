@@ -242,7 +242,7 @@ export function renderTicketEmail(data: TicketEmailData): { subject: string; htm
           <table style="margin-top: 16px; font-size: 14px;">
             <tr><td style="padding:4px 12px 4px 0;color:#666;">Data</td><td>${formatDate(data.startsAt)} · ${formatTime(data.startsAt)}</td></tr>
             <tr><td style="padding:4px 12px 4px 0;color:#666;">Local</td><td>${safeVenue}</td></tr>
-            <tr><td style="padding:4px 12px 4px 0;color:#666;">Tier</td><td><strong>${safeTierName}</strong></td></tr>
+            <tr><td style="padding:4px 12px 4px 0;color:#666;">Bilhete</td><td><strong>${safeTierName}</strong></td></tr>
             <tr><td style="padding:4px 12px 4px 0;color:#666;">Lugares</td><td>${data.seats}</td></tr>
             ${serialRow}
           </table>
