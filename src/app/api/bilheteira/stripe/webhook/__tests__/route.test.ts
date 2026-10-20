@@ -29,6 +29,7 @@ vi.mock("@/lib/bilheteira/stripe", () => ({
 const sendTicketEmail = vi.fn(async (..._args: unknown[]) => undefined);
 vi.mock("@/lib/bilheteira/ticket-email", () => ({
   sendTicketEmail: (...args: unknown[]) => sendTicketEmail(...args),
+  ticketEmailData: (x: unknown) => x,
 }));
 
 import { POST } from "@/app/api/bilheteira/stripe/webhook/route";
@@ -50,6 +51,7 @@ const basePayment = {
   buyerEmail: "ana@example.com",
   buyerPhone: null,
   marketingConsent: false,
+  amountCents: 2000,
   ticket: null,
   event: { title: "Concerto", subtitle: null, startsAt: new Date(), venue: "Sala X", coverImage: null },
   tier: { name: "Geral", priceCents: 1000 },
@@ -203,5 +205,42 @@ describe("checkout.session.expired / async_payment_failed", () => {
     await POST(req());
 
     expect(ticketUpdate).not.toHaveBeenCalled();
+  });
+});
+
+describe("paid amount", () => {
+  it("records what Stripe charged (promotion codes) as price per seat", async () => {
+    constructEvent.mockReturnValue({
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          id: "cs_promo",
+          payment_status: "paid",
+          amount_total: 1500,
+          metadata: { paymentId: "pay-1" },
+        },
+      },
+    });
+    paymentFindUnique.mockResolvedValue({ ...basePayment });
+    ticketCreate.mockResolvedValue({ id: "ticket-1", seats: 2, priceCents: 750 });
+
+    await POST(req());
+
+    expect(ticketCreate.mock.calls[0][0].data).toMatchObject({ seats: 2, priceCents: 750 });
+    expect(paymentUpdate.mock.calls[0][0].data).toMatchObject({ amountCents: 1500 });
+    expect(sendTicketEmail).toHaveBeenCalledTimes(1);
+  });
+
+  it("falls back to the quoted Payment amount when Stripe omits the total", async () => {
+    constructEvent.mockReturnValue({
+      type: "checkout.session.completed",
+      data: { object: { id: "cs_x", payment_status: "paid", metadata: { paymentId: "pay-1" } } },
+    });
+    paymentFindUnique.mockResolvedValue({ ...basePayment });
+    ticketCreate.mockResolvedValue({ id: "ticket-1" });
+
+    await POST(req());
+
+    expect(ticketCreate.mock.calls[0][0].data).toMatchObject({ priceCents: 1000 });
   });
 });

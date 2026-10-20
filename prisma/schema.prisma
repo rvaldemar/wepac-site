@@ -1061,6 +1061,26 @@ enum PaymentStatus {
   expired
 }
 
+enum TicketTierKind {
+  single
+  bundle
+  group
+  phase
+  request
+}
+
+enum TierStateOverride {
+  auto
+  sold_out
+  closed
+}
+
+enum TierRequestStatus {
+  pending
+  approved
+  rejected
+}
+
 model TicketingAdmin {
   id                    String    @id @default(cuid())
   email                 String    @unique
@@ -1074,8 +1094,70 @@ model TicketingAdmin {
 
   events           Event[]
   redeemedVouchers PrizeVoucher[]
+  reviewedRequests TierRequest[]
 
   @@map("ticketing_admins")
+}
+
+model EventGuest {
+  id        String    @id @default(cuid())
+  eventId   String
+  name      String
+  role      String?
+  bio       String?
+  photo     String?
+  // Hidden from the public page until this moment (one name at a time).
+  revealAt  DateTime?
+  sortOrder Int       @default(0)
+  createdAt DateTime  @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, sortOrder])
+  @@map("event_guests")
+}
+
+model TierRequest {
+  id               String            @id @default(cuid())
+  eventId          String
+  tierId           String
+  name             String
+  email            String
+  phone            String?
+  organization     String
+  role             String
+  website          String?
+  message          String?
+  marketingConsent Boolean           @default(false)
+  status           TierRequestStatus @default(pending)
+  ticketId         String?           @unique
+  reviewedById     String?
+  reviewedAt       DateTime?
+  createdAt        DateTime          @default(now())
+
+  event      Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tier       TicketTier      @relation(fields: [tierId], references: [id])
+  ticket     Ticket?         @relation(fields: [ticketId], references: [id], onDelete: SetNull)
+  reviewedBy TicketingAdmin? @relation(fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([eventId, status])
+  @@map("tier_requests")
+}
+
+model TierWaitlistEntry {
+  id               String   @id @default(cuid())
+  eventId          String
+  tierId           String
+  email            String
+  name             String?
+  marketingConsent Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  event Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tier  TicketTier @relation(fields: [tierId], references: [id], onDelete: Cascade)
+
+  @@unique([tierId, email])
+  @@map("tier_waitlist_entries")
 }
 
 model Department {
@@ -1120,17 +1202,31 @@ model Event {
   coverImage      String?
   capacity        Int?
   ticketNote      String?
+  // Landing content. description is rendered as markdown; the rest is
+  // optional and each block only renders when it has content.
+  seoDescription  String?
+  ogImage         String?
+  mapUrl          String?
+  directions      String?
+  program         Json?
+  faq             Json?
+  featured        Boolean     @default(false)
+  // Appended to every confirmation email of this event (merge fields allowed).
+  emailNote       String?
   status          EventStatus @default(draft)
   createdById     String?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
-  department Department      @relation(fields: [departmentId], references: [id])
-  brand      Brand?          @relation(fields: [brandId], references: [id])
-  createdBy  TicketingAdmin? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  department Department          @relation(fields: [departmentId], references: [id])
+  brand      Brand?              @relation(fields: [brandId], references: [id])
+  createdBy  TicketingAdmin?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
   tiers      TicketTier[]
   tickets    Ticket[]
   payments   Payment[]
+  guests     EventGuest[]
+  requests   TierRequest[]
+  waitlist   TierWaitlistEntry[]
 
   @@index([status, startsAt])
   @@map("events")
@@ -1148,10 +1244,41 @@ model TicketTier {
   archivedAt    DateTime?
   createdAt     DateTime  @default(now())
 
-  event    Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  kind                TicketTierKind    @default(single)
+  // bundle: seats granted per purchased unit (A Dois = 2, Família = 4).
+  seatsPerUnit        Int               @default(1)
+  // group: minimum seats per purchase; maxPerOrder caps any purchase.
+  minSeats            Int?
+  maxPerOrder         Int?
+  hideUnitPrice       Boolean           @default(false)
+  // phase: tiers sharing a phaseGroup open in phaseOrder, each one only
+  // after the previous one sold out.
+  phaseGroup          String?
+  phaseOrder          Int?
+  salesStartAt        DateTime?
+  salesEndAt          DateTime?
+  stateOverride       TierStateOverride @default(auto)
+  lockedNote          String?
+  referencePriceCents Int?
+  // request: no payment path; the CTA leads to the request landing (or an
+  // external URL when set).
+  ctaLabel            String?
+  ctaUrl              String?
+  waitlistEnabled     Boolean           @default(false)
+  section             String?
+  featured            Boolean           @default(false)
+  // Confirmation email extras for this tier (merge fields allowed).
+  emailNote           String?
+  emailCtaLabel       String?
+  emailCtaUrl         String?
+
+  event    Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
   tickets  Ticket[]
   payments Payment[]
+  requests TierRequest[]
+  waitlist TierWaitlistEntry[]
 
+  @@index([eventId, phaseGroup])
   @@map("ticket_tiers")
 }
 
@@ -1177,6 +1304,7 @@ model Ticket {
   payment          Payment?          @relation(fields: [paymentId], references: [id])
   checkLogs        TicketCheckLog[]
   gameParticipants GameParticipant[]
+  request          TierRequest?
 
   @@index([eventId, status])
   @@map("tickets")

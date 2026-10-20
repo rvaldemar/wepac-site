@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { prisma } from "@/lib/db";
 import { getStripe } from "@/lib/bilheteira/stripe";
-import { sendTicketEmail } from "@/lib/bilheteira/ticket-email";
+import { sendTicketEmail, ticketEmailData } from "@/lib/bilheteira/ticket-email";
 import { logSafeError } from "@/lib/wepacker/log-safe-error";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +42,13 @@ async function fulfillCheckout(session: Stripe.Checkout.Session) {
     return;
   }
 
+  // What the buyer actually paid: Stripe's total reflects promotion codes;
+  // the Payment row holds the pre-discount quote as a fallback. Tickets keep
+  // the effective price per seat so bundles and groups total correctly.
+  const paidCents =
+    typeof session.amount_total === "number" ? session.amount_total : payment.amountCents;
+  const perSeatCents = Math.round(paidCents / Math.max(1, payment.seats));
+
   const ticket = await prisma.ticket.create({
     data: {
       eventId: payment.eventId,
@@ -52,7 +59,7 @@ async function fulfillCheckout(session: Stripe.Checkout.Session) {
       buyerPhone: payment.buyerPhone,
       marketingConsent: payment.marketingConsent,
       seats: payment.seats,
-      priceCents: payment.tier.priceCents,
+      priceCents: perSeatCents,
     },
   });
 
@@ -61,25 +68,16 @@ async function fulfillCheckout(session: Stripe.Checkout.Session) {
     data: {
       status: "completed",
       paidAt: new Date(),
+      amountCents: paidCents,
       metadata: (session as unknown as { metadata?: Record<string, string> })
         .metadata as Record<string, string> | undefined,
     },
   });
 
   try {
-    await sendTicketEmail({
-      to: payment.buyerEmail,
-      buyerName: payment.buyerName,
-      eventTitle: payment.event.title,
-      eventSubtitle: payment.event.subtitle,
-      startsAt: payment.event.startsAt,
-      venue: payment.event.venue,
-      tierName: payment.tier.name,
-      priceCents: payment.tier.priceCents,
-      seats: payment.seats,
-      ticketId: ticket.id,
-      coverImage: payment.event.coverImage,
-    });
+    await sendTicketEmail(
+      ticketEmailData({ ticket, event: payment.event, tier: payment.tier }),
+    );
   } catch (err) {
     console.error("[stripe webhook] ticket_email_failed", logSafeError(err));
   }

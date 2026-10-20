@@ -5,6 +5,7 @@ import {
   safeEmailHeaderText,
   safeEmailRecipient,
 } from "@/lib/email-security";
+import { mergeText, mergeUrl, type EmailMergeValues } from "./email-merge";
 
 const FROM = process.env.SMTP_FROM || "info@wepac.pt";
 
@@ -36,7 +37,7 @@ function formatTime(d: Date): string {
   }).format(d);
 }
 
-type TicketEmailData = {
+export type TicketEmailData = {
   to: string;
   buyerName: string;
   eventTitle: string;
@@ -44,11 +45,108 @@ type TicketEmailData = {
   startsAt: Date;
   venue: string;
   tierName: string;
+  // Total actually charged for the order (bundles and groups are not
+  // price × seats). Optional for legacy callers.
+  totalCents?: number;
   priceCents: number;
   seats: number;
   ticketId: string;
+  ticketSerial?: number | null;
   coverImage?: string | null;
+  // Configurable extras (event-wide note, tier note, tier CTA). Merge fields
+  // are resolved here with the buyer's data.
+  eventEmailNote?: string | null;
+  tierEmailNote?: string | null;
+  emailCtaLabel?: string | null;
+  emailCtaUrl?: string | null;
 };
+
+type TicketEmailSource = {
+  ticket: { id: string; serial: number; buyerName: string; buyerEmail: string; seats: number; priceCents: number };
+  event: {
+    title: string;
+    subtitle: string | null;
+    startsAt: Date;
+    venue: string;
+    coverImage: string | null;
+    emailNote: string | null;
+  };
+  tier: {
+    name: string;
+    priceCents: number;
+    emailNote: string | null;
+    emailCtaLabel: string | null;
+    emailCtaUrl: string | null;
+  };
+};
+
+export function ticketEmailData({ ticket, event, tier }: TicketEmailSource): TicketEmailData {
+  return {
+    to: ticket.buyerEmail,
+    buyerName: ticket.buyerName,
+    eventTitle: event.title,
+    eventSubtitle: event.subtitle,
+    startsAt: event.startsAt,
+    venue: event.venue,
+    tierName: tier.name,
+    priceCents: tier.priceCents,
+    // Ticket.priceCents is the effective price per seat (total / seats).
+    totalCents: ticket.priceCents * ticket.seats,
+    seats: ticket.seats,
+    ticketId: ticket.id,
+    ticketSerial: ticket.serial,
+    coverImage: event.coverImage,
+    eventEmailNote: event.emailNote,
+    tierEmailNote: tier.emailNote,
+    emailCtaLabel: tier.emailCtaLabel,
+    emailCtaUrl: tier.emailCtaUrl,
+  };
+}
+
+function mergeValues(data: TicketEmailData): EmailMergeValues {
+  return {
+    nome: data.buyerName,
+    email: data.to,
+    bilhete: data.ticketSerial != null ? String(data.ticketSerial) : data.ticketId,
+    evento: data.eventTitle,
+    tipo: data.tierName,
+    lugares: String(data.seats),
+  };
+}
+
+function noteHtml(note: string, values: EmailMergeValues): string {
+  return mergeText(note, values)
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .map(
+      (p) =>
+        `<p style="font-size: 15px; line-height: 1.5; margin: 0 0 12px;">${escapeEmailHtml(p).replace(/\n/g, "<br />")}</p>`,
+    )
+    .join("");
+}
+
+function extrasHtml(data: TicketEmailData): string {
+  const values = mergeValues(data);
+  const notes = [data.tierEmailNote, data.eventEmailNote]
+    .filter((n): n is string => Boolean(n && n.trim()))
+    .map((n) => noteHtml(n, values))
+    .join("");
+  let cta = "";
+  if (data.emailCtaUrl && data.emailCtaLabel) {
+    let href: string | null = null;
+    try {
+      href = assertSafeEmailUrl(mergeUrl(data.emailCtaUrl, values));
+    } catch {
+      href = null;
+    }
+    if (href) {
+      cta = `<p style="margin-top: 16px;"><a href="${escapeEmailHtml(href)}" style="display:inline-block;background:#fff;color:#000;border:1px solid #000;padding:12px 24px;text-decoration:none;font-family:'Barlow',Arial,sans-serif;font-weight:700;letter-spacing:2px;text-transform:uppercase;font-size:12px;">${escapeEmailHtml(data.emailCtaLabel)}</a></p>`;
+    }
+  }
+  if (!notes && !cta) return "";
+  return `<div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid #e5e3de;">${notes}${cta}</div>`;
+}
 
 export async function sendVerificationEmail(
   to: string,
@@ -91,7 +189,7 @@ export async function sendVerificationEmail(
   });
 }
 
-export async function sendTicketEmail(data: TicketEmailData) {
+export function renderTicketEmail(data: TicketEmailData): { subject: string; html: string } {
   const base = assertSafeEmailUrl(process.env.APP_URL || "https://wepac.pt");
   const url = assertSafeEmailUrl(
     new URL(`/bilheteira/ticket/${encodeURIComponent(data.ticketId)}`, base).toString(),
@@ -109,15 +207,18 @@ export async function sendTicketEmail(data: TicketEmailData) {
   const coverBlock = coverSrc
     ? `<img src="${escapeEmailHtml(coverSrc)}" alt="${safeEventTitle}" style="display:block;width:100%;max-width:560px;height:auto;margin-bottom:24px;" />`
     : "";
+  const totalCents = data.totalCents ?? data.priceCents * data.seats;
   const paymentNote =
-    data.priceCents > 0
-      ? `<p style="font-size:13px;color:#666;margin-top:8px;">Total pago: <strong>${formatPrice(data.priceCents * data.seats)}</strong>. Isento de IVA ao abrigo do art.º 9.º do CIVA.</p>`
+    totalCents > 0
+      ? `<p style="font-size:13px;color:#666;margin-top:8px;">Total pago: <strong>${formatPrice(totalCents)}</strong>. Isento de IVA ao abrigo do art.º 9.º do CIVA.</p>`
+      : "";
+  const serialRow =
+    data.ticketSerial != null
+      ? `<tr><td style="padding:4px 12px 4px 0;color:#666;">Bilhete n.º</td><td>${data.ticketSerial}</td></tr>`
       : "";
 
-  await transporter.sendMail({
-    from: FROM,
-    to: safeEmailRecipient(data.to),
-    subject: safeEmailHeaderText(`Bilhete · ${data.eventTitle} — WEPAC`),
+  return {
+    subject: `Bilhete · ${data.eventTitle} — WEPAC`,
     html: `
       <div style="font-family: Inter, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 24px; color: #000;">
         ${coverBlock}
@@ -143,6 +244,7 @@ export async function sendTicketEmail(data: TicketEmailData) {
             <tr><td style="padding:4px 12px 4px 0;color:#666;">Local</td><td>${safeVenue}</td></tr>
             <tr><td style="padding:4px 12px 4px 0;color:#666;">Tier</td><td><strong>${safeTierName}</strong></td></tr>
             <tr><td style="padding:4px 12px 4px 0;color:#666;">Lugares</td><td>${data.seats}</td></tr>
+            ${serialRow}
           </table>
           ${paymentNote}
         </div>
@@ -151,10 +253,21 @@ export async function sendTicketEmail(data: TicketEmailData) {
             Ver bilhete
           </a>
         </p>
+        ${extrasHtml(data)}
         <p style="margin-top: 32px; color:#999; font-size: 11px;">
           WEPAC · info@wepac.pt
         </p>
       </div>
     `,
+  };
+}
+
+export async function sendTicketEmail(data: TicketEmailData) {
+  const { subject, html } = renderTicketEmail(data);
+  await transporter.sendMail({
+    from: FROM,
+    to: safeEmailRecipient(data.to),
+    subject: safeEmailHeaderText(subject),
+    html,
   });
 }

@@ -3,8 +3,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // Mock prisma so these tests exercise reserveAction's own capacity/cleanup
 // logic, never a real DB or real Stripe.
 const eventFindUnique = vi.fn();
-const ticketAggregate = vi.fn();
-const paymentAggregate = vi.fn();
+const ticketGroupBy = vi.fn();
+const paymentGroupBy = vi.fn();
 const paymentCreate = vi.fn();
 const paymentUpdate = vi.fn();
 const paymentDelete = vi.fn();
@@ -14,11 +14,11 @@ vi.mock("@/lib/db", () => ({
   prisma: {
     event: { findUnique: (...a: unknown[]) => eventFindUnique(...a) },
     ticket: {
-      aggregate: (...a: unknown[]) => ticketAggregate(...a),
+      groupBy: (...a: unknown[]) => ticketGroupBy(...a),
       create: (...a: unknown[]) => ticketCreate(...a),
     },
     payment: {
-      aggregate: (...a: unknown[]) => paymentAggregate(...a),
+      groupBy: (...a: unknown[]) => paymentGroupBy(...a),
       create: (...a: unknown[]) => paymentCreate(...a),
       update: (...a: unknown[]) => paymentUpdate(...a),
       delete: (...a: unknown[]) => paymentDelete(...a),
@@ -29,6 +29,7 @@ vi.mock("@/lib/db", () => ({
 const sendTicketEmail = vi.fn(async (..._args: unknown[]) => undefined);
 vi.mock("@/lib/bilheteira/ticket-email", () => ({
   sendTicketEmail: (...a: unknown[]) => sendTicketEmail(...a),
+  ticketEmailData: (x: unknown) => x,
 }));
 
 const sessionsCreate = vi.fn();
@@ -52,6 +53,10 @@ import { reserveAction } from "@/lib/bilheteira/reserve-action";
 
 const paidTier = {
   id: "tier-1",
+  kind: "single",
+  seatsPerUnit: 1,
+  stateOverride: "auto",
+  archivedAt: null,
   priceCents: 1000,
   quantity: 100,
   stripePriceId: null,
@@ -81,8 +86,8 @@ function formData(overrides: Record<string, string> = {}) {
 
 beforeEach(() => {
   eventFindUnique.mockReset();
-  ticketAggregate.mockReset();
-  paymentAggregate.mockReset();
+  ticketGroupBy.mockReset();
+  paymentGroupBy.mockReset();
   paymentCreate.mockReset();
   paymentUpdate.mockReset();
   paymentDelete.mockReset();
@@ -91,30 +96,37 @@ beforeEach(() => {
   sessionsCreate.mockReset();
 
   eventFindUnique.mockResolvedValue({ ...baseEvent });
-  ticketAggregate.mockResolvedValue({ _sum: { seats: 0 } });
-  paymentAggregate.mockResolvedValue({ _sum: { seats: 0 } });
+  ticketGroupBy.mockResolvedValue([]);
+  paymentGroupBy.mockResolvedValue([]);
   paymentCreate.mockResolvedValue({ id: "pay-1" });
   paymentUpdate.mockResolvedValue({});
   paymentDelete.mockResolvedValue({});
 });
 
 describe("capacity check ignores stale pending payments (anti phantom sold-out)", () => {
-  it("scopes the pending-payment aggregate to the checkout expiry window for both tier and event", async () => {
+  it("scopes pending payments to the checkout expiry window", async () => {
     sessionsCreate.mockResolvedValue({ id: "cs_1", url: "https://checkout.stripe.com/cs_1" });
 
     await expect(reserveAction(formData())).rejects.toBeInstanceOf(RedirectSignal);
 
-    expect(paymentAggregate).toHaveBeenCalledTimes(2);
-    for (const call of paymentAggregate.mock.calls) {
-      const where = call[0].where;
-      expect(where.status).toBe("pending");
-      expect(where.createdAt).toBeDefined();
-      expect(where.createdAt.gte).toBeInstanceOf(Date);
-      // window should be ~30 minutes, not unbounded
-      const ageMs = Date.now() - where.createdAt.gte.getTime();
-      expect(ageMs).toBeGreaterThanOrEqual(30 * 60 * 1000 - 5000);
-      expect(ageMs).toBeLessThanOrEqual(30 * 60 * 1000 + 5000);
-    }
+    expect(paymentGroupBy).toHaveBeenCalledTimes(1);
+    const where = paymentGroupBy.mock.calls[0][0].where;
+    expect(where.status).toBe("pending");
+    expect(where.createdAt.gte).toBeInstanceOf(Date);
+    // window should be ~30 minutes, not unbounded
+    const ageMs = Date.now() - where.createdAt.gte.getTime();
+    expect(ageMs).toBeGreaterThanOrEqual(30 * 60 * 1000 - 5000);
+    expect(ageMs).toBeLessThanOrEqual(30 * 60 * 1000 + 5000);
+  });
+
+  it("refuses when pending holds plus sold seats exhaust the tier", async () => {
+    ticketGroupBy.mockResolvedValue([{ tierId: "tier-1", _sum: { seats: 95 } }]);
+    paymentGroupBy.mockResolvedValue([{ tierId: "tier-1", _sum: { seats: 4 } }]);
+
+    const err = await reserveAction(formData({ seats: "2" })).catch((e) => e);
+
+    expect((err as RedirectSignal).url).toMatch(/^\/bilheteira\/concerto\?error=/);
+    expect(paymentCreate).not.toHaveBeenCalled();
   });
 });
 
@@ -260,5 +272,96 @@ describe("archived tiers refuse new reservations", () => {
     await expect(reserveAction(formData())).rejects.toBeInstanceOf(RedirectSignal);
 
     expect(paymentCreate).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("tier kinds", () => {
+  it("charges a bundle per unit and grants its seats", async () => {
+    eventFindUnique.mockResolvedValue({
+      ...baseEvent,
+      tiers: [{ ...paidTier, kind: "bundle", seatsPerUnit: 2, priceCents: 1500 }],
+    });
+    sessionsCreate.mockResolvedValue({ id: "cs_b", url: "https://checkout.stripe.com/cs_b" });
+
+    await expect(reserveAction(formData({ seats: "", units: "1" }))).rejects.toBeInstanceOf(
+      RedirectSignal,
+    );
+
+    expect(paymentCreate.mock.calls[0][0].data).toMatchObject({ seats: 2, amountCents: 1500 });
+    const lineItem = sessionsCreate.mock.calls[0][0].line_items[0];
+    expect(lineItem.quantity).toBe(1);
+    expect(lineItem.price_data.unit_amount).toBe(1500);
+  });
+
+  it("refuses a group below its minimum", async () => {
+    eventFindUnique.mockResolvedValue({
+      ...baseEvent,
+      tiers: [{ ...paidTier, kind: "group", minSeats: 10, priceCents: 1500 }],
+    });
+
+    const err = await reserveAction(formData({ units: "9" })).catch((e) => e);
+
+    expect((err as RedirectSignal).url).toMatch(/error=/);
+    expect(paymentCreate).not.toHaveBeenCalled();
+  });
+
+  it("accepts a group above ten seats", async () => {
+    eventFindUnique.mockResolvedValue({
+      ...baseEvent,
+      tiers: [{ ...paidTier, kind: "group", minSeats: 10, priceCents: 1500 }],
+    });
+    sessionsCreate.mockResolvedValue({ id: "cs_g", url: "https://checkout.stripe.com/cs_g" });
+
+    await expect(reserveAction(formData({ units: "14" }))).rejects.toBeInstanceOf(RedirectSignal);
+
+    expect(paymentCreate.mock.calls[0][0].data).toMatchObject({ seats: 14, amountCents: 21000 });
+  });
+
+  it("refuses a locked phase even with a crafted POST", async () => {
+    const early = { ...paidTier, id: "eb", kind: "phase", phaseGroup: "artista", phaseOrder: 1, quantity: 10 };
+    const second = { ...paidTier, id: "sw", kind: "phase", phaseGroup: "artista", phaseOrder: 2, quantity: 10 };
+    eventFindUnique.mockResolvedValue({ ...baseEvent, tiers: [early, second] });
+
+    const err = await reserveAction(formData({ tierId: "sw", seats: "1" })).catch((e) => e);
+
+    expect((err as RedirectSignal).url).toMatch(/error=/);
+    expect(paymentCreate).not.toHaveBeenCalled();
+  });
+
+  it("never sells a request tier", async () => {
+    eventFindUnique.mockResolvedValue({
+      ...baseEvent,
+      tiers: [{ ...paidTier, kind: "request", priceCents: 0 }],
+    });
+
+    const err = await reserveAction(formData({ seats: "1" })).catch((e) => e);
+
+    expect((err as RedirectSignal).url).toMatch(/error=/);
+    expect(ticketCreate).not.toHaveBeenCalled();
+    expect(paymentCreate).not.toHaveBeenCalled();
+  });
+
+  it("refuses after the sales window closed", async () => {
+    eventFindUnique.mockResolvedValue({
+      ...baseEvent,
+      tiers: [{ ...paidTier, salesEndAt: new Date(Date.now() - 1000) }],
+    });
+
+    const err = await reserveAction(formData()).catch((e) => e);
+
+    expect((err as RedirectSignal).url).toMatch(/error=/);
+    expect(paymentCreate).not.toHaveBeenCalled();
+  });
+
+  it("enables promotion codes and forwards UTM attribution to Stripe", async () => {
+    sessionsCreate.mockResolvedValue({ id: "cs_u", url: "https://checkout.stripe.com/cs_u" });
+
+    await expect(
+      reserveAction(formData({ utm_source: "instagram", utm_campaign: "festival" })),
+    ).rejects.toBeInstanceOf(RedirectSignal);
+
+    const call = sessionsCreate.mock.calls[0][0];
+    expect(call.allow_promotion_codes).toBe(true);
+    expect(call.metadata).toMatchObject({ utm_source: "instagram", utm_campaign: "festival" });
   });
 });
