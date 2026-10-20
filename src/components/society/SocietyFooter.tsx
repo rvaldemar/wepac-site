@@ -51,10 +51,10 @@ export function SocietyFooter() {
               {t("paths")}
             </p>
             <div className="mt-5 flex flex-col gap-3 text-sm text-white/80">
+              <Link href="/wepacker/login" className="hover:text-white">{t("openBackpack")}</Link>
               <Link href={intakeHref} className="hover:text-white">
                 {t("startLifePlan")}
               </Link>
-              <Link href="/wepacker/login" className="hover:text-white">{t("openBackpack")}</Link>
               <Link href="/bilheteira" className="hover:text-white">{t("ticketing")}</Link>
               <Link href="/wessex" className="hover:text-white">Wessex</Link>
               <Link href="/arte-a-capela" className="hover:text-white">Arte à Capela</Link>

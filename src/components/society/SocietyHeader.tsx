@@ -34,6 +34,9 @@ const COMPANHIA_SECTIONS = [
   "/servicos",
 ];
 
+const OUTLINE_BUTTON =
+  "border border-white/60 px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.16em] text-white transition-colors hover:border-white";
+
 function inSection(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
@@ -48,6 +51,10 @@ export function SocietyHeader() {
   const cta = companhia
     ? { href: "/bilheteira", label: t("seeTickets") }
     : { href: intakeHref, label: t("startLifePlan") };
+  // The jump to the other brand sits with Backpack as an outline button.
+  const crossLink = companhia
+    ? { key: "society" as const, href: "/society" }
+    : { key: "artsCompany" as const, href: "/companhia-de-artes" };
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
   const { toggleRef, drawerRef } = useMobileDrawer<HTMLButtonElement, HTMLDivElement>(
@@ -80,7 +87,7 @@ export function SocietyHeader() {
         </Link>
 
         <div className="hidden items-center gap-4 xl:flex">
-          {navigation.map((item) => (
+          {navigation.filter((item) => item.href !== crossLink.href).map((item) => (
             <Link
               key={item.key}
               href={item.href}
@@ -92,10 +99,10 @@ export function SocietyHeader() {
               {t(item.key)}
             </Link>
           ))}
-          <Link
-            href="/wepacker/login"
-            className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/75 transition-colors hover:text-white"
-          >
+          <Link href={crossLink.href} className={OUTLINE_BUTTON}>
+            {t(crossLink.key)}
+          </Link>
+          <Link href="/wepacker/login" className={OUTLINE_BUTTON}>
             {t("openBackpack")}
           </Link>
           <Link
@@ -147,7 +154,7 @@ export function SocietyHeader() {
           className="max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain border-t border-white/10 bg-black px-5 py-7 xl:hidden"
         >
           <div className="mx-auto flex max-w-[1760px] flex-col">
-            {navigation.map((item) => (
+            {navigation.filter((item) => item.href !== crossLink.href).map((item) => (
               <Link
                 key={item.key}
                 href={item.href}
@@ -158,9 +165,16 @@ export function SocietyHeader() {
               </Link>
             ))}
             <Link
+              href={crossLink.href}
+              onClick={closeMenu}
+              className="mt-6 border border-white/60 px-5 py-4 text-center text-xs font-bold uppercase tracking-[0.16em] text-white"
+            >
+              {t(crossLink.key)}
+            </Link>
+            <Link
               href="/wepacker/login"
               onClick={closeMenu}
-              className="mt-6 border border-white/25 px-5 py-4 text-center text-xs font-bold uppercase tracking-[0.16em] text-white"
+              className="mt-3 border border-white/60 px-5 py-4 text-center text-xs font-bold uppercase tracking-[0.16em] text-white"
             >
               {t("openBackpack")}
             </Link>
