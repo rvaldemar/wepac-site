@@ -16,6 +16,8 @@ quem-e-o-teu-mestre/og.jpg`), porque os banners do pack trazem o horário
 antigo (18h Prémios, 19h concerto). Smoke: landing 200, 11 bilhetes, og:image
 e imagem do topo 200. Testes 546/546, tsc, lint sem erros.
 
+---
+
 ## 2026-10-20 — Bilheteira: tipos de bilhete, estados e landing de evento (DEPLOYADO)
 
 **Release:** `fe5e993ccd0d`, `/var/www/wepac/releases/20261020T125153Z-fe5e993ccd0d`.
