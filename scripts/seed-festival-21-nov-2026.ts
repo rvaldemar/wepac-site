@@ -228,7 +228,7 @@ async function main() {
     seoDescription:
       "Festival da WEPAC – Companhia de Artes a 21 de novembro na Capela do Hospital de Jesus, Lisboa: mestres em palco, debate, línguas, como se vive da arte e, às 19h30, concerto e Prémios WEPAC ’26 — Edição Orpheu.",
     featured: true,
-    ogImage: "/images/eventos/quem-e-o-teu-mestre/og.jpg",
+    ogImage: "/images/eventos/quem-e-o-teu-mestre/partilha-duo.jpg",
     // Campaign v2, variant D (duo), with the v4 schedule (19h30 evening).
     theme: {
       mode: "dark",
