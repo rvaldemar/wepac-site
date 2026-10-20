@@ -4,6 +4,18 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-10-20 — Bilheteira: tema de campanha por evento (DEPLOYADO)
+
+**Release:** `512d04eceb28`, `/var/www/wepac/releases/20261020T130407Z-512d04eceb28`.
+Migração aditiva `20261020150000_bilheteira_event_theme` (`events.theme` JSONB).
+Landing do festival com a identidade da campanha QETM v2, variante D (duo),
+e o horário da v4 (10h–18h30 festival; 19h30 concerto e Prémios). Tema
+aplicado em produção com `scripts/seed-festival-21-nov-2026.ts` (só update,
+sem tocar em vendas). Imagem de partilha própria (`/images/eventos/
+quem-e-o-teu-mestre/og.jpg`), porque os banners do pack trazem o horário
+antigo (18h Prémios, 19h concerto). Smoke: landing 200, 11 bilhetes, og:image
+e imagem do topo 200. Testes 546/546, tsc, lint sem erros.
+
 ## 2026-10-20 — Bilheteira: tipos de bilhete, estados e landing de evento (DEPLOYADO)
 
 **Release:** `fe5e993ccd0d`, `/var/www/wepac/releases/20261020T125153Z-fe5e993ccd0d`.
