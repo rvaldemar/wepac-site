@@ -228,6 +228,26 @@ async function main() {
     seoDescription:
       "Festival da WEPAC – Companhia de Artes a 21 de novembro na Capela do Hospital de Jesus, Lisboa: mestres em palco, debate, línguas, como se vive da arte e, às 19h30, concerto e Prémios WEPAC ’26 — Edição Orpheu.",
     featured: true,
+    ogImage: "/images/eventos/quem-e-o-teu-mestre/og.jpg",
+    // Campaign v2, variant D (duo), with the v4 schedule (19h30 evening).
+    theme: {
+      mode: "dark",
+      accent: "#E04E2F",
+      titleStyle: "condensed",
+      heroTitle: "Quem é|o teu|mestre?",
+      eyebrow: "FESTIVAL · WEPAC",
+      tagline: "Um encontro para aprender, juntar as artes e cuidar do que as sustenta.",
+      heroImage: "/images/eventos/quem-e-o-teu-mestre/hero-duo.webp",
+      schedule: [
+        { time: "10h–18h30", label: "Festival" },
+        {
+          time: "19h30",
+          label: "Concerto de homenagem a Paulo Gaio Lima",
+          detail: "e Prémios WEPAC ’26",
+          highlight: "Edição Orpheu",
+        },
+      ],
+    } as Prisma.InputJsonValue,
     program: [
       { time: "10h00", title: "Abertura · Quem é o teu mestre?" },
       { time: "10h10", title: "Mesa redonda · O que recebemos de um mestre" },

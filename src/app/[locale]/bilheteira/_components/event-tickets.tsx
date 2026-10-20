@@ -79,7 +79,7 @@ export function EventTickets({
         {sections.map(([section, items]) => (
           <div key={section || "default"}>
             {section && (
-              <h3 className="mb-5 text-[11px] uppercase tracking-[0.2em] text-black/55">{section}</h3>
+              <h3 className="mb-5 text-[11px] uppercase tracking-[0.2em] text-[var(--ev-faint)]">{section}</h3>
             )}
             <ul className="space-y-4">
               {items.map((offer) => (
@@ -102,10 +102,10 @@ export function EventTickets({
       </div>
 
       <aside id="finalizar" className="lg:sticky lg:top-6 self-start scroll-mt-6">
-        <div className="border border-black bg-white p-6">
+        <div className="border border-[var(--ev-ink)] bg-[var(--ev-card)] p-6">
           <h3 className="font-barlow text-[22px] font-black tracking-[-0.01em]">{copy.checkout.title}</h3>
           {!selected ? (
-            <p className="mt-4 text-[14px] text-black/60">{copy.checkout.chooseTicket}</p>
+            <p className="mt-4 text-[14px] text-[var(--ev-faint)]">{copy.checkout.chooseTicket}</p>
           ) : (
             <form
               action={reserveAction}
@@ -125,15 +125,15 @@ export function EventTickets({
               {UTM_KEYS.map((k) => (utm[k] ? <input key={k} type="hidden" name={k} value={utm[k]} /> : null))}
 
               <div>
-                <div className="text-[11px] uppercase tracking-[0.18em] text-black/55">{copy.checkout.selected}</div>
+                <div className="text-[11px] uppercase tracking-[0.18em] text-[var(--ev-faint)]">{copy.checkout.selected}</div>
                 <div className="mt-1 text-[15px] font-semibold leading-snug">{selected.name}</div>
               </div>
 
               <div className="flex items-center justify-between gap-4">
-                <span className="text-[11px] uppercase tracking-[0.18em] text-black/55">
+                <span className="text-[11px] uppercase tracking-[0.18em] text-[var(--ev-faint)]">
                   {selected.unit === "bundle" ? copy.checkout.quantityBundles : copy.checkout.quantitySeats}
                 </span>
-                <div className="flex items-center border border-black/25">
+                <div className="flex items-center border border-[var(--ev-line)]">
                   <button
                     type="button"
                     aria-label="−"
@@ -158,8 +158,8 @@ export function EventTickets({
                 </div>
               </div>
 
-              <div className="flex items-baseline justify-between border-t border-black/10 pt-4">
-                <span className="text-[13px] text-black/60">
+              <div className="flex items-baseline justify-between border-t border-[var(--ev-line)] pt-4">
+                <span className="text-[13px] text-[var(--ev-faint)]">
                   {copy.checkout.total} · {copy.checkout.seatsTotal(seats)}
                 </span>
                 <span className="font-barlow text-[26px] font-black tabular-nums">
@@ -171,19 +171,19 @@ export function EventTickets({
               <Field label={copy.checkout.email} name="buyerEmail" type="email" autoComplete="email" required />
               <Field label={copy.checkout.phone} name="buyerPhone" type="tel" autoComplete="tel" />
 
-              <label className="flex gap-3 text-[13px] leading-snug text-black/70">
-                <input type="checkbox" name="marketingConsent" className="mt-0.5 h-4 w-4 accent-black" />
+              <label className="flex gap-3 text-[13px] leading-snug text-[var(--ev-muted)]">
+                <input type="checkbox" name="marketingConsent" className="mt-0.5 h-4 w-4 accent-[var(--ev-accent)]" />
                 <span>{copy.checkout.marketing}</span>
               </label>
 
               <button
                 type="submit"
-                className="h-[52px] w-full bg-black text-[12px] font-bold uppercase tracking-[0.2em] text-white transition hover:bg-black/85 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+                className="h-[52px] w-full bg-[var(--ev-cta)] text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--ev-cta-ink)] transition hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ev-ink)]"
               >
                 {total === 0 ? copy.checkout.reserveFree : copy.checkout.pay}
               </button>
 
-              <p className="text-[12px] leading-relaxed text-black/55">
+              <p className="text-[12px] leading-relaxed text-[var(--ev-faint)]">
                 {total > 0 && <>{copy.checkout.discountCodes} </>}
                 {copy.checkout.privacyLead}{" "}
                 <Link href="/privacidade" className="underline">
@@ -194,7 +194,7 @@ export function EventTickets({
             </form>
           )}
         </div>
-        <p className="mt-4 text-[12px] leading-relaxed text-black/50">
+        <p className="mt-4 text-[12px] leading-relaxed text-[var(--ev-faint)]">
           {copy.event.paymentMethods} {copy.event.vatExempt}
         </p>
       </aside>
@@ -217,13 +217,13 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-[11px] uppercase tracking-[0.18em] text-black/55">{label}</span>
+      <span className="text-[11px] uppercase tracking-[0.18em] text-[var(--ev-faint)]">{label}</span>
       <input
         name={name}
         type={type}
         required={required}
         autoComplete={autoComplete}
-        className="mt-1.5 h-12 w-full border border-black/25 bg-white px-3 text-[15px] outline-none focus:border-black"
+        className="mt-1.5 h-12 w-full border border-[var(--ev-line)] bg-[var(--ev-card)] px-3 text-[15px] outline-none focus:border-[var(--ev-ink)]"
       />
     </label>
   );
@@ -257,9 +257,9 @@ function TierCard({
   return (
     <li
       className={[
-        "border bg-white p-5 sm:p-6 transition",
-        selected ? "border-black ring-1 ring-black" : "border-black/12",
-        unavailable ? "bg-white/60" : "",
+        "border bg-[var(--ev-card)] p-5 sm:p-6 transition",
+        selected ? "border-[var(--ev-ink)] ring-1 ring-[var(--ev-ink)]" : "border-[var(--ev-line)]",
+        unavailable ? "bg-[var(--ev-card-dim)]" : "",
       ].join(" ")}
     >
       <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-2">
@@ -269,8 +269,8 @@ function TierCard({
               className={[
                 "mb-2 inline-flex items-center gap-1.5 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em]",
                 offer.state === "sold_out" || offer.state === "closed"
-                  ? "bg-black/8 text-black/60"
-                  : "bg-black text-white",
+                  ? "bg-[var(--ev-line)] text-[var(--ev-muted)]"
+                  : "bg-[var(--ev-cta)] text-[var(--ev-cta-ink)]",
               ].join(" ")}
             >
               {offer.state === "locked" && <LockIcon />}
@@ -280,7 +280,7 @@ function TierCard({
           <h4
             className={[
               "font-barlow text-[19px] font-bold leading-tight sm:text-[21px]",
-              unavailable ? "text-black/55" : "",
+              unavailable ? "text-[var(--ev-faint)]" : "",
             ].join(" ")}
           >
             {offer.name}
@@ -290,35 +290,35 @@ function TierCard({
           <div
             className={[
               "font-barlow text-[22px] font-black tabular-nums leading-none",
-              offer.state === "sold_out" ? "text-black/40 line-through" : "",
-              offer.state === "locked" || offer.state === "closed" ? "text-black/45" : "",
+              offer.state === "sold_out" ? "text-[var(--ev-faint)] line-through" : "",
+              offer.state === "locked" || offer.state === "closed" ? "text-[var(--ev-faint)]" : "",
             ].join(" ")}
           >
             {price.main}
           </div>
-          {price.detail && <div className="mt-1 text-[12px] text-black/55">{price.detail}</div>}
+          {price.detail && <div className="mt-1 text-[12px] text-[var(--ev-faint)]">{price.detail}</div>}
         </div>
       </div>
 
       {offer.state === "locked" && offer.lockedNote && (
-        <p className="mt-3 text-[13px] text-black/60">{offer.lockedNote}</p>
+        <p className="mt-3 text-[13px] text-[var(--ev-faint)]">{offer.lockedNote}</p>
       )}
       {offer.showRemaining && offer.remainingSeats != null && (
-        <p className="mt-3 text-[13px] font-semibold text-black">{copy.tier.remaining(offer.remainingSeats)}</p>
+        <p className="mt-3 text-[13px] font-semibold text-[var(--ev-ink)]">{copy.tier.remaining(offer.remainingSeats)}</p>
       )}
 
       {offer.description && (
         <details className="group mt-4" open={selected || isRequest}>
-          <summary className="cursor-pointer list-none text-[12px] uppercase tracking-[0.16em] text-black/55 hover:text-black">
+          <summary className="cursor-pointer list-none text-[12px] uppercase tracking-[0.16em] text-[var(--ev-faint)] hover:text-[var(--ev-ink)]">
             <span className="group-open:hidden">+ {copy.tier.details}</span>
             <span className="hidden group-open:inline">− {copy.tier.details}</span>
           </summary>
-          <div className="bilheteira-prose mt-3 text-[14px] text-black/75">
+          <div className="bilheteira-prose mt-3 text-[14px] text-[var(--ev-muted)]">
             <ReactMarkdown
               components={{
                 p: ({ children }) => <p className="mb-3 last:mb-0 leading-[1.65]">{children}</p>,
                 ul: ({ children }) => <ul className="mb-3 list-disc pl-5 space-y-1">{children}</ul>,
-                strong: ({ children }) => <strong className="font-semibold text-black">{children}</strong>,
+                strong: ({ children }) => <strong className="font-semibold text-[var(--ev-ink)]">{children}</strong>,
               }}
             >
               {offer.description}
@@ -335,7 +335,7 @@ function TierCard({
             aria-pressed={selected}
             className={[
               "h-11 px-6 text-[11px] font-bold uppercase tracking-[0.2em] transition",
-              selected ? "bg-black text-white" : "border border-black text-black hover:bg-black hover:text-white",
+              selected ? "bg-[var(--ev-cta)] text-[var(--ev-cta-ink)]" : "border border-[var(--ev-ink)] text-[var(--ev-ink)] hover:bg-[var(--ev-ink)] hover:text-[var(--ev-bg)]",
             ].join(" ")}
           >
             {selected ? copy.tier.chosen : copy.tier.choose}
@@ -344,7 +344,7 @@ function TierCard({
         {isRequest && offer.ctaHref && (
           <Link
             href={offer.ctaHref}
-            className="inline-flex h-11 items-center bg-black px-6 text-[11px] font-bold uppercase tracking-[0.2em] text-white hover:bg-black/85"
+            className="inline-flex h-11 items-center bg-[var(--ev-cta)] px-6 text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--ev-cta-ink)] hover:opacity-90"
           >
             {offer.ctaLabel || copy.request.submit}
           </Link>
@@ -354,7 +354,7 @@ function TierCard({
             type="button"
             onClick={onToggleWaitlist}
             aria-expanded={waitlistOpen}
-            className="h-11 border border-black/30 px-5 text-[11px] font-bold uppercase tracking-[0.2em] text-black/75 hover:border-black hover:text-black"
+            className="h-11 border border-[var(--ev-line)] px-5 text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--ev-muted)] hover:border-[var(--ev-ink)] hover:text-[var(--ev-ink)]"
           >
             {copy.tier.notifyMe}
           </button>
@@ -363,21 +363,21 @@ function TierCard({
       </div>
 
       {waitlistOpen && !waitlistJoined && (
-        <form action={joinWaitlistAction} className="mt-4 flex flex-col gap-3 border-t border-black/10 pt-4 sm:flex-row sm:items-end">
+        <form action={joinWaitlistAction} className="mt-4 flex flex-col gap-3 border-t border-[var(--ev-line)] pt-4 sm:flex-row sm:items-end">
           <input type="hidden" name="eventSlug" value={eventSlug} />
           <input type="hidden" name="tierId" value={offer.id} />
           <input type="text" name="website_confirm" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
           <label className="block flex-1">
-            <span className="text-[11px] uppercase tracking-[0.18em] text-black/55">{copy.tier.notifyEmail}</span>
+            <span className="text-[11px] uppercase tracking-[0.18em] text-[var(--ev-faint)]">{copy.tier.notifyEmail}</span>
             <input
               type="email"
               name="email"
               required
               autoComplete="email"
-              className="mt-1.5 h-11 w-full border border-black/25 px-3 text-[15px] outline-none focus:border-black"
+              className="mt-1.5 h-11 w-full border border-[var(--ev-line)] px-3 text-[15px] outline-none focus:border-[var(--ev-ink)]"
             />
           </label>
-          <button type="submit" className="h-11 bg-black px-5 text-[11px] font-bold uppercase tracking-[0.2em] text-white">
+          <button type="submit" className="h-11 bg-[var(--ev-cta)] px-5 text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--ev-cta-ink)]">
             {copy.tier.notifySubmit}
           </button>
         </form>

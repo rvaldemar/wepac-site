@@ -14,6 +14,9 @@ import { StickyCta } from "../_components/sticky-cta";
 import { BilheteiraTracking } from "../_components/tracking";
 import { formatEuro, formatOfferPrice } from "../_components/offer-format";
 import { EventCards } from "../_components/event-cards";
+import { EventHero } from "../_components/event-hero";
+import { barlowCondensed, CONDENSED } from "../_components/fonts";
+import { parseEventTheme, themeVars } from "@/lib/bilheteira/event-theme";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +24,14 @@ type Props = {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ error?: string; cancelled?: string; tier?: string; waitlist?: string }>;
 };
+
+// "Travessa da Arrochela 2, 1200-032 Lisboa" → "Lisboa", for the short
+// campaign place line.
+function cityFrom(address: string | null): string | null {
+  if (!address) return null;
+  const match = /\d{4}-\d{3}\s+(.+)$/.exec(address);
+  return match ? match[1].trim() : null;
+}
 
 function plainSummary(markdown: string, max = 160): string {
   const text = markdown
@@ -142,7 +153,11 @@ export default async function EventPublicPage({ params, searchParams }: Props) {
     { label: copy.event.where, value: event.address ? `${event.venue} · ${event.address}` : event.venue },
     ...(event.doorsAt ? [{ label: copy.event.doors, value: formatEventTime(event.doorsAt, locale) }] : []),
   ];
-  const dark = Boolean(event.coverImage);
+  const theme = parseEventTheme(event.theme);
+  const h2 =
+    theme.titleStyle === "condensed"
+      ? `${CONDENSED} text-[40px] font-bold uppercase leading-none sm:text-[52px]`
+      : "font-barlow text-[32px] font-black tracking-[-0.01em] sm:text-[40px]";
 
   return (
     <Shell
@@ -168,83 +183,49 @@ export default async function EventPublicPage({ params, searchParams }: Props) {
         }}
       />
 
-      {/* HERO */}
-      <section className={dark ? "relative isolate overflow-hidden bg-black text-white" : "bg-[#f0ede6]"}>
-        {dark && (
-          <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={event.coverImage as string}
-              alt=""
-              className="absolute inset-0 -z-10 h-full w-full object-cover opacity-60"
-            />
-            <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black via-black/60 to-black/20" />
-          </>
-        )}
-        <div className="mx-auto max-w-[1200px] px-5 pb-12 pt-20 sm:px-8 sm:pb-16 sm:pt-28 lg:pt-36">
-          <p className={`text-[11px] uppercase tracking-[0.22em] ${dark ? "text-white/75" : "text-black/55"}`}>
-            {brandName}
-          </p>
-          <h1 className="mt-3 max-w-[900px] font-barlow text-[40px] font-black leading-[1.02] tracking-[-0.02em] sm:text-[64px] lg:text-[80px]">
-            {event.title}
-          </h1>
-          {event.subtitle && (
-            <p
-              className={`mt-4 max-w-[720px] text-[18px] leading-snug sm:text-[21px] ${dark ? "text-white/85" : "text-black/70"}`}
-            >
-              {event.subtitle}
-            </p>
-          )}
-          <dl className="mt-8 grid max-w-[900px] gap-4 sm:grid-cols-3">
-            {facts.map((f) => (
-              <div key={f.label} className={`border-t pt-3 ${dark ? "border-white/30" : "border-black/15"}`}>
-                <dt className={`text-[10px] uppercase tracking-[0.2em] ${dark ? "text-white/65" : "text-black/50"}`}>
-                  {f.label}
-                </dt>
-                <dd className="mt-1 text-[15px] font-semibold leading-snug">{f.value}</dd>
-              </div>
-            ))}
-          </dl>
-          <div className="mt-9 flex flex-wrap gap-3">
-            {featured && (
-              <a
-                href={`?tier=${featured.id}#bilhetes`}
-                className={`inline-flex min-h-[52px] items-center gap-3 px-7 py-3 text-[12px] font-bold uppercase tracking-[0.2em] ${dark ? "bg-white text-black hover:bg-white/90" : "bg-black text-white hover:bg-black/85"}`}
-              >
-                {featured.name}
-                <span className="font-barlow text-[16px] normal-case tracking-normal">
-                  {formatOfferPrice(featured, copy.tier, locale).main}
-                </span>
-              </a>
-            )}
-            <a
-              href="#bilhetes"
-              className={`inline-flex min-h-[52px] items-center border px-7 text-[12px] font-bold uppercase tracking-[0.2em] ${dark ? "border-white/70 text-white hover:bg-white/10" : "border-black text-black hover:bg-black hover:text-white"}`}
-            >
-              {copy.event.seeTickets}
-            </a>
-          </div>
-        </div>
-      </section>
+      <div
+        style={themeVars(theme)}
+        className={`${barlowCondensed.variable} bg-[var(--ev-bg)] text-[var(--ev-ink)]`}
+      >
+      <EventHero
+        theme={theme}
+        title={event.title}
+        subtitle={event.subtitle}
+        brandName={brandName}
+        coverImage={event.coverImage}
+        facts={facts}
+        dateLine={formatEventDate(event.startsAt, locale)}
+        placeLine={`${event.venue}${cityFrom(event.address) ? ` · ${cityFrom(event.address)}` : ""}`}
+        primary={
+          featured
+            ? {
+                href: `?tier=${featured.id}#bilhetes`,
+                label: featured.name,
+                price: formatOfferPrice(featured, copy.tier, locale).main,
+              }
+            : null
+        }
+        seeTicketsLabel={copy.event.seeTickets}
+      />
 
       <main className="mx-auto max-w-[1200px] px-5 sm:px-8">
         {/* DESCRIPTION */}
         <section className="py-14 sm:py-20">
-          <Markdown className="max-w-[720px] text-[17px] text-black/80">{event.description}</Markdown>
+          <Markdown className="max-w-[720px] text-[17px] text-[var(--ev-muted)]">{event.description}</Markdown>
         </section>
 
         {/* PROGRAMME */}
         {program.length > 0 && (
-          <section className="border-t border-black/10 py-14 sm:py-20">
-            <h2 className="font-barlow text-[32px] font-black tracking-[-0.01em] sm:text-[40px]">{copy.event.programme}</h2>
-            <ol className="mt-8 divide-y divide-black/10 border-y border-black/10">
+          <section className="border-t border-[var(--ev-line)] py-14 sm:py-20">
+            <h2 className={h2}>{copy.event.programme}</h2>
+            <ol className="mt-8 divide-y divide-[var(--ev-line)] border-y border-[var(--ev-line)]">
               {program.map((item, i) => (
                 <li key={i} className="grid gap-1 py-4 sm:grid-cols-[140px_1fr] sm:gap-6">
-                  <span className="font-barlow text-[17px] font-bold tabular-nums text-black/60">{item.time}</span>
+                  <span className="font-barlow text-[17px] font-bold tabular-nums text-[var(--ev-faint)]">{item.time}</span>
                   <div>
                     <div className="text-[16px] font-semibold leading-snug">{item.title}</div>
                     {item.description && (
-                      <p className="mt-1 text-[14px] leading-relaxed text-black/65">{item.description}</p>
+                      <p className="mt-1 text-[14px] leading-relaxed text-[var(--ev-muted)]">{item.description}</p>
                     )}
                   </div>
                 </li>
@@ -255,39 +236,39 @@ export default async function EventPublicPage({ params, searchParams }: Props) {
 
         {/* GUESTS — each name appears only from its reveal time */}
         {(event.guests.length > 0 || hiddenGuests > 0) && (
-          <section className="border-t border-black/10 py-14 sm:py-20">
-            <h2 className="font-barlow text-[32px] font-black tracking-[-0.01em] sm:text-[40px]">{copy.event.guests}</h2>
+          <section className="border-t border-[var(--ev-line)] py-14 sm:py-20">
+            <h2 className={h2}>{copy.event.guests}</h2>
             {event.guests.length > 0 && (
               <ul className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 {event.guests.map((g) => (
                   <li key={g.id}>
-                    <div className="aspect-[4/5] overflow-hidden bg-black/5">
+                    <div className="aspect-[4/5] overflow-hidden bg-[var(--ev-line)]">
                       {g.photo && (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={g.photo} alt={g.name} className="h-full w-full object-cover" loading="lazy" />
                       )}
                     </div>
                     <div className="mt-3 font-barlow text-[19px] font-bold leading-tight">{g.name}</div>
-                    {g.role && <div className="mt-1 text-[13px] text-black/60">{g.role}</div>}
-                    {g.bio && <p className="mt-2 text-[13px] leading-relaxed text-black/70">{g.bio}</p>}
+                    {g.role && <div className="mt-1 text-[13px] text-[var(--ev-faint)]">{g.role}</div>}
+                    {g.bio && <p className="mt-2 text-[13px] leading-relaxed text-[var(--ev-muted)]">{g.bio}</p>}
                   </li>
                 ))}
               </ul>
             )}
-            {hiddenGuests > 0 && <p className="mt-6 text-[14px] text-black/60">{copy.event.guestsSoon}</p>}
+            {hiddenGuests > 0 && <p className="mt-6 text-[14px] text-[var(--ev-faint)]">{copy.event.guestsSoon}</p>}
           </section>
         )}
 
         {/* TICKETS */}
-        <section id="bilhetes" className="scroll-mt-4 border-t border-black/10 py-14 sm:py-20">
+        <section id="bilhetes" className="scroll-mt-4 border-t border-[var(--ev-line)] py-14 sm:py-20">
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-            <h2 className="font-barlow text-[32px] font-black tracking-[-0.01em] sm:text-[40px]">{copy.event.tickets}</h2>
+            <h2 className={h2}>{copy.event.tickets}</h2>
             {fromPrice != null && (
-              <span className="text-[14px] text-black/60">{copy.tier.fromPrice(formatEuro(fromPrice, locale))}</span>
+              <span className="text-[14px] text-[var(--ev-faint)]">{copy.tier.fromPrice(formatEuro(fromPrice, locale))}</span>
             )}
           </div>
           {cancelled && (
-            <p className="mb-6 border border-black/20 bg-black/5 px-4 py-3 text-[14px]">{copy.event.cancelled}</p>
+            <p className="mb-6 border border-[var(--ev-line)] bg-[var(--ev-line)] px-4 py-3 text-[14px]">{copy.event.cancelled}</p>
           )}
           {error && (
             <p role="alert" className="mb-6 border border-[#c00] bg-[#fee] px-4 py-3 text-[14px] text-[#900]">
@@ -306,18 +287,18 @@ export default async function EventPublicPage({ params, searchParams }: Props) {
 
         {/* FAQ */}
         {faq.length > 0 && (
-          <section className="border-t border-black/10 py-14 sm:py-20">
-            <h2 className="font-barlow text-[32px] font-black tracking-[-0.01em] sm:text-[40px]">{copy.event.faq}</h2>
-            <div className="mt-8 max-w-[820px] divide-y divide-black/10 border-y border-black/10">
+          <section className="border-t border-[var(--ev-line)] py-14 sm:py-20">
+            <h2 className={h2}>{copy.event.faq}</h2>
+            <div className="mt-8 max-w-[820px] divide-y divide-[var(--ev-line)] border-y border-[var(--ev-line)]">
               {faq.map((f, i) => (
                 <details key={i} className="group py-4">
                   <summary className="flex cursor-pointer list-none items-start justify-between gap-6 text-[16px] font-semibold">
                     {f.question}
-                    <span className="text-black/50 transition-transform group-open:rotate-45" aria-hidden>
+                    <span className="text-[var(--ev-faint)] transition-transform group-open:rotate-45" aria-hidden>
                       +
                     </span>
                   </summary>
-                  <div className="mt-3 text-[15px] text-black/75">
+                  <div className="mt-3 text-[15px] text-[var(--ev-muted)]">
                     <Markdown>{f.answer}</Markdown>
                   </div>
                 </details>
@@ -328,20 +309,20 @@ export default async function EventPublicPage({ params, searchParams }: Props) {
 
         {/* GETTING THERE */}
         {(event.directions || event.mapUrl || event.address) && (
-          <section className="border-t border-black/10 py-14 sm:py-20">
-            <h2 className="font-barlow text-[32px] font-black tracking-[-0.01em] sm:text-[40px]">
+          <section className="border-t border-[var(--ev-line)] py-14 sm:py-20">
+            <h2 className={h2}>
               {copy.event.gettingThere}
             </h2>
-            <div className="mt-6 max-w-[720px] text-[16px] text-black/80">
+            <div className="mt-6 max-w-[720px] text-[16px] text-[var(--ev-muted)]">
               <p className="font-semibold">{event.venue}</p>
-              {event.address && <p className="text-black/65">{event.address}</p>}
+              {event.address && <p className="text-[var(--ev-muted)]">{event.address}</p>}
               {event.directions && <Markdown className="mt-4">{event.directions}</Markdown>}
               {event.mapUrl && (
                 <a
                   href={event.mapUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-5 inline-flex h-11 items-center border border-black px-5 text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-black hover:text-white"
+                  className="mt-5 inline-flex h-11 items-center border border-[var(--ev-ink)] px-5 text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-[var(--ev-ink)] hover:text-[var(--ev-bg)]"
                 >
                   {copy.event.openMap}
                 </a>
@@ -352,9 +333,9 @@ export default async function EventPublicPage({ params, searchParams }: Props) {
 
         {/* CROSS-PROMOTION */}
         {otherCards.length > 0 && (
-          <section className="border-t border-black/10 pb-28 pt-14 sm:pt-20 lg:pb-20">
+          <section className="border-t border-[var(--ev-line)] pb-28 pt-14 sm:pt-20 lg:pb-20">
             <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-              <h2 className="font-barlow text-[28px] font-black tracking-[-0.01em] sm:text-[34px]">{copy.event.alsoOn}</h2>
+              <h2 className={h2}>{copy.event.alsoOn}</h2>
               <Link href="/bilheteira" className="text-[11px] font-bold uppercase tracking-[0.2em] underline underline-offset-4">
                 {copy.event.allEvents}
               </Link>
@@ -363,8 +344,9 @@ export default async function EventPublicPage({ params, searchParams }: Props) {
           </section>
         )}
       </main>
+      </div>
 
-      {featured && <StickyCta label={copy.event.buy} price={formatOfferPrice(featured, copy.tier, locale).main} />}
+      {featured && <StickyCta label={copy.event.buy} price={formatOfferPrice(featured, copy.tier, locale).main} accent={theme.accent} />}
     </Shell>
   );
 }

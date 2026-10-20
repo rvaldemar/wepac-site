@@ -1211,6 +1211,8 @@ model Event {
   program         Json?
   faq             Json?
   featured        Boolean     @default(false)
+  // Per-event visual identity for the landing (mode, accent, hero, schedule).
+  theme           Json?
   // Appended to every confirmation email of this event (merge fields allowed).
   emailNote       String?
   status          EventStatus @default(draft)

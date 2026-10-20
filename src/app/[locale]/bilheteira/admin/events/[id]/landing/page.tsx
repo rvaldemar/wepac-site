@@ -5,6 +5,7 @@ import { faqToText, parseFaq, parseProgram, programToText } from "@/lib/bilhetei
 import { deleteGuestAction, saveEventLandingAction, saveGuestAction } from "@/lib/bilheteira/landing-admin-actions";
 import { toLisbonInput } from "@/lib/bilheteira/lisbon-time";
 import { EMAIL_MERGE_FIELDS } from "@/lib/bilheteira/email-merge";
+import { parseEventTheme, scheduleToText } from "@/lib/bilheteira/event-theme";
 import { styles, formatEventDate, formatEventTime } from "../../../../ui";
 
 export const dynamic = "force-dynamic";
@@ -25,6 +26,7 @@ export default async function LandingEditorPage({ params, searchParams }: Props)
   });
   if (!event) notFound();
   const now = new Date();
+  const theme = parseEventTheme(event.theme);
 
   return (
     <main style={styles.container}>
@@ -54,6 +56,56 @@ export default async function LandingEditorPage({ params, searchParams }: Props)
           <label style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 14 }}>
             <input type="checkbox" name="featured" defaultChecked={event.featured} /> Destacar no topo da bilheteira
           </label>
+          <fieldset style={styles.fieldset}>
+            <legend style={styles.legend}>Identidade da campanha</legend>
+            <div style={styles.grid2}>
+              <label style={styles.label}>
+                <span style={styles.labelText}>Tema</span>
+                <select name="themeMode" defaultValue={theme.mode} style={styles.select}>
+                  <option value="light">Claro (bilheteira WEPAC)</option>
+                  <option value="dark">Escuro</option>
+                </select>
+              </label>
+              <label style={styles.label}>
+                <span style={styles.labelText}>Cor de destaque</span>
+                <input name="themeAccent" defaultValue={theme.accent ?? ""} placeholder="#E04E2F" style={styles.input} />
+                <span style={hint}>Botões, «?» final do título e destaques.</span>
+              </label>
+            </div>
+            <label style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 14 }}>
+              <input type="checkbox" name="themeCondensed" defaultChecked={theme.titleStyle === "condensed"} /> Título
+              em Barlow Condensed maiúsculas (estilo campanha)
+            </label>
+            <div style={styles.grid2}>
+              <label style={styles.label}>
+                <span style={styles.labelText}>Título no topo</span>
+                <input name="themeHeroTitle" defaultValue={theme.heroTitle ?? ""} placeholder="Quem é|o teu|mestre?" style={styles.input} />
+                <span style={hint}>Vazio = título do evento. «|» parte a linha.</span>
+              </label>
+              <label style={styles.label}>
+                <span style={styles.labelText}>Sobretítulo</span>
+                <input name="themeEyebrow" defaultValue={theme.eyebrow ?? ""} placeholder="FESTIVAL · WEPAC" style={styles.input} />
+              </label>
+            </div>
+            <label style={styles.label}>
+              <span style={styles.labelText}>Frase</span>
+              <input name="themeTagline" defaultValue={theme.tagline ?? ""} style={styles.input} />
+            </label>
+            <label style={styles.label}>
+              <span style={styles.labelText}>Imagem do topo</span>
+              <input name="themeHeroImage" defaultValue={theme.heroImage ?? ""} placeholder="/images/… ou https://…" style={styles.input} />
+            </label>
+            <label style={styles.label}>
+              <span style={styles.labelText}>Horário em destaque</span>
+              <textarea
+                name="themeSchedule"
+                rows={4}
+                defaultValue={scheduleToText(theme.schedule)}
+                style={{ ...styles.textarea, minHeight: 90, fontFamily: "ui-monospace, Menlo, monospace", fontSize: 13 }}
+              />
+              <span style={hint}>Uma linha por bloco: «10h–18h30 | Festival | detalhe | destaque a cor». Até 6 linhas.</span>
+            </label>
+          </fieldset>
           <label style={styles.label}>
             <span style={styles.labelText}>Descrição para Google e partilhas</span>
             <input name="seoDescription" defaultValue={event.seoDescription ?? ""} maxLength={300} style={styles.input} />

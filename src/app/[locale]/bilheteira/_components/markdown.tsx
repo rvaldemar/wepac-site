@@ -8,7 +8,7 @@ export function Markdown({ children, className = "" }: { children: string; class
       <ReactMarkdown
         components={{
           p: ({ children }) => <p className="mb-4 last:mb-0 leading-[1.7]">{children}</p>,
-          strong: ({ children }) => <strong className="font-semibold text-black">{children}</strong>,
+          strong: ({ children }) => <strong className="font-semibold text-[var(--ev-ink)]">{children}</strong>,
           ul: ({ children }) => <ul className="mb-4 list-disc pl-5 space-y-1.5">{children}</ul>,
           ol: ({ children }) => <ol className="mb-4 list-decimal pl-5 space-y-1.5">{children}</ol>,
           h2: ({ children }) => (
@@ -20,7 +20,7 @@ export function Markdown({ children, className = "" }: { children: string; class
           a: ({ href, children }) => (
             <a
               href={href}
-              className="underline underline-offset-2 hover:text-black"
+              className="underline underline-offset-2 hover:text-[var(--ev-ink)]"
               target={href?.startsWith("http") ? "_blank" : undefined}
               rel={href?.startsWith("http") ? "noopener noreferrer" : undefined}
             >

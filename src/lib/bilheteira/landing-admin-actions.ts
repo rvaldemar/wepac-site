@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 import { getSessionAdmin } from "./session";
 import { faqFromText, programFromText } from "./offers";
 import { fromLisbonInput } from "./lisbon-time";
+import { scheduleFromText } from "./event-theme";
 import { sendTicketEmail } from "./ticket-email";
 import { SAMPLE_MERGE_VALUES } from "./email-merge";
 import { logSafeError } from "@/lib/wepacker/log-safe-error";
@@ -218,6 +219,22 @@ export async function saveEventLandingAction(formData: FormData): Promise<void> 
   const ogImage = httpsUrl(ogImageRaw);
   if (ogImageRaw && !ogImage) back(path, "A imagem de partilha tem de ser https:// ou um caminho do site.");
 
+  const accentRaw = text(formData, "themeAccent", 7);
+  if (accentRaw && !/^#[0-9a-fA-F]{6}$/.test(accentRaw)) back(path, "A cor de destaque tem de ser #RRGGBB.");
+  const heroImageRaw = text(formData, "themeHeroImage", 500);
+  const heroImage = httpsUrl(heroImageRaw);
+  if (heroImageRaw && !heroImage) back(path, "A imagem do topo tem de ser https:// ou um caminho do site.");
+  const theme = {
+    mode: formData.get("themeMode") === "dark" ? "dark" : "light",
+    accent: accentRaw,
+    titleStyle: formData.get("themeCondensed") === "on" ? "condensed" : "default",
+    heroTitle: text(formData, "themeHeroTitle", 160),
+    eyebrow: text(formData, "themeEyebrow", 80),
+    tagline: text(formData, "themeTagline", 240),
+    heroImage,
+    schedule: scheduleFromText(text(formData, "themeSchedule", 2000) ?? ""),
+  };
+
   const program = programFromText(text(formData, "program", 10000) ?? "");
   const faq = faqFromText(text(formData, "faq", 20000) ?? "");
 
@@ -232,6 +249,7 @@ export async function saveEventLandingAction(formData: FormData): Promise<void> 
       faq: faq.length ? (faq as unknown as Prisma.InputJsonValue) : Prisma.DbNull,
       featured: formData.get("featured") === "on",
       emailNote: text(formData, "emailNote", 4000),
+      theme: theme as unknown as Prisma.InputJsonValue,
     },
   });
   revalidatePath(`/bilheteira/${event.slug}`);

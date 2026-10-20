@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 // Mobile-only buy bar. Hides while the ticket section itself is on screen so
 // it never covers the form it points to.
-export function StickyCta({ label, price }: { label: string; price: string | null }) {
+export function StickyCta({ label, price, accent }: { label: string; price: string | null; accent?: string | null }) {
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
@@ -30,6 +30,7 @@ export function StickyCta({ label, price }: { label: string; price: string | nul
         href="#bilhetes"
         tabIndex={hidden ? -1 : 0}
         className="flex h-12 w-full items-center justify-between bg-black px-5 text-white"
+        style={accent ? { background: accent } : undefined}
       >
         <span className="text-[12px] font-bold uppercase tracking-[0.2em]">{label}</span>
         {price && <span className="font-barlow text-[18px] font-black">{price}</span>}
