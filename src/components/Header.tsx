@@ -9,7 +9,6 @@ import { useMobileDrawer } from "@/lib/useMobileDrawer";
 const navigation = [
   { key: "about", href: "/sobre" },
   { key: "wessex", href: "/wessex" },
-  { key: "easyPeasy", href: "/projetos/easy-peasy" },
   { key: "arteACapela", href: "/arte-a-capela" },
   { key: "artists", href: "/artist" },
   { key: "agenda", href: "/programacao" },
@@ -35,6 +34,9 @@ export function Header() {
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
         <Link href="/" className="font-barlow text-xl font-bold tracking-tight text-wepac-white">
           wepac
+          <span className="ml-1.5 font-inter text-sm font-normal tracking-normal text-wepac-white/60">
+            – Companhia de Artes
+          </span>
         </Link>
 
         {/* Desktop nav */}
