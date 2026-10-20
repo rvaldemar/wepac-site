@@ -5,6 +5,7 @@ import { TicketView } from "./ticket-view";
 import { CapelaVivaTicketView } from "./capela-viva-view";
 import { getLocale } from "next-intl/server";
 import { getInstitutionalCopy } from "@/i18n/copy/institutional";
+import { BilheteiraTracking } from "../../_components/tracking";
 
 export const dynamic = "force-dynamic";
 
@@ -54,12 +55,27 @@ export default async function TicketPage({ params, searchParams }: Props) {
   });
 
   const serialCode = `BT-${String(ticket.serial).padStart(3, "0")}`;
+  // Fired once per ticket on the post-purchase landing, after consent only.
+  const tracking =
+    welcome === "1" ? (
+      <BilheteiraTracking
+        purchase={{
+          id: ticket.id,
+          value: (ticket.priceCents * ticket.seats) / 100,
+          currency: "EUR",
+          contentName: `${ticket.event.title} — ${ticket.tier.name}`,
+          numItems: ticket.seats,
+        }}
+      />
+    ) : null;
   const brandName = ticket.event.brand?.name || ticket.event.department.name;
 
   // Brand-specific design: Capela Viva uses the C/D-style landscape ticket.
   if (ticket.event.brand?.slug === "capela-viva") {
     return (
-      <CapelaVivaTicketView
+      <>
+        {tracking}
+        <CapelaVivaTicketView
         tierName={ticket.tier.name}
         buyerName={ticket.buyerName}
         seats={ticket.seats}
@@ -76,12 +92,15 @@ export default async function TicketPage({ params, searchParams }: Props) {
         eventTitle={ticket.event.title}
         eventSubtitle={ticket.event.subtitle}
         ticketNote={ticket.event.ticketNote}
-      />
+        />
+      </>
     );
   }
 
   return (
-    <TicketView
+    <>
+      {tracking}
+      <TicketView
       tierName={ticket.tier.name}
       buyerName={ticket.buyerName}
       seats={ticket.seats}
@@ -98,6 +117,7 @@ export default async function TicketPage({ params, searchParams }: Props) {
       checkedInAt={ticket.checkedInAt}
       welcome={welcome === "1"}
       coverImage={ticket.event.coverImage}
-    />
+      />
+    </>
   );
 }

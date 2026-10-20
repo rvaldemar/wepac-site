@@ -301,7 +301,9 @@ export async function createManualTicketAction(
       buyerPhone,
       marketingConsent,
       seats: Math.max(1, Math.min(20, Number(seatsRaw) || 1)),
-      priceCents: tier.priceCents,
+      // Tickets store the effective price per seat; a bundle's price covers
+      // all of its seats.
+      priceCents: tier.kind === "bundle" ? Math.round(tier.priceCents / Math.max(1, tier.seatsPerUnit)) : tier.priceCents,
     },
   });
   revalidatePath(`/bilheteira/admin/events/${eventId}`);

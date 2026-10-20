@@ -167,3 +167,15 @@ describe("purchase helpers", () => {
     expect(discountPercent(1000, null)).toBeNull();
   });
 });
+
+import { fromLisbonInput, toLisbonInput } from "@/lib/bilheteira/lisbon-time";
+
+describe("Lisbon admin times", () => {
+  it("reads winter wall time as UTC+0 and summer as UTC+1", () => {
+    expect(fromLisbonInput("2026-11-08T23:59")?.toISOString()).toBe("2026-11-08T23:59:00.000Z");
+    expect(fromLisbonInput("2026-10-20T12:00")?.toISOString()).toBe("2026-10-20T11:00:00.000Z");
+  });
+  it("round-trips", () => {
+    expect(toLisbonInput(fromLisbonInput("2026-10-26T09:30"))).toBe("2026-10-26T09:30");
+  });
+});

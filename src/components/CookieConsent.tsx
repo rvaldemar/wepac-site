@@ -24,9 +24,22 @@ function getServerSnapshot() {
   return "pending";
 }
 
+export const COOKIE_CONSENT_EVENT = "wepac:cookie-consent";
+
+export function hasMarketingConsent(): boolean {
+  try {
+    return localStorage.getItem(COOKIE_CONSENT_KEY) === "accepted";
+  } catch {
+    return false;
+  }
+}
+
 function setConsent(value: "accepted" | "rejected") {
   localStorage.setItem(COOKIE_CONSENT_KEY, value);
   listeners.forEach((listener) => listener());
+  // Lets consent-gated scripts (e.g. the ticketing Meta Pixel) start without
+  // a reload once the visitor accepts.
+  window.dispatchEvent(new Event(COOKIE_CONSENT_EVENT));
 }
 
 export function CookieConsent() {

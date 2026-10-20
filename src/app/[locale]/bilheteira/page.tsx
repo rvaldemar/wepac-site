@@ -2,138 +2,118 @@ import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { getInstitutionalCopy } from "@/i18n/copy/institutional";
+import { getBilheteiraCopy } from "@/i18n/copy/institutional-bilheteira";
 import { prisma } from "@/lib/db";
-import {
-  Shell,
-  styles,
-  formatEventDate,
-  formatEventTime,
-  formatPriceCents,
-} from "./ui";
+import { loadTierUsage } from "@/lib/bilheteira/tier-state";
+import { buildTierOffers, lowestOpenPrice } from "@/lib/bilheteira/offers";
+import { Shell } from "./ui";
+import { EventCards } from "./_components/event-cards";
+import { BilheteiraTracking } from "./_components/tracking";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const copy = getInstitutionalCopy(await getLocale()).ticketing;
+  const locale = await getLocale();
+  const copy = getInstitutionalCopy(locale).ticketing;
+  const bcopy = getBilheteiraCopy(locale);
   return {
     title: `${copy.brand} — WEPAC`,
-    description:
-      copy.publishedProgramme,
+    description: bcopy.index.lead,
   };
 }
 
-export default async function BilheteiraPublic() {
+type Props = { searchParams: Promise<{ marca?: string }> };
+
+export default async function BilheteiraPublic({ searchParams }: Props) {
   const locale = await getLocale();
-  const copy = getInstitutionalCopy(locale).ticketing;
+  const copy = getBilheteiraCopy(locale);
+  const { marca } = await searchParams;
+  const now = new Date();
+
   const events = await prisma.event.findMany({
-    where: { status: "published", startsAt: { gte: new Date() } },
+    where: { status: "published", startsAt: { gte: now } },
     orderBy: { startsAt: "asc" },
-    include: {
-      department: true,
-      brand: true,
-      // Archived tiers are excluded from the public offer and therefore from
-      // the "from €X" price derived below.
-      tiers: { where: { archivedAt: null }, orderBy: { priceCents: "asc" } },
-    },
+    include: { department: true, brand: true, tiers: true },
   });
+
+  const cards = await Promise.all(
+    events.map(async (e) => ({
+      event: e,
+      fromPrice: lowestOpenPrice(buildTierOffers(e, e.tiers, await loadTierUsage(e.id, now), now)),
+    })),
+  );
+
+  // Brand filter chips: only brands that currently have events.
+  const brands = new Map<string, string>();
+  for (const { event } of cards) {
+    const key = event.brand?.slug || event.department.slug;
+    brands.set(key, event.brand?.name || event.department.name);
+  }
+  const visible = marca
+    ? cards.filter(({ event }) => (event.brand?.slug || event.department.slug) === marca)
+    : cards;
+  const highlight = !marca ? (visible.find((c) => c.event.featured) ?? null) : null;
+  const rest = highlight ? visible.filter((c) => c !== highlight) : visible;
 
   return (
     <Shell
       rightSlot={
-        <Link href="/bilheteira/login" style={styles.buttonGhost}>
+        <Link href="/bilheteira/login" className="text-[11px] font-bold uppercase tracking-[0.18em] text-black/50 hover:text-black">
           Admin
         </Link>
       }
     >
-      <main style={styles.container}>
-        <div style={styles.eyebrow}>WEPAC</div>
-        <h1 style={styles.h1}>{copy.brand}</h1>
-        <p style={{ color: "#666", maxWidth: 620, marginBottom: 40 }}>
-          {copy.publishedProgramme}
-        </p>
+      <BilheteiraTracking />
+      <main className="mx-auto max-w-[1200px] px-5 pb-20 pt-12 sm:px-8 sm:pt-16">
+        <p className="text-[11px] uppercase tracking-[0.22em] text-black/55">{copy.index.eyebrow}</p>
+        <h1 className="mt-3 max-w-[820px] font-barlow text-[40px] font-black leading-[1.03] tracking-[-0.02em] sm:text-[60px]">
+          {copy.index.title}
+        </h1>
+        <p className="mt-4 max-w-[620px] text-[17px] leading-relaxed text-black/65">{copy.index.lead}</p>
 
-        {events.length === 0 ? (
-          <div style={styles.card}>
-            <p style={{ margin: 0 }}>
-              {copy.noEvents}
-            </p>
-          </div>
+        {brands.size > 1 && (
+          <nav aria-label="Filtro" className="mt-8 flex flex-wrap gap-2">
+            <FilterChip href="/bilheteira" active={!marca} label={copy.index.allBrands} />
+            {[...brands.entries()].map(([slug, name]) => (
+              <FilterChip key={slug} href={`/bilheteira?marca=${encodeURIComponent(slug)}`} active={marca === slug} label={name} />
+            ))}
+          </nav>
+        )}
+
+        {visible.length === 0 ? (
+          <div className="mt-12 border border-black/12 bg-white p-8 text-[15px]">{copy.index.noEvents}</div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {events.map((e) => {
-              const minPrice = Math.min(...e.tiers.map((t) => t.priceCents));
-              const brandName = e.brand?.name || e.department.name;
-              return (
-                <Link
-                  key={e.id}
-                  href={`/bilheteira/${e.slug}`}
-                  style={{
-                    ...styles.card,
-                    textDecoration: "none",
-                    color: "#000",
-                    display: "block",
-                    transition: "border-color 150ms",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 10,
-                      letterSpacing: 2,
-                      textTransform: "uppercase",
-                      color: "#666",
-                      marginBottom: 8,
-                    }}
-                  >
-                    {brandName}
-                  </div>
-                  <h3
-                    style={{
-                      fontFamily: "'Barlow', sans-serif",
-                      fontWeight: 900,
-                      fontSize: 24,
-                      letterSpacing: -0.4,
-                      margin: "0 0 6px",
-                    }}
-                  >
-                    {e.title}
-                  </h3>
-                  {e.subtitle && (
-                    <div style={{ fontSize: 14, color: "#444" }}>
-                      {e.subtitle}
-                    </div>
-                  )}
-                  <div
-                    style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: 16,
-                      marginTop: 12,
-                      fontSize: 13,
-                      color: "#333",
-                    }}
-                  >
-                    <span>
-                      <strong>{formatEventDate(e.startsAt, locale)}</strong> ·{" "}
-                      {formatEventTime(e.startsAt, locale)}
-                    </span>
-                    <span>{e.venue}</span>
-                    {/* An event whose every tier was archived has no active
-                        price; Math.min over [] is Infinity, so skip the span
-                        entirely instead of rendering garbage. */}
-                    {e.tiers.length > 0 && (
-                      <span>
-                        {e.tiers.length > 1
-                          ? copy.fromPrice(formatPriceCents(minPrice, locale))
-                          : formatPriceCents(minPrice, locale)}
-                      </span>
-                    )}
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
+          <>
+            {highlight && (
+              <section className="mt-12">
+                <h2 className="mb-5 text-[11px] uppercase tracking-[0.2em] text-black/55">{copy.index.featured}</h2>
+                <EventCards cards={[highlight]} locale={locale} copy={copy} large />
+              </section>
+            )}
+            {rest.length > 0 && (
+              <section className="mt-12">
+                <h2 className="mb-5 text-[11px] uppercase tracking-[0.2em] text-black/55">{copy.index.upcoming}</h2>
+                <EventCards cards={rest} locale={locale} copy={copy} />
+              </section>
+            )}
+          </>
         )}
       </main>
     </Shell>
+  );
+}
+
+function FilterChip({ href, active, label }: { href: string; active: boolean; label: string }) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className={[
+        "inline-flex h-9 items-center border px-4 text-[11px] font-bold uppercase tracking-[0.16em] transition",
+        active ? "border-black bg-black text-white" : "border-black/20 text-black/70 hover:border-black hover:text-black",
+      ].join(" ")}
+    >
+      {label}
+    </Link>
   );
 }

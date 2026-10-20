@@ -5,9 +5,7 @@ import QRCode from "qrcode";
 import { prisma } from "@/lib/db";
 import {
   updateEventAction,
-  addTierAction,
   archiveTierAction,
-  updateTierStripePriceAction,
   createManualTicketAction,
   checkInTicketAction,
   deleteTicketAction,
@@ -27,6 +25,20 @@ import { TicketView } from "../../../ticket/[id]/ticket-view";
 import { CapelaVivaTicketView } from "../../../ticket/[id]/capela-viva-view";
 import { getLocale } from "next-intl/server";
 import { getTicketAdminCopy } from "@/i18n/copy/institutional-admin";
+import { computeAllTierStates, loadTierUsage } from "@/lib/bilheteira/tier-state";
+import { moveTierAction } from "@/lib/bilheteira/landing-admin-actions";
+import { approveTierRequestAction, rejectTierRequestAction } from "@/lib/bilheteira/request-actions";
+
+const KIND_LABEL = { single: "Individual", bundle: "Pacote", group: "Grupo", phase: "Fase", request: "Pedido" } as const;
+const STATE_LABEL = {
+  on_sale: "À venda",
+  sold_out: "Esgotado",
+  locked: "Em breve",
+  closed: "Encerrado",
+  request: "Pedidos abertos",
+  archived: "Arquivado",
+} as const;
+const REQUEST_LABEL = { pending: "Pendente", approved: "Aprovado", rejected: "Recusado" } as const;
 
 export const dynamic = "force-dynamic";
 
@@ -59,9 +71,18 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
         include: { tier: true },
         orderBy: { createdAt: "desc" },
       },
+      requests: { include: { tier: true }, orderBy: [{ status: "asc" }, { createdAt: "desc" }] },
+      waitlist: { include: { tier: true }, orderBy: { createdAt: "desc" } },
     },
   });
   if (!event) notFound();
+  const usage = await loadTierUsage(event.id);
+  const tierStates = computeAllTierStates({
+    tiers: event.tiers,
+    usage,
+    capacity: event.capacity,
+    now: new Date(),
+  });
 
   // Admins keep full visibility of archived tiers (sales history), but new
   // tickets — manual or public — only ever target active tiers.
@@ -287,115 +308,150 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
         </form>
       </div>
 
-      <h2 style={styles.h2}>{copy.tiers}</h2>
+      <h2 id="bilhetes" style={styles.h2}>{copy.tiers}</h2>
       <div style={styles.card}>
-        {event.tiers.length === 0 && (
-          <p style={{ color: "#666" }}>{copy.noTiers}</p>
-        )}
+        {event.tiers.length === 0 && <p style={{ color: "#666" }}>{copy.noTiers}</p>}
         {event.tiers.length > 0 && (
           <table style={styles.table}>
             <thead>
               <tr>
                 <th style={styles.th}>{copy.name}</th>
-                <th style={styles.th}>{copy.description}</th>
+                <th style={styles.th}>Tipo</th>
                 <th style={styles.th}>{copy.price}</th>
-                <th style={styles.th}>{copy.limit}</th>
-                <th style={styles.th}>Stripe Price ID</th>
+                <th style={styles.th}>Estado</th>
+                <th style={styles.th}>Vendidos · limite</th>
                 <th style={styles.th}></th>
               </tr>
             </thead>
             <tbody>
-              {event.tiers.map((t) => (
-                <tr key={t.id} style={t.archivedAt ? { opacity: 0.55 } : undefined}>
+              {event.tiers.map((t, i) => {
+                const st = tierStates.get(t.id);
+                return (
+                  <tr key={t.id} style={t.archivedAt ? { opacity: 0.55 } : undefined}>
+                    <td style={styles.td}>
+                      <strong>{t.name}</strong>
+                      {t.featured && <span style={{ ...styles.pill, marginLeft: 8 }}>destaque</span>}
+                      {t.section && <div style={{ fontSize: 12, color: "#666" }}>{t.section}</div>}
+                      {t.archivedAt && (
+                        <div style={{ fontSize: 11, color: "#8a6d1a" }}>
+                          {copy.archivedTierBadge} · {formatEventDate(t.archivedAt, locale)}
+                        </div>
+                      )}
+                    </td>
+                    <td style={styles.td}>
+                      {KIND_LABEL[t.kind]}
+                      {t.kind === "phase" && (
+                        <div style={{ fontSize: 12, color: "#666" }}>
+                          {t.phaseGroup} · {t.phaseOrder}
+                        </div>
+                      )}
+                    </td>
+                    <td style={styles.td}>
+                      {t.kind === "request" ? "Pedido" : formatPriceCents(t.priceCents, locale)}
+                      {t.kind === "bundle" && <div style={{ fontSize: 12, color: "#666" }}>{t.seatsPerUnit} lugares</div>}
+                      {t.kind === "group" && <div style={{ fontSize: 12, color: "#666" }}>mín. {t.minSeats}</div>}
+                    </td>
+                    <td style={styles.td}>
+                      {st ? STATE_LABEL[st.state] : "—"}
+                      {t.stateOverride !== "auto" && <div style={{ fontSize: 11, color: "#8a6d1a" }}>forçado</div>}
+                    </td>
+                    <td style={styles.td}>
+                      {usage.byTier.get(t.id) ?? 0}
+                      {t.quantity != null ? ` / ${t.quantity}` : ""}
+                    </td>
+                    <td style={{ ...styles.td, textAlign: "right", whiteSpace: "nowrap" }}>
+                      <Link href={`/bilheteira/admin/events/${event.id}/tiers/${t.id}`} style={{ ...styles.buttonGhost, marginRight: 6 }}>
+                        Editar
+                      </Link>
+                      {i > 0 && (
+                        <form action={moveTierAction} style={{ display: "inline" }}>
+                          <input type="hidden" name="eventId" value={event.id} />
+                          <input type="hidden" name="tierId" value={t.id} />
+                          <input type="hidden" name="direction" value="up" />
+                          <button type="submit" aria-label="Subir" style={{ ...styles.buttonGhost, padding: "10px 10px" }}>
+                            ↑
+                          </button>
+                        </form>
+                      )}
+                      {!t.archivedAt && (
+                        <form action={archiveTierAction} style={{ display: "inline", marginLeft: 6 }}>
+                          <input type="hidden" name="id" value={t.id} />
+                          <input type="hidden" name="eventId" value={event.id} />
+                          <button type="submit" style={styles.buttonDanger}>
+                            {copy.archiveTier}
+                          </button>
+                        </form>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+        <div style={{ marginTop: 20, display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <Link href={`/bilheteira/admin/events/${event.id}/tiers/new`} style={styles.buttonSecondary}>
+            {copy.addTier}
+          </Link>
+          <Link href={`/bilheteira/admin/events/${event.id}/landing`} style={styles.buttonSecondary}>
+            Página do evento (programa, convidados, FAQ, email)
+          </Link>
+        </div>
+      </div>
+
+      <h2 id="pedidos" style={styles.h2}>Pedidos</h2>
+      <div style={styles.card}>
+        {event.requests.length === 0 ? (
+          <p style={{ color: "#666", margin: 0 }}>Sem pedidos.</p>
+        ) : (
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>Pessoa</th>
+                <th style={styles.th}>Estrutura · função</th>
+                <th style={styles.th}>Bilhete</th>
+                <th style={styles.th}>Estado</th>
+                <th style={styles.th}></th>
+              </tr>
+            </thead>
+            <tbody>
+              {event.requests.map((r) => (
+                <tr key={r.id}>
                   <td style={styles.td}>
-                    <strong>{t.name}</strong>
-                    {t.archivedAt && (
-                      <span
-                        style={{
-                          marginLeft: 8,
-                          fontSize: 10,
-                          textTransform: "uppercase",
-                          letterSpacing: 1,
-                          color: "#8a6d1a",
-                          border: "1px solid #d9c37a",
-                          borderRadius: 4,
-                          padding: "2px 6px",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {copy.archivedTierBadge} ·{" "}
-                        {formatEventDate(t.archivedAt, locale)}
-                      </span>
+                    <strong>{r.name}</strong>
+                    <div style={{ fontSize: 12, color: "#666" }}>{r.email}{r.phone ? ` · ${r.phone}` : ""}</div>
+                    {r.website && <div style={{ fontSize: 12 }}>{r.website}</div>}
+                    {r.message && <div style={{ fontSize: 12, color: "#444", marginTop: 4, maxWidth: 320 }}>{r.message}</div>}
+                  </td>
+                  <td style={styles.td}>
+                    {r.organization}
+                    <div style={{ fontSize: 12, color: "#666" }}>{r.role}</div>
+                  </td>
+                  <td style={{ ...styles.td, fontSize: 13 }}>{r.tier.name}</td>
+                  <td style={styles.td}>{REQUEST_LABEL[r.status]}</td>
+                  <td style={{ ...styles.td, textAlign: "right", whiteSpace: "nowrap" }}>
+                    {r.status === "pending" && (
+                      <>
+                        <form action={approveTierRequestAction} style={{ display: "inline" }}>
+                          <input type="hidden" name="id" value={r.id} />
+                          <input type="hidden" name="eventId" value={event.id} />
+                          <button type="submit" style={{ ...styles.buttonSecondary, background: "#1b5e20", color: "#fff", border: "none", marginRight: 6 }}>
+                            Aprovar e emitir
+                          </button>
+                        </form>
+                        <form action={rejectTierRequestAction} style={{ display: "inline" }}>
+                          <input type="hidden" name="id" value={r.id} />
+                          <input type="hidden" name="eventId" value={event.id} />
+                          <button type="submit" style={styles.buttonDanger}>
+                            Recusar
+                          </button>
+                        </form>
+                      </>
                     )}
-                  </td>
-                  <td style={{ ...styles.td, color: "#666" }}>
-                    {t.description || "—"}
-                  </td>
-                  <td style={styles.td}>
-                    {formatPriceCents(t.priceCents, locale)}
-                  </td>
-                  <td style={styles.td}>{t.quantity ?? "—"}</td>
-                  <td style={styles.td}>
-                    {t.archivedAt ? (
-                      <span
-                        style={{
-                          fontFamily: "ui-monospace, Menlo, monospace",
-                          fontSize: 12,
-                          color: "#666",
-                        }}
-                      >
-                        {t.stripePriceId || "—"}
-                      </span>
-                    ) : (
-                      <form
-                        action={updateTierStripePriceAction}
-                        style={{
-                          display: "flex",
-                          gap: 4,
-                          alignItems: "center",
-                        }}
-                      >
-                        <input type="hidden" name="id" value={t.id} />
-                        <input type="hidden" name="eventId" value={event.id} />
-                        <input
-                          type="text"
-                          name="stripePriceId"
-                          defaultValue={t.stripePriceId || ""}
-                          placeholder="price_..."
-                          style={{
-                            ...styles.input,
-                            fontFamily: "ui-monospace, Menlo, monospace",
-                            fontSize: 12,
-                            padding: "6px 8px",
-                            minWidth: 180,
-                          }}
-                        />
-                        <button
-                          type="submit"
-                          style={{
-                            ...styles.buttonGhost,
-                            padding: "6px 10px",
-                            fontSize: 10,
-                          }}
-                        >
-                          {copy.save}
-                        </button>
-                      </form>
-                    )}
-                  </td>
-                  <td style={{ ...styles.td, textAlign: "right" }}>
-                    {!t.archivedAt && (
-                      <form action={archiveTierAction} style={{ margin: 0 }}>
-                        <input type="hidden" name="id" value={t.id} />
-                        <input
-                          type="hidden"
-                          name="eventId"
-                          value={event.id}
-                        />
-                        <button type="submit" style={styles.buttonDanger}>
-                          {copy.archiveTier}
-                        </button>
-                      </form>
+                    {r.ticketId && (
+                      <Link href={`/bilheteira/ticket/${r.ticketId}`} style={styles.link}>
+                        Ver bilhete
+                      </Link>
                     )}
                   </td>
                 </tr>
@@ -403,58 +459,33 @@ export default async function EventAdminPage({ params, searchParams }: Props) {
             </tbody>
           </table>
         )}
-
-        <form
-          action={addTierAction}
-          style={{ ...styles.form, marginTop: 20, gap: 10 }}
-        >
-          <input type="hidden" name="eventId" value={event.id} />
-          <div style={styles.labelText}>{copy.addTier}</div>
-          <div style={styles.grid2}>
-            <input
-              type="text"
-              name="name"
-              placeholder={copy.tierNamePlaceholder}
-              required
-              style={styles.input}
-            />
-            <input
-              type="text"
-              name="price"
-              placeholder={copy.tierPricePlaceholder}
-              inputMode="decimal"
-              style={styles.input}
-            />
-          </div>
-          <div style={styles.grid2}>
-            <input
-              type="text"
-              name="description"
-              placeholder={copy.tierDescriptionPlaceholder}
-              style={styles.input}
-            />
-            <input
-              type="number"
-              name="quantity"
-              placeholder={copy.tierQuantityPlaceholder}
-              style={styles.input}
-            />
-          </div>
-          <input
-            type="text"
-            name="stripePriceId"
-            placeholder={copy.stripePricePlaceholder}
-            style={{
-              ...styles.input,
-              fontFamily: "ui-monospace, Menlo, monospace",
-              fontSize: 13,
-            }}
-          />
-          <button type="submit" style={{ ...styles.buttonSecondary }}>
-            {copy.addTier}
-          </button>
-        </form>
       </div>
+
+      {event.waitlist.length > 0 && (
+        <>
+          <h2 id="lista-de-espera" style={styles.h2}>Lista de espera</h2>
+          <div style={styles.card}>
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={styles.th}>Email</th>
+                  <th style={styles.th}>Bilhete</th>
+                  <th style={styles.th}>Data</th>
+                </tr>
+              </thead>
+              <tbody>
+                {event.waitlist.map((w) => (
+                  <tr key={w.id}>
+                    <td style={styles.td}>{w.email}</td>
+                    <td style={{ ...styles.td, fontSize: 13 }}>{w.tier.name}</td>
+                    <td style={{ ...styles.td, fontSize: 13 }}>{formatEventDate(w.createdAt, locale)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
 
       <h2 style={styles.h2}>{copy.payments}</h2>
       <div style={styles.card}>
