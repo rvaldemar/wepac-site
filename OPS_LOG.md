@@ -4,6 +4,23 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-10-20 — Estrutura do site: WEPAC Society como marca-mãe (DEPLOYADO)
+
+**Release:** `ff6ec9298f01` (inclui `80b4587` páginas legais e `2036a69`).
+Um só sistema de navegação (SocietyHeader/SocietyFooter) em todo o site; o
+Header/Footer legado foi removido. A navbar muda conforme a secção: Society
+(Life Plan, Famílias, Academy, Companhia de Artes) ou Companhia de Artes
+(Wessex, Arte à Capela, Bilheteira, Artistas, Parcerias, Society), com o
+logótipo «Companhia de Artes» a apontar para /companhia-de-artes e «Abrir
+Backpack» (login WEPACKER) sempre visível. Redirects 308: /sobre,
+/metodologia, /impacto → /society; /projetos → /companhia-de-artes;
+/servicos → /wessex; /programacao → /bilheteira. Easy Peasy fica sob a
+Academy. Footer com Privacidade, Cookies, Termos, Livro de Reclamações e
+«WEPAC — Companhia de Artes, Lda · NIPC 518 267 342». Gates: 550 unit, E2E
+11/11. Smoke pós-deploy: 38 páginas do sitemap e 40 links internos a 200.
+
+---
+
 ## 2026-10-20 — Bilheteira com navbar e footer do site (DEPLOYADO)
 
 **Release:** `1e08ea0c692b`. Páginas públicas da bilheteira (índice, evento,
