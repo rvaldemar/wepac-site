@@ -20,7 +20,6 @@ const entries: SitemapEntry[] = [
   { path: "/society/adultos", changeFrequency: "monthly", priority: 0.7 },
   { path: "/servicos/orcamento", changeFrequency: "monthly", priority: 0.8 },
   { path: "/projetos/easy-peasy", changeFrequency: "monthly", priority: 0.7 },
-  { path: "/parcerias", changeFrequency: "monthly", priority: 0.6 },
   { path: "/artist", changeFrequency: "weekly", priority: 0.8 },
   { path: "/contacto", changeFrequency: "monthly", priority: 0.5 },
   { path: "/privacidade", changeFrequency: "yearly", priority: 0.2 },

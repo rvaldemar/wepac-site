@@ -22,7 +22,6 @@ const companhiaNavigation = [
   { key: "arteACapela", href: "/arte-a-capela" },
   { key: "ticketing", href: "/bilheteira" },
   { key: "artists", href: "/artist" },
-  { key: "partnerships", href: "/parcerias" },
   { key: "society", href: "/society" },
 ] as const;
 
@@ -32,7 +31,6 @@ const COMPANHIA_SECTIONS = [
   "/arte-a-capela",
   "/bilheteira",
   "/artist",
-  "/parcerias",
   "/servicos",
 ];
 

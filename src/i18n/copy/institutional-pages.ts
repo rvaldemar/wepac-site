@@ -53,19 +53,6 @@ type InstitutionalPagesCopy = {
     areasTitle: string;
     areas: Card[];
   };
-  partnerships: {
-    metadataTitle: string;
-    metadataDescription: string;
-    eyebrow: string;
-    titleLine1: string;
-    titleLine2: string;
-    introduction: string;
-    collaboratorsTitle: string;
-    collaborators: Card[];
-    interested: string;
-    ctaBody: string;
-    cta: string;
-  };
   services: {
     metadataTitle: string;
     metadataDescription: string;
@@ -248,53 +235,6 @@ const ptPT: InstitutionalPagesCopy = {
           "Criação de laços comunitários através da arte, promovendo a coesão social e a participação cultural.",
       },
     ],
-  },
-  partnerships: {
-    metadataTitle: "Parcerias",
-    metadataDescription:
-      "Informação para instituições e patrocinadores que queiram colaborar com a WEPAC.",
-    eyebrow: "Parcerias",
-    titleLine1: "Vamos criar",
-    titleLine2: "juntos.",
-    introduction:
-      "Procuramos parceiros que acreditem no poder transformador da cultura e da educação.",
-    collaboratorsTitle: "Com quem colaboramos",
-    collaborators: [
-      {
-        title: "Instituições culturais",
-        description:
-          "Museus, teatros, fundações e centros culturais que queiram enriquecer a sua programação.",
-      },
-      {
-        title: "Escolas e autarquias",
-        description:
-          "Programas educativos artísticos para escolas, agrupamentos e municípios.",
-      },
-      {
-        title: "Empresas",
-        description:
-          "Patrocínio de projetos culturais com impacto social e visibilidade para a marca.",
-      },
-      {
-        title: "Organizadores de eventos",
-        description:
-          "Parcerias para festivais, ciclos de concertos e programação cultural.",
-      },
-      {
-        title: "Espaços patrimoniais",
-        description:
-          "Programação artística para valorizar e dinamizar espaços históricos.",
-      },
-      {
-        title: "Investigação",
-        description:
-          "Colaboração com universidades em projetos de investigação artística e educativa.",
-      },
-    ],
-    interested: "Interessado?",
-    ctaBody:
-      "Conte-nos sobre o seu projeto ou ideia. Teremos todo o gosto em explorar formas de colaboração.",
-    cta: "Contacte-nos",
   },
   services: {
     metadataTitle: "Serviços",
@@ -556,53 +496,6 @@ const enUS: InstitutionalPagesCopy = {
           "Building community ties through art, strengthening social cohesion and participation in culture.",
       },
     ],
-  },
-  partnerships: {
-    metadataTitle: "Partnerships",
-    metadataDescription:
-      "Information for institutions and sponsors interested in working with WEPAC.",
-    eyebrow: "Partnerships",
-    titleLine1: "Let's create",
-    titleLine2: "together.",
-    introduction:
-      "We are looking for partners who believe in the transformative power of culture and education.",
-    collaboratorsTitle: "Who we work with",
-    collaborators: [
-      {
-        title: "Cultural institutions",
-        description:
-          "Museums, theatres, foundations and cultural centres seeking to enrich their programmes.",
-      },
-      {
-        title: "Schools and local authorities",
-        description:
-          "Arts education programmes for schools, school groups and municipalities.",
-      },
-      {
-        title: "Businesses",
-        description:
-          "Sponsorship of cultural projects with social impact and meaningful brand visibility.",
-      },
-      {
-        title: "Event organisers",
-        description:
-          "Partnerships for festivals, concert series and cultural programmes.",
-      },
-      {
-        title: "Heritage venues",
-        description:
-          "Artistic programming that celebrates and activates historic spaces.",
-      },
-      {
-        title: "Research",
-        description:
-          "Collaboration with universities on artistic and educational research projects.",
-      },
-    ],
-    interested: "Interested?",
-    ctaBody:
-      "Tell us about your project or idea. We would love to explore ways of working together.",
-    cta: "Contact us",
   },
   services: {
     metadataTitle: "Services",

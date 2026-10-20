@@ -19,6 +19,7 @@ const nextConfig: NextConfig = {
       ["/projetos", "/companhia-de-artes"],
       ["/servicos", "/wessex"],
       ["/programacao", "/bilheteira"],
+      ["/parcerias", "/companhia-de-artes"],
     ];
     return [
       ...consolidated.flatMap(([source, destination]) => [

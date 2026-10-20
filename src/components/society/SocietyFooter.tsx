@@ -59,7 +59,6 @@ export function SocietyFooter() {
               <Link href="/wessex" className="hover:text-white">Wessex</Link>
               <Link href="/arte-a-capela" className="hover:text-white">Arte à Capela</Link>
               <Link href="/artist" className="hover:text-white">{nav("artists")}</Link>
-              <Link href="/parcerias" className="hover:text-white">{nav("partnerships")}</Link>
               <Link href="/contacto" className="hover:text-white">{t("contact")}</Link>
             </div>
           </div>
