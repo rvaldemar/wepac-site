@@ -12,7 +12,6 @@ export async function Footer() {
           <div className="md:col-span-1">
             <Link href="/" className="font-barlow text-2xl font-bold text-wepac-white">
               wepac
-              <span className="ml-1.5 font-inter text-sm font-normal text-wepac-white/60">– Companhia de Artes</span>
             </Link>
             <p className="mt-2 text-sm text-wepac-white/50">{t("tagline")}</p>
             <p className="mt-4 text-sm text-wepac-white/50 leading-relaxed">

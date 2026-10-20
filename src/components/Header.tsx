@@ -17,11 +17,25 @@ const navigation = [
   { key: "contact", href: "/contacto" },
 ] as const;
 
+const COMPANHIA_SECTIONS = [
+  "/companhia-de-artes",
+  "/wessex",
+  "/arte-a-capela",
+  "/bilheteira",
+  "/programacao",
+  "/artist",
+  "/servicos",
+  "/projetos",
+];
+
 export function Header() {
   const t = useTranslations("Navigation.site");
   const common = useTranslations("Common");
   const pathname = usePathname();
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  // Only the Companhia de Artes sections carry its name next to the logo;
+  // Society and institutional pages stay «wepac».
+  const isCompanhia = COMPANHIA_SECTIONS.some((href) => isActive(href));
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
   const { toggleRef, drawerRef } = useMobileDrawer<HTMLButtonElement, HTMLDivElement>(
@@ -34,9 +48,11 @@ export function Header() {
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
         <Link href="/" className="font-barlow text-xl font-bold tracking-tight text-wepac-white">
           wepac
-          <span className="ml-1.5 font-inter text-sm font-normal tracking-normal text-wepac-white/60">
-            – Companhia de Artes
-          </span>
+          {isCompanhia && (
+            <span className="ml-1.5 font-inter text-sm font-normal tracking-normal text-wepac-white/60">
+              – Companhia de Artes
+            </span>
+          )}
         </Link>
 
         {/* Desktop nav */}
