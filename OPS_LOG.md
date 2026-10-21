@@ -4,6 +4,10 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-10-21 — Convites: botão «Responder ao convite» partido no Zoho (DEPLOYADO)
+
+**Release:** `d74a103e7dcf`. Teste ponta a ponta no Zoho Mail web (colar «Copiar email formatado», guardar rascunho, ler o HTML guardado pela API): a tipografia v2 dos campos personalizáveis mantém-se (Helvetica 16px), mas o Zoho reescrevia `mailto:nome%40dominio` para `https://mailto:...`, partindo o botão. O endereço passa a ir sem codificação (já validado por regex); só o assunto é codificado. Etiqueta «v3 · 21 out · campos e botão corrigidos». Quem reportar desformatação com o gerador aberto antes do deploy tem de recarregar: a página aberta mantém o código antigo. Forma certa de envio: «Copiar email formatado» colado num email novo.
+
 ## 2026-10-21 — Convites: tipografia dos campos personalizáveis (DEPLOYADO)
 
 **Release:** `649dd6ee96a7`. No gerador de convites (`private-assets/convites-quem-e-o-teu-mestre.html`, servido em `/convites/quem-e-o-teu-mestre` com token), os campos de texto livre saíam num só `<p>` com `<br>`; ao colar no compositor de email esse bloco era partido sem estilo e caía na letra por defeito. Cada linha passa a parágrafo próprio, com estilo repetido em `span` e na célula. Etiqueta visível «v2 · 21 out · campos corrigidos». Verificado no servidor (`current` → release nova, ficheiro com a correção). Nota: a cópia em WHPH/OneDrive (`convites-email/`) está desatualizada face a produção; a fonte é este ficheiro.
