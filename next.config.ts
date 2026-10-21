@@ -6,7 +6,7 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const nextConfig: NextConfig = {
   output: "standalone",
   outputFileTracingIncludes: {
-    "/api/equipa/convites": ["./private-assets/convites-quem-e-o-teu-mestre.html"],
+    "/convites/quem-e-o-teu-mestre": ["./private-assets/convites-quem-e-o-teu-mestre.html"],
   },
   serverExternalPackages: ["@prisma/client", "prisma"],
   async redirects() {

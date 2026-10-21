@@ -122,6 +122,9 @@ const handleProtectedRequest = auth(
 
 export default function proxy(request: NextRequest, event: NextFetchEvent) {
   const pathname = stripLocalePrefix(request.nextUrl.pathname).pathname;
+  if (request.nextUrl.pathname === "/convites/quem-e-o-teu-mestre") {
+    return NextResponse.next();
+  }
   const isProtectedWepackerPath =
     pathname.startsWith("/wepacker") && !isPublicWepackerPath(pathname);
 
