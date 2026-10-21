@@ -51,7 +51,7 @@
 <header>
   <h1>Convites · Quem é o Teu Mestre<b>?</b></h1>
   <span>21 nov 2026 · escolher o tipo, preencher, copiar e colar no email</span>
-  <span style="margin-left:auto;color:#E04E2F;font-weight:600;">v2 · 21 out · campos corrigidos</span>
+  <span style="margin-left:auto;color:#E04E2F;font-weight:600;">v3 · 21 out · campos e botão corrigidos</span>
 </header>
 <main>
   <aside>
@@ -686,7 +686,8 @@ window.renderConvite = (function () {
 
     const replyTo = val('EMAIL_RESPOSTA');
     if (mode !== 'template' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(replyTo)) missing.add('EMAIL_RESPOSTA');
-    const mailto = mode === 'template' ? '{{EMAIL_RESPOSTA}}' : `mailto:${encodeURIComponent(replyTo)}?subject=${encodeURIComponent('Re: ' + subject)}`;
+    // Raw address: Zoho rewrites mailto:name%40domain into https://mailto:..., which breaks the button.
+    const mailto = mode === 'template' ? '{{EMAIL_RESPOSTA}}' : `mailto:${replyTo}?subject=${encodeURIComponent('Re: ' + subject)}`;
     const button = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 26px 0;"><tr>
         <td style="background:${C.orange};border-radius:3px;"><a href="${esc(mailto)}" style="display:inline-block;padding:13px 24px;font-family:${SANS};font-size:15px;font-weight:bold;color:#FFFFFF;text-decoration:none;">Responder ao convite</a></td>
       </tr></table>`;
