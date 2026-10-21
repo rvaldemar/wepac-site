@@ -4,6 +4,10 @@ Histórico de problemas, decisões e soluções em produção. Consultado pelo C
 
 ---
 
+## 2026-10-21 — Convites: tipografia dos campos personalizáveis (DEPLOYADO)
+
+**Release:** `649dd6ee96a7`. No gerador de convites (`private-assets/convites-quem-e-o-teu-mestre.html`, servido em `/convites/quem-e-o-teu-mestre` com token), os campos de texto livre saíam num só `<p>` com `<br>`; ao colar no compositor de email esse bloco era partido sem estilo e caía na letra por defeito. Cada linha passa a parágrafo próprio, com estilo repetido em `span` e na célula. Etiqueta visível «v2 · 21 out · campos corrigidos». Verificado no servidor (`current` → release nova, ficheiro com a correção). Nota: a cópia em WHPH/OneDrive (`convites-email/`) está desatualizada face a produção; a fonte é este ficheiro.
+
 ## 2026-10-20 — Bilhete com a identidade da campanha (DEPLOYADO)
 
 **Release:** `9b35a15df68d`. Eventos com tema próprio (dark/condensed) emitem o
