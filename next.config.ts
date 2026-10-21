@@ -5,6 +5,9 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  outputFileTracingIncludes: {
+    "/api/equipa/convites": ["./private-assets/convites-quem-e-o-teu-mestre.html"],
+  },
   serverExternalPackages: ["@prisma/client", "prisma"],
   async redirects() {
     // WEPAC Society is the parent brand: «A WEPAC», method and impact live
