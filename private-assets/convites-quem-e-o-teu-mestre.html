@@ -51,6 +51,7 @@
 <header>
   <h1>Convites · Quem é o Teu Mestre<b>?</b></h1>
   <span>21 nov 2026 · escolher o tipo, preencher, copiar e colar no email</span>
+  <span style="margin-left:auto;color:#E04E2F;font-weight:600;">v2 · 21 out · campos corrigidos</span>
 </header>
 <main>
   <aside>
@@ -605,6 +606,7 @@ window.renderConvite = (function () {
   const SANS = "Helvetica,Arial,sans-serif";
   const COND = "'Barlow Condensed','Arial Narrow','Helvetica Neue',Arial,sans-serif";
 
+  const PARA = '\u0000PARA\u0000';
   const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
   function allFields(tipo) { return window.CONVITES.comuns.concat(tipo.campos); }
@@ -626,7 +628,9 @@ window.renderConvite = (function () {
       for (let i = 0; i < 3; i++) out = out.replace(/\{\{(FESTIVAL|DIA|NOITE)\}\}/g, (_, k) => constants[k]);
       return out.replace(/\{\{([A-Z_]+)\}\}/g, (_, k) => {
         if (mode === 'template') return `<span style="background:#FFF1B8;color:#7A4B00;font-family:monospace;font-size:13px;">{{${k}}}</span>`;
-        if (val(k)) return esc(val(k)).replace(/\n/g, '<br>');
+        // Each line of a free-text field becomes its own paragraph (PARA marker): composers split
+        // <br>-separated text into unstyled blocks, which is what broke the font on custom fields.
+        if (val(k)) return esc(val(k)).split(/\s*\n\s*/).filter(Boolean).join(PARA);
         missing.add(k);
         const label = byKey[k] ? byKey[k].label : k;
         return `<span style="background:#FFE08A;color:#5A3A00;padding:0 3px;">[${esc(label)}]</span>`;
@@ -644,7 +648,11 @@ window.renderConvite = (function () {
     const include = item => typeof item === 'string' || item.se.every(filled);
     const textOf = item => (typeof item === 'string' ? item : item.t);
 
-    const p = html => `<p style="margin:0 0 18px 0;font-family:${SANS};font-size:16px;line-height:1.6;color:${C.ink};">${html}</p>`;
+    // Font styles are repeated on the container td and an inner span: email composers (Zoho, Gmail paste)
+    // often strip styles from <p>, which made paragraphs fall back to the composer's default font.
+    const BODY = `font-family:${SANS};font-size:16px;line-height:1.6;color:${C.ink};`;
+    const p = html => html.split(PARA).map(h => `<p style="margin:0 0 18px 0;${BODY}"><span style="${BODY}">${h}</span></p>`).join('');
+    const inline = html => html.split(PARA).join('<br>');
     const paras = list => list.filter(include).map(i => p(fill(textOf(i)))).join('');
 
     const subject = fillPlain(tipo.assunto);
@@ -671,7 +679,7 @@ window.renderConvite = (function () {
       .filter(r => !r[2] || r[2].every(filled))
       .map(r => `<tr>
           <td valign="top" style="padding:8px 14px 8px 0;font-family:${SANS};font-size:12px;letter-spacing:1px;text-transform:uppercase;color:${C.muted};white-space:nowrap;">${esc(r[0])}</td>
-          <td valign="top" style="padding:8px 0;font-family:${SANS};font-size:15px;line-height:1.5;color:${C.ink};">${fill(r[1])}</td>
+          <td valign="top" style="padding:8px 0;font-family:${SANS};font-size:15px;line-height:1.5;color:${C.ink};">${inline(fill(r[1]))}</td>
         </tr>`).join('');
     const box = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:6px 0 24px 0;border-left:4px solid ${C.orange};background:#F7F6F3;">
         <tr><td style="padding:14px 18px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0">${rows}</table></td></tr></table>`;
@@ -683,8 +691,9 @@ window.renderConvite = (function () {
         <td style="background:${C.orange};border-radius:3px;"><a href="${esc(mailto)}" style="display:inline-block;padding:13px 24px;font-family:${SANS};font-size:15px;font-weight:bold;color:#FFFFFF;text-decoration:none;">Responder ao convite</a></td>
       </tr></table>`;
 
-    const signature = `<p style="margin:8px 0 0 0;font-family:${SANS};font-size:16px;line-height:1.6;color:${C.ink};">Com os melhores cumprimentos,</p>
-      <p style="margin:14px 0 0 0;font-family:${SANS};font-size:15px;line-height:1.5;color:${C.ink};"><strong>${fill('{{ASSINA_NOME}}')}</strong><br>${fill('{{ASSINA_CARGO}}')}${filled('ASSINA_TELEFONE') ? '<br>' + fill('{{ASSINA_TELEFONE}}') : ''}<br><a href="https://wepac.pt" style="color:${C.orange};text-decoration:none;">wepac.pt</a></p>`;
+    const SIG = `font-family:${SANS};font-size:15px;line-height:1.5;color:${C.ink};`;
+    const signature = `<p style="margin:8px 0 0 0;${BODY}"><span style="${BODY}">Com os melhores cumprimentos,</span></p>
+      <p style="margin:14px 0 0 0;${SIG}"><span style="${SIG}"><strong>${inline(fill('{{ASSINA_NOME}}'))}</strong><br>${inline(fill('{{ASSINA_CARGO}}'))}${filled('ASSINA_TELEFONE') ? '<br>' + inline(fill('{{ASSINA_TELEFONE}}')) : ''}<br><a href="https://wepac.pt" style="color:${C.orange};text-decoration:none;">wepac.pt</a></span></p>`;
 
     const footer = `<tr><td style="padding:22px 32px;background:${C.black};font-family:${SANS};font-size:12px;line-height:19px;color:${C.stone};">
         <strong style="color:#FFFFFF;">Quem é o Teu Mestre?</strong> · Festival WEPAC<br>
@@ -697,7 +706,7 @@ window.renderConvite = (function () {
   <tr><td align="center" style="padding:24px 12px;">
     <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:${C.paper};">
       ${header}
-      <tr><td style="padding:34px 32px 30px 32px;">
+      <tr><td style="padding:34px 32px 30px 32px;${BODY}">
         ${p(fill('{{SAUDACAO}}'))}
         ${paras(tipo.corpo)}
         ${box}
